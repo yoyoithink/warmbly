@@ -1,71 +1,71 @@
 ---
-title: Zapier
-description: Connect Warmbly to thousands of apps with triggers, actions, and searches.
+title: "Zapier"
+description: "通过触发器、操作与搜索，将 Warmbly 连接到数千款应用。"
 ---
 
-Wire Warmbly into thousands of apps without code: start a Zap when a reply lands, push form leads into a campaign, or sync deals onward.
+无需编写代码即可将 Warmbly 接入数千款应用：收到回复时启动Zap，将表单潜在客户加入营销活动，或继续同步商机数据。
 
-## Connecting
+## 建立连接 [#connecting]
 
-In the Zapier editor, pick Warmbly, add any trigger or action, and click **Connect a new account**. You approve access on a Warmbly consent screen and return with the connection ready, labelled with your organization and email so multiple workspaces stay distinguishable. Nothing to copy or paste.
+在 Zapier 编辑器中选择 Warmbly，添加任意触发器或操作，然后点击**连接新账户**。在 Warmbly 的授权同意页面批准访问后，返回时连接即已就绪。连接会标注组织和邮箱地址，便于区分多个工作区，无需复制或粘贴任何内容。
 
-It requests only the scopes the modules need (contacts, campaigns, mailboxes, inbox, CRM records, templates, plus read-only analytics). **It never requests billing or team-management access.**
+连接只请求模块需要的权限范围：联系人、营销活动、邮箱、收件箱、CRM 记录、模板，以及只读的数据分析权限。**不会请求账单或团队管理权限。**
 
-## Triggers
+## 触发器 [#triggers]
 
-| Trigger | Fires when |
+| 触发器 | 触发时机 |
 |---------|------------|
-| New Contact | A contact is added |
-| New or Updated Contact | A contact is created or edited |
-| New Email Received | A message lands in the unified inbox, including campaign replies |
-| New Meeting Booked | A meeting is booked through a connected scheduler |
-| New Deal / Deal Won | A deal is created / moves to won |
-| New CRM Task | A task is created |
-| New Campaign / Campaign Completed | A campaign is created / finishes sending |
-| New Mailbox Connected | An email account is connected |
+| 新联系人 | 添加联系人时 |
+| 新建或更新联系人 | 创建或编辑联系人时 |
+| 收到新邮件 | 邮件进入统一收件箱时，包括营销活动回复 |
+| 新会议预约 | 通过已连接的日程服务预约会议时 |
+| 新商机 / 商机赢单 | 创建商机或商机进入赢单状态时 |
+| 新 CRM 任务 | 创建任务时 |
+| 新营销活动 / 营销活动完成 | 创建营销活动或活动完成发送时 |
+| 新邮箱连接 | 连接邮箱账户时 |
 
-Triggers poll on Zapier's schedule (frequency depends on your plan). Zapier remembers what it has seen, so a Zap runs once per new item. New or Updated Contact re-runs on change, with the real id in `contact_id`. New Email Received needs the Unibox feature, part of an active trial or paid plan.
+触发器按 Zapier 的计划轮询，频率取决于你的套餐。Zapier 会记住已经处理的项目，因此每个新项目只运行一次 Zap。新建或更新联系人会在数据变化时再次运行，真实 ID 位于 `contact_id`。收到新邮件需要统一收件箱功能，该功能包含在有效试用或付费套餐中。
 
-## Actions
+## 操作 [#actions]
 
-| Area | Actions |
+| 功能范围 | 操作 |
 |------|---------|
-| **Contacts** | Create or Update, Update, Delete; Add to Campaign, Remove from Campaign; Create, Update, Delete Contact Note |
-| **Inbox** | Send Email, Reply in Inbox, Mark Inbox Emails Seen, Verify Email Address |
-| **Mailboxes** | Update Mailbox, Delete Mailbox, Start / Pause / Resume / Stop Warmup |
-| **CRM** | Create, Update, Delete Deal; Create, Update, Delete CRM Task |
-| **Campaigns** | Create, Update, Start, Stop, Delete |
-| **Templates** | Create, Update, Delete, Render Reply Template |
-| **Meetings** | Log Meeting, Delete Meeting |
-| **Organization** | Create Contact Category (a contact label), Mailbox Tag, or Campaign Folder |
+| **联系人** | 创建或更新、更新、删除；加入营销活动、从营销活动移除；创建、更新和删除联系人备注 |
+| **收件箱** | 发送邮件、在收件箱回复、将收件箱邮件标记为已读、验证邮箱地址 |
+| **邮箱** | 更新邮箱、删除邮箱、启动 / 暂停 / 恢复 / 停止预热 |
+| **CRM** | 创建、更新和删除商机；创建、更新和删除 CRM 任务 |
+| **营销活动** | 创建、更新、启动、停止、删除 |
+| **模板** | 创建、更新、删除、渲染回复模板 |
+| **会议** | 记录会议、删除会议 |
+| **组织** | 创建联系人分类（联系人标签）、邮箱标签或营销活动文件夹 |
 
-Campaign, mailbox, pipeline, stage, and contact fields use live dropdowns from your workspace, so you pick real records instead of pasting ids.
+营销活动、邮箱、销售管道、阶段和联系人字段使用工作区的实时下拉列表，因此可以直接选择实际记录，无需粘贴 ID。
 
-<Callout type="warn" title="Destructive actions run unattended">
-Delete Campaign and Delete Mailbox are irreversible and execute without confirmation inside a Zap. Delete Mailbox also stops all sending from that account. Add them deliberately.
+<Callout type="warn" title="删除等破坏性操作会在无人值守时执行">
+删除营销活动和删除邮箱不可撤销，而且会在 Zap 内直接执行，不再请求确认。删除邮箱还会停止该账户的所有发送。添加这些操作时应明确其用途。
 </Callout>
 
-## Searches
+## 搜索 [#searches]
 
-Find Contact (by exact email), Find Deal, Find CRM Task, Find Campaign, Find Mailbox, Find Meeting, and Find Reply Template look up one record for a later step. Get Campaign Analytics and Get Dashboard Analytics return stats for a campaign or the whole workspace.
+查找联系人（按完整邮箱地址匹配）、查找商机、查找 CRM 任务、查找营销活动、查找邮箱、查找会议和查找回复模板，会查询一条记录供后续步骤使用。获取营销活动分析和获取仪表盘分析会返回单个活动或整个工作区的统计数据。
 
-Pair a search with an action for idempotent flows: Find Contact, then Create or Update Contact.
+将搜索与操作组合可构建幂等流程，例如先查找联系人，再创建或更新联系人。
 
-## Lead forms and other lead sources
+## 潜在客户表单及其他来源 [#lead-forms-and-other-lead-sources]
 
-Facebook and Instagram Lead Ads, LinkedIn Lead Gen Forms and TikTok Lead Generation all deliver new form submissions to Zapier in real time, which makes Zapier the shortest route from an ad to a follow-up sent from your own mailbox.
+Facebook 和 Instagram Lead Ads、LinkedIn Lead Gen Forms、TikTok Lead Generation 都能将新表单提交实时发送给 Zapier，因此可以通过 Zapier 快速实现从广告获客到用自有邮箱发送跟进邮件。
 
-1. **Trigger:** *Facebook Lead Ads: New Lead* (or the LinkedIn or TikTok equivalent), picking the Page and form.
-2. **Action:** Warmbly *Create or Update Contact*. Map the form's email and name fields, put every other question into a custom field, and pick the labels. Then *Add to Campaign* with the campaign that follows up. Re-running the same lead updates the contact rather than duplicating it.
+1. **触发器：** 选择 *Facebook Lead Ads: New Lead*（新增 Facebook 广告潜在客户）（或 LinkedIn、TikTok 的对应触发器），指定页面和表单。
+2. **操作：** Warmbly *创建或更新联系人*。映射表单中的邮箱和姓名字段，将其他问题保存到自定义字段，并选择标签。然后使用*加入营销活动*，选择负责跟进的活动。重复运行同一潜在客户记录时会更新联系人，不会产生重复数据。
 
-Prefer to keep the mapping inside Warmbly? Use *Webhooks by Zapier: POST* to an [inbound webhook automation](/guides/automations/#lead-intake) instead, sending the lead as JSON. The automation's **Create or update contact** action maps the JSON keys onto contact fields with templates, and the same flow can tag, notify Slack and open a task.
+希望将映射保留在 Warmbly 内？使用 *Webhooks by Zapier: POST*（发送 POST 请求），将潜在客户作为 JSON 发送到[传入 Webhook 自动化流程](/guides/automations/#lead-intake)。自动化流程中的**创建或更新联系人**操作通过模板将 JSON 键映射到联系人字段，同一流程还可以添加标签、通知 Slack 和创建任务。
 
-The follow-up still runs through the campaign's mailboxes, so a burst of leads queues under each mailbox's daily cap and spacing rather than going out at once. Cold email tools do not ship a native Meta connector; this route is what their customers use too.
+跟进仍由营销活动的邮箱发送，因此大量潜在客户集中进入时，会按各邮箱的每日上限和发送间隔排队，而不会一次性全部发出。冷邮件工具通常不自带原生 Meta 连接器，其用户也使用这类接入路径。
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- **Sending respects your limits.** Send Email and Reply in Inbox honor each mailbox's daily cap and spacing, and support smart and scheduled send modes.
-- **Adding a contact is idempotent by email.** Re-running Create or Update Contact with the same address updates the record and merges custom fields rather than duplicating.
-- If a connection stops working, reconnect in Zapier. Tokens refresh automatically; reconnecting re-runs consent.
+- **发送遵守既定限制。** 发送邮件和在收件箱回复均遵守每个邮箱的每日上限和发送间隔，并支持智能发送和定时发送模式。
+- **添加联系人按邮箱地址保证幂等。** 用同一地址重复执行创建或更新联系人，会更新记录并合并自定义字段，不会创建重复联系人。
+- 如果连接失效，请在 Zapier 中重新连接。令牌会自动刷新，重新连接则会重新执行授权同意流程。
 
-For lower-latency, event-driven delivery, use [webhooks](/guides/webhooks/) or the [developer websocket](/api/realtime/).
+如需延迟更低、由事件直接驱动的投递方式，可使用 [Webhook](/guides/webhooks/)或[开发者 WebSocket](/api/realtime/)。

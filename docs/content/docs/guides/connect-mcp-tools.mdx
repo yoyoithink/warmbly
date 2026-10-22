@@ -1,38 +1,38 @@
 ---
-title: Connect MCP tools
-description: Give Remie extra tools by connecting an external MCP server, reviewing what it exposes, and turning it on.
+title: "连接 MCP 工具"
+description: "连接外部 MCP 服务器，审查其提供的工具并启用，为 Remie 增加能力。"
 ---
 
-Remie, the AI assistant, can use tools from external [MCP](https://modelcontextprotocol.io) servers you connect, on top of Warmbly's built-in ones. Connect your own server or a third-party one, review the tools it offers, and enable it. From then on Remie can call those tools, always asking you first.
+除了 Warmbly 内置工具，AI 助手 Remie 还可以使用你连接的外部 [MCP](https://modelcontextprotocol.io) 服务器提供的工具。连接自有或第三方服务器，审查其工具并启用后，Remie 即可调用这些工具，每次调用前都会征求你的确认。
 
-Connections live under **Settings, Connections** and require the **Manage settings** permission.
+连接位于**设置、连接**，需要**管理设置**权限。
 
-## Connecting a server
+## 连接服务器 [#connecting-a-server]
 
-Press **Add server** and provide:
+点击**添加服务器**并提供：
 
-- **Name**: how the connection appears, and part of each tool's name in Remie.
-- **Server URL**: an `https` URL to a streamable-HTTP MCP endpoint. Only public https URLs are allowed; internal or private addresses are rejected.
-- **Authentication**: **None**, or a **Bearer token**. A bearer token is stored encrypted with your workspace key and is never shown again or returned by the API.
+- **名称**：连接的显示名称，同时也是 Remie 中每个工具名称的一部分。
+- **服务器 URL**：指向支持 Streamable HTTP 的 MCP 端点的 `https` URL。仅允许公开的 https URL，内部或私有地址会被拒绝。
+- **身份验证**：选择**无**或 **Bearer 令牌**。Bearer 令牌使用工作区密钥加密保存，此后不会再次显示，也不会通过 API 返回。
 
-When you connect, Warmbly reaches out to the server, runs the MCP handshake, and lists the tools it offers. The connection starts **disabled** so nothing is exposed to Remie until you have looked at the tools.
+连接时，Warmbly 会访问服务器，执行 MCP 握手并列出服务器提供的工具。连接初始处于**禁用**状态，在你审查工具之前，不会将其提供给 Remie。
 
-## Reviewing and enabling
+## 审查与启用 [#reviewing-and-enabling]
 
-Each connected server shows the tools Warmbly discovered. Read them, and when you are comfortable, flip the toggle to enable the server. Only enabled servers' tools reach Remie.
+每台已连接服务器都会显示 Warmbly 发现的工具。阅读工具说明，确认无误后打开开关以启用服务器。只有已启用服务器的工具才会提供给 Remie。
 
-If the server could not be reached, the connection shows the error instead of a tool list. Fix the URL or token and press the refresh icon to try discovery again. Refresh also picks up any new tools a server has added.
+若无法访问服务器，连接位置会显示错误，而不是工具列表。修正 URL 或令牌后，点击刷新图标重新发现工具。刷新也会获取服务器新增加的工具。
 
-## How Remie uses external tools
+## Remie 如何使用外部工具 [#how-remie-uses-external-tools]
 
-External tools behave like Warmbly's own write actions with one important difference: they are **always** approval-gated. Remie can never run an external tool automatically, even when a settings manager has chosen "Always allow" for built-in actions. Every external tool call shows you what it will do and waits for your approval.
+外部工具的行为与 Warmbly 自身的写入操作相似，但有一个重要区别：**始终需要审批**。即使设置管理员对内置操作选择了“始终允许”，Remie 也不能自动运行外部工具。每次外部工具调用都会展示将执行的内容，并等待你批准。
 
-Each tool appears in Remie namespaced by your connection, so it is always clear which server a tool belongs to.
+Remie 会用连接名称为工具划分命名空间，因此始终能够明确辨认工具所属的服务器。
 
-## Removing a connection
+## 移除连接 [#removing-a-connection]
 
-Disconnect a server any time from its card. Its tools are removed from Remie immediately, and the stored credentials are deleted.
+可随时从服务器卡片断开连接。其工具会立即从 Remie 中移除，已保存的凭据也会被删除。
 
-<Callout type="warn" title="Trust the servers you connect">
-An enabled MCP server's tools run with Remie, on behalf of the member using it. Only connect servers you trust, and prefer scoped tokens. Because external tool calls always require your approval, nothing runs without you seeing it first.
+<Callout type="warn" title="仅连接可信的服务器">
+已启用的 MCP 服务器工具由 Remie 代表使用它的成员运行。请仅连接可信的服务器，并优先使用限定权限范围的令牌。外部工具调用始终需要你批准，因此任何操作都会先展示，再执行。
 </Callout>

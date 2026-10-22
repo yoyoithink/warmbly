@@ -1,39 +1,39 @@
 ---
-title: Clay
-description: "Send enriched rows from a Clay table into Warmbly as contacts, and send replies, bounces, meetings and other Warmbly events back into a Clay table."
+title: "Clay"
+description: "将 Clay 表格中补全信息后的数据行发送到 Warmbly，转为联系人，并将回复、退信、会议等 Warmbly 事件回传至 Clay 表格。"
 ---
 
-The Clay integration works in both directions. A Clay table sends rows to Warmbly, which become contacts and can go straight into a campaign. Warmbly sends events back to a Clay table, so a Clay workflow can act on a reply, a bounce or a booked meeting.
+Clay 集成支持双向通信。Clay 表格向 Warmbly 发送数据行，转换为联系人后可直接加入营销活动；Warmbly 再将事件发回 Clay 表格，使 Clay 工作流能根据回复、退信或会议预约继续执行操作。
 
-Clay has no app to install and needs no Clay API key. Both directions use URLs.
+无需安装 Clay 应用，也不需要 Clay API 密钥。两个方向都使用 URL。
 
-## Connect Clay
+## 连接 Clay [#connect-clay]
 
-Open **Integrations > Clay > Connect**. Warmbly makes a URL for this connection and opens the Clay page with it.
+打开**集成 > Clay > 连接**。Warmbly 会为该连接生成 URL，并打开显示该 URL 的 Clay 页面。
 
-<Callout type="warn" title="Copy the URL when it is shown">
-The URL works like a password, so it is shown once. If you lose it, choose **Make a new URL** on the Clay page. The old one stops working at once.
+<Callout type="warn" title="URL 显示时立即复制">
+该 URL 相当于密码，因此只显示一次。如有遗失，可在 Clay 页面选择**生成新 URL**，旧 URL 会立即失效。
 </Callout>
 
-## Send rows from Clay
+## 从 Clay 发送数据行 [#send-rows-from-clay]
 
 <Steps>
 
 <Step>
 
-In your Clay table, add a column and choose **HTTP API**.
+在 Clay 表格中添加一列，选择 **HTTP API**。
 
 </Step>
 
 <Step>
 
-Set the method to `POST` and paste your Clay URL as the endpoint.
+将方法设为 `POST`，并将 Clay URL 粘贴为端点。
 
 </Step>
 
 <Step>
 
-Write a JSON body. Type `/` to insert a column. Only `email` is required:
+编写 JSON 请求体，输入 `/` 插入列。只有 `email` 是必填项：
 
 ```json
 {
@@ -51,32 +51,32 @@ Write a JSON body. Type `/` to insert a column. Only `email` is required:
 
 <Step>
 
-Run the column on a few rows and check the result, then turn on auto-run.
+先在少量数据行上运行该列，检查结果后再开启自动运行。
 
 </Step>
 
 </Steps>
 
-### What a row can carry
+### 每行可包含的内容 [#what-a-row-can-carry]
 
-| Key | Becomes |
+| 键 | 转换结果 |
 | --- | --- |
-| `email` | The contact's address. Required |
-| `first_name`, `last_name` | The contact's name. `name` (or `full_name`) is split when the two are absent |
-| `company`, `phone` | Those contact fields |
-| `tags` | Labels, as a list or a comma-separated string. Added to the connection's default labels |
-| `subscribed` | `false` adds the contact unsubscribed |
-| `campaign_id` | A Warmbly campaign id. The contact goes to that campaign instead of the default |
-| `custom_fields` | An object of custom fields |
-| anything else | A custom field with that key, usable as a variable in your emails |
+| `email` | 联系人的邮箱地址，必填 |
+| `first_name`, `last_name` | 联系人姓名。如果这两个字段不存在，会拆分 `name`（或 `full_name`） |
+| `company`, `phone` | 对应的联系人字段 |
+| `tags` | 标签，可为列表或逗号分隔的字符串；在连接默认标签的基础上追加 |
+| `subscribed` | 为 `false` 时，以未订阅状态添加联系人 |
+| `campaign_id` | Warmbly 营销活动 ID；联系人加入此活动，而非默认活动 |
+| `custom_fields` | 自定义字段对象 |
+| 其他任意键 | 转为同名的自定义字段，可在邮件中作为变量使用 |
 
-Common Clay column names are understood too: `work_email`, `job_title`, `company_name`, `linkedin`, `domain` and similar.
+也支持常见的 Clay 列名，例如 `work_email`、`job_title`、`company_name`、`linkedin`、`domain` 等。
 
-A body can be one row, an array of rows, or an object with a `rows` array. One request takes up to 100 rows and 1 MB.
+请求体可以是一行、行数组，或含有 `rows` 数组的对象。每次请求最多包含 100 行、大小不超过 1 MB。
 
-### The response
+### 响应 [#the-response]
 
-Clay can map the response into columns. A single-row request answers with that row's result at the top level:
+Clay 可以将响应映射回列。单行请求会在响应顶层返回该行的结果：
 
 ```json
 {
@@ -92,52 +92,52 @@ Clay can map the response into columns. A single-row request answers with that r
 }
 ```
 
-`status` is `created`, `updated`, `skipped` (for example, already a contact with **Leave it alone** chosen, or suppressed) or `failed`. A skipped or failed row carries a `reason`. A request for many rows has the same counts and one entry per row in `results`.
+`status` 为 `created`、`updated`、`skipped`（例如联系人已存在且选择了**保持不变**，或地址被禁止发送），或 `failed`。跳过或失败的行会带有 `reason`。多行请求具有相同的计数字段，并在 `results` 中为每行提供一项结果。
 
-A URL Warmbly does not know answers `404` and a disconnected connection `403`. Neither goes away on a retry: fix the URL in the column or reconnect Clay, then rerun the rows. More than 600 requests a minute on one connection answer `429` with `Retry-After`, and a Warmbly error answers `500`. Those are worth retrying, so turn on retries in the HTTP API column's settings and include `429` and `500` in the statuses it retries.
+Warmbly 无法识别的 URL 返回 `404`，已断开的连接返回 `403`。这两种情况重试也不会解决：应修正列中的 URL 或重新连接 Clay，再次运行数据行。同一连接每分钟超过 600 次请求会返回 `429` 和 `Retry-After`，Warmbly 自身出错则返回 `500`。后两种情况适合重试，因此应在 HTTP API 列的设置中启用重试，并将 `429` 和 `500` 列为重试状态。
 
-### What rows become
+### 数据行如何转为联系人 [#what-rows-become]
 
-Under **What rows become** on the Clay page, choose what applies to every row:
+在 Clay 页面的**数据行转换设置**中，选择应用于每行的规则：
 
-- a campaign to add each contact to, or only add them to contacts;
-- labels;
-- segments to pin each contact into;
-- what happens when the contact already exists: **Update it** (fills in what Clay sends and never blanks a field) or **Leave it alone**;
-- whether new contacts start subscribed.
+- 将每个联系人加入某个营销活动，或仅添加到联系人列表；
+- 标签；
+- 将联系人固定加入的分群；
+- 联系人已存在时的处理方式：**更新**会填入 Clay 提供的内容但不会清空字段，或选择**保持不变**；
+- 新联系人是否默认处于已订阅状态。
 
-Contacts get the source **Clay**, so a [segment](/guides/segments/) can select them. A suppressed address is never added. Adding a contact to a campaign follows the campaign's mailboxes, caps and spacing like any other lead.
+联系人的来源设为 **Clay**，因此可用[分群](/guides/segments/)筛选。被禁止发送的地址不会被添加。联系人加入营销活动后，与其他潜在客户一样，遵守活动所用邮箱的发送上限和间隔。
 
-## Send events to Clay
+## 向 Clay 发送事件 [#send-events-to-clay]
 
 <Steps>
 
 <Step>
 
-In Clay, add a source to the table and choose **Webhook**. Copy its URL, and its auth token if you turned one on.
+在 Clay 中为表格添加来源，选择 **Webhook**，复制其 URL。如果启用了身份验证令牌，也一并复制。
 
 </Step>
 
 <Step>
 
-On the Clay page under **Send events to Clay**, paste the webhook URL and the token.
+在 Clay 页面的**向 Clay 发送事件**中粘贴 Webhook URL 和令牌。
 
 </Step>
 
 <Step>
 
-Choose the events to send, save, and use **Send a test row** to check that Clay receives it.
+选择要发送的事件，保存后使用**发送测试行**检查 Clay 是否收到。
 
 </Step>
 
 </Steps>
 
-The events are: prospect replies, email sent, email opened, link clicked, email bounces, contact unsubscribes, meeting booked and meeting canceled. Each one adds a row with the event, the contact's email and name, the campaign, and the event's details as flat columns.
+可选事件包括：潜在客户回复、邮件发送、邮件打开、链接点击、邮件退信、联系人退订、会议预约和会议取消。每个事件都会添加一行，以平铺列的形式包含事件、联系人的邮箱与姓名、营销活动和事件详情。
 
-To send to more than one Clay table, use an [automation](/guides/automations/) with the **Send a row to Clay** action. It sends to the connection's table unless the step names another table webhook. The connection's auth token is only sent to its own table, so a table named on a step needs a webhook source without a token.
+要发送到多个 Clay 表格，可在[自动化流程](/guides/automations/)中使用**向 Clay 发送数据行**操作。默认发送到连接绑定的表格，除非步骤指定其他表格的 Webhook。连接的身份验证令牌只会发送给其绑定表格，因此步骤另行指定的表格必须使用不带令牌的 Webhook 来源。
 
-**Stop sending** removes the webhook URL, the token and the chosen events.
+**停止发送**会移除 Webhook URL、令牌和所选事件。
 
-## What moves with a workspace export
+## 工作区导出时一并迁移的内容 [#what-moves-with-a-workspace-export]
 
-The Clay connection moves with a [workspace export](/guides/workspace-export-import/) like other integrations, with its defaults and its chosen events. The table webhook and token travel only in an archive that includes credentials; otherwise paste them again. The inbound URL keeps its path on the new instance, so change the address in your Clay columns to the new instance's, or make a new URL there.
+Clay 连接会像其他集成一样随[工作区导出](/guides/workspace-export-import/)迁移，包括默认设置和所选事件。仅当归档包含凭据时，表格 Webhook 和令牌才会一同迁移；否则需要重新粘贴。入站 URL 在新实例上保持相同路径，因此应将 Clay 列中的地址更改为新实例地址，或在新实例生成新的 URL。

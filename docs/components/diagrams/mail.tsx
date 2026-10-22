@@ -4,17 +4,17 @@ import { cn } from '@/lib/cn';
 // Deliverability and inbox placement: what happens to a message after you send it.
 
 const GATES = [
-  { n: 1, name: 'Acceptance', by: 'The receiving server says 250', checks: 'Valid message, rate limit, basic IP block' },
-  { n: 2, name: 'Filtering', by: 'A spam score', checks: 'Authentication, content, reputation' },
-  { n: 3, name: 'Placement', by: 'Where it lands', checks: 'Inbox, Promotions, Spam, or a rule' },
+  { n: 1, name: '接收', by: '收件服务器返回 250', checks: '邮件格式、速率限制、基础 IP 封锁' },
+  { n: 2, name: '过滤', by: '垃圾邮件评分', checks: '身份验证、内容、信誉' },
+  { n: 3, name: '投递位置', by: '最终归入的文件夹', checks: '收件箱、推广、垃圾邮件，或按规则归档' },
 ];
 
 export function MailJourney() {
   return (
-    <Frame caption="Every message passes three gates. A delivery rate only sees the first one.">
+    <Frame caption="每封邮件都要经过三道关口。投递成功率只反映第一道。">
       <div className="flex min-w-0 flex-col items-stretch md:flex-row md:items-center">
         <div className="rounded-lg border border-fd-border bg-fd-background px-4 py-3 text-center md:w-28">
-          <div className="text-[13px] font-medium text-fd-foreground">You send</div>
+          <div className="text-[13px] font-medium text-fd-foreground">发送邮件</div>
         </div>
         {GATES.map((g) => (
           <div key={g.n} className="flex flex-col items-stretch md:flex-1 md:flex-row md:items-center">
@@ -32,10 +32,10 @@ export function MailJourney() {
       </div>
       <div className="mt-4 grid grid-cols-3 gap-2 md:ml-[calc(7rem+28px)]">
         <div className="col-span-1 rounded-md border border-dashed border-fd-border px-3 py-2 text-center text-[12px] text-fd-muted-foreground">
-          Delivery rate is measured here
+          投递成功率在此衡量
         </div>
         <div className="col-span-2 rounded-md border border-dashed border-emerald-300 px-3 py-2 text-center text-[12px] text-emerald-700 dark:border-emerald-500/40 dark:text-emerald-300">
-          Deliverability is what happens here: does it reach the inbox?
+          送达能力取决于后续结果：是否进入收件箱？
         </div>
       </div>
     </Frame>
@@ -46,7 +46,7 @@ export function MailJourney() {
 export function DeliveryVsPlacement() {
   const dots = Array.from({ length: 100 }, (_, i) => (i < 30 ? 'good' : i < 99 ? 'watch' : 'plain') as Tone);
   return (
-    <Frame caption="99% delivery and 30% placement is not unusual on a poorly authenticated cold mailbox.">
+    <Frame caption="对于身份验证配置不完善的冷邮件邮箱，投递成功率达 99%、收件箱到达率却只有 30% 的情况并不罕见。">
       <div className="grid gap-6 md:grid-cols-[auto_1fr] md:items-center">
         <div className="grid w-fit grid-cols-10 gap-1.5">
           {dots.map((t, i) => (
@@ -54,11 +54,11 @@ export function DeliveryVsPlacement() {
           ))}
         </div>
         <div className="space-y-3 text-[13.5px]">
-          <Row tone="good" big="30" text="landed in the primary inbox" />
-          <Row tone="watch" big="69" text="were accepted, then filtered to Spam or a tab" />
-          <Row tone="plain" big="1" text="was rejected" />
+          <Row tone="good" big="30" text="封进入主收件箱" />
+          <Row tone="watch" big="69" text="封被接收后，归入垃圾邮件或分类标签页" />
+          <Row tone="plain" big="1" text="封被拒收" />
           <div className="border-t border-fd-border pt-3 text-fd-muted-foreground">
-            A delivery rate reports <b className="font-medium text-fd-foreground">99%</b>. Placement is <b className="font-medium text-fd-foreground">30%</b>.
+            投递成功率为 <b className="font-medium text-fd-foreground">99%</b>。收件箱到达率为 <b className="font-medium text-fd-foreground">30%</b>.
           </div>
         </div>
       </div>
@@ -77,15 +77,15 @@ function Row({ tone: t, big, text }: { tone: Tone; big: string; text: string }) 
 }
 
 const BANDS = [
-  { from: 0, to: 60, t: 'bad' as Tone, name: 'Below 60%', text: 'Stop campaigns from this mailbox' },
-  { from: 60, to: 80, t: 'watch' as Tone, name: '60 to 80%', text: 'Something is wrong: audit auth, content, volume' },
-  { from: 80, to: 90, t: 'info' as Tone, name: '80 to 90%', text: 'Acceptable, watch for drift' },
-  { from: 90, to: 100, t: 'good' as Tone, name: 'Above 90%', text: 'Healthy mailbox' },
+  { from: 0, to: 60, t: 'bad' as Tone, name: '低于 60%', text: '暂停使用此邮箱发送营销活动邮件' },
+  { from: 60, to: 80, t: 'watch' as Tone, name: '60% 至 80%', text: '存在问题：检查身份验证、内容及发送量' },
+  { from: 80, to: 90, t: 'info' as Tone, name: '80% 至 90%', text: '可以接受，注意后续变化' },
+  { from: 90, to: 100, t: 'good' as Tone, name: '高于 90%', text: '邮箱状态健康' },
 ];
 
 export function PlacementScale() {
   return (
-    <Frame caption="Inbox placement targets.">
+    <Frame caption="收件箱到达率目标。">
       <div className="flex h-3 overflow-hidden rounded-full">
         {BANDS.map((b) => (
           <div key={b.name} className={fill[b.t]} style={{ width: `${b.to - b.from}%` }} />
@@ -111,16 +111,16 @@ export function PlacementScale() {
 }
 
 const SIGNALS: { name: string; weight: string; w: number; t: Tone }[] = [
-  { name: 'Authentication', weight: 'Mandatory', w: 100, t: 'info' },
-  { name: 'Sender reputation', weight: 'High', w: 80, t: 'good' },
-  { name: 'Recipient engagement', weight: 'High', w: 80, t: 'good' },
-  { name: 'Volume and pattern', weight: 'High', w: 80, t: 'good' },
-  { name: 'Content', weight: 'Medium', w: 50, t: 'watch' },
+  { name: '身份验证', weight: '必需', w: 100, t: 'info' },
+  { name: '发件信誉', weight: '高', w: 80, t: 'good' },
+  { name: '收件人互动', weight: '高', w: 80, t: 'good' },
+  { name: '发送量与行为模式', weight: '高', w: 80, t: 'good' },
+  { name: '内容', weight: '中', w: 50, t: 'watch' },
 ];
 
 export function SignalWeights() {
   return (
-    <Frame caption="What decides placement. Weights are directional: providers do not publish formulas.">
+    <Frame caption="影响投递位置的因素。权重仅说明大致重要性，服务商并未公开计算公式。">
       <div className="space-y-2.5">
         {SIGNALS.map((s) => (
           <div key={s.name} className="grid grid-cols-[150px_1fr_80px] items-center gap-3 text-[13px] max-sm:grid-cols-[110px_1fr_70px]">
@@ -132,7 +132,7 @@ export function SignalWeights() {
           </div>
         ))}
       </div>
-      <Label className="mt-4">Authentication is mandatory. The others are weighed together</Label>
+      <Label className="mt-4">身份验证是必要条件，其余因素综合评估</Label>
     </Frame>
   );
 }

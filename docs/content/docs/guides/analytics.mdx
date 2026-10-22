@@ -1,273 +1,273 @@
 ---
-title: "Analytics"
-description: "Campaign and account performance metrics."
+title: "数据分析"
+description: "营销活动与邮箱账户的表现指标。"
 ---
 
-Analytics turns every send, open, click, reply, bounce and complaint into rates you can act on, for the whole workspace, each campaign and each mailbox.
+分析功能将每次发送、打开、点击、回复、退信和投诉转化为可用于决策的比率，覆盖整个工作区、各营销活动及每个邮箱。
 
-![The workspace dashboard: sends, opens, replies and bounces over time, top campaigns and account health](/guides/analytics.webp)
+![工作区控制台：发送、打开、回复和退信的时间趋势、表现最佳的营销活动及账户健康度](/guides/analytics.webp)
 
-## Read your numbers
+## 查看数据指标 [#read-your-numbers]
 
 <Steps>
 
 <Step>
 
-Check the four headline rates for your window: `7d`, `30d` or `90d`.
+查看所选时间范围内的四项主要指标：`7d`、`30d` 或 `90d`。
 
 </Step>
 
 <Step>
 
-If one looks off, switch the chart to that metric and find the day it moved.
+如果某项异常，将图表切换到该指标，找到变化发生的日期。
 
 </Step>
 
 <Step>
 
-Open that campaign and read its per-step stats to see which touch is responsible.
+打开对应营销活动，查看各步骤统计，确定是哪一次触达造成变化。
 
 </Step>
 
 <Step>
 
-For bounces or complaints, check the per-mailbox breakdown to find the sender at fault.
+对于退信或投诉，查看按邮箱细分的数据，找出有问题的发件邮箱。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Opens and clicks only count when open or link tracking is on for the campaign.
-- Bots, security scanners and privacy-proxy auto-opens are logged but never counted.
-- Replies are human replies. Out-of-office notices and autoresponders never count.
-- A click by a person counts as an open too.
-- Warmbly will not call an A/B winner until the leader has a minimum sample, `30` sends by default.
+- 只有营销活动开启打开跟踪或链接跟踪时，才会统计打开和点击。
+- 机器人、安全扫描器和隐私代理产生的自动打开会被记录，但不会计入指标。
+- 回复只统计人工回复。休假通知和自动回复程序的消息不计入。
+- 人工点击也会同时计为打开。
+- 领先版本达到最低样本量之前，Warmbly 不会宣布 A/B 测试胜出版本；默认要求发送 `30` 次。
 
 <Fold>
 
-## What analytics covers and who can see it
+## 数据分析的范围与查看权限 [#what-analytics-covers-and-who-can-see-it]
 
-Browsing filters, searches and view choices are [remembered in your browser tab](/guides/browsing/) across refreshes and navigation, separately for each user and workspace.
+浏览时使用的筛选、搜索和视图选项会[保存在浏览器标签页中](/guides/browsing/)，刷新页面或切换页面后仍然保留，并按用户和工作区分别保存。
 
-Analytics rolls every send, open, click, reply, bounce, and complaint into rates you can act on, by workspace, campaign, and mailbox. For health bands and the thresholds Warmbly acts on, see [Deliverability](/guides/deliverability/).
+分析功能按工作区、营销活动和邮箱，将每次发送、打开、点击、回复、退信和投诉汇总为可用于决策的比率。健康等级以及 Warmbly 据以采取行动的阈值，参见[邮件送达能力](/guides/deliverability/)。
 
-Campaign analytics are shared across the workspace. With **View analytics**, you can see the overview, daily and hourly statistics, step performance and comparisons for campaigns created by any member of the selected workspace. The campaign author does not need to grant separate access.
+营销活动分析在工作区内共享。具有**查看分析数据**权限，即可查看所选工作区中任意成员创建的营销活动概览、每日和每小时统计、步骤表现及活动对比。活动创建者无需单独授权。
 
 </Fold>
 
 <Fold>
 
-## Signup source attribution (platform admins)
+## 注册来源归因（平台管理员） [#signup-source-attribution-platform-admins]
 
-This is separate from email and campaign analytics. The marketing site carries the original landing path, external referrer host and any `utm_source`, `utm_medium`, `utm_campaign`, `utm_term` and `utm_content` tags through its page links into the dashboard. App redirects and switching between sign-in and registration keep those fields available at signup.
+这项功能与邮件和营销活动分析分开。营销网站会通过页面链接，将最初的落地路径、外部来源主机，以及 `utm_source`、`utm_medium`、`utm_campaign`、`utm_term` 和 `utm_content` 标签传递到控制台。应用重定向，以及登录与注册页面之间的切换，都会保留这些字段，供注册时使用。
 
-The new workspace records acquisition once. In the admin panel, **Organizations → Channel** shows the campaign source when supplied, the saved referrer host and landing path. If a saved table layout hides Channel, enable it under **Columns**. The acquisition filters accept an exact referrer host, such as `www.google.com` or `www.reddit.com`. **Overview → Acquisition** summarizes signup channels, referrers and paid conversions.
+新工作区只记录一次获客来源。在管理面板中，**组织 → 渠道**显示提供的营销来源、已保存的来源主机和落地路径。如果保存的表格布局隐藏了“渠道”，可以在**列**中开启。获客筛选支持精确的来源主机，例如 `www.google.com` 或 `www.reddit.com`。**概览 → 获客**汇总注册渠道、来源和付费转化。
 
-Sources come from campaign tags or the browser's referrer, not guesses. Warmbly's own domains are not external sources. Browsers, search engines and apps can withhold referrers; absent source information is shown as **Unknown**, even when the landing page is known. Full referrer URLs, search queries and landing-page query strings are not stored. Acquisition values are limited in length and email-shaped values are redacted by the backend.
+来源来自营销标签或浏览器的 referrer，不依靠猜测。Warmbly 自己的域名不算外部来源。浏览器、搜索引擎和应用可能不提供来源信息；缺少来源时，即使知道落地页，也显示为**未知**。不会存储完整来源 URL、搜索关键词或落地页查询字符串。获客字段有长度限制，后端会遮蔽形似电子邮件地址的值。
 
-The marketing site stays cookieless, with no persistent PostHog identity. Attribution travels in URLs, not cookies or browser storage. It survives linked navigation but cannot reliably reconnect a later unrelated visit, another device or a URL whose attribution parameters were removed. It is not a complete anonymous browsing history. Existing saved acquisition remains unchanged, and missing historical sources are not backfilled. No new configuration or database migration is required.
+营销网站不使用 Cookie，也不保留持久化的 PostHog 身份。归因通过 URL 传递，而非 Cookie 或浏览器存储。它可以在链接导航中保留，但无法可靠关联之后无关的访问、另一台设备，或已删除归因参数的 URL。它并不是完整的匿名浏览历史。现有已保存的获客信息保持不变，也不会补填缺失的历史来源。不需要新的配置或数据库迁移。
 
 </Fold>
 
 <Fold>
 
-## What is counted
+## 统计范围 [#what-is-counted]
 
-| Metric | Counts | Feeds |
+| 指标 | 统计内容 | 用于计算 |
 | --- | --- | --- |
-| Sent | Emails actually sent | The denominator for every rate |
-| Opens | Recipients who opened | Open rate |
-| Clicks | Recipients who clicked a tracked link | Click rate |
-| Replies | Human replies | Reply rate |
-| Positive replies | Human replies the reply classifier judged positive | Positive reply rate, interested leads |
-| Bounces | Hard and soft bounces | Bounce rate |
-| Complaints | Marked as spam | Complaint rate |
+| 已发送 | 实际发送的邮件 | 所有比率的分母 |
+| 打开 | 打开过邮件的收件人 | 打开率 |
+| 点击 | 点击过跟踪链接的收件人 | 点击率 |
+| 回复 | 人工回复 | 回复率 |
+| 积极回复 | 回复分类器判定为积极的人工回复 | 积极回复率、感兴趣的潜在客户 |
+| 退信 | 硬退信和软退信 | 退信率 |
+| 投诉 | 被标记为垃圾邮件 | 投诉率 |
 
-Seven rules govern the counts:
+统计遵循七项规则：
 
-- **Tracking must be on.** Opens and clicks need open or link tracking enabled on the campaign, and a tracking host on the install. A [custom tracking domain](/guides/mailboxes/#custom-tracking-domain) per mailbox is optional; without one they go through the shared host and still count. With tracking off they stay at zero while sends and replies still count.
-- **Reading in Warmbly does not count as an open.** Unibox removes Warmbly's tracking pixels from the displayed message, including quoted history. This applies to sent messages and every other folder; recipient copies retain their pixels.
-- **Replies are human replies.** Out-of-office and autoresponders never count, never stamp the contact as replied, and never trip stop-on-reply. A reply is attributed by the thread it answers, so a person who replies from a different address than the one you mailed (a "send as" alias, a forward, a colleague answering on their behalf) still counts as a reply for that lead. In a campaign that rotates across several mailboxes, each lead's reply is expected in the mailbox that wrote to them (the one their follow-ups come from too), so that mailbox has to be connected with inbox sync in the same workspace for the reply to be seen; a reply that reaches another mailbox in the pool stays in the Unibox and is not counted. Reply detection is always on; the reply-intent switch in Settings governs only what happens after a reply is detected. A reply that was missed is not lost: once a day, and whenever it starts, the platform re-checks recent inbound mail that was never attributed and marks the lead replied if it should have been.
-- **Bots are filtered.** Crawlers, CLI agents, prefetches, chat link previews, and security gateways that announce themselves are served normally but never counted. The ones that do not announce themselves are caught by where they came from and by what they do. Requests from a known mail-filtering network are treated as automated whatever their user agent claims, and a click from one is still redirected, just without the ticket that would file the visit against the recipient. Microsoft 365's own filtering layer, where Safe Links and delivery-time link scanning run, is recognised out of the box, as is Barracuda's. Proofpoint, Mimecast and Cisco Secure Email are recognised too, with one difference: those three also offer browser isolation, which renders a clicked page in the vendor's cloud for the recipient to read, so a click from them can be a real person. A match there is treated as automated only when it also arrives soon enough after the send to be the delivery-time scan, and a recipient who clicks through isolation later still counts as a person. The rest are caught by behaviour: an open within a minute of the send, or a click within thirty seconds, and clicks on two or more links of one email from the same source within five seconds (a scanner walking the message). The clock on the first two starts when the send is handed to a worker, before the mail has even been delivered, so those windows cover the sending provider's queue and the transit to the recipient as well as reading time. A self-hosted instance can change those windows under Instance settings, including the one the isolation vendors are measured against, when its recipients' gateways are slower or faster than that. Otherwise one corporate scanner would "click" every link seconds after delivery. A self-hosted instance can name its own scanner networks; see [tracking service configuration](/development/configuration/).
-- **Auto-opens are logged, not counted.** Privacy proxies like Apple Mail Privacy Protection, and instant opens, are kept as proof of delivery and shown separately (`12 auto, not counted`), and an open counts only once per email however many times it is fetched. Every open count and open rate, on the campaign overview, per step, per day and per hour, and on the dashboard, counts a person's opens only, which is how the Leads tab already reads a lead: not opened until a person opens it. Apple Mail Privacy Protection's relay (a user agent of just `Mozilla/5.0`) and the stripped WebKit user agent that Mail on a Mac and the new Outlook for Windows both send are treated as a prefetch only when they arrive inside the automated-open window. Later, the same request is a person's open. **Auto-opens never trigger opened-based branches or automations.**
-- **A click is an open.** Opens need the mail client to load images, and many clients block them. A click by the person proves the email was read, so it counts as an open as well, and a lead can never read "clicked, not opened".
-- **Auto-clicks are kept but never counted.** A click classified as automated is logged on the contact's activity with the link it hit and the rule that caught it, and the campaign overview shows how many steps had only automated clicks (`3 auto`). It never makes the step clicked, never fires a clicked branch or automation, and never sends a webhook. A person clicking the same link later counts normally. A burst is only recognisable from its second click, so a click that looks human waits for the burst window plus one second (six seconds) before it fires anything (clicked branches, automations, webhooks, the live feed): if a second link follows inside that window, both clicks are relabeled, the stamp is withdrawn and nothing fires.
+- **必须开启跟踪。** 打开和点击需要营销活动启用相应的打开或链接跟踪，且实例配置了跟踪主机。每个邮箱的[自定义跟踪域名](/guides/mailboxes/#custom-tracking-domain)是可选项；未配置时仍可通过共享主机跟踪并统计。关闭跟踪时，打开和点击保持为零，发送和回复仍正常统计。
+- **在 Warmbly 中阅读不算打开。** 统一收件箱会从展示的邮件中移除 Warmbly 跟踪像素，包括引用的历史内容。这适用于已发送邮件和所有其他文件夹；收件人收到的副本仍保留像素。
+- **回复只统计人工回复。** 休假通知和自动回复程序的消息绝不计入，不会将联系人标记为已回复，也不会触发“收到回复后停止”。回复根据其所回答的邮件会话归因，因此即使对方使用不同于原收件地址的地址回复，例如“代发”别名、转发，或同事代为回复，也会计为该潜在客户的回复。在轮换多个邮箱发送的活动中，每位潜在客户的回复预期到达最初给其发信的邮箱，后续跟进也由该邮箱发送。因此，该邮箱必须在同一工作区中连接并启用收件箱同步，系统才能发现回复；如果回复到达池中的其他邮箱，它会保留在统一收件箱中，但不计入活动回复。回复检测始终开启；设置中的回复意图开关只控制检测到回复之后的处理。遗漏的回复也不会永久丢失：平台每天一次，以及每次启动时，都会重新检查近期尚未归因的入站邮件，并在符合条件时将潜在客户标记为已回复。
+- **过滤机器人。** 自报身份的爬虫、命令行代理、预取请求、聊天链接预览和安全网关可以正常访问内容，但绝不计入统计。不自报身份的自动访问，则根据来源和行为识别。来自已知邮件过滤网络的请求，无论其 user agent 声称什么，都会视为自动访问；这类点击仍会重定向，但不会携带用于将访问归属于收件人的票据。系统默认识别 Microsoft 365 运行 Safe Links 和投递时链接扫描的过滤层，也识别 Barracuda。Proofpoint、Mimecast 和 Cisco Secure Email 同样能够识别，但有所区别：这三家还提供浏览器隔离，在服务商云端渲染收件人点击的页面供其阅读，因此来自它们的点击可能是真人。只有来源匹配且在发送后足够短的时间内到达、符合投递时扫描特征时，才判定为自动访问；收件人稍后通过隔离环境点击仍计为人工访问。其他自动访问根据行为识别：发送后一分钟内的打开、三十秒内的点击，以及同一来源在五秒内点击同一邮件中两个或更多链接，即扫描器遍历邮件。这前两个时间窗口从发送任务交给工作节点时开始，当时邮件甚至尚未投递，因此窗口同时包含发件服务商排队、传输到收件方和阅读时间。自托管实例可在实例设置中调整这些窗口，包括针对隔离服务商的窗口，以适应收件方网关更快或更慢的情况。否则，一个企业扫描器就可能在投递后几秒内“点击”全部链接。自托管实例还可指定自己的扫描器网络；参见[跟踪服务配置](/development/configuration/)。
+- **自动打开会记录，但不计数。** Apple Mail 隐私保护等隐私代理，以及瞬时打开，会作为投递证据保留并单独显示，例如 `12 auto, not counted`。无论抓取多少次，每封邮件的打开只计一次。营销活动概览、各步骤、每日、每小时以及工作区控制台的所有打开次数和打开率，都只统计人工打开；这也与潜在客户标签页一致：只有真人打开后，才标记为已打开。Apple Mail 隐私保护中继的 user agent 仅为 `Mozilla/5.0`，而 Mac 上的“邮件”和新版 Outlook for Windows 都发送经过精简的 WebKit user agent；这些请求只有落在自动打开窗口内才被视为预取。稍后同样的请求会被视为人工打开。**自动打开绝不会触发基于打开行为的分支或自动化流程。**
+- **点击也算打开。** 打开检测依赖邮件客户端加载图片，而很多客户端会屏蔽图片。人工点击证明邮件已经被阅读，因此也计为打开，潜在客户不会出现“已点击但未打开”的状态。
+- **自动点击会保留，但不计数。** 判定为自动访问的点击会记录在联系人活动中，包含目标链接和命中的识别规则；营销活动概览显示有多少步骤只出现自动点击，例如 `3 auto`。它不会将步骤标记为已点击，不触发点击分支或自动化流程，也不发送 Webhook。真人稍后点击同一链接时正常计数。连续扫描只有在第二次点击出现后才可识别，因此看似人工的点击会等待扫描窗口再加一秒，即六秒，才触发任何事件，包括点击分支、自动化流程、Webhook 和实时动态。如果窗口内又出现第二个链接点击，两次点击都会重新标记，点击状态被撤回，不触发任何后续事件。
 
 </Fold>
 
 <Fold>
 
-## Workspace dashboard
+## 工作区仪表盘 [#workspace-dashboard]
 
-Live, scoped by `7d`, `30d`, or `90d` tabs, and by default covering every campaign in the workspace.
+控制台实时更新，可通过 `7d`、`30d` 或 `90d` 标签切换时间范围，默认覆盖工作区中的全部营销活动。
 
-| Section | Shows |
+| 区域 | 显示内容 |
 |---------|-------|
-| Headline rates | Total sent, open rate, reply rate, bounce rate |
-| Email performance | One metric per day (sent, opens, clicks, replies), for spotting the day something moved |
-| Breakdown | Raw window totals behind the rates |
-| Account health | Each mailbox counted once as Healthy, At risk, or Issues, using its most severe current connection, sync, or warmup-reputation state |
-| Top campaigns | Best performers with sent, open rate, reply rate, and a status dot |
-| Recent activity | A live feed of individual opens, clicks, replies, and bounces. A reply names the mailbox that sent the email it answers, even when it landed in a [shared reply inbox](/guides/mailboxes/#a-shared-reply-inbox) |
+| 主要指标 | 总发送量、打开率、回复率、退信率 |
+| 邮件表现 | 按日显示一项指标，例如发送、打开、点击或回复，便于发现发生变化的日期 |
+| 明细汇总 | 各项比率对应的时间范围内原始总数 |
+| 账户健康度 | 根据邮箱当前最严重的连接、同步或预热信誉状态，将每个邮箱只计入一次“健康”“有风险”或“存在问题” |
+| 表现最佳的营销活动 | 表现最好的活动，包含发送量、打开率、回复率和状态标记 |
+| 最近活动 | 实时显示单次打开、点击、回复和退信。回复会标明原邮件的发件邮箱，即使回复实际进入[共享回复收件箱](/guides/mailboxes/#a-shared-reply-inbox)也是如此 |
 
-Sending totals, trends, comparisons, and top-campaign rates count email steps only. Completed wait and action steps move a sequence forward but never inflate the number of messages sent.
+发送总量、趋势、对比和最佳活动的比率都只统计邮件步骤。完成等待或操作步骤会推进邮件序列，但绝不会增加已发送邮件数量。
 
-### Platform admin send counters
+### 平台管理员的发送计数 [#platform-admin-send-counters]
 
-The admin **Overview** counts confirmed warmup, campaign, direct email, and placement-test sends across this instance. **Emails sent today** uses the UTC calendar day, not each mailbox's local sending timezone. The all-time total uses the available confirmed task history.
+管理员**概览**统计当前实例中已确认的预热、营销活动、直接邮件和投递位置测试发送量。**今日已发送邮件**按 UTC 日历日计算，不采用各邮箱本地发送时区。累计总量使用可用的已确认任务历史。
 
-A queued or completed dispatch is not proof of sending. Warmup sends count only after their token records the provider's Message-ID. Other sends count after a successful worker result is applied. Older warmup receipts remain included, but older non-warmup tasks without applied results are not assumed successful: their Message-ID may have been generated before sending. Reserved, unknown, failed, and cancelled dispatches without confirmation do not count. Multiple warmup tokens for one task still count as one send. If the send-count query fails, the overview returns an error instead of reporting zero sends.
+已排队或已完成调度，并不能证明邮件已经发送。预热发送只有在令牌记录了服务商的 Message-ID 后才计数。其他发送只有在工作节点的成功结果被应用后才计数。旧的预热回执仍计入，但未应用结果的旧非预热任务不会被假定为成功，因为其 Message-ID 可能在实际发送前就已生成。没有确认的已预留、未知、失败和已取消调度都不计入。同一任务即使有多个预热令牌，也只算一次发送。如果发送计数查询失败，概览会返回错误，不会将发送量报告为零。
 
-### Filtering by campaign or folder
+### 按营销活动或文件夹筛选 [#filtering-by-campaign-or-folder]
 
-The **All campaigns** menu next to the period tabs narrows the dashboard to the campaigns you pick. Choose one campaign, several, one or more [campaign folders](/guides/campaigns/), or a mix. The figures add the selected campaigns together, and a campaign picked directly and through a folder, or sitting in two picked folders, is counted once. A folder stands for the campaigns in it right now, so moving a campaign in or out of the folder changes what the dashboard counts the next time it loads. The period tabs keep working on top of the filter, and the selection is remembered in your browser tab like the period.
+时间范围标签旁的**全部营销活动**菜单，可以将控制台缩小到指定活动。可选择一个或多个活动、一个或多个[营销活动文件夹](/guides/campaigns/)，或混合选择。数据会汇总所选活动；同时被直接选中和通过文件夹选中的活动，或位于两个已选文件夹中的活动，只计一次。文件夹代表当前位于其中的活动，因此将活动移入或移出文件夹，会在下次加载时改变控制台统计范围。时间范围标签继续叠加生效，筛选选择也与时间范围一样，保存在浏览器标签页中。
 
-| Follows the filter | Stays workspace-wide |
+| 随筛选变化 | 保持工作区范围 |
 | --- | --- |
-| Headline rates, Email performance chart, Breakdown, Top campaigns, Recent activity | Account health and Direct mail, marked **Workspace-wide** and **Not filtered by campaign** while a filter is on, because neither is campaign data |
+| 主要指标、邮件表现图、明细汇总、最佳营销活动、最近活动 | 账户健康度和直接邮件。启用筛选时，它们会标记为**整个工作区**和**不按营销活动筛选**，因为两者都不属于营销活动数据 |
 
-A campaign or folder that is deleted while selected drops out of the filter on its own. The mobile app's Analytics overview has the same menu under its period picker; there the filter changes the overview's campaign figures and leaves the Deliverability, Warmup and Accounts sections as they are. Through the API, pass `campaign_ids` and `folder_ids` to [`GET /analytics/dashboard`](/api/reference/analytics/#get-dashboard-analytics).
+已选活动或文件夹被删除时，会自动从筛选中移除。移动应用的分析概览在时间选择器下方提供同样的菜单；在那里，筛选只影响概览的营销活动数据，邮件送达能力、预热和账户区域保持不变。通过 API 使用时，将 `campaign_ids` 和 `folder_ids` 传递给 [`GET /analytics/dashboard`](/api/reference/analytics/#get-dashboard-analytics)。
 
 </Fold>
 
 <Fold>
 
-## Direct mail
+## 直接发送的邮件 [#direct-mail]
 
-The rest of this page measures campaigns. **Direct mail** measures what you write by hand in the [unified inbox](/guides/unified-inbox/), which most workspaces do far more of than they expect.
+本页其余部分衡量营销活动表现。**直接邮件**衡量你在[统一收件箱](/guides/unified-inbox/)中手动撰写的邮件，大多数工作区在这方面的邮件量远比预想的多。
 
-It is built from two different sources, and they are shown apart because they cover different sets of messages.
+它使用两种不同的数据来源；由于覆盖的邮件集合不同，界面会分开展示。
 
-**Volume and replies** come from your synced mailboxes, so they cover direct messages written in Warmbly, Gmail, or your phone and include history from before this feature existed. Synced campaign and warmup sends are excluded from the outgoing figures. Nothing has to be switched on.
+**邮件量与回复**来自已同步邮箱，因此覆盖通过 Warmbly、Gmail 或手机手动发送的邮件，也包含此功能推出之前的历史。出站统计会排除已同步的营销活动和预热发送。无需额外开启任何选项。
 
-| Figure | Means |
+| 指标 | 含义 |
 |--------|-------|
-| Sent by hand | Messages in the Sent folder of every connected mailbox, in range |
-| Received | Messages that arrived in the inbox, in range |
-| Reply rate | Of the threads you started, how many got an answer |
-| Median reply time | How long the other person took to answer, across answered threads |
+| 手动发送 | 所有已连接邮箱“已发送”文件夹中，位于所选范围内的邮件 |
+| 已接收 | 所选范围内到达收件箱的邮件 |
+| 回复率 | 由你发起的会话中，有多少收到回复 |
+| 回复时间中位数 | 在已获回复的会话中，对方回复所需时间 |
 
-A thread counts as yours when the first message in it was one you sent, and as answered when a message came back after it. The delay is measured from your first send to their first reply, so a long exchange is one data point rather than many.
+会话的第一封邮件由你发送时，视为你发起；之后收到回信时，视为已获回复。时长从你的首次发送算到对方首次回复，因此长时间往来只作为一个数据点，而非多个。
 
-**Opens and clicks** are opt-in and measured differently. They come from completed send records, so they only cover HTML mail sent through Warmbly from a mailbox with tracking switched on, and only from the moment you switched it on. Plain-text-only messages cannot carry a pixel or wrapped link and remain untracked. That is why the card states its own denominator rather than reusing "sent by hand" above: dividing opens by messages that were never tracked would invent a rate.
+**打开与点击**需要主动开启，衡量方式也不同。它们来自已完成的发送记录，因此只覆盖通过 Warmbly、从开启跟踪的邮箱发出的 HTML 邮件，并且只统计开启之后的发送。纯文本邮件无法携带像素或改写链接，因此不跟踪。这也是卡片单独列出分母、而不复用上方“手动发送”数量的原因：把打开次数除以从未被跟踪的邮件数量，会得出没有依据的比率。
 
-To switch it on, open the mailbox and turn on **Track opens and clicks on direct mail**. See [Mailboxes](/guides/mailboxes/#tracking-direct-mail).
+要开启此功能，请打开邮箱并启用**跟踪直接邮件的打开和点击**。参见[邮箱](/guides/mailboxes/#tracking-direct-mail)。
 
-**Per mailbox** ranks your mailboxes by how many messages each mailbox sent and received, and marks the ones that are tracking. **Top correspondents** ranks the people you exchange the most mail with. Your own mailboxes are excluded from that list, so a copy to yourself is not a correspondent.
+**按邮箱**根据各邮箱发送和接收的邮件数量排序，并标记哪些正在跟踪。**主要往来联系人**按邮件往来最多的人排序。你自己的邮箱会从该列表排除，因此抄送自己不会成为往来联系人。
 
 </Fold>
 
 <Fold>
 
-## Per-campaign
+## 按营销活动统计 [#per-campaign]
 
-Each campaign reports its own totals: enrolled contacts, sent email steps, remaining planned email-step sends, unique opens and clicks, replies, positive replies, interested leads, bounces, unsubscribes, and the five rates. Wait and action steps do not count as messages.
+每个营销活动报告自己的汇总数据：已加入联系人、已发送邮件步骤、剩余计划邮件步骤发送量、去重打开和点击、回复、积极回复、感兴趣的潜在客户、退信、退订，以及五项比率。等待和操作步骤不计为邮件。
 
-**Positive replies** are the replies the [reply classifier](/guides/inbox-tagging/) judged positive, the same verdict the `reply_positive` branch condition routes on. The **positive rate** divides them by emails sent, like the reply rate, so two campaigns compare on opportunities rather than on raw answers: a campaign with 100 replies and 5 positive does worse than one with 60 replies and 20 positive. **Interested leads** counts the contacts behind them once each, so a prospect who answers two steps positively is one lead. Negative replies, requests to stop, unclassified replies, out-of-office notices and autoresponders never count as positive. A step's verdict is its latest reply's, so a lead who said yes and later wrote back to decline counts as negative.
+**积极回复**指[回复分类器](/guides/inbox-tagging/)判定为积极的回复，与 `reply_positive` 分支条件使用同一判定。**积极回复率**和回复率一样，以已发送邮件为分母，让两个活动可以按机会质量而不只是回复数量进行比较：一个活动收到 100 条回复，其中 5 条积极，不如另一个收到 60 条回复、其中 20 条积极的活动。**感兴趣的潜在客户**对背后的联系人逐人去重，因此同一潜客在两个步骤都积极回复，也只算一位。消极回复、要求停止联系、未分类回复、休假通知和自动回复都不会计为积极。步骤的判定以最新回复为准，因此先表示同意、之后又回复拒绝的潜在客户会计为消极。
 
-**Reply quality** on the overview splits the replies into positive, neutral, negative, asked to stop and unclassified, which add up to the reply count, and lists out-of-office notices and autoresponders beside them as not counted.
+概览中的**回复质量**将回复分为积极、中性、消极、要求停止联系和未分类，合计等于回复总数；旁边另列不计入的休假通知和自动回复。
 
-**Per-step stats** break sent, opens, clicks, replies, positive replies and bounces down by sequence step, which is how you find the touch pulling replies and the follow-ups that are dead weight. Email steps are listed in the order the sequence runs them and numbered the way the canvas numbers them (an unnamed step shows as `Email 2`), so action steps are left out of the count. Each count carries the step's own rate underneath it, measured against that step's sends rather than the campaign's, so a fourth touch that reached 11 contacts still compares against a first touch that reached 337. A step that has sent nothing shows a dash rather than 0%, and a dotted rate means some of those events were automated: hover it for the split. Daily stats drive the trend chart, and hourly stats show when sends land and get engagement. Campaigns can also be compared side by side on the same metrics, over the same kind of period.
+**各步骤统计**按序列步骤拆分发送、打开、点击、回复、积极回复和退信，帮助识别带来回复的触达，以及没有成效的跟进。邮件步骤按序列实际执行顺序列出，编号与画布一致；未命名步骤显示为 `Email 2`，操作步骤不纳入邮件编号。每个数量下方都显示该步骤自己的比率，分母是该步骤的发送量，而非整个活动的发送量，因此仅触达 11 人的第四次跟进，也能与触达 337 人的首次邮件比较。没有发送的步骤显示短横线，而非 0%；带点状标记的比率表示其中部分事件属于自动访问，悬停可查看拆分。每日统计用于趋势图，每小时统计显示发送落在何时、何时获得互动。还可以在相同类型的时间范围内，以相同指标并排比较多个营销活动。
 
-### Reporting period
+### 报告时间范围 [#reporting-period]
 
-The **Performance** bar on a campaign's overview picks the period every figure on the page covers: `7d`, `30d`, `90d`, **All time** or **Custom** (a first and a last day). The headline rates, the totals, reply quality, step performance, the daily chart and who engaged all change together. **Share image** exports emails sent, open rate, reply rate and positive rate, and names the period under the campaign. **All time** is the default and charts from the day of the first send. The last preset you picked is remembered for every campaign.
+营销活动概览的**表现**栏决定页面所有指标的报告范围：`7d`、`30d`、`90d`、**全部时间**或**自定义**起止日期。主要比率、总量、回复质量、步骤表现、每日图表和互动人群都会一起变化。**分享图片**导出已发送邮件、打开率、回复率和积极回复率，并在活动名称下标明时间范围。默认是**全部时间**，图表从首次发送之日开始。最后选择的预设范围会在各活动之间记住。
 
-A period is a send cohort: it selects the emails sent on its days and counts every open, click, reply, positive reply and bounce those emails earned, whenever they arrived. An email sent on September 5 that is answered on September 10 counts as a reply in a September 1 to 7 period, and a reply that arrives on September 3 to an email sent in August does not. That keeps every rate a share of the same emails, so the reply rate of last week's sends is comparable with the week before, before and after you change a mailbox, a domain or the copy. A recent period's rates can still rise as late replies come in. Days are UTC calendar days, and the last day counts in full. Enrolled contacts and remaining sends describe the campaign as it stands now and do not change with the period.
+时间范围按发送批次统计：选取这些日期中发出的邮件，再计入这些邮件获得的所有打开、点击、回复、积极回复和退信，无论相关事件何时到达。9 月 5 日发送、9 月 10 日收到回复的邮件，回复计入 9 月 1 至 7 日的报告；8 月发出的邮件即使在 9 月 3 日收到回复，也不计入该范围。这样，每个比率都针对同一批邮件，方便比较上周与前一周的发送效果，以及修改邮箱、域名或文案前后的表现。迟到回复不断到达时，近期范围的比率仍可能上升。日期按 UTC 日历日计算，最后一天完整计入。已加入联系人和剩余发送量描述活动当前状态，不随报告范围变化。
 
-**Who engaged, and from where** lists the countries, mail clients and devices people opened and clicked from, counting each contact once per bucket. The device column says how the email was read as well as on what: **Mobile app**, **Desktop app**, **Tablet app**, **Webmail**, or **Hidden by image proxy** when the mailbox provider loaded the image itself (see [How an open was read](#how-an-open-was-read)). A click counts under the device it came from. Only human events feed it, so a security scanner's data centre never tops the country list.
+**谁进行了互动、来自哪里**列出打开和点击所来自的国家、邮件客户端和设备，每个分类中同一联系人只计一次。设备列同时说明阅读方式和使用设备：**移动应用**、**桌面应用**、**平板应用**、**网页邮箱**；如果图片由邮箱服务商代为加载，则显示**图片代理隐藏了设备**，参见[邮件通过何种方式打开](#how-an-open-was-read)。点击按实际发起点击的设备分类。这里只使用人工事件，因此安全扫描器的数据中心不会成为国家列表中的首位。
 
-### What is recorded per open and click
+### 每次打开和点击记录的信息 [#what-is-recorded-per-open-and-click]
 
-Every open and every click is kept as its own record, repeats included, with what the request said about itself: the mail client, whether it was an installed app or webmail, the browser, operating system and device type (see [How an open was read](#how-an-open-was-read)); the country, region and city resolved from the source network; for clicks the exact link; and whether it was the person or an automated fetch, with the rule that caught it. The address itself never leaves the tracking service: it publishes the network the address belongs to (the last IPv4 octet zeroed, an IPv6 address cut to its first 48 bits), which is enough for a city-level lookup and cannot single out a host, plus a keyed token of the full address used to tell one source from another, which cannot be turned back into the address. The consumer resolves the network to a location and stores neither. Location needs the GeoLite2 database on the consumer (`GEODB_PATH`); without it the country, region and city stay empty and everything else is still recorded. These records are kept for a year, then pruned; the counts and the first open and click per step live on the lead itself and are not affected.
+每次打开和点击都作为独立记录保存，包括重复访问，并记录请求透露的信息：邮件客户端、是安装的应用还是网页邮箱、浏览器、操作系统和设备类型，参见[邮件通过何种方式打开](#how-an-open-was-read)；从来源网段解析出的国家、地区和城市；点击对应的具体链接；以及访问来自真人还是自动抓取，并注明命中的规则。完整地址不会离开跟踪服务：服务只发布地址所属的网段，IPv4 最后一个八位组归零，IPv6 截取前 48 位。这足以进行城市级定位，却不能定位单一主机；另附完整地址的带密钥令牌，用于区分来源，且无法还原为原地址。消费者服务将网段解析为位置，不存储网段或该令牌。位置解析要求消费者服务配置 GeoLite2 数据库（`GEODB_PATH`）；未配置时，国家、地区和城市保持为空，其他信息仍正常记录。这些记录保留一年后清理；计数，以及各步骤的首次打开和点击保存在潜在客户记录本身，不受清理影响。
 
-### How an open was read
+### 打开行为的识别方式 [#how-an-open-was-read]
 
-Each open says what it was read on, as far as the request can tell: **iPhone · Apple Mail app**, **Windows PC · Outlook app**, **Mac · Webmail in Chrome**. The contact's Activity tab shows it on every open and click, the live feed on a running campaign and the dashboard's recent activity show it next to the contact, and the contact's Overview sums it up under **How they read**: each client and device their opens came from, with how many and how recently.
+每次打开都会尽请求所能说明阅读设备和方式，例如 **iPhone · Apple Mail 应用**、**Windows PC · Outlook 应用**、**Mac · Chrome 中的网页邮箱**。联系人活动标签页会在每次打开和点击上展示；运行中的营销活动实时动态，以及控制台最近活动，会在联系人旁显示；联系人概览则在**阅读方式**下汇总各客户端和设备的打开次数，以及最近使用时间。
 
-What the request can tell depends on the mail client:
+请求可以透露多少信息，取决于邮件客户端：
 
-| Opened in | Shown as | Why |
+| 打开位置 | 显示方式 | 原因 |
 | --- | --- | --- |
-| Gmail, on the web or in the Gmail apps | **Gmail · device hidden**, no location | Gmail loads every image through Google's servers, so the device and network belong to Google |
-| Yahoo Mail, HEY, Fastmail's web app, Seznam | The provider, device hidden, no location | The same: the provider fetches the image |
-| Apple Mail with Mail Privacy Protection | **Apple Mail · device hidden**, region only | Apple's relay hides the device and keeps only the rough region |
-| Apple Mail on an iPhone or iPad without it | **iPhone · Apple Mail app** | The request comes from the device. Another iOS mail app that renders mail the same way and names nothing is counted here too; Spark, Edison and Canary block tracking images by default |
-| Classic Outlook for Windows, Outlook for Mac and mobile, Thunderbird, eM Client and other desktop apps | The device and **app** | The client names itself |
-| Mail on a Mac, or the new Outlook for Windows | **Apple Mail or Outlook app**, no device | Both send the same stripped header, which names neither the client nor the device |
-| An Android mail app | **Android phone · Mail app** | Android apps render mail in a web view that does not name the app |
-| Webmail in a browser that loads images directly | **Webmail in** the browser, with the device | A full browser loaded the image |
+| 网页版 Gmail 或 Gmail 应用 | **Gmail · 设备隐藏**，无位置信息 | Gmail 通过 Google 服务器加载所有图片，因此显示出来的设备和网络属于 Google |
+| Yahoo Mail、HEY、Fastmail 网页应用、Seznam | 服务商名称、设备隐藏、无位置信息 | 同样由服务商抓取图片 |
+| 开启“邮件隐私保护”的 Apple Mail | **Apple Mail · 设备隐藏**，仅显示大致地区 | Apple 中继隐藏设备，只保留粗略地区 |
+| 未开启该保护的 iPhone 或 iPad 上的 Apple Mail | **iPhone · Apple Mail 应用** | 请求来自设备。其他以相同方式渲染邮件、又不表明身份的 iOS 邮件应用也计入此类；Spark、Edison 和 Canary 默认屏蔽跟踪图片 |
+| 经典 Outlook for Windows、Outlook for Mac 和移动版、Thunderbird、eM Client 及其他桌面应用 | 设备和**应用** | 客户端会表明自身身份 |
+| Mac 上的“邮件”或新版 Outlook for Windows | **Apple Mail 或 Outlook 应用**，无设备信息 | 两者发送相同的精简请求头，既不表明客户端，也不表明设备 |
+| Android 邮件应用 | **Android 手机 · 邮件应用** | Android 应用通过不标明应用名称的 WebView 渲染邮件 |
+| 直接加载图片的浏览器网页邮箱 | **浏览器中的网页邮箱**及设备 | 图片由完整浏览器加载 |
 
-A click names the browser the link opened in and the device it opened on, because the link leaves the mail client. Nothing is guessed: when the request cannot say something, the field is left empty rather than filled with the proxy's own details. Opens and clicks recorded before this was added are read again by the same rules in the background after the instance upgrades, a small batch at a time, so older history reads the same way once it finishes.
+点击会显示打开链接所用的浏览器和设备，因为链接离开了邮件客户端。系统不会猜测：请求无法说明的信息保持为空，不会用代理自身的信息填充。实例升级后，功能推出之前记录的打开和点击也会按相同规则在后台重新解析，每次处理一小批；完成后，旧历史会采用同样的显示方式。
 
-These records back the engagement rows on a contact's [activity timeline](/guides/contacts-crm/#activity-timeline) and the per-campaign breakdown above.
+这些记录支撑联系人[活动时间线](/guides/contacts-crm/#activity-timeline)中的互动条目，以及上文按营销活动展示的细分数据。
 
 </Fold>
 
 <Fold>
 
-## Per-mailbox
+## 按邮箱统计 [#per-mailbox]
 
-| Signal | What it tells you |
+| 信号 | 含义 |
 |--------|-------------------|
-| Health | Healthy, warning, or error, with a score and specific issues |
-| Daily usage | Campaign emails sent today against `campaign_limit` (default `50`/day), plus warmup sent and limit |
-| Warmup status | Whether warmup is on, actual volume today, the target the scheduler is using, max volume, configured reply target, and elapsed warmup days |
-| Warmup health | Pool standing: healthy, watch, throttled, quarantined, or blocked, with the score and reason the band decided, and the block expiry |
+| 健康状态 | 健康、警告或错误，并附分数和具体问题 |
+| 每日用量 | 今日已发送营销活动邮件相对于 `campaign_limit` 的用量，默认每天 `50` 封；另显示预热发送量和限额 |
+| 预热状态 | 是否开启预热、今日实际量、调度器当前使用的目标、最大量、配置的回复目标，以及已预热天数 |
+| 预热健康度 | 在预热池中的状态：健康、观察、限流、隔离或封禁，并显示决定该等级的分数和原因，以及封禁到期时间 |
 
-The overview calls the configured percentage **Reply target** because it controls how much synthetic warmup mail should receive a reply. The Analytics tab reports the measured reply rate from actual sends and replies. Its **Target met** percentage is actual warmup sends divided by planned target volume across the active days in the selected range; it can exceed 100% when volume beats the plan.
+概览将配置的百分比称为**回复目标**，因为它控制应有多少模拟预热邮件得到回复。分析标签页则基于实际发送和回复报告测得的回复率。其中的**目标完成率**，是所选范围内有效日期的实际预热发送量除以计划目标量；实际量超过计划时，可以高于 100%。
 
-Use this to find the one mailbox dragging down a campaign's bounce rate instead of blaming the campaign.
+利用这些数据，可以找到拉高营销活动退信率的具体邮箱，而不是将问题笼统归因于整个活动。
 
 </Fold>
 
 <Fold>
 
-## A/B analysis
+## A/B 分析 [#ab-analysis]
 
-Variants can be scoped to one sequence step or the whole campaign. Traffic splits across the active arms, and the step's own email is the **Original** control arm, itself a first-class arm with its own share, so 70% Original against 30% of a new subject is a valid test. Drag the split bar or type exact percentages; shares always total 100%.
+变体可以限定于一个序列步骤，也可以应用于整个营销活动。流量在启用的实验组之间分配；步骤自身的原始邮件是**原始版本**对照组，也拥有独立份额，因此以 70% 原始版本对比 30% 新主题是有效测试。拖动分配条或输入精确百分比，份额总和始终为 100%。
 
-A/B is on by default in outreach settings, but a campaign only runs an experiment with at least two active variants.
+触达设置默认开启 A/B，但活动只有至少两个启用的变体时才会运行实验。
 
-**Assignment** is deterministic per contact and step for step-scoped variants, so the same contact sees the same variant across retries. Campaign-level variants assign on first send by weighted random draw and keep the contact there. Pausing a variant drops it from the split without deleting it.
+**分配方式**：步骤级变体根据联系人和步骤进行确定性分配，因此同一联系人重试时仍看到相同变体。活动级变体在首次发送时按权重随机分配，并持续沿用。暂停变体会将其移出流量分配，但不会删除。
 
-### Picking a winner
+### 选择表现最佳的版本 [#picking-a-winner]
 
-The default winning rule is **reply rate**; you can rank by open or click rate instead. Warmbly will not call a winner on a tiny sample: it needs a minimum (default `30` sends for the leader) and reports confidence.
+默认按**回复率**判断胜出版本，也可改按打开率或点击率排序。Warmbly 不会依据极小样本宣布胜出：领先版本必须达到最低样本量，默认发送 `30` 次，并会报告置信等级。
 
-| Confidence | Meaning |
+| 置信等级 | 含义 |
 | --- | --- |
-| `none` | No variant data yet |
-| `low` | Leader below the minimum sample |
-| `medium` | Leader reached the minimum |
-| `high` | Leader at three times the minimum |
+| `none` | 尚无变体数据 |
+| `low` | 领先版本未达到最低样本量 |
+| `medium` | 领先版本已达到最低样本量 |
+| `high` | 领先版本达到最低样本量的三倍 |
 
-<Callout type="info" title="Let the test run">
-A variant can look like the winner after a handful of sends and flip later. Wait for `medium` or `high` before promoting one. The minimum sample size is configurable in outreach settings.
+<Callout type="info" title="给测试足够的运行时间">
+一个变体在只发送少量邮件后可能看似胜出，之后却被反超。请等到 `medium` 或 `high` 再推广某个版本。最低样本量可以在触达设置中配置。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## How to read your numbers
+## 如何解读数据 [#how-to-read-your-numbers]
 
-1. Check the four headline rates for your window.
-2. If one looks off, switch the chart to that metric and find the day it moved. That usually points at one campaign or list.
-3. Open that campaign and read per-step stats to see which touch is responsible.
-4. For bounces or complaints, drop into the per-mailbox breakdown and [Deliverability](/guides/deliverability/) to find the sender at fault.
-5. Use A/B analysis for copy decisions, and wait for real confidence.
+1. 查看所选时间范围内的四项主要指标。
+2. 如果某项异常，将图表切换到该指标，找到变化日期。通常可以由此定位到一个活动或名单。
+3. 打开该活动，查看各步骤统计，确定是哪一次触达造成变化。
+4. 对于退信或投诉，进入按邮箱细分的数据和[邮件送达能力](/guides/deliverability/)，找出有问题的发件邮箱。
+5. 用 A/B 分析决定文案，并等待具有实际参考价值的置信等级。
 
-A clean reply rate with low bounces and complaints beats a big open-rate screenshot every time.
+可靠的回复率配合低退信、低投诉，始终比一张打开率很高的截图更有价值。
 
 </Fold>
 
-## Related guides
+## 相关指南 [#related-guides]
 
 <Cards>
-  <Card title="Deliverability" href="/guides/deliverability/" />
-  <Card title="Sequences" href="/guides/sequences/" />
-  <Card title="Personalization & expressions" href="/guides/expressions/" />
+  <Card title="邮件送达能力" href="/guides/deliverability/" />
+  <Card title="邮件序列" href="/guides/sequences/" />
+  <Card title="个性化与表达式" href="/guides/expressions/" />
 </Cards>

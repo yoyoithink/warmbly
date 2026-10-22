@@ -1,89 +1,89 @@
 ---
-title: Realtime WebSocket
-description: Subscribe to live Warmbly events over a WebSocket connection.
+title: "实时 WebSocket"
+description: "通过 WebSocket 连接订阅 Warmbly 实时事件。"
 ---
 
-Warmbly pushes dashboard events (campaign sends, opens, clicks, replies, inbox arrivals, audit entries, and more) over a WebSocket. The same socket that powers the live dashboard is available to developers. Events are ordered and carry a monotonic `seq`, and a reconnecting client can resume and replay what it missed.
+Warmbly 通过 WebSocket 推送控制台事件，包括营销活动发送、打开、点击、回复、收件箱新邮件、审计记录等。为实时控制台提供支持的同一连接也向开发者开放。事件按顺序投递，并带有单调递增的 `seq`；客户端重新连接时，可恢复会话并重放错过的事件。
 
-Realtime rate limits and the per-user connection cap apply to the user, not an individual workspace. If you own multiple workspace subscriptions, each limit uses the highest value across those subscriptions, not their sum. Enterprise custom limits override the corresponding plan limits for that subscription. Limits are cached for up to five minutes.
+实时速率限制和每位用户的连接上限按用户计算，而非按单个工作区计算。如果你拥有多个工作区订阅，每项限制取这些订阅中的最高值，而不是相加。企业自定义限制会覆盖对应订阅的相应套餐限制。限制值最多缓存五分钟。
 
-The gateway has a machine-readable AsyncAPI 3.1 description you can generate clients or docs from:
+网关提供机器可读的 AsyncAPI 3.1 描述，可用于生成客户端或文档：
 
 ```
 https://docs.warmbly.com/asyncapi.json
 ```
 
-## Connecting
+## 建立连接 [#connecting]
 
-The socket speaks the Phoenix channel protocol (serializer version `1.0.0`) at:
+该连接使用 Phoenix 通道协议，序列化器版本为 `1.0.0`，地址如下：
 
 ```
 wss://realtime.warmbly.com/socket/websocket?vsn=1.0.0
 ```
 
-Three token types are accepted:
+支持以下三种令牌：
 
-- **API key** (`wmbly_…`): send a key with the `REALTIME_SUBSCRIBE` permission (bit 11) in the `X-Warmbly-Token` request header of the WebSocket handshake. See [Permissions](/api/permissions/) for how to grant it.
-- **OAuth access token** (`wmat_…`): send an access token whose grant includes the realtime scope (the lowercased permission, `realtime_subscribe`) in the same `X-Warmbly-Token` header. It connects on the granting user's behalf with exactly the scopes they approved. See [OAuth](/api/oauth/).
-- **Short-lived JWT**: browser sessions call the authenticated socket endpoint to mint a 10-minute connection token and pass it as the `token` query parameter. This is what the dashboard itself uses.
+- **API 密钥**（`wmbly_…`）：在 WebSocket 握手的 `X-Warmbly-Token` 请求头中发送具有 `REALTIME_SUBSCRIBE` 权限（第 11 位）的密钥。授予方式见[权限](/api/permissions/)。
+- **OAuth 访问令牌**（`wmat_…`）：在相同的 `X-Warmbly-Token` 请求头中发送已获授实时权限范围的访问令牌，该权限范围是权限名称的小写形式 `realtime_subscribe`。连接代表授权用户建立，并严格使用用户批准的权限范围。请参阅 [OAuth](/api/oauth/)。
+- **短期 JWT**：浏览器会话调用需要身份验证的连接端点，创建有效期为 10 分钟的连接令牌，并通过 `token` 查询参数传入。控制台自身使用的就是这种方式。
 
-Send API keys and OAuth access tokens in the `x-warmbly-token` header. Putting one in the URL as `token` still works but is deprecated: URLs end up in proxy and access logs, and these credentials outlive any session, so it will stop working in a later API version. The 10-minute connection token belongs in the query string. Browsers cannot set headers on a WebSocket, so connect with an API key or OAuth token from a server-side client.
+应通过 `x-warmbly-token` 请求头发送 API 密钥和 OAuth 访问令牌。将其放在 URL 的 `token` 参数中目前仍可使用，但已弃用：URL 会进入代理日志和访问日志，而这些凭据的有效期远长于单次会话，因此后续 API 版本将不再支持此方式。有效期为 10 分钟的连接令牌则应放在查询字符串中。浏览器无法为 WebSocket 设置请求头，因此使用 API 密钥或 OAuth 令牌时，应从服务端客户端连接。
 
-`POST /v1/getaway` continues returning the direct gateway `url` and `expires_in`. It also returns `proxy_path` when a gateway is configured. The dashboard resolves that path against its versioned API base and uses the API origin for its WebSocket, so a self-host does not depend on realtime CSP discovery succeeding during dashboard startup. Failed connection attempts alternate with the direct gateway for older proxy configurations. The proxy accepts only short-lived WebSocket tickets, not access tokens, API keys or OAuth credentials; developer clients continue connecting directly. It preserves the dashboard Origin and realtime authorization and connection limits. The backend signs a ticket-bound client-address proof so per-IP limits do not treat every proxied user as the same client.
+`POST /v1/getaway` 仍会返回直连网关的 `url` 和 `expires_in`。配置了网关时，还会返回 `proxy_path`。控制台会基于带版本号的 API 基础 URL 解析该路径，并使用 API 来源地址建立 WebSocket，因此自托管实例不依赖控制台启动时实时 CSP 发现成功。为兼容较旧的代理配置，连接失败后会交替尝试直连网关。代理只接受短期 WebSocket 票据，不接受访问令牌、API 密钥或 OAuth 凭据；开发者客户端仍应直接连接网关。代理保留控制台的 Origin，以及实时授权和连接限制。后端会签署与票据绑定的客户端地址证明，避免按 IP 限流时将所有代理用户视为同一个客户端。
 
-A credential stops working on the socket as soon as it does on the REST API: a revoked key or token, a holder banned from signing in, or a suspended OAuth app is refused at the handshake. Signing out, signing out everywhere, changing or resetting a password, and an account ban also close every socket that user has open; the dashboard reconnects on its own with a fresh connection token if its session is still valid.
+凭据在 REST API 中失效时，也会立即在连接中失效：已撤销的密钥或令牌、被禁止登录的持有者，或已暂停的 OAuth 应用，均会在握手时被拒绝。退出登录、退出所有设备、修改或重置密码、账户封禁，也会关闭该用户打开的所有连接；如果会话仍有效，控制台会自行获取新的连接令牌并重新连接。
 
-In short, both developer auth methods work here: an API key with `REALTIME_SUBSCRIBE`, or an OAuth access token with the realtime scope. They authenticate through the same gate, so everything below applies to either.
+两种开发者身份验证方式都适用于此处：具有 `REALTIME_SUBSCRIBE` 的 API 密钥，或具有实时权限范围的 OAuth 访问令牌。二者通过相同的验证检查，因此下文均适用于这两种方式。
 
-If the key (or OAuth app) has IP restrictions configured, they are enforced on the socket handshake as well.
+如果密钥或 OAuth 应用配置了 IP 限制，连接握手时也会强制执行这些限制。
 
-## Channels
+## 频道 [#channels]
 
-After connecting, join one or more topics with a `phx_join` message:
+连接后，通过 `phx_join` 消息加入一个或多个主题：
 
-| Topic | Scope | Notes |
+| 主题 | 权限范围 | 说明 |
 | --- | --- | --- |
-| `user:<user_id>` | Events for the key's owning user | Always joinable by yourself |
-| `org:<org_id>` | Organization-wide events | Requires membership; events are filtered by your member permissions |
-| `campaign:<campaign_id>` | One campaign's activity | Requires `view_campaigns` |
-| `account:<account_id>` | One mailbox's sync and warmup events | Requires `manage_emails` |
-| `bulk:<operation_id>` | Progress of one bulk operation | Import/export progress; only the user who started the operation receives its events |
+| `user:<user_id>` | 密钥所属用户的事件 | 始终允许加入自己的主题 |
+| `org:<org_id>` | 整个组织的事件 | 必须是组织成员；按成员权限筛选事件 |
+| `campaign:<campaign_id>` | 某个营销活动的活动事件 | 需要 `view_campaigns` |
+| `account:<account_id>` | 某个邮箱的同步和预热事件 | 需要 `manage_emails` |
+| `bulk:<operation_id>` | 某次批量操作的进度 | 导入或导出进度；只有发起操作的用户会收到事件 |
 
-Events arrive as channel messages whose event name is the event type, for example `EMAIL_SENT`, `EMAIL_OPENED`, `EMAIL_REPLIED`, `EMAIL_RECEIVED`, `AI_DRAFT_READY`, `CAMPAIGN_COMPLETED`, `CAMPAIGN_IDLE` (a continuous campaign ran out of leads and is waiting), `TASK_PROGRESS`, `ACCOUNT_HEALTH_CHANGED`, `ACCOUNT_SYNC_STATE`, `WARMUP_PLACEMENT` (a partner found one of the workspace's warmup emails; `status` is `inbox`, `tabs` or `spam`), `PLACEMENT_TEST_UPDATED`, `AUDIT_CREATED`, `AUTOMATION_RUN`, `MEETING_BOOKED`, `NOTIFICATION_CREATED`, `PAGE_HIT`. Payloads always include `event_type` and a timestamp, plus the relevant ids (`campaign_id`, `contact_id`, `thread_id`, and so on). `EMAIL_OPENED` and `EMAIL_CLICKED` also carry `occurred_at` (when the tracking service saw it; `timestamp` is the publish time), `machine` (true for a mail client prefetch or a security scanner's fetch), and `client`, `client_type` (`app` or `webmail`), `device_hidden` (a mailbox provider's image proxy fetched it, so the device is unknowable), `device_type`, `os`, `browser`, `country_code` and `city` when the consumer could tell.
+事件作为通道消息到达，消息的事件名称即事件类型，例如 `EMAIL_SENT`、`EMAIL_OPENED`、`EMAIL_REPLIED`、`EMAIL_RECEIVED`、`AI_DRAFT_READY`、`CAMPAIGN_COMPLETED`、`CAMPAIGN_IDLE`（持续运行的营销活动已无剩余潜在客户，正在等待）、`TASK_PROGRESS`、`ACCOUNT_HEALTH_CHANGED`、`ACCOUNT_SYNC_STATE`、`WARMUP_PLACEMENT`（预热伙伴发现工作区的一封预热邮件；`status` 为 `inbox`、`tabs` 或 `spam`）、`PLACEMENT_TEST_UPDATED`、`AUDIT_CREATED`、`AUTOMATION_RUN`、`MEETING_BOOKED`、`NOTIFICATION_CREATED`、`PAGE_HIT`。载荷始终包含 `event_type`、时间戳以及相关 ID（`campaign_id`、`contact_id`、`thread_id` 等）。`EMAIL_OPENED` 和 `EMAIL_CLICKED` 还包含 `occurred_at`（跟踪服务观察到事件的时间；`timestamp` 为发布时间）、`machine`（邮件客户端预取或安全扫描器抓取时为 true），以及消费者进程能够判断时提供的 `client`、`client_type`（`app` 或 `webmail`）、`device_hidden`（由邮箱服务商的图片代理抓取，因而无法获知设备）、`device_type`、`os`、`browser`、`country_code` 和 `city`。
 
-`AI_DRAFT_READY` fires when the [inbox agent](/guides/inbox-agent/) drafts a suggested reply awaiting review; it carries `thread_id` and `draft_id` and requires `access_unibox`.
+[收件箱智能体](/guides/inbox-agent/) 生成待审核的建议回复时，会触发 `AI_DRAFT_READY`；事件包含 `thread_id` 和 `draft_id`，需要 `access_unibox` 权限。
 
-`MAILBOX_IMPORT_PROGRESS` fires on the org channel as a [mailbox import](/guides/mailbox-import/) moves: at most once a second per import while rows finish, and always when it completes, is cancelled, or a waiting sign-in row connects. It carries `org_id`, `import_id` and `status` (`running`, `completed` or `cancelled`), not the rows, so refetch `GET /emails/imports/:id` on receipt. It requires `manage_emails`.
+[邮箱导入](/guides/mailbox-import/) 进度变化时，会在组织通道触发 `MAILBOX_IMPORT_PROGRESS`：记录逐条完成期间，每次导入最多每秒一次；导入完成、取消，或等待登录的记录成功连接时，一定会触发。事件包含 `org_id`、`import_id` 和 `status`（`running`、`completed` 或 `cancelled`），不包含具体记录，因此收到事件后应重新获取 `GET /emails/imports/:id`。需要 `manage_emails` 权限。
 
-`CONTACT_IMPORT_PROGRESS` fires on the org channel as a [background contact import](/api/reference/contacts/#background-imports) moves: when it is queued and starts, at most once a second while its rows settle, and when it completes, fails, or is cancelled. It carries `org_id`, `import_id` and `status` (`queued`, `running`, `completed`, `failed` or `cancelled`), not the rows, so refetch `GET /contacts/imports/:id` on receipt. It requires `view_contacts`.
+[后台联系人导入](/api/reference/contacts/#background-imports) 进度变化时，会在组织通道触发 `CONTACT_IMPORT_PROGRESS`：进入队列和开始运行时触发；记录处理期间最多每秒一次；完成、失败或取消时也会触发。事件包含 `org_id`、`import_id` 和 `status`（`queued`、`running`、`completed`、`failed` 或 `cancelled`），不包含具体记录，因此收到事件后应重新获取 `GET /contacts/imports/:id`。需要 `view_contacts` 权限。
 
-`PLACEMENT_TEST_UPDATED` fires on the org channel when an [inbox placement test](/guides/placement-tests/) starts, each time one of its copies gets a verdict, and when it finishes or is cancelled. It carries `org_id`, `test_id`, `status` (`running`, `completed`, `cancelled` or `failed`) and, for a test of a campaign step, `campaign_id`, not the results, so refetch `GET /placement/tests/:id` on receipt. A [placement batch](/guides/placement-tests/#testing-a-fleet-with-batches) sends the same event with `batch_id` in place of `test_id` and the batch's status when it starts, skips or defers a mailbox, and finishes; its tests send their own events as they run, each with its `test_id`. It requires `view_analytics`, like the endpoints that read results.
+[收件箱投递位置测试](/guides/placement-tests/) 开始、每封测试邮件获得结果，以及测试结束或取消时，会在组织通道触发 `PLACEMENT_TEST_UPDATED`。事件包含 `org_id`、`test_id`、`status`（`running`、`completed`、`cancelled` 或 `failed`）；测试营销活动步骤时还包含 `campaign_id`，但不包含结果，因此收到事件后应重新获取 `GET /placement/tests/:id`。[投递位置测试批次](/guides/placement-tests/#testing-a-fleet-with-batches)在开始、跳过或延后某个邮箱，以及结束时也会发送同一事件，以 `batch_id` 替代 `test_id` 并携带批次状态；批次中的各项测试运行时仍会发送各自事件，包含各自的 `test_id`。与读取结果的端点一样，此事件需要 `view_analytics` 权限。
 
-Permission filtering happens per event on the org channel: for example inbox events require `access_unibox`, campaign pulses require `view_campaigns`, placement tests require `view_analytics`, mailbox and mailbox import events require `manage_emails`, member changes require `manage_team`, and billing events require `manage_billing`. A member without the permission simply never receives the event.
+组织通道会对每个事件单独进行权限筛选：例如，收件箱事件需要 `access_unibox`，营销活动动态需要 `view_campaigns`，投递位置测试需要 `view_analytics`，邮箱和邮箱导入事件需要 `manage_emails`，成员变更需要 `manage_team`，账单事件需要 `manage_billing`。没有相应权限的成员不会收到该事件。
 
-For a member restricted to [selected resources](/guides/team-roles/#access-scope), and any key or app acting for one, the org channel also filters by their grants: inbox events need a granted `email_account_id`, other events need a granted `campaign_id` or `email_account_id`, and `AUDIT_CREATED` arrives only for a granted campaign, folder or mailbox, or for a change to the member themselves. Everything else is dropped, including events that name no resource. Such a socket is never tracked in presence and receives no teammate `presence_state`, `presence_diff` or `live:*` frames. Presence diffs pass through the channel's authorization filter rather than Phoenix's direct broadcast fastlane. When an unrestricted member becomes restricted, their presence is removed and an empty `presence_state` clears their previously visible roster.
+对于访问范围仅限[选定资源](/guides/team-roles/#access-scope)的成员，以及代表该成员操作的任何密钥或应用，组织通道还会根据资源授权筛选：收件箱事件需要已授权的 `email_account_id`，其他事件需要已授权的 `campaign_id` 或 `email_account_id`；`AUDIT_CREATED` 仅在涉及已授权的营销活动、文件夹或邮箱，或该成员自身变更时才会送达。其他事件全部丢弃，包括没有指定资源的事件。这类连接从不被纳入在线状态跟踪，也不会收到队友的 `presence_state`、`presence_diff` 或 `live:*` 帧。在线状态差异通过通道的授权筛选器处理，不走 Phoenix 直接广播快速路径。当原本不受限的成员变为受限成员时，会移除其在线状态，并发送空的 `presence_state` 清除其此前可见的成员名单。
 
-`campaign:<id>` and `account:<id>` check access at join, then refresh authorization every 30 seconds and before delivery whenever the previous check is at least 30 seconds old. Refusal or an authorization lookup error stops the channel without delivering the event. The org channel has the same bounded refresh, including for unrestricted members who become restricted, and also re-reads grants on relevant member, campaign and folder changes. Revoking a grant or moving a campaign out of a granted folder therefore does not rely on an audit event being delivered. An existing authorization may remain usable within its 30-second cache window; revocation is not guaranteed to be instantaneous.
+`campaign:<id>` 和 `account:<id>` 在加入时检查访问权限，此后每 30 秒刷新授权；如果上次检查已过去至少 30 秒，也会在投递前刷新。拒绝授权或授权查询出错时，会停止通道，不投递事件。组织通道同样采用这种有时间上限的刷新机制，包括成员由不受限变为受限的情况，并在相关成员、营销活动和文件夹变更时重新读取资源授权。因此，撤销授权或将营销活动移出已授权文件夹的生效，不依赖审计事件是否送达。现有授权在 30 秒缓存窗口内可能仍可使用；不保证撤销立即生效。
 
-Owner-addressed workspace events do not bypass these gates. The Go publisher checks current membership before using the direct user route, and `user:<id>` verifies each workspace or resource event against current access with a bounded 30-second authorization cache. Scope-less workspace events are withheld from restricted members. Personal account events, session revocation and sign-in security notices remain available. Workspace notifications require a current unrestricted membership, including stored feed rows and deferred email/push delivery.
+定向发给所有者的工作区事件也不会绕过这些检查。Go 发布端在使用用户直达路由前会检查当前成员身份；`user:<id>` 则使用最长 30 秒的授权缓存，对每个工作区或资源事件验证当前访问权限。不带资源范围的工作区事件不会发送给受限成员。个人账户事件、会话撤销和登录安全通知仍可接收。工作区通知要求用户当前是不受限成员，这也适用于已保存的通知列表记录以及延后投递的邮件或推送。
 
-Private task, mailbox error and warmup-statistics events stay on their authorized user route; they are not promoted to workspace broadcasts. Contact reload signals retain their workspace authorization context without broadcasting to other members. If a queued push digest cannot verify membership or message eligibility because of a temporary lookup failure, it retries rather than delivering or discarding the affected items. Revoked access is checked again on retry.
+私有任务、邮箱错误和预热统计事件仍只通过已授权的用户路由发送，不会扩大为工作区广播。联系人重新加载信号保留工作区授权上下文，不向其他成员广播。如果排队中的推送摘要因临时查询失败而无法验证成员身份或邮件是否符合投递条件，会重试，而不会投递或丢弃受影响条目。重试时会再次检查访问权限是否已撤销。
 
-A change to your own membership, to a role, or to the workspace's owner triggers a re-read on the org channel when its change event arrives, with the bounded refresh above as a fallback. Removal from a workspace also applies to open connections: every socket the removed member has open is disconnected. On reconnect each channel's join checks membership again, so channels for workspaces they still belong to come back and the removed workspace's are refused with `not_a_member` (code `4010`).
+你自己的成员身份、角色或工作区所有者发生变化时，组织通道收到变更事件后会重新读取授权，并以上述定期刷新作为后备机制。移出工作区也会影响现有连接：被移除成员打开的每个连接都会断开。重新连接时，每个通道的加入操作会再次检查成员身份，因此仍所属工作区的通道会恢复，被移除工作区的通道则返回 `not_a_member`（错误码 `4010`）并拒绝加入。
 
-## Selecting events with intents
+## 通过 intents 选择事件 [#selecting-events-with-intents]
 
-By default an `org:<org_id>` subscriber receives every event the member is permitted to see. To narrow the stream, pass an `intents` array in the `phx_join` payload listing the event families you want:
+默认情况下，`org:<org_id>` 订阅者会收到其成员权限允许查看的所有事件。要缩小事件流范围，可在 `phx_join` 载荷中传入 `intents` 数组，列出所需的事件类别：
 
 ```json
 { "intents": ["AUDIT", "CAMPAIGN", "EMAIL"] }
 ```
 
-Each token is matched as a case-insensitive substring of the event type, so `CAMPAIGN` matches `CAMPAIGN_*`, `EMAIL` matches `EMAIL_SENT` / `EMAIL_OPENED` / `EMAIL_RECEIVED`, and `AUDIT` matches `AUDIT_CREATED`. An absent or empty array means the full stream. Intents reduce traffic against the per-connection message limit, they are not a security boundary (permission filtering still applies on top).
+每个值都以不区分大小写的子字符串方式匹配事件类型，因此 `CAMPAIGN` 匹配 `CAMPAIGN_*`，`EMAIL` 匹配 `EMAIL_SENT` / `EMAIL_OPENED` / `EMAIL_RECEIVED`，`AUDIT` 匹配 `AUDIT_CREATED`。未提供数组或数组为空，表示接收完整事件流。订阅意图可以减少占用每条连接消息额度的流量，但不构成安全边界，权限筛选仍会叠加生效。
 
-## Custom events (fire event)
+## 自定义事件（触发事件） [#custom-events-fire-event]
 
-You can have Warmbly emit your own events to this stream, so your app reacts to things happening in Warmbly without hosting a public webhook URL. Add a **Fire event** step to an automation or a campaign sequence: you give it an event name and a set of key/value fields (each value templated against the event/contact data, e.g. `{{.contact_email}}`). When the step runs, Warmbly publishes a `CUSTOM_EVENT` on the org channel.
+你可以让 Warmbly 向此事件流发出自定义事件，使应用能够响应 Warmbly 内发生的操作，而无需托管公共 Webhook URL。在自动化流程或营销活动邮件序列中添加**触发事件**步骤：提供事件名称和一组键值字段，每个值都可基于事件或联系人数据使用模板，例如 `{{.contact_email}}`。步骤运行时，Warmbly 会在组织通道发布 `CUSTOM_EVENT`。
 
 ```json
 {
@@ -97,49 +97,49 @@ You can have Warmbly emit your own events to this stream, so your app reacts to 
 }
 ```
 
-`name` is the event name you chose and `payload` is your fields. Subscribe with an API key carrying `REALTIME_SUBSCRIBE` (or an OAuth access token with the realtime scope) and match on `name` (or use the `CUSTOM` intent to receive only these). This is the recommended way to "tell my system this happened": no inbound endpoint, no SSRF surface, and it works behind a firewall.
+`name` 是你选定的事件名称，`payload` 是你提供的字段。使用具有 `REALTIME_SUBSCRIBE` 的 API 密钥，或具有实时权限范围的 OAuth 访问令牌订阅，并匹配 `name`；也可使用 `CUSTOM` 订阅意图，仅接收这些事件。这是通知自己系统某件事已发生的推荐方式：无需入站端点，不增加 SSRF 暴露面，且可在防火墙后使用。
 
-## Heartbeats
+## 心跳 [#heartbeats]
 
-The `org:<org_id>` join reply doubles as a HELLO: it returns the cadence the server expects (so a client library does not hardcode it) and the current stream `seq`.
+`org:<org_id>` 的加入响应同时充当 HELLO：返回服务器预期的心跳频率，避免客户端库硬编码，以及当前事件流的 `seq`。
 
 ```json
 { "org_id": "...", "role": "owner", "heartbeat_interval_ms": 25000, "server_timeout_ms": 60000, "seq": 4821, "resume_supported": true }
 ```
 
-Heartbeats are client-initiated (standard Phoenix): send a `heartbeat` event on the `phoenix` topic every `heartbeat_interval_ms`. If the server receives nothing for `server_timeout_ms` it closes the socket. The reference client also arms a short watchdog after each heartbeat and force-reconnects if the reply does not arrive, which detects a silently dead connection faster than the timeout.
+心跳由客户端主动发起，这是 Phoenix 的标准行为：每隔 `heartbeat_interval_ms` 在 `phoenix` 主题发送 `heartbeat` 事件。服务器在 `server_timeout_ms` 内未收到任何内容时，会关闭连接。参考客户端还会在每次心跳后启动一个较短的监测计时器；如果未收到响应，则强制重连，以便比超时机制更快地发现无声失效的连接。
 
-## Resuming after a disconnect
+## 断线后恢复 [#resuming-after-a-disconnect]
 
-Every event carries a monotonic per-organization sequence number in its `seq` field, delivered in order. Track the highest `seq` you have processed; the HELLO also returns the current `seq`.
+每个事件的 `seq` 字段都包含组织内单调递增的序列号，并按序投递。请记录已处理的最大 `seq`；HELLO 也会返回当前 `seq`。
 
-To resume after a reconnect, rejoin the `org:<org_id>` channel with a resume token instead of starting fresh:
+重新连接后要恢复进度，应携带恢复令牌重新加入 `org:<org_id>` 通道，而不是从头开始：
 
 ```json
 { "resume": { "last_seq": 4821 } }
 ```
 
-The server then either replays what you missed or tells you to resync:
+随后服务器会重放错过的事件，或告知需要重新同步：
 
-- **Replay.** The events with `seq` greater than `last_seq` are pushed as normal channel messages (same shape as live, filtered by your permissions and intents exactly like live delivery), followed by a `resumed` marker:
+- **重放。**`seq` 大于 `last_seq` 的事件会作为普通通道消息推送，结构与实时事件相同，并像实时投递一样根据权限和订阅意图筛选，最后附加 `resumed` 标记：
 
   ```json
   { "from": 4821, "current_seq": 4895, "replayed": 12 }
   ```
 
-- **Resync.** If your position is no longer in the buffer (you were disconnected longer than the buffer window) or the token is malformed, the server pushes `resume_failed` and no events:
+- **重新同步。** 如果你的位置已不在缓冲区中，例如断开时间超过缓冲窗口，或令牌格式错误，服务器会推送 `resume_failed`，不发送任何事件：
 
   ```json
   { "reason": "buffer_evicted", "current_seq": 5300 }
   ```
 
-  On `resume_failed`, refetch the affected resources over the REST API, then continue live from `current_seq`.
+  收到 `resume_failed` 后，通过 REST API 重新获取受影响的资源，然后从 `current_seq` 继续接收实时事件。
 
-Resume is **at-least-once**: a replay may re-deliver an event you already handled, so dedupe by `seq`. The buffer holds roughly the most recent events per organization, bounded by both size and time, so resume covers short disconnects (deploys, network blips, tab sleep) but not arbitrarily long ones.
+恢复采用**至少一次投递**语义：重放可能再次投递已经处理过的事件，因此应按 `seq` 去重。缓冲区大致保留各组织最近的事件，同时受大小和时间限制，因此恢复适用于短暂断线，例如部署、网络波动、标签页休眠，而不适用于任意长时间的断线。
 
-## Reference client
+## 参考客户端 [#reference-client]
 
-The serializer (`vsn=1.0.0`) frames every message as a five-element array `[join_ref, ref, topic, event, payload]`. The client below speaks that wire format directly over the Node.js [`ws`](https://www.npmjs.com/package/ws) package, which can set the `X-Warmbly-Token` handshake header (if you already use the `phoenix` npm package, its `Socket`/`Channel` classes do the same framing for you). It walks the whole lifecycle: connect with a token, join `org:<org_id>` with intents, read the HELLO join reply, run the heartbeat loop at the advertised cadence, resume from the last `seq` on reconnect, handle events (including `CUSTOM_EVENT`), and back off on close or rejection.
+序列化器（`vsn=1.0.0`）将每条消息封装为五元素数组 `[join_ref, ref, topic, event, payload]`。下方客户端通过 Node.js 的 [`ws`](https://www.npmjs.com/package/ws) 包直接使用此传输格式，该包支持设置握手请求头 `X-Warmbly-Token`。如果已使用 `phoenix` npm 包，其 `Socket` / `Channel` 类也会代为执行相同封装。示例覆盖完整生命周期：携带令牌连接、带订阅意图加入 `org:<org_id>`、读取 HELLO 加入响应、按服务器公布的频率发送心跳、重连时从最后的 `seq` 恢复、处理事件（包括 `CUSTOM_EVENT`），以及在关闭或拒绝时退避。
 
 ```js
 // Node.js with `npm install ws`. token can be an API key (wmbly_… with
@@ -268,64 +268,64 @@ const conn = connectRealtime({
 });
 ```
 
-## Presence
+## 在线状态 [#presence]
 
-The org channel carries team presence for the collaboration features in the dashboard (who is online, who is viewing or replying to a record). Standard Phoenix presence events are used:
+组织通道提供团队在线状态，用于控制台中的协作功能，包括谁在线、谁正在查看或回复某条记录。使用标准 Phoenix 在线状态事件：
 
-- `presence_state` is pushed once after a successful join with the full member map.
-- `presence_diff` carries joins and leaves as they happen.
+- 成功加入后，`presence_state` 会推送一次，包含完整成员映射。
+- `presence_diff` 在成员加入或离开时携带相应变化。
 
-Clients update their own activity by pushing a `presence:update` event with `{ "page": "/app/unibox", "resource": "thread:<id>", "action": "viewing" }`. Valid actions are `viewing`, `editing`, `replying`, and `idle`.
+客户端通过推送 `presence:update` 事件更新自身活动，载荷为 `{ "page": "/app/unibox", "resource": "thread:<id>", "action": "viewing" }`。有效操作为 `viewing`、`editing`、`replying` 和 `idle`。
 
-Presence is subject to the workspace's privacy settings. An admin can turn off "show who's online", in which case no member is tracked and the presence map stays empty, or "show activity", in which case members appear online but their `page`, `resource`, and `action` are stripped. These are enforced server-side, so the hidden detail never reaches any subscriber. Changing the setting re-gates connected sockets immediately and emits the corresponding `presence_diff`.
+在线状态受工作区隐私设置约束。管理员可关闭“显示谁在线”，此时不跟踪任何成员，在线状态映射保持为空；也可关闭“显示活动”，此时成员仍显示为在线，但 `page`、`resource` 和 `action` 会被移除。这些限制在服务端强制执行，隐藏的详情不会到达任何订阅者。修改设置后会立即重新检查已连接的连接，并发出相应的 `presence_diff`。
 
-API-key connections receive presence events but are never tracked as presences themselves: machines are not teammates.
+API 密钥连接会接收在线状态事件，但自身从不作为在线成员被跟踪：机器连接不代表队友。
 
-## Live collaboration
+## 实时协作 [#live-collaboration]
 
-The dashboard streams ephemeral collaboration frames so teammates see each other in real time: live cursors everywhere, cursor chat, in-flight card drags, and selections on the builder canvases. These ride a separate fast path from the sequenced event stream above.
+控制台会推送临时协作帧，让队友实时看到彼此的活动，包括各处的实时光标、光标聊天、正在拖动的卡片，以及构建器画布上的选中内容。这些帧使用独立于上述有序事件流的快速通道。
 
-Every frame is scoped by a `resource` string, and a client only renders frames for the resource it is currently on:
+每个帧都以 `resource` 字符串限定范围，客户端只渲染其当前所在资源的帧：
 
-- `page:<route>` for an ordinary dashboard page (cursors only). Coordinates are relative to the page's content area; on pages that scroll at the app level they track the content as either person scrolls, and otherwise they mark where the teammate's pointer is within the viewport.
-- `automation:<id>` and `campaign:<id>` for the automation and campaign-sequence builder canvases (cursors, card drags, and selections). Coordinates are canvas (flow) space, so a point lands in the same place for everyone regardless of pan or zoom.
+- `page:<route>` 用于普通控制台页面，仅包含光标。坐标相对于页面内容区域；对于在应用层滚动的页面，无论哪位用户滚动，坐标都会跟随内容；其他情况下，坐标表示队友指针在视口中的位置。
+- `automation:<id>` 和 `campaign:<id>` 用于自动化流程和营销活动邮件序列构建器的画布，支持光标、卡片拖动和选中内容。坐标采用画布流程空间，因此无论如何平移或缩放，同一点对所有用户都对应相同位置。
 
-Clients push:
+客户端推送：
 
-- `live:cursor` with `{ "resource": "<resource>", "x": <number>, "y": <number> }` for a pointer move, or `{ "resource": "<resource>", "gone": true }` when the pointer leaves. An optional `"chat"` string (capped at 120 characters and byte-bounded) attaches cursor-chat text to the frame; teammates render it as a bubble next to the pointer, and it clears when frames stop carrying it. Chat text is permission-gated server-side by the frame's surface (for example, chat on a unibox thread is stripped for members without unibox access; the cursor itself still delivers).
-- `live:node` with `{ "resource": "<canvas-resource>", "id": "<node-id>", "x": <number>, "y": <number>, "dragging": <bool> }` while a card is being moved (builder canvases only).
-- `live:select` with `{ "resource": "<canvas-resource>", "ids": ["<node-id>", ...] }` when the set of selected nodes changes (builder canvases only). At most 100 ids per frame; an empty list clears the selection for teammates. Senders re-emit a held selection every few seconds as a keep-alive, and receivers should expire a selection that has not been refreshed for around 12 seconds, so a lost clear frame heals on its own.
-- `live:patch` with `{ "resource": "<resource>", "data": { ... } }` for a generic collaborative-state hint, where `data` is a small flat map of scalar values (strings are capped, at most 20 keys). The dashboard uses it so a teammate's action lands instantly, for example a deal moved on a board (`{ "kind": "deal_move", "deal_id": "...", "stage_id": "..." }`) ahead of the durable refetch.
+- 指针移动时发送 `live:cursor`，载荷为 `{ "resource": "<resource>", "x": <number>, "y": <number> }`；指针离开时使用 `{ "resource": "<resource>", "gone": true }`。可选的 `"chat"` 字符串会将光标聊天文本附加到帧，最多 120 个字符，且有字节数限制；队友会在指针旁以气泡显示，后续帧不再携带该字段时清除。聊天文本会在服务端根据帧所属页面的权限进行筛选，例如统一收件箱会话中的聊天，会对没有统一收件箱权限的成员移除，而光标本身仍会投递。
+- 移动卡片时发送 `live:node`，载荷为 `{ "resource": "<canvas-resource>", "id": "<node-id>", "x": <number>, "y": <number>, "dragging": <bool> }`，仅适用于构建器画布。
+- 选中节点集合变化时发送 `live:select`，载荷为 `{ "resource": "<canvas-resource>", "ids": ["<node-id>", ...] }`，仅适用于构建器画布。每帧最多 100 个 ID；空列表会清除队友看到的选中状态。发送方应每隔数秒重新发送仍保留的选中内容，作为保活；接收方应使约 12 秒未刷新的选中状态过期，以便清除帧丢失后自行恢复。
+- 发送 `live:patch`，载荷为 `{ "resource": "<resource>", "data": { ... } }`，用于通用协作状态提示，其中 `data` 是包含标量值的小型扁平映射，字符串长度受限，最多 20 个键。控制台借此即时显示队友操作，例如在从持久化存储重新获取数据之前，先显示看板上的商机移动（`{ "kind": "deal_move", "deal_id": "...", "stage_id": "..." }`）。
 
-They fan out to the other members on the same org channel as `LIVE_CURSOR`, `LIVE_NODE`, `LIVE_SELECT`, and `LIVE_PATCH` events carrying the same fields plus `user_id`. Resolve the mover's name and avatar from presence. A `live:patch` is a best-effort hint, not a source of truth: the change itself still persists over REST and re-syncs through the normal event stream, so a dropped frame self-heals.
+这些帧会作为 `LIVE_CURSOR`、`LIVE_NODE`、`LIVE_SELECT` 和 `LIVE_PATCH` 事件分发给同一组织通道中的其他成员，携带原有字段及 `user_id`。操作者的名称和头像可从在线状态中解析。`live:patch` 只是尽力投递的提示，不是权威数据源：变更本身仍通过 REST 持久化，并通过常规事件流重新同步，因此丢帧后会自行恢复。
 
-These frames are deliberately lightweight:
+这些帧有意保持轻量：
 
-- they are **not** sequenced and **not** resumable. A dropped frame is fine: the next one is milliseconds away, and a reconnecting client never replays them.
-- they follow the workspace privacy settings. A member whose activity is hidden ("show activity" off) emits no cursor or drag frames, the same gate as `presence:update`.
-- only human (JWT) members exchange them. API-key connections neither send nor receive live frames.
-- they are exempt from the per-minute client-event budget below (which they would exhaust instantly). Each socket is bounded by a small in-process burst limit instead, and clients should throttle pointer and drag frames to roughly 20 to 30 per second.
+- 它们**不**编号排序，也**不**支持恢复。丢失一帧可以接受，因为几毫秒后就会出现下一帧；重新连接的客户端不会重放这些帧。
+- 它们遵循工作区隐私设置。活动被隐藏的成员，即关闭“显示活动”的成员，不会发出光标或拖动帧，与 `presence:update` 使用同一限制。
+- 只有使用 JWT 的人工成员会交换这些帧。API 密钥连接既不发送，也不接收实时协作帧。
+- 它们不计入下方每分钟客户端事件额度，否则会立即耗尽额度。每条连接改为受进程内较小的突发限制约束；客户端应将指针和拖动帧限制在每秒约 20 至 30 帧。
 
-Warmbly's own builder canvases lay themselves out from the flow's structure, so they send no `live:node` frames and store no positions. The frame and the layout endpoints remain for clients that arrange cards themselves.
+Warmbly 自身的构建器画布根据流程结构自动布局，因此不会发送 `live:node` 帧，也不会保存位置。对于自行排列卡片的客户端，仍保留该帧类型和布局端点。
 
-## Rate limits and connection caps
+## 速率限制与连接数上限 [#rate-limits-and-connection-caps]
 
-The realtime service protects itself against connection spam. All limits are per user (the key's owner) unless noted:
+实时服务通过以下限制防止连接滥用。除非另有说明，所有限制均按用户，即密钥所有者计算：
 
-| Limit | Default |
+| 限制项 | 默认值 |
 | --- | --- |
-| Concurrent connections | 10 (plan-dependent) |
-| Concurrent connections per IP | 50 |
-| Socket handshakes | 30/minute |
-| Channel joins | 30/minute |
-| Client-sent events (including `presence:update`) | 60/minute |
-| Server-to-client messages | 120/minute |
+| 并发连接数 | 10，具体取决于套餐 |
+| 每个 IP 的并发连接数 | 50 |
+| 连接握手次数 | 30 次/分钟 |
+| 加入通道次数 | 30 次/分钟 |
+| 客户端发送的事件，包括 `presence:update` | 60 次/分钟 |
+| 服务器向客户端发送的消息 | 120 条/分钟 |
 
-Handshakes and channel joins draw on separate budgets, so a reconnect storm does not spend the allowance a client then needs to rejoin its topics with. Every limit allows a burst of 1.5x its per-minute figure before refusing.
+握手和加入通道使用独立额度，因此重连风暴不会耗尽客户端随后重新加入主题所需的额度。每项限制都允许每分钟数值的 1.5 倍突发量，超过后才会拒绝。
 
-When a client-sent event is throttled you receive an error reply with `reason: "rate_limited"` and a `retry_after_ms` hint. When outbound delivery is throttled the channel pushes a `rate_limited` message instead of the event.
+客户端发送的事件被限流时，会收到包含 `reason: "rate_limited"` 和 `retry_after_ms` 提示的错误响应。服务端向外投递被限流时，通道会推送 `rate_limited` 消息，替代原事件。
 
-A `phx_join` over the join budget is refused the same way, with `code: 4007` and its own `retry_after_ms`:
+`phx_join` 超过加入额度时，也会以同样方式被拒绝，包含 `code: 4007` 及该操作自身的 `retry_after_ms`：
 
 ```json
 {
@@ -339,41 +339,41 @@ A `phx_join` over the join budget is refused the same way, with `code: 4007` and
 }
 ```
 
-The socket stays open, so the right response is to wait out `retry_after_ms` and send the join again, not to reconnect. `retry_after_ms` is the time until the current minute's budget resets, so retrying earlier only spends another refusal. Treat every other refusal reason as final and stop retrying that topic.
+连接仍保持打开，因此正确做法是等待 `retry_after_ms` 指定时间后再次发送加入请求，而不是重新连接。`retry_after_ms` 表示距离当前分钟额度重置的时间，提前重试只会再被拒绝一次。其他拒绝原因都应视为最终结果，停止重试该主题。
 
-Ephemeral [live-collaboration](#live-collaboration) frames (`live:cursor`, `live:node`, `live:select`, `live:patch`) are exempt from the client-event budget above: they are bounded by a separate small per-socket burst limit, and over-budget frames are dropped silently rather than rejected.
+临时[实时协作](#live-collaboration)帧（`live:cursor`、`live:node`、`live:select`、`live:patch`）不计入上述客户端事件额度，而是受每条连接独立的小额突发限制约束；超出额度的帧会被静默丢弃，不返回拒绝响应。
 
-## Connection rejections
+## 连接被拒绝的情况 [#connection-rejections]
 
-A connection can be refused at two points, and the two surface differently today:
+连接可能在两个阶段被拒绝，目前两者的表现不同：
 
-- **Connect-level** (authentication, the realtime permission, the IP allowlist, the rate limit, the connection cap): the WebSocket upgrade is refused at the HTTP layer. The handshake returns an **HTTP 403** carrying the reason, and the client observes a failed upgrade rather than an application close frame.
-- **Post-join** (a `phx_join` that fails after the socket is open, for example a channel you may not see): the join reply comes back with `status: "error"` and a structured error object `{ code, reason }` in its `response`. `reason` is a stable slug naming the specific refusal (`not_a_member`, `campaign_not_found`, `rate_limited`, ...); `code` is the coarse class to branch on.
+- **连接阶段**：身份验证、实时权限、IP 允许列表、速率限制和连接上限等检查失败时，WebSocket 升级会在 HTTP 层被拒绝。握手返回带有原因的 **HTTP 403**，客户端看到的是升级失败，而不是应用层关闭帧。
+- **加入阶段**：连接打开后，`phx_join` 仍可能失败，例如尝试加入无权查看的通道。加入响应会返回 `status: "error"`，并在 `response` 中包含结构化错误对象 `{ code, reason }`。`reason` 是标识具体拒绝原因的稳定字符串（`not_a_member`、`campaign_not_found`、`rate_limited` 等）；`code` 则是用于判断处理分支的粗粒度类别。
 
-Both paths use the same reason codes:
+两种路径使用相同的原因代码：
 
-| Code | Meaning | Client action |
+| 错误码 | 含义 | 客户端处理方式 |
 | --- | --- | --- |
-| 4003 | Not authenticated (token missing) | Add a valid `token` to the connection URL |
-| 4004 | Authentication failed: token expired, or invalid key | Re-mint the token (or check the key), then reconnect |
-| 4005 | Malformed topic, for example an id that is not a UUID | Fix the topic; retrying will not help |
-| 4007 | Rate limited | Wait out `retry_after_ms`, then retry |
-| 4009 | Connection limit exceeded | Reduce concurrent sockets |
-| 4010 | Permission denied, not a member, or no such record | Do not retry this topic |
+| 4003 | 未经身份验证，缺少令牌 | 在连接 URL 中添加有效的 `token` |
+| 4004 | 身份验证失败：令牌已过期，或密钥无效 | 重新签发令牌或检查密钥，然后重新连接 |
+| 4005 | 主题格式错误，例如 ID 不是 UUID | 修正主题；重试无效 |
+| 4007 | 触发速率限制 | 等待 `retry_after_ms` 指定时间后重试 |
+| 4009 | 超过连接上限 | 减少并发连接数 |
+| 4010 | 权限被拒绝、不是成员，或记录不存在 | 不要重试此主题 |
 
-Because connect-level rejections are an HTTP 403 and not a WebSocket close frame today, a client cannot branch on the connect-level code programmatically: treat any failed upgrade as "re-mint the token if it expired, otherwise back off". Post-join rejections are already machine-readable through `{ code, reason }`. Surfacing connect-level reasons as application close codes too is planned.
+目前连接阶段的拒绝返回 HTTP 403，而非 WebSocket 关闭帧，因此客户端无法以编程方式根据连接阶段的具体代码选择处理分支。对于任意升级失败，应在令牌过期时重新签发，否则执行退避。加入阶段的拒绝已经可以通过 `{ code, reason }` 供程序识别。后续计划同时将连接阶段的原因以应用层关闭代码形式提供。
 
-## Delivery guarantees
+## 投递保证 [#delivery-guarantees]
 
-Every event has a monotonic per-organization `seq` and is delivered in order. Within the buffer window, a reconnecting client can [resume](#resuming-after-a-disconnect) and replay exactly what it missed; across a resume, delivery is at-least-once (dedupe by `seq`).
+每个事件都有组织内单调递增的 `seq`，并按序投递。在缓冲窗口内，重新连接的客户端可[恢复](#resuming-after-a-disconnect)并重放错过的事件；跨恢复过程采用至少一次投递语义，需要按 `seq` 去重。
 
-The buffer is not an infinite log. It holds roughly the most recent events per organization, bounded by size and time, so a client disconnected longer than that window gets a `resume_failed` and must do a full resync over the REST API. For delivery that must survive arbitrary downtime, use [webhooks](/api/endpoints/), which are persisted and retried; the WebSocket is the low-latency path, webhooks are the durable one.
+缓冲区并非无限日志。它大致保留各组织最近的事件，同时受大小和时间限制；客户端断线超过该窗口后会收到 `resume_failed`，必须通过 REST API 完整重新同步。如果投递需要经受任意时长的停机，请使用会持久化并重试的 [Webhook](/api/endpoints/)；WebSocket 用于低延迟路径，Webhook 用于持久化投递路径。
 
-## Good citizenship
+## 合理使用建议 [#good-citizenship]
 
-- Reuse one connection per process and multiplex channels over it instead of opening one socket per topic.
-- Pass `intents` so you only receive (and pay the message-rate budget for) the events you act on.
-- Reconnect with exponential backoff; the limits above treat reconnect storms the same as connection spam.
-- Back off on rejoins too, and hold one subscription per topic rather than one per component. A client that tears a channel down and rejoins it on every render will exhaust the join budget in seconds.
-- After a reconnect, resume with your last `seq` instead of refetching everything; only fall back to a full REST resync on `resume_failed`.
-- Treat event payloads as invalidation signals (they carry ids, not full state) and refetch the resource over the REST API when you need its current contents.
+- 每个进程复用一条连接，并在其上复用多个通道，避免为每个主题单独打开连接。
+- 传入 `intents`，仅接收你实际处理的事件，也仅为这些事件消耗消息速率额度。
+- 重新连接时使用指数退避；上述限制会像处理连接滥用一样处理重连风暴。
+- 重新加入通道时也应退避，并为每个主题保留一份订阅，不要为每个组件单独订阅。若客户端每次渲染都拆除通道并重新加入，数秒内就会耗尽加入额度。
+- 重新连接后，使用最后的 `seq` 恢复，而不是重新获取全部数据；仅在收到 `resume_failed` 时回退到完整 REST 重新同步。
+- 将事件载荷视为缓存失效信号，因为它们携带 ID，而非完整状态。需要资源的当前内容时，应通过 REST API 重新获取。

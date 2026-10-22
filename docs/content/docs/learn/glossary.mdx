@@ -1,122 +1,122 @@
 ---
-title: Glossary
-description: Plain-English definitions of cold email and deliverability terms, from SPF and DKIM to inbox placement, warmup, and complaint rate.
+title: 术语表
+description: 用易懂的语言解释冷邮件和邮件送达能力相关术语，涵盖 SPF、DKIM、收件箱到达率、邮箱预热和投诉率。
 ---
 
-## A
+## A [#a]
 
-### ARF (Abuse Reporting Format)
+### ARF（滥用报告格式） [#arf-abuse-reporting-format]
 
-The standardised format mailbox providers use to report spam complaints back to senders. Warmbly ingests ARF reports where available.
+邮箱服务商向发件人反馈垃圾邮件投诉时使用的标准化格式。Warmbly 会接收和处理可获取的 ARF 报告。
 
-### Alignment
+### 对齐（Alignment） [#alignment]
 
-The DMARC requirement that the authenticated domain (from SPF or DKIM) match the visible "From:" domain. Relaxed alignment matches at the organisational level; strict requires exact equality.
+DMARC 要求通过身份验证的域名（来自 SPF 或 DKIM）与用户可见的“From:”域名匹配。宽松对齐要求组织域名一致；严格对齐要求完全相同。
 
-## B
+## B [#b]
 
-### Bounce
+### 退信（Bounce） [#bounce]
 
-A failed delivery. Hard bounces (invalid mailbox, blocked domain) suppress immediately. Soft bounces (mailbox full, temporary outage) are retried with backoff and suppressed if persistent.
+投递失败。硬退信（邮箱无效、域名被封禁）会立即将收件人列入禁止发送名单。软退信（邮箱已满、临时故障）会采用退避策略重试，持续失败时也会停止向该收件人发送。
 
-### BIMI
+### BIMI [#bimi]
 
-Brand Indicators for Message Identification. Lets you publish a verified logo that some clients display next to your messages. Requires DMARC `p=quarantine` or stricter, plus a VMC certificate for full display.
+邮件识别品牌标识，英文全称为 Brand Indicators for Message Identification。它允许发布经过验证的标志，一些邮件客户端会将该标志显示在邮件旁边。要求 DMARC 策略为 `p=quarantine` 或更严格；要完整展示，还需要 VMC 证书。
 
-## C
+## C [#c]
 
-### Cold email
+### 冷邮件（Cold email） [#cold-email]
 
-Unsolicited mail to a recipient with whom you have no prior relationship. Distinct from spam by intent: cold mail is targeted, relevant, and gives the recipient a real way to say no.
+向此前没有关系的收件人发送、未经其主动请求的邮件。按发送意图区分，冷邮件与垃圾邮件不同：冷邮件有明确目标、内容相关，并为收件人提供真正有效的拒收方式。
 
-### Complaint rate
+### 投诉率（Complaint rate） [#complaint-rate]
 
-Percentage of delivered messages marked as spam by recipients. Google's bulk-sender threshold is 0.10%. Above 0.30% is in the danger zone.
+已投递邮件中，被收件人标记为垃圾邮件的比例。Google 的批量发件人阈值为 0.10%，超过 0.30% 就进入危险区间。
 
-## D
+## D [#d]
 
-### DKIM
+### DKIM [#dkim]
 
-Cryptographic signature that proves a message was authorised by the domain's key holder and not modified in transit. See [SPF, DKIM and DMARC](/learn/spf-dkim-dmarc/).
+一种加密签名，用于证明邮件得到域名密钥持有者的授权，且在传输中未被修改。参见 [SPF、DKIM 和 DMARC](/learn/spf-dkim-dmarc/)。
 
-### DMARC
+### DMARC [#dmarc]
 
-The policy that ties SPF and DKIM to the visible From: domain and tells receivers what to do on failure. See [SPF, DKIM and DMARC](/learn/spf-dkim-dmarc/).
+将 SPF 和 DKIM 与可见的 From: 域名关联起来，并告知收件方在验证失败时如何处理邮件的策略。参见 [SPF、DKIM 和 DMARC](/learn/spf-dkim-dmarc/)。
 
-## F
+## F [#f]
 
-### FBL (Feedback Loop)
+### FBL（反馈回路） [#fbl-feedback-loop]
 
-A direct channel from a mailbox provider that forwards spam-complaint events to the sender so they can suppress the recipient.
+邮箱服务商将垃圾邮件投诉事件直接转发给发件人的通道，便于发件人停止向对应收件人发送邮件。
 
-## H
+## H [#h]
 
-### HMAC signature
+### HMAC 签名 [#hmac-signature]
 
-The cryptographic signature on a webhook delivery that lets you verify the call really came from Warmbly and wasn't tampered with.
+Webhook 投递中的加密签名，用于验证调用确实来自 Warmbly，且未被篡改。
 
-## I
+## I [#i]
 
-### Inbox placement
+### 收件箱到达率（Inbox placement） [#inbox-placement]
 
-Share of accepted messages that land in the recipient's primary inbox (not spam, not promotions). The metric that actually matters. See [Inbox placement](/learn/inbox-placement/).
+已被接收的邮件中，最终进入收件人主收件箱，而非垃圾邮件或推广邮件文件夹的比例。这才是真正重要的指标。参见[收件箱到达率](/learn/inbox-placement/)。
 
-### IP warmup
+### IP 预热（IP warmup） [#ip-warmup]
 
-Gradually increasing send volume from a new IP so receivers learn its behaviour. Required for dedicated IPs; not required for shared IPs you're sending through.
+逐步增加新 IP 的发送量，让收件方了解其行为。独享 IP 需要进行 IP 预热；通过共享 IP 发送时则不需要。
 
-## M
+## M [#m]
 
-### MTA (Mail Transfer Agent)
+### MTA（邮件传输代理） [#mta-mail-transfer-agent]
 
-The server that sends and routes mail. In cold-email tools, the "sending engine" is effectively the MTA.
+负责发送和路由邮件的服务器。在冷邮件工具中，“发送引擎”实际上就是 MTA。
 
-## O
+## O [#o]
 
-### OOO (Out of Office)
+### OOO（外出自动回复） [#ooo-out-of-office]
 
-Auto-reply indicating the recipient is unavailable. Warmbly classifies OOO replies and suppresses them from sequence engagement metrics.
+表示收件人暂时无法处理邮件的自动回复。Warmbly 会识别 OOO 回复，并将其排除在邮件序列的互动指标之外。
 
-## P
+## P [#p]
 
-### Pool (warmup)
+### 预热池（Pool） [#pool-warmup]
 
-A group of warmed mailboxes that send warmup mail to one another. Quality of the pool matters more than size. See [Warmup pools](/learn/warmup-pools/).
+一组互相发送预热邮件的已预热邮箱。池的质量比规模更重要。参见[预热池](/learn/warmup-pools/)。
 
-### PTR (Reverse DNS)
+### PTR（反向 DNS） [#ptr-reverse-dns]
 
-The DNS record that resolves an IP back to a hostname. Mailbox providers expect outbound mail to come from IPs with matching PTRs.
+将 IP 地址反向解析为主机名的 DNS 记录。邮箱服务商希望外发邮件来自具有匹配 PTR 记录的 IP。
 
-## Q
+## Q [#q]
 
-### Quarantine
+### 隔离（Quarantine） [#quarantine]
 
-The state of a mailbox temporarily removed from the warmup pool and cold sending. Triggered by reputation warning thresholds.
+邮箱被暂时移出预热池并停止发送冷邮件的状态，由信誉警戒阈值触发。
 
-## R
+## R [#r]
 
-### Reply detection
+### 回复检测（Reply detection） [#reply-detection]
 
-Identifying a recipient's reply to a sent message, even when the reply chain has been forwarded or quoted text changes.
+识别收件人对已发送邮件的回复，即使回复链被转发，或引用文本发生变化，也能识别。
 
-## S
+## S [#s]
 
-### SPF
+### SPF [#spf]
 
-DNS record listing the servers and services authorised to send mail for a domain. See [SPF, DKIM and DMARC](/learn/spf-dkim-dmarc/).
+列出获准代表某个域名发送邮件的服务器与服务的 DNS 记录。参见 [SPF、DKIM 和 DMARC](/learn/spf-dkim-dmarc/)。
 
-### Suppression
+### 禁止发送（Suppression） [#suppression]
 
-Excluding a recipient from future sends. Triggered by hard bounce, complaint, unsubscribe, or manual addition.
+将收件人排除在后续发送之外。硬退信、投诉、退订或手动添加均可触发。
 
-## T
+## T [#t]
 
-### TLS
+### TLS [#tls]
 
-Transport-layer encryption used between mail servers (and between Warmbly and your mailbox provider).
+邮件服务器之间，以及 Warmbly 与邮箱服务商之间使用的传输层加密。
 
-## U
+## U [#u]
 
-### Unified inbox
+### 统一收件箱（Unified inbox） [#unified-inbox]
 
-A single interface that shows replies across every connected mailbox in a workspace. See the [Unibox guide](/guides/unibox/).
+在同一个界面中，集中展示工作区内所有已连接邮箱收到的回复。参见[统一收件箱指南](/guides/unibox/)。

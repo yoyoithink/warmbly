@@ -1,43 +1,43 @@
 ---
-title: Operator notifications
-description: Send instance events to Discord, Slack, a signed webhook, or an email address.
+title: 运维通知
+description: 将实例事件发送到 Discord、Slack、带签名的 Webhook 或指定邮箱地址。
 ---
 
-Your instance can tell you when something happens on it: a new signup, a worker going offline, a workspace asking for more capacity. Configure the destinations in the admin panel under **Instance > Configuration > Notifications**, also reachable from **Notifications** in the account menu at the bottom of the sidebar and from the `Cmd K` palette.
+实例发生事件时可以通知你，例如新用户注册、工作节点离线，或工作区申请更多容量。在管理面板的**实例 > 配置 > 通知**中配置接收目标，也可以从侧边栏底部账户菜单中的**通知**或 `Cmd K` 命令面板进入。
 
-These are operator alerts, not customer alerts. They are instance-wide and go to you. The per-workspace event delivery your customers configure is [Webhooks](/guides/webhooks/), which is a separate, queued and retried system.
+这些通知面向运维人员，覆盖整个实例，并发送给你。客户自行配置的按工作区事件投递属于 [Webhook](/guides/webhooks/)，那是一个独立的系统，带有队列和重试机制。
 
-## Channels
+## 频道 [#channels]
 
-A channel is one destination. You can add up to 25.
+一个渠道对应一个接收目标，最多可以添加 25 个。
 
-| Type | What to paste | Notes |
+| 类型 | 需要填写的内容 | 说明 |
 | --- | --- | --- |
-| Discord | An incoming webhook URL | Server settings, then Integrations, then New Webhook |
-| Slack | An incoming webhook URL | Create a Slack app with an incoming webhook |
-| Webhook | Any HTTPS endpoint | Receives the event as JSON, optionally signed |
-| Email | An address | Needs a working platform mail transport |
+| Discord | 传入 Webhook URL | 进入服务器设置，再打开“集成”，选择“新建 Webhook” |
+| Slack | 传入 Webhook URL | 创建启用了传入 Webhook 的 Slack 应用 |
+| Webhook | 任意 HTTPS 端点 | 接收 JSON 格式的事件，可选签名 |
+| 电子邮件 | 邮箱地址 | 需要可用的平台邮件传输服务 |
 
-Each channel picks which events it wants. Leave every event unchecked and it receives all of them, including ones added in later versions, except **Admin signed in**, which goes only to a channel that ticks it.
+每个渠道可选择接收哪些事件。如果所有事件都不勾选，就会接收全部事件，包括后续版本新增的事件；但**管理员登录**例外，它只发送给明确勾选该事件的渠道。
 
-Use **Test** on a channel to deliver a sample alert immediately. A test ignores the channel's on/off switch and its event selection, so it always sends, and it reports the transport error directly when delivery fails.
+点击渠道上的**测试**，可以立即发送示例通知。测试会忽略渠道的开关状态和事件选择，因此始终发送；如果投递失败，会直接报告传输错误。
 
-### URL safety
+### URL 安全 [#url-safety]
 
-Webhook URLs must be HTTPS and resolve to a publicly routable host. Inline credentials are rejected. This is the same posture customer webhooks use, and it exists so a notification channel cannot be pointed at your internal network.
+Webhook URL 必须使用 HTTPS，并解析到可公开路由的主机。URL 中内嵌凭据会被拒绝。这与客户 Webhook 采用相同的安全策略，目的是避免通知渠道被指向内部网络。
 
-To point a channel at a host on your own network, set `WARMBLY_ALLOW_UNSAFE_WEBHOOK_URLS=true`. That also permits plain HTTP. Only do this on a deployment where you control the network.
+如果要将渠道指向你自己网络中的主机，设置 `WARMBLY_ALLOW_UNSAFE_WEBHOOK_URLS=true`。这也会允许普通 HTTP。仅应在网络由你控制的部署中使用。
 
-### Signing
+### 签名 [#signing]
 
-A `webhook` channel with a signing secret sends:
+配置了签名密钥的 `webhook` 渠道会发送：
 
 ```
 X-Warmbly-Signature: t=<unix>,v1=<hex>
 X-Warmbly-Event: <event key>
 ```
 
-`v1` is `HMAC-SHA256(secret, "<unix>." + body)`, the same scheme as customer webhooks, so an existing verifier works unchanged. The body is:
+`v1` 的计算方式为 `HMAC-SHA256(secret, "<unix>." + body)`，与客户 Webhook 相同，因此已有的验证器无需修改。请求体如下：
 
 ```json
 {
@@ -51,41 +51,41 @@ X-Warmbly-Event: <event key>
 }
 ```
 
-### Credentials
+### 凭据 [#credentials]
 
-A chat webhook URL is a bearer credential: anyone holding it can post to that channel. The admin API never returns one in full. A saved channel reads back with its URL reduced to a host and the tail of its path, and its signing secret replaced by a placeholder. Sending those values back unchanged means "keep what is stored", so saving an unrelated toggle cannot wipe a credential. To change a URL or secret, type the new value in full.
+聊天 Webhook URL 属于持有者凭据：任何持有它的人都能向该渠道发消息。管理 API 绝不会完整返回该 URL。已保存渠道读回时，URL 仅保留主机和路径末尾，签名密钥则替换为占位符。将这些值原样发回表示“保留已存储值”，因此保存无关开关不会清空凭据。要更改 URL 或密钥，请完整输入新值。
 
-## Events
+## 事件 [#events]
 
-| Event | Fires when |
+| 事件 | 触发时机 |
 | --- | --- |
-| Enterprise inquiry submitted | Someone asks for enterprise pricing from the plan chooser |
-| Limit increase requested | A workspace asks for more capacity than its plan allows |
-| Payment failed | Stripe could not collect an invoice |
-| Workspace created | A new organization is created |
-| User registered | A new account finishes signing up |
-| Worker went offline | A worker stops heartbeating; the alert reports complete, partial, or failed recovery with moved and paused mailbox counts |
-| Persistent warmup loading failures | Repeated loading failures span at least an hour, the latest failure is under an hour old, and no later warmup send is confirmed |
-| Warmup dispatch is overdue | Active, sending-enabled mailboxes have pending warmup tasks at least an hour past their intended schedule; this is not a provider-error diagnosis |
-| Warmup ban appealed | A blocked mailbox asks to rejoin the warmup pool |
-| Workspace risk escalated | Risk scoring moves a workspace into a different posture |
-| Admin signed in | An account holding platform admin access starts a new session, in the admin panel or the dashboard. The alert names the account, sign-in method, whether a second factor was presented, the device (flagged when it is new), the location and the IP address. Sent only to channels that tick it |
-| Admin access changed | Admin permissions are granted to, changed for, or revoked from an account in the admin panel, with who made the change. Saving permissions unchanged sends nothing. A change made with `warmblyctl` on the server is not reported |
+| 提交企业方案咨询 | 有人从套餐选择器申请企业报价 |
+| 请求提高限额 | 工作区申请超出其套餐的容量 |
+| 付款失败 | Stripe 无法收取账单款项 |
+| 工作区已创建 | 新组织创建时 |
+| 用户已注册 | 新账户完成注册时 |
+| 工作节点离线 | 工作节点停止发送心跳；通知会说明恢复是完整、部分还是失败，并列出已迁移及已暂停的邮箱数量 |
+| 持续的预热加载失败 | 反复加载失败持续至少一小时，最近失败发生在一小时内，且之后没有已确认的预热发送 |
+| 预热派发超时 | 活跃且启用发送的邮箱存在比预定时间晚至少一小时的待处理预热任务；这不表示已诊断为服务商错误 |
+| 对预热封禁提出申诉 | 被封禁的邮箱申请重新加入预热池 |
+| 工作区风险升级 | 风险评分使工作区切换到另一种风险处理状态 |
+| 管理员登录 | 拥有平台管理权限的账户在管理面板或控制台开始新会话。通知列出账户、登录方式、是否提供第二因素、设备（新设备会标注）、位置和 IP 地址。只发送给勾选了此事件的渠道 |
+| 管理权限变更 | 在管理面板中向账户授予、修改或撤销管理权限，并注明操作人。权限未变化的保存不会发送通知。在服务器上使用 `warmblyctl` 做出的变更不会报告 |
 
-A self-hosted instance is offered the subset that means something without billing, so the panel never lists an event that cannot fire there.
+自托管实例只提供在没有计费功能时仍有意义的事件子集，因此面板不会列出不可能在该实例触发的事件。
 
-Sign-in alerts are not deduplicated: every admin sign-in is reported, because an unexpected one is exactly what the alert exists to catch. A session re-issued after a password change is not a sign-in and is not reported.
+登录通知不去重：每次管理员登录都会报告，因为发现意外登录正是这类通知的用途。修改密码后重新签发会话不属于登录，不会报告。
 
-Worker and risk alerts are deduplicated: a worker that stays down does not re-alert for six hours, and a risk alert only fires on an actual change of posture.
+工作节点和风险通知会去重：同一工作节点持续离线时，六小时内不会再次通知；风险通知只在处理状态确实改变时触发。
 
-Warmup operations are checked every five minutes. Loading and overdue-dispatch alerts cover every active participating mailbox and aggregate affected mailbox, workspace and worker counts. Failures on the same worker share an alert. At least ten affected mailboxes across multiple worker assignments are reported as fleet-wide impact; unassigned mailboxes have a separate group. Each category and group has a shared Redis cooldown of six hours across backend replicas. Recovery stops further loading alerts when a later provider-confirmed send exists; stale loading observations do not keep an incident active forever. Overdue alerts stop once no matching pending task remains.
+预热运维检查每五分钟执行一次。加载和派发超时通知覆盖所有活跃参与邮箱，并汇总受影响的邮箱、工作区和工作节点数量。同一工作节点上的失败合并到一条通知中。如果至少十个受影响邮箱分布在多个工作节点分配上，就会报告为节点集群范围的影响；尚未分配的邮箱单独分组。各类别和分组通过 Redis 在所有后端副本间共享六小时冷却期。一旦存在更新的服务商确认发送，恢复就会停止后续加载通知；过期的加载观察不会让事件永久处于活跃状态。当不再存在匹配的待处理任务时，派发超时通知也会停止。
 
-The event keys are `warmup.worker_loading` and `warmup.dispatch_overdue`. Existing catch-all channels receive them automatically. Channels restricted to selected events must opt into the new events. If no destination is configured, there is no administrator message to deliver; configure one under **Instance > Configuration > Notifications**. Delivery remains best effort, like other operator alerts.
+事件键为 `warmup.worker_loading` 和 `warmup.dispatch_overdue`。现有接收全部事件的渠道会自动收到它们。仅接收所选事件的渠道必须显式勾选新事件。如果没有配置接收目标，就没有可投递管理员消息的地方；请在**实例 > 配置 > 通知**中配置。与其他运维通知一样，投递采用尽力而为的方式。
 
-The same deduplicated signals go through the central error reporter to configured PostHog/Sentry destinations, or local logs when neither is configured. Error tracking includes the category and aggregate counts/delay only, never mailbox addresses, credentials, message content or worker/workspace IDs. Operator destinations can include the affected worker ID for investigation. A Redis outage is recorded as a monitor failure rather than producing an undeduplicated alert on every retry. See [Configuration](/development/configuration/) for reporter settings.
+相同的去重信号也会通过中央错误报告器发送到已配置的 PostHog/Sentry；两者都未配置时，写入本地日志。错误跟踪仅包含类别、汇总计数和延迟，绝不包含邮箱地址、凭据、邮件内容或工作节点/工作区 ID。运维通知目标可包含受影响的工作节点 ID，以便调查。Redis 中断会记录为监控失败，而不会每次重试都产生未去重通知。报告器设置见[配置](/development/configuration/)。
 
-## Delivery behaviour
+## 投递行为 [#delivery-behaviour]
 
-Delivery is best effort and deliberately so. An alert never blocks or fails the request that produced it, and a chat server that is slow or unreachable is not allowed to slow the product down. There is no retry queue. If a channel is down when an event fires, that alert is lost.
+投递有意采用尽力而为的方式。通知不会阻塞或使触发它的请求失败，缓慢或不可达的聊天服务器也不会拖慢产品。这里没有重试队列。事件触发时，如果渠道不可用，该条通知就会丢失。
 
-If alerts stop arriving, use **Test** first: it is synchronous and tells you exactly what the transport said.
+如果不再收到通知，请先使用**测试**：它同步执行，并准确告诉你传输层返回了什么。

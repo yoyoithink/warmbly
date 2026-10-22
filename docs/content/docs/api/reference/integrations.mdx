@@ -1,25 +1,25 @@
 ---
-title: Integrations, automations, meetings
-description: Connect third-party apps, build automation flows, capture booked meetings, and run on-demand Google Sheets lead syncs.
+title: "集成、自动化流程与会议"
+description: "连接第三方应用，构建自动化流程，接收会议预约，并按需同步 Google Sheets 中的潜在客户。"
 ---
 
-These endpoints cover Warmbly's integration layer: the provider catalog and connection lifecycle, per-connection event subscriptions and field mappings, the visual automation flow builder, the booked-meetings list, and on-demand Google Sheets lead sync. Most reads are reachable by operational integration users (`use_integrations` / `INTEGRATIONS`), while connecting and configuring is a settings action (`manage_settings`).
+这些端点覆盖 Warmbly 的集成层：服务商目录和连接生命周期、每个连接的事件订阅与字段映射、可视化自动化流程构建器、已预约会议列表，以及按需 Google Sheets 潜在客户同步。多数读取操作可供集成功能使用者访问（`use_integrations` / `INTEGRATIONS`），而连接和配置属于设置操作，需要 `manage_settings`。
 
-Integrations are a paid-plan feature. Browsing the catalog and listing connections is open so non-paid orgs see the upsell, but any mutating call (connect, authorize, configure, push, test, automations write) returns `403` with a "Integrations are available on paid plans" message when the organization is not on a paid plan.
+集成是付费套餐功能。浏览目录和列出连接对所有组织开放，未付费组织可看到升级提示；但组织没有付费套餐时，任何修改调用，包括连接、授权、配置、推送、测试和自动化流程写入，都会返回 `403`，消息为“集成功能仅适用于付费套餐”。
 
-List shapes here are mostly ad-hoc envelopes (`{"connections": [...]}`, `{"automations": [...]}`, and so on) rather than the cursor-paginated `data` + `pagination` shape used elsewhere. The meetings search and lead-sync source list are the exceptions and are noted inline. Errors follow the standard `{error, message, code, request_id}` envelope (see [error codes](/api/error-codes/)).
+本组列表多数采用各自的封装，例如 `{"connections": [...]}`、`{"automations": [...]}`，而非其他位置使用的游标分页 `data` + `pagination` 结构。会议搜索和潜在客户同步来源列表为例外，具体见各处说明。错误采用标准 `{error, message, code, request_id}` 封装，参阅[错误码](/api/error-codes/)。
 
-## List the integration catalog
+## 列出集成目录 [#list-the-integration-catalog]
 
 `GET /integrations/catalog`
 
-Returns the static metadata for every provider Warmbly supports, annotated with whether each OAuth provider has server-side credentials wired (`configured`).
+返回 Warmbly 支持的每个服务商的静态元数据，并标明各 OAuth 服务商是否已配置服务端凭据（`configured`）。
 
-Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_settings` or `use_integrations`).
+身份验证：**权限范围** `INTEGRATIONS`，或具有**组织权限** `manage_settings` 或 `use_integrations` 的会话。
 
-### Response
+### 响应 [#response]
 
-A `catalog` array of provider entries.
+`catalog` 数组，包含服务商条目。
 
 ```json
 {
@@ -44,22 +44,22 @@ A `catalog` array of provider entries.
 }
 ```
 
-`rank` is the provider's popularity on this instance, `1` being the most used: the number of workspaces with a live connection, ties broken by a curated order so a new instance still has one. The array keeps catalog order; sort by `rank` to show the most used first.
+`rank` 表示服务商在本实例的使用排名，`1` 为使用最多。排名依据具有有效连接的工作区数量；并列时按预设顺序决定，因此新实例也有排名。数组本身保持目录顺序；按 `rank` 排序可将使用最多的放在前面。
 
-## List community apps
+## 列出社区应用 [#list-community-apps]
 
 `GET /integrations/community`
 
-Returns the [community directory](/guides/integrations/#community-apps) listings shown in discovery: featured apps first, then published apps installed in at least 25 workspaces other than the publisher's, each at least two weeks old, most installed first. A link-only app is never returned here.
+返回发现页面显示的[社区目录](/guides/integrations/#community-apps)条目：精选应用优先，其后是已在发布者以外至少 25 个工作区安装、且这些工作区各自已创建至少两周的已发布应用，按安装数从多到少排序。仅可通过链接访问的应用不会在此返回。
 
-Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_settings` or `use_integrations`).
+身份验证：**权限范围** `INTEGRATIONS`，或具有**组织权限** `manage_settings` 或 `use_integrations` 的会话。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `limit` | query | integer | Between 1 and 200, defaults to 100. Out-of-range values return `400`. |
-| `cursor` | query | string | Opaque cursor from `pagination.next_cursor`. A cursor this API did not issue returns `400`. |
+| `limit` | query | integer | 范围 1 至 200，默认 100。超出范围返回 `400`。 |
+| `cursor` | query | string | 来自 `pagination.next_cursor` 的不透明游标。不是由本 API 签发的游标返回 `400`。 |
 
-### Response
+### 响应 [#response-1]
 
 ```json
 {
@@ -92,27 +92,27 @@ Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_setti
 }
 ```
 
-`status` is `featured` or `published`, and `listed` says whether it shows in discovery. `developer` is the publishing workspace's name. `installs` counts workspaces on this instance with an active grant, and `installed` says whether anyone in the caller's workspace has one. No credential, redirect URI or webhook setting is ever included.
+`status` 为 `featured` 或 `published`，`listed` 表示是否在发现页面展示。`developer` 是发布工作区的名称。`installs` 统计本实例中持有有效授权的工作区数，`installed` 表示调用者工作区是否有任何人持有有效授权。绝不包含凭据、重定向 URI 或 Webhook 设置。
 
-## Get a community app
+## 获取社区应用 [#get-a-community-app]
 
 `GET /integrations/community/{slug}`
 
-Returns one listing by its slug, listed or link only, in the same shape as a list item. This is how a shared link resolves. A hidden or unpublished listing, or one whose app is disabled, returns `404`.
+按短标识返回单个条目，包括目录公开条目和仅链接可访问条目，结构与列表项相同。共享链接通过此接口解析。条目已隐藏、未发布，或所属应用已停用时，返回 `404`。
 
-Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_settings` or `use_integrations`).
+身份验证：**权限范围** `INTEGRATIONS`，或具有**组织权限** `manage_settings` 或 `use_integrations` 的会话。
 
-## List connections
+## 列出连接 [#list-connections]
 
 `GET /integrations/connections`
 
-Returns this org's connection rows. Secrets (access/refresh tokens, pasted API keys) are never serialized.
+返回本组织的连接记录。机密值，包括访问令牌、刷新令牌和粘贴的 API 密钥，永远不会序列化输出。
 
-Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_settings` or `use_integrations`).
+身份验证：**权限范围** `INTEGRATIONS`，或具有**组织权限** `manage_settings` 或 `use_integrations` 的会话。
 
-### Response
+### 响应 [#response-2]
 
-A `connections` array of `IntegrationConnection` objects.
+`connections` 数组，包含 `IntegrationConnection` 对象。
 
 ```json
 {
@@ -137,21 +137,21 @@ A `connections` array of `IntegrationConnection` objects.
 }
 ```
 
-## Create a connection
+## 创建连接 [#create-a-connection]
 
 `POST /integrations/connections`
 
-Creates a credential-based connection for `api_key` / `webhook` providers (for example Close or Discord). OAuth providers are rejected here with a hint to start the authorize flow instead (`POST /integrations/oauth/start`, session only).
+为采用 `api_key` / `webhook` 的服务商，例如 Close 或 Discord，创建基于凭据的连接。OAuth 服务商在此会被拒绝，并提示改为启动授权流程（`POST /integrations/oauth/start`，仅限会话）。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`。
 
-### Request body
+### 请求体 [#request-body]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `provider` | string | Yes | A valid provider id (for example `close`, `discord`). |
-| `label` | string | No | Friendly name shown on the connection card. |
-| `config` | object | No | Provider-specific config (for example the pasted API key or webhook URL). |
+| `provider` | string | 是 | 有效的服务商 ID，例如 `close`、`discord`。 |
+| `label` | string | 否 | 显示在连接卡片上的友好名称。 |
+| `config` | object | 否 | 服务商专用配置，例如粘贴的 API 密钥或 Webhook URL。 |
 
 ```json
 {
@@ -161,9 +161,9 @@ Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
 }
 ```
 
-### Response
+### 响应 [#response-3]
 
-`201 Created` with the created `IntegrationConnection` object (bare, not enveloped). For inbound providers (Calendly, Cal.com) the response includes `inbound_webhook_url` once.
+`201 Created`，直接返回创建的 `IntegrationConnection` 对象，无额外封装。对于入站服务商 Calendly 和 Cal.com，响应会包含仅显示一次的 `inbound_webhook_url`。
 
 ```json
 {
@@ -179,19 +179,19 @@ Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
 }
 ```
 
-## Get a connection
+## 获取连接 [#get-a-connection]
 
 `GET /integrations/connections/:id`
 
-Returns one connection plus its event subscriptions and up to 20 recent sync runs (the detail drawer payload).
+返回一个连接、其事件订阅和最多 20 次近期同步运行，用于详情抽屉。
 
-Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_settings` or `use_integrations`).
+身份验证：**权限范围** `INTEGRATIONS`，或具有**组织权限** `manage_settings` 或 `use_integrations` 的会话。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Connection id. |
+| `id` | path | uuid | 连接 ID。 |
 
-### Response
+### 响应 [#response-4]
 
 ```json
 {
@@ -234,24 +234,24 @@ Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_setti
 }
 ```
 
-## Update connection config
+## 更新连接配置 [#update-connection-config]
 
 `PATCH /integrations/connections/:id/config`
 
-Saves a connection's onboarding/capability snapshot (selected objects, enabled use-cases) and its sync direction.
+保存连接的初始配置及能力快照，包括所选对象、已启用用途，以及同步方向。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Connection id. |
+| `id` | path | uuid | 连接 ID。 |
 
-### Request body
+### 请求体 [#request-body-1]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `config_capabilities` | object | No | Per-connection capability snapshot (picker selections, enabled use-cases). |
-| `sync_direction` | string | No | Data-flow direction: `push`, `pull`, or `both`. |
+| `config_capabilities` | object | 否 | 各连接的能力快照，包括选择器选项和已启用用途。 |
+| `sync_direction` | string | 否 | 数据流向：`push`、`pull` 或 `both`。 |
 
 ```json
 {
@@ -260,7 +260,7 @@ Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
 }
 ```
 
-### Response
+### 响应 [#response-5]
 
 ```json
 {
@@ -275,35 +275,35 @@ Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
 }
 ```
 
-## Disconnect
+## 断开连接 [#disconnect]
 
 `DELETE /integrations/connections/:id`
 
-Removes a connection row.
+移除连接记录。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Connection id. |
+| `id` | path | uuid | 连接 ID。 |
 
-### Response
+### 响应 [#response-6]
 
 `204 No Content`.
 
-## List event subscriptions
+## 列出事件订阅 [#list-event-subscriptions]
 
 `GET /integrations/connections/:id/events`
 
-Returns the event subscriptions (event-to-action routes) configured on a connection.
+返回连接配置的事件订阅，即事件到操作的路由。
 
-Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_settings` or `use_integrations`).
+身份验证：**权限范围** `INTEGRATIONS`，或具有**组织权限** `manage_settings` 或 `use_integrations` 的会话。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Connection id. |
+| `id` | path | uuid | 连接 ID。 |
 
-### Response
+### 响应 [#response-7]
 
 ```json
 {
@@ -324,26 +324,26 @@ Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_setti
 }
 ```
 
-## Create an event subscription
+## 创建事件订阅 [#create-an-event-subscription]
 
 `POST /integrations/connections/:id/events`
 
-Routes a Warmbly event to a provider action on this connection.
+将 Warmbly 事件路由到此连接上的服务商操作。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Connection id. |
+| `id` | path | uuid | 连接 ID。 |
 
-### Request body
+### 请求体 [#request-body-2]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `event_type` | string | Yes | The Warmbly event to react to (for example `email.replied`). |
-| `action` | string | Yes | Provider action id (for example `slack.notify`, `hubspot.upsert_contact`). |
-| `config` | object | No | Action config (for example a Slack channel or message template). |
-| `enabled` | boolean | No | Defaults to `true` when omitted. |
+| `event_type` | string | 是 | 要响应的 Warmbly 事件，例如 `email.replied`。 |
+| `action` | string | 是 | 服务商操作 ID，例如 `slack.notify`、`hubspot.upsert_contact`。 |
+| `config` | object | 否 | 操作配置，例如 Slack 频道或消息模板。 |
+| `enabled` | boolean | 否 | 省略时默认 `true`。 |
 
 ```json
 {
@@ -354,9 +354,9 @@ Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
 }
 ```
 
-### Response
+### 响应 [#response-8]
 
-`201 Created` with the created `IntegrationEventSubscription` (bare object).
+`201 Created`，直接返回创建的 `IntegrationEventSubscription` 对象。
 
 ```json
 {
@@ -372,36 +372,36 @@ Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
 }
 ```
 
-## Delete an event subscription
+## 删除事件订阅 [#delete-an-event-subscription]
 
 `DELETE /integrations/connections/:id/events/:eventId`
 
-Removes one event subscription.
+移除一个事件订阅。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Connection id. |
-| `eventId` | path | uuid | Event subscription id. |
+| `id` | path | uuid | 连接 ID。 |
+| `eventId` | path | uuid | 事件订阅 ID。 |
 
-### Response
+### 响应 [#response-9]
 
 `204 No Content`.
 
-## List field mappings
+## 列出字段映射 [#list-field-mappings]
 
 `GET /integrations/connections/:id/field-mappings`
 
-Returns the Warmbly-field to provider-field maps configured for a connection.
+返回连接配置的 Warmbly 字段到服务商字段的映射。
 
-Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_settings` or `use_integrations`).
+身份验证：**权限范围** `INTEGRATIONS`，或具有**组织权限** `manage_settings` 或 `use_integrations` 的会话。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Connection id. |
+| `id` | path | uuid | 连接 ID。 |
 
-### Response
+### 响应 [#response-10]
 
 ```json
 {
@@ -422,28 +422,28 @@ Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_setti
 }
 ```
 
-## Replace field mappings
+## 替换字段映射 [#replace-field-mappings]
 
 `PUT /integrations/connections/:id/field-mappings`
 
-Swaps the connection-default field map for an object wholesale. A full replace is naturally idempotent, so retries are safe without an `Idempotency-Key`.
+整体替换某个对象在连接中的默认字段映射。完整替换本身具有幂等性，因此无需 `Idempotency-Key` 也可安全重试。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Connection id. |
+| `id` | path | uuid | 连接 ID。 |
 
-### Request body
+### 请求体 [#request-body-3]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `object` | string | No | The provider object the mappings apply to (for example `contact`). |
-| `mappings` | array | Yes | The full set of mappings to store (replaces any existing). |
-| `mappings[].external_field` | string | Yes | Destination field on the provider. Required for every mapping. |
-| `mappings[].warmbly_field` | string | Conditional | Source Warmbly field. Required unless `transform` is `static`. |
-| `mappings[].transform` | string | No | One of `` (none), `none`, `static`, `uppercase`, `lowercase`, `trim`. |
-| `mappings[].static_value` | string | Conditional | Required when `transform` is `static`. |
+| `object` | string | 否 | 映射适用的服务商对象，例如 `contact`。 |
+| `mappings` | array | 是 | 要保存的完整映射集合，替换所有现有映射。 |
+| `mappings[].external_field` | string | 是 | 服务商侧目标字段，每条映射必填。 |
+| `mappings[].warmbly_field` | string | 有条件必填 | 来源 Warmbly 字段。除非 `transform` 为 `static`，否则必填。 |
+| `mappings[].transform` | string | 否 | 取值为 ``（无）、`none`、`static`、`uppercase`、`lowercase`、`trim` 之一。 |
+| `mappings[].static_value` | string | 有条件必填 | `transform` 为 `static` 时必填。 |
 
 ```json
 {
@@ -456,9 +456,9 @@ Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
 }
 ```
 
-### Response
+### 响应 [#response-11]
 
-The full mapping set after the replace (same shape as the list endpoint).
+替换后的完整映射集合，结构与列表端点相同。
 
 ```json
 {
@@ -477,19 +477,19 @@ The full mapping set after the replace (same shape as the list endpoint).
 }
 ```
 
-## List sync runs
+## 列出同步执行记录 [#list-sync-runs]
 
 `GET /integrations/connections/:id/runs`
 
-Returns up to 50 recent observability records for a connection (connect, token refresh, event dispatch, manual push).
+返回某个连接最多 50 条近期可观测记录，包括连接、令牌刷新、事件分发和手动推送。
 
-Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_settings` or `use_integrations`).
+身份验证：**权限范围** `INTEGRATIONS`，或具有**组织权限** `manage_settings` 或 `use_integrations` 的会话。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Connection id. |
+| `id` | path | uuid | 连接 ID。 |
 
-### Response
+### 响应 [#response-12]
 
 ```json
 {
@@ -508,19 +508,19 @@ Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_setti
 }
 ```
 
-## Get the connection webhook secret
+## 获取连接的 Webhook 密钥 [#get-the-connection-webhook-secret]
 
 `GET /integrations/connections/:id/webhook-secret`
 
-Returns (generating on first call) the HMAC signing secret for an automation connection, so you can verify Warmbly's outbound webhook signatures.
+返回自动化连接的 HMAC 签名密钥，首次调用时生成，用于验证 Warmbly 对外 Webhook 的签名。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Connection id. |
+| `id` | path | uuid | 连接 ID。 |
 
-### Response
+### 响应 [#response-13]
 
 ```json
 {
@@ -530,42 +530,42 @@ Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
 }
 ```
 
-## Test a connection
+## 测试连接 [#test-a-connection]
 
 `POST /integrations/connections/:id/test`
 
-Fires a synthetic event through the connection's notify/webhook automations so you can confirm the Zap, scenario, or channel is wired.
+通过连接的通知或 Webhook 自动化发送一个模拟事件，便于确认 Zap、场景或频道已经连通。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Connection id. |
+| `id` | path | uuid | 连接 ID。 |
 
-### Response
+### 响应 [#response-14]
 
 ```json
 { "sent": true }
 ```
 
-## Push contacts to a CRM
+## 将联系人推送到 CRM [#push-contacts-to-a-crm]
 
 `POST /integrations/connections/:id/push`
 
-Synchronously upserts the given org contacts into a connected CRM (HubSpot, Pipedrive, Salesforce, Close). Retries are naturally safe: every provider upsert is keyed by email, so a repeated push converges rather than duplicating records. No `Idempotency-Key` is required. Per-record results are returned. For Salesforce, each contact is matched to its Lead or Contact, created as the connection's **Create as** when missing, and updated through its [field rules](/guides/salesforce/#field-mapping).
+将指定的组织联系人同步插入或更新到已连接的 CRM，包括 HubSpot、Pipedrive、Salesforce、Close。重试本身安全：各服务商的插入或更新均以邮件地址为键，重复推送会收敛到相同结果，不会产生重复记录，无需 `Idempotency-Key`。响应返回逐条结果。对于 Salesforce，每个联系人会匹配对应的 Lead 或 Contact；不存在时按连接的 **Create as（创建类型）** 设置创建，并通过其[字段规则](/guides/salesforce/#field-mapping)更新。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `use_integrations`.
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `use_integrations`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Connection id. |
+| `id` | path | uuid | 连接 ID。 |
 
-### Request body
+### 请求体 [#request-body-4]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `contact_ids` | string[] | Yes, unless `all` | Contact ids to push. Deduplicated server-side. At least 1, at most 500. |
-| `all`, `filters`, `exclude` | — | No | A [filter selection](/api/reference/contacts/#selecting-contacts-for-a-bulk-action) instead of a list. It still has to resolve to 500 contacts or fewer: the push calls the CRM once per contact inside the request. |
+| `contact_ids` | string[] | 必填，除非使用 `all` | 要推送的联系人 ID。服务端去重，至少 1 个，最多 500 个。 |
+| `all`, `filters`, `exclude` | — | 否 | 使用[筛选选择](/api/reference/contacts/#selecting-contacts-for-a-bulk-action)替代 ID 列表。最终仍必须解析为不超过 500 个联系人，因为此次请求会为每个联系人调用一次 CRM。 |
 
 ```json
 {
@@ -576,7 +576,7 @@ Auth: **Scope** `INTEGRATIONS` · **Org permission** `use_integrations`.
 }
 ```
 
-### Response
+### 响应 [#response-15]
 
 ```json
 {
@@ -590,47 +590,47 @@ Auth: **Scope** `INTEGRATIONS` · **Org permission** `use_integrations`.
 }
 ```
 
-A connection whose token can no longer be refreshed returns `409 Conflict` with a "needs to be reconnected" message.
+连接令牌无法继续刷新时，返回 `409 Conflict`，并提示“需要重新连接”。
 
-## Salesforce sync
+## Salesforce 同步 [#salesforce-sync]
 
-Every route below takes the Salesforce connection id as `:id` and is scoped to the caller's organization. See the [Salesforce guide](/guides/salesforce/) for what each setting does.
+以下所有路由均使用 Salesforce 连接 ID 作为 `:id`，并限定在调用者组织范围内。各设置的作用见 [Salesforce 指南](/guides/salesforce/)。
 
-| Method | Path | Org permission | Purpose |
+| 方法 | 路径 | 组织权限 | 用途 |
 |--------|------|----------------|---------|
-| GET | `/integrations/salesforce/:id/overview` | read | Health, API usage and budget, outbox counts, last pull. `?checks=1` also probes what the connected user can create and edit |
-| GET | `/integrations/salesforce/:id/settings` | read | `{ settings, warmbly_fields, defaults }` |
-| PUT | `/integrations/salesforce/:id/settings` | `manage_settings` | Replace the settings. A whole-document write, so a retry converges |
-| GET | `/integrations/salesforce/:id/metadata` | read | Lead and Contact fields, Lead Status and Lead Source picklists |
-| GET | `/integrations/salesforce/:id/users?q=` | read | Active Salesforce users, for owner pickers |
-| GET | `/integrations/salesforce/:id/list-views?object=Lead\|Contact` | read | List views the connected user can see |
-| GET | `/integrations/salesforce/:id/campaigns?q=` | read | Salesforce Campaigns |
-| POST | `/integrations/salesforce/:id/import/preview` | `use_integrations` | `{ source_kind, object, source_id }` to `{ total, sample }`. Writes nothing |
-| GET | `/integrations/salesforce/:id/import-sources` | read | Saved imports with their last result |
-| POST | `/integrations/salesforce/:id/import-sources` | `manage_settings` | Save an import and start its first run |
-| PATCH | `/integrations/salesforce/:id/import-sources/:sourceId` | `manage_settings` | Edit name, `campaign_id` (`null` clears it), `category_ids`, `recurring`, `enabled` |
-| POST | `/integrations/salesforce/:id/import-sources/:sourceId/run` | `use_integrations` | Run now. `409 import_running` while one is running |
-| DELETE | `/integrations/salesforce/:id/import-sources/:sourceId` | `manage_settings` | Remove the import. Contacts it brought in stay |
-| GET | `/integrations/salesforce/:id/activity?status=&contact_id=&cursor=&limit=` | read | The activity log, newest first, `{ data, pagination }` |
-| POST | `/integrations/salesforce/:id/activity/retry` | `manage_settings` | `{ ids }` re-queues those failed or skipped rows; no ids re-queues every failed row |
-| POST | `/integrations/salesforce/:id/sync-now` | `use_integrations` | Log pending activity and pull changes now |
-| GET | `/contacts/:id/salesforce` | `view_contacts` | The contact's Salesforce card: linked records, owner, status, opportunities, recent Tasks, sync state |
-| POST | `/contacts/:id/salesforce/sync` | `use_integrations` | `{ connection_id?, create_as? }`: match (or create as `lead` or `contact`) and push mapped fields; returns the card |
-| DELETE | `/contacts/:id/salesforce/links/:linkId` | `use_integrations` | Unlink the contact from a record. Nothing changes in Salesforce |
+| GET | `/integrations/salesforce/:id/overview` | 读取 | 健康状况、API 用量和额度、发件队列计数、上次拉取。`?checks=1` 还会探测连接用户可创建和编辑的内容 |
+| GET | `/integrations/salesforce/:id/settings` | 读取 | `{ settings, warmbly_fields, defaults }` |
+| PUT | `/integrations/salesforce/:id/settings` | `manage_settings` | 替换设置。整体写入文档，因此重试会收敛到相同状态 |
+| GET | `/integrations/salesforce/:id/metadata` | 读取 | Lead 和 Contact 字段、Lead Status 和 Lead Source 选项列表 |
+| GET | `/integrations/salesforce/:id/users?q=` | 读取 | 有效 Salesforce 用户，用于负责人选择器 |
+| GET | `/integrations/salesforce/:id/list-views?object=Lead\|Contact` | 读取 | 连接用户可见的列表视图 |
+| GET | `/integrations/salesforce/:id/campaigns?q=` | 读取 | Salesforce Campaigns（营销活动） |
+| POST | `/integrations/salesforce/:id/import/preview` | `use_integrations` | 输入 `{ source_kind, object, source_id }`，返回 `{ total, sample }`，不写入任何内容 |
+| GET | `/integrations/salesforce/:id/import-sources` | 读取 | 已保存的导入及其最近结果 |
+| POST | `/integrations/salesforce/:id/import-sources` | `manage_settings` | 保存导入，并启动首次运行 |
+| PATCH | `/integrations/salesforce/:id/import-sources/:sourceId` | `manage_settings` | 编辑名称、`campaign_id`（`null` 可清除）、`category_ids`、`recurring`、`enabled` |
+| POST | `/integrations/salesforce/:id/import-sources/:sourceId/run` | `use_integrations` | 立即运行。已有运行时返回 `409 import_running` |
+| DELETE | `/integrations/salesforce/:id/import-sources/:sourceId` | `manage_settings` | 移除导入。已导入的联系人保留 |
+| GET | `/integrations/salesforce/:id/activity?status=&contact_id=&cursor=&limit=` | 读取 | 活动日志，最新优先，结构为 `{ data, pagination }` |
+| POST | `/integrations/salesforce/:id/activity/retry` | `manage_settings` | `{ ids }` 将指定的失败或跳过记录重新入队；不提供 ID 则将全部失败记录重新入队 |
+| POST | `/integrations/salesforce/:id/sync-now` | `use_integrations` | 立即记录待处理活动，并拉取变更 |
+| GET | `/contacts/:id/salesforce` | `view_contacts` | 联系人的 Salesforce 卡片：关联记录、负责人、状态、商机、近期 Tasks、同步状态 |
+| POST | `/contacts/:id/salesforce/sync` | `use_integrations` | `{ connection_id?, create_as? }`：匹配记录，或按 `lead` / `contact` 创建，并推送映射字段；返回卡片 |
+| DELETE | `/contacts/:id/salesforce/links/:linkId` | `use_integrations` | 解除联系人与记录的关联。不修改 Salesforce 中的任何内容 |
 
-"read" is any of `manage_settings` or `use_integrations`. API keys need the `INTEGRATIONS` permission, except `GET /contacts/:id/salesforce`, which shows opportunities and needs `READ_CRM`.
+“读取”权限可为 `manage_settings` 或 `use_integrations`。API 密钥需要 `INTEGRATIONS` 权限，但 `GET /contacts/:id/salesforce` 例外：它显示商机，需要 `READ_CRM`。
 
-Creating an import is not deduplicated by request: a retried create saves a second import, whose run brings in nobody new because people are matched by address.
+创建导入不会按请求去重：重试创建会保存第二个导入，但由于按邮件地址匹配联系人，其运行不会新增重复联系人。
 
-## List meeting bookings (integrations view)
+## 列出会议预约（集成视图） [#list-meeting-bookings-integrations-view]
 
 `GET /integrations/bookings`
 
-Returns up to 50 recent booked meetings. For the full Meetings page list with filters and pagination, use `GET /meetings`.
+返回最多 50 条近期预约会议。要获取会议页面的完整列表、筛选和分页，请使用 `GET /meetings`。
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`.
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`。
 
-### Response
+### 响应 [#response-16]
 
 ```json
 {
@@ -652,15 +652,15 @@ Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`.
 }
 ```
 
-## List automations
+## 列出自动化流程 [#list-automations]
 
 `GET /automations`
 
-Returns this org's automation flows (the visual flow builder).
+返回本组织的自动化流程，即可视化流程构建器中的流程。
 
-Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_settings` or `use_integrations`).
+身份验证：**权限范围** `INTEGRATIONS`，或具有**组织权限** `manage_settings` 或 `use_integrations` 的会话。
 
-### Response
+### 响应 [#response-17]
 
 ```json
 {
@@ -679,25 +679,25 @@ Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_setti
 }
 ```
 
-## Create an automation
+## 创建自动化流程 [#create-an-automation]
 
 `POST /automations`
 
-Creates a new automation flow: a trigger event plus a graph of condition and action nodes.
+创建新的自动化流程，包括触发事件，以及由条件和操作节点构成的图。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`。
 
-### Request body
+### 请求体 [#request-body-5]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `name` | string | Yes | Display name. |
-| `enabled` | boolean | No | Whether the automation runs on matching events. |
-| `trigger_event` | string | Yes | The event that fires the flow (for example `email.replied`). |
-| `filter` | object | No | Optional automation-wide gate (for example intents / `min_confidence`) applied to every action. |
-| `graph` | object | Yes | The flow graph: `nodes` and `edges`. |
-| `graph.nodes[]` | object | Yes | A node. `type` is `trigger` (exactly one, id `trigger`), `condition`, or `action`. Action nodes carry `action`, optional `connection_id`, and `config`; condition nodes carry `condition`. Each node has `x` / `y` canvas coordinates. |
-| `graph.edges[]` | object | Yes | An edge: `source`, `target`, and `when` (`""` for plain edges, `true` / `false` for the two outgoing edges of a condition). |
+| `name` | string | 是 | 显示名称。 |
+| `enabled` | boolean | 否 | 是否在匹配事件发生时运行自动化流程。 |
+| `trigger_event` | string | 是 | 触发流程的事件，例如 `email.replied`。 |
+| `filter` | object | 否 | 可选的流程整体条件，例如意图或 `min_confidence`，应用于每个操作。 |
+| `graph` | object | 是 | 流程图：`nodes` 和 `edges`。 |
+| `graph.nodes[]` | object | 是 | 一个节点。`type` 为 `trigger`（恰好一个，ID 为 `trigger`）、`condition` 或 `action`。操作节点包含 `action`、可选的 `connection_id` 及 `config`；条件节点包含 `condition`。每个节点具有 `x` / `y` 画布坐标。 |
+| `graph.edges[]` | object | 是 | 一条边：`source`、`target` 和 `when`；普通边为 `""`，条件节点的两条出边分别为 `true` / `false`。 |
 
 ```json
 {
@@ -724,9 +724,9 @@ Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
 }
 ```
 
-### Response
+### 响应 [#response-18]
 
-`201 Created` with the created automation under an `automation` key.
+`201 Created`，在 `automation` 键下返回创建的自动化流程。
 
 ```json
 {
@@ -742,19 +742,19 @@ Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
 }
 ```
 
-## Get an automation
+## 获取自动化流程 [#get-an-automation]
 
 `GET /automations/:id`
 
-Returns one automation with its full graph.
+返回单个自动化流程及其完整流程图。
 
-Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_settings` or `use_integrations`).
+身份验证：**权限范围** `INTEGRATIONS`，或具有**组织权限** `manage_settings` 或 `use_integrations` 的会话。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Automation id. |
+| `id` | path | uuid | 自动化流程 ID。 |
 
-### Response
+### 响应 [#response-19]
 
 ```json
 {
@@ -770,21 +770,21 @@ Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_setti
 }
 ```
 
-## Update an automation
+## 更新自动化流程 [#update-an-automation]
 
 `PATCH /automations/:id`
 
-Replaces an automation's name, enabled state, trigger, filter, and graph. The body shape matches the create payload.
+替换自动化流程的名称、启用状态、触发器、筛选条件和流程图。请求体结构与创建载荷一致。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Automation id. |
+| `id` | path | uuid | 自动化流程 ID。 |
 
-### Request body
+### 请求体 [#request-body-6]
 
-Same fields as [create an automation](#create-an-automation).
+字段与[创建自动化流程](#create-an-automation)相同。
 
 ```json
 {
@@ -795,7 +795,7 @@ Same fields as [create an automation](#create-an-automation).
 }
 ```
 
-### Response
+### 响应 [#response-20]
 
 ```json
 {
@@ -810,43 +810,43 @@ Same fields as [create an automation](#create-an-automation).
 }
 ```
 
-## Delete an automation
+## 删除自动化流程 [#delete-an-automation]
 
 `DELETE /automations/:id`
 
-Removes an automation. Returns `409 Conflict` when the automation is still referenced by campaign steps.
+移除自动化流程。如果仍被营销活动步骤引用，返回 `409 Conflict`。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Automation id. |
+| `id` | path | uuid | 自动化流程 ID。 |
 
-### Response
+### 响应 [#response-21]
 
 ```json
 { "deleted": true }
 ```
 
-## Test an automation
+## 测试自动化流程 [#test-an-automation]
 
 `POST /automations/:id/test`
 
-Runs the automation against sample (or provided) data without side effects and returns the walked trace plus per-action previews (the builder's "Test" button).
+使用示例或提供的数据运行自动化流程，不产生副作用，并返回执行轨迹及每个操作的预览，用于构建器的“测试”按钮。
 
-Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_settings` or `use_integrations`).
+身份验证：**权限范围** `INTEGRATIONS`，或具有**组织权限** `manage_settings` 或 `use_integrations` 的会话。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Automation id. |
+| `id` | path | uuid | 自动化流程 ID。 |
 
-### Request body
+### 请求体 [#request-body-7]
 
-The body is optional. When omitted, the server builds a sample event from the trigger.
+请求体可选。省略时，服务器根据触发器构建示例事件。
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `data` | object | No | Sample event payload to evaluate the flow against. |
+| `data` | object | 否 | 用于评估流程的示例事件载荷。 |
 
 ```json
 {
@@ -854,9 +854,9 @@ The body is optional. When omitted, the server builds a sample event from the tr
 }
 ```
 
-### Response
+### 响应 [#response-22]
 
-A dry-run trace plus the resolved event data.
+试运行轨迹，以及解析后的事件数据。
 
 ```json
 {
@@ -875,20 +875,20 @@ A dry-run trace plus the resolved event data.
 }
 ```
 
-## List automation runs
+## 列出自动化流程执行记录 [#list-automation-runs]
 
 `GET /automations/:id/runs`
 
-Returns recent run history for an automation (per fired event or manual launch), with per-node outcomes.
+返回自动化流程最近的运行历史，每次触发事件或手动启动对应一次运行，并包含各节点结果。
 
-Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_settings` or `use_integrations`).
+身份验证：**权限范围** `INTEGRATIONS`，或具有**组织权限** `manage_settings` 或 `use_integrations` 的会话。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Automation id. |
-| `limit` | query | int | Max runs to return. Defaults to 50. |
+| `id` | path | uuid | 自动化流程 ID。 |
+| `limit` | query | int | 最多返回的运行数，默认 50。 |
 
-### Response
+### 响应 [#response-23]
 
 ```json
 {
@@ -908,25 +908,25 @@ Auth: **Scope** `INTEGRATIONS` (or session with **Org permission** `manage_setti
 }
 ```
 
-## Search meetings
+## 搜索会议 [#search-meetings]
 
 `GET /meetings`
 
-The Meetings page list: booked calls from connected scheduling providers (Calendly, Cal.com) plus manually logged meetings, filtered by timeframe, status, and text, with offset pagination.
+会议页面列表：包括已连接预约服务商 Calendly、Cal.com 的预约通话，以及手动记录的会议，支持按时间范围、状态和文本筛选，并使用偏移量分页。
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`.
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `timeframe` | query | string | One of `upcoming`, `past`, or empty for all. Anything else returns `400`. |
-| `status` | query | string | Exact status filter (`booked`, `rescheduled`, `canceled`, `completed`, `no_show`), or empty for any. |
-| `q` | query | string | Matches invitee name/email or event name. |
-| `limit` | query | int | Page size (clamped 1..200 server-side). |
-| `cursor` | query | string | Opaque cursor from a previous page's `pagination.next_cursor`. Omit for the first page. |
+| `timeframe` | query | string | 取值为 `upcoming`、`past`，或留空表示全部。其他值返回 `400`。 |
+| `status` | query | string | 精确状态筛选（`booked`、`rescheduled`、`canceled`、`completed`、`no_show`），留空表示任意状态。 |
+| `q` | query | string | 匹配受邀人姓名、邮件地址或事件名称。 |
+| `limit` | query | int | 每页数量，服务端限制在 1 至 200。 |
+| `cursor` | query | string | 上一页 `pagination.next_cursor` 中的不透明游标。第一页省略。 |
 
-### Response
+### 响应 [#response-24]
 
-A `data` array plus the standard `pagination` envelope with an opaque `next_cursor` and an exact `total` (offset-paginated under the hood, identical shape to every other list).
+`data` 数组，加上标准 `pagination` 封装，包含不透明的 `next_cursor` 和准确的 `total`。内部使用偏移量分页，外部结构与其他列表一致。
 
 ```json
 {
@@ -954,15 +954,15 @@ A `data` array plus the standard `pagination` envelope with an opaque `next_curs
 }
 ```
 
-## Meetings summary
+## 会议摘要 [#meetings-summary]
 
 `GET /meetings/summary`
 
-Returns the counts the Meetings page header and sidebar show.
+返回会议页面顶部和侧边栏显示的计数。
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`.
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`。
 
-### Response
+### 响应 [#response-25]
 
 ```json
 {
@@ -973,26 +973,26 @@ Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`.
 }
 ```
 
-## Create a meeting
+## 创建会议 [#create-a-meeting]
 
 `POST /meetings`
 
-Logs a meeting by hand (source `manual`). It lives alongside auto-captured Calendly/Cal.com bookings on the Meetings page and the contact timeline. The contact is attributed by an explicit (verified) id or by an org-scoped email match.
+手动记录会议，来源为 `manual`。会议会与自动获取的 Calendly / Cal.com 预约一起出现在会议页面和联系人时间线中。通过明确提供且经过验证的 ID，或组织范围内的邮件地址匹配，确定关联联系人。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`。
 
-### Request body
+### 请求体 [#request-body-8]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `title` | string | No | Meeting title. Defaults to `Call` when empty. |
-| `invitee_name` | string | Conditional | A name or email is required. |
-| `invitee_email` | string | Conditional | A name or email is required. Lowercased server-side. |
-| `scheduled_for` | string | Yes | RFC 3339 date-time. Required and validated. |
-| `duration_minutes` | int | No | When > 0, sets the end time. |
-| `location` | string | No | Free-text location. |
-| `join_url` | string | No | Video/join link. |
-| `contact_id` | string | No | Explicit contact id to link (verified against the org). |
+| `title` | string | 否 | 会议标题。为空时默认 `Call`。 |
+| `invitee_name` | string | 有条件必填 | 姓名或邮件地址至少提供一个。 |
+| `invitee_email` | string | 有条件必填 | 姓名或邮件地址至少提供一个。服务端转为小写。 |
+| `scheduled_for` | string | 是 | RFC 3339 日期时间。必填，并进行验证。 |
+| `duration_minutes` | int | 否 | 大于 0 时，用于设置结束时间。 |
+| `location` | string | 否 | 自由文本地点。 |
+| `join_url` | string | 否 | 视频会议或加入链接。 |
+| `contact_id` | string | 否 | 明确指定要关联的联系人 ID，会验证其属于该组织。 |
 
 ```json
 {
@@ -1005,9 +1005,9 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
 }
 ```
 
-### Response
+### 响应 [#response-26]
 
-`201 Created` with the created booking under a `meeting` key.
+`201 Created`，在 `meeting` 键下返回创建的预约。
 
 ```json
 {
@@ -1027,33 +1027,33 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
 }
 ```
 
-## Delete a meeting
+## 删除会议 [#delete-a-meeting]
 
 `DELETE /meetings/:id`
 
-Removes a meeting booking (used for manually created ones).
+移除会议预约，用于手动创建的会议。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Meeting booking id. |
+| `id` | path | uuid | 会议预约 ID。 |
 
-### Response
+### 响应 [#response-27]
 
 ```json
 { "deleted": true }
 ```
 
-## Get the lead-sync Google connection
+## 获取潜在客户同步所用的 Google 连接 [#get-the-lead-sync-google-connection]
 
 `GET /lead-sync/google/connection`
 
-Reports whether the org has a connected Google account usable for lead sync (the hidden `google_sheets` OAuth connection).
+报告组织是否已连接可用于潜在客户同步的 Google 账户，即隐藏的 `google_sheets` OAuth 连接。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`。
 
-### Response
+### 响应 [#response-28]
 
 ```json
 {
@@ -1066,22 +1066,22 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
 }
 ```
 
-When no Google account is connected, `connected` is `false` and `connection` is `null`.
+没有连接 Google 账户时，`connected` 为 `false`，`connection` 为 `null`。
 
-## Get spreadsheet metadata
+## 获取电子表格元数据 [#get-spreadsheet-metadata]
 
 `POST /lead-sync/google/spreadsheet`
 
-Returns a sheet's title and tabs so the UI can render a tab picker before mapping columns.
+返回电子表格标题和工作表标签，便于界面在列映射前显示工作表选择器。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`。
 
-### Request body
+### 请求体 [#request-body-9]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `connection_id` | string | Yes | The `google_sheets` connection id. |
-| `sheet_id` | string | Yes | The Google spreadsheet id. |
+| `connection_id` | string | 是 | `google_sheets` 连接 ID。 |
+| `sheet_id` | string | 是 | Google 电子表格 ID。 |
 
 ```json
 {
@@ -1090,7 +1090,7 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
 }
 ```
 
-### Response
+### 响应 [#response-29]
 
 ```json
 {
@@ -1103,21 +1103,21 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
 }
 ```
 
-## Preview a lead sync
+## 预览潜在客户同步 [#preview-a-lead-sync]
 
 `POST /lead-sync/google/preview`
 
-Returns an import-preview-shaped payload (columns, sample rows, total rows, header detection, suggested mapping) so the frontend reuses its contact-import column mapper verbatim. The mapping is suggested exactly as the [file import preview](/api/reference/contacts/#preview-an-import) suggests it, including headers matched to the workspace's existing custom fields.
+返回与导入预览相同结构的载荷，包括列、示例行、总行数、表头检测和建议映射，使前端可以直接复用联系人导入的列映射器。映射建议与[文件导入预览](/api/reference/contacts/#preview-an-import)完全一致，包括将表头匹配到工作区已有自定义字段。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`。
 
-### Request body
+### 请求体 [#request-body-10]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `connection_id` | string | Yes | The `google_sheets` connection id. |
-| `sheet_id` | string | Yes | The Google spreadsheet id. |
-| `tab_title` | string | No | The tab to read. Defaults to the first tab. |
+| `connection_id` | string | 是 | `google_sheets` 连接 ID。 |
+| `sheet_id` | string | 是 | Google 电子表格 ID。 |
+| `tab_title` | string | 否 | 要读取的工作表标签。默认第一个。 |
 
 ```json
 {
@@ -1127,7 +1127,7 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
 }
 ```
 
-### Response
+### 响应 [#response-30]
 
 ```json
 {
@@ -1147,22 +1147,22 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
 }
 ```
 
-## List lead-sync sources
+## 列出潜在客户同步来源 [#list-lead-sync-sources]
 
 `GET /lead-sync/sources`
 
-Lists this org's saved sync sources, optionally filtered to a campaign or a segment.
+列出本组织已保存的同步来源，可按营销活动或分群筛选。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `campaign_id` | query | uuid | Optional. Restricts to sources targeting that campaign. Invalid ids return `400`. |
-| `segment_id` | query | uuid | Optional. Restricts to sources that pin their rows into that segment. Invalid ids return `400`. Combines with `campaign_id`. |
+| `campaign_id` | query | uuid | 可选。仅返回以该营销活动为目标的来源。无效 ID 返回 `400`。 |
+| `segment_id` | query | uuid | 可选。仅返回会将记录固定纳入该分群的来源。无效 ID 返回 `400`。可与 `campaign_id` 组合。 |
 
-### Response
+### 响应 [#response-31]
 
-A `data` array (no pagination envelope on this list).
+`data` 数组，此列表不使用分页封装。
 
 ```json
 {
@@ -1192,30 +1192,30 @@ A `data` array (no pagination envelope on this list).
 }
 ```
 
-## Create a lead-sync source
+## 创建潜在客户同步来源 [#create-a-lead-sync-source]
 
 `POST /lead-sync/sources`
 
-Saves a new on-demand sync source binding a Google Sheet tab to Warmbly's contact importer.
+保存新的按需同步来源，将某个 Google Sheets 工作表绑定到 Warmbly 联系人导入器。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`。
 
-### Request body
+### 请求体 [#request-body-11]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `connection_id` | uuid | Yes | The org's `google_sheets` OAuth connection. |
-| `sheet_id` | string | Yes | The Google spreadsheet id. |
-| `sheet_title` | string | No | Spreadsheet title (for display). |
-| `tab_title` | string | No | Tab to read. |
-| `has_header` | boolean | No | Whether the first row is a header. |
-| `column_mapping` | array | Yes | Column-to-target mappings ([same shape as contact import](/api/reference/contacts/)). Validated on save, not on the next sync: a mapping with no `email` column, or a custom field whose name Warmbly cannot use, is a `400` here. |
-| `dedup` | string | No | Collision strategy: `skip`, `update`, or `create_duplicate`. |
-| `target_campaign_id` | uuid | No | Enrol new/updated leads into this campaign on each sync. |
-| `category_ids` | string[] | No | Label IDs to put on synced leads. |
-| `segment_ids` | string[] | No | Segments every synced row is pinned into as a manual include override, on every run. Each id must name a segment in the organization or the save is a `400`; a segment deleted later is dropped from the run instead of failing it. |
-| `subscribed_default` | boolean | No | Default subscription state for new contacts. |
-| `label` | string | No | Friendly name. |
+| `connection_id` | uuid | 是 | 组织的 `google_sheets` OAuth 连接。 |
+| `sheet_id` | string | 是 | Google 电子表格 ID。 |
+| `sheet_title` | string | 否 | 电子表格标题，用于显示。 |
+| `tab_title` | string | 否 | 要读取的工作表标签。 |
+| `has_header` | boolean | 否 | 第一行是否为表头。 |
+| `column_mapping` | array | 是 | 列到目标的映射（[与联系人导入结构相同](/api/reference/contacts/)）。保存时即验证，不等到下次同步；映射没有 `email` 列，或自定义字段名称不符合 Warmbly 要求时，此处返回 `400`。 |
+| `dedup` | string | 否 | 冲突策略：`skip`、`update` 或 `create_duplicate`。 |
+| `target_campaign_id` | uuid | 否 | 每次同步时，将新增或更新的潜在客户加入此营销活动。 |
+| `category_ids` | string[] | 否 | 添加到已同步潜在客户的标签 ID。 |
+| `segment_ids` | string[] | 否 | 每次运行时，每条同步记录都以手动纳入覆盖规则固定加入的分群。每个 ID 都必须属于组织内的分群，否则保存返回 `400`；若分群之后被删除，则运行时忽略该分群，不使整次运行失败。 |
+| `subscribed_default` | boolean | 否 | 新联系人默认订阅状态。 |
+| `label` | string | 否 | 友好名称。 |
 
 ```json
 {
@@ -1237,9 +1237,9 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
 }
 ```
 
-### Response
+### 响应 [#response-32]
 
-`201 Created` with the created `LeadSyncSource` (bare object, same shape as a list item).
+`201 Created`，直接返回创建的 `LeadSyncSource` 对象，结构与列表项相同。
 
 ```json
 {
@@ -1264,50 +1264,50 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
 }
 ```
 
-## Get a lead-sync source
+## 获取潜在客户同步来源 [#get-a-lead-sync-source]
 
 `GET /lead-sync/sources/:id`
 
-Returns one saved source.
+返回单个已保存来源。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Source id. |
+| `id` | path | uuid | 来源 ID。 |
 
-### Response
+### 响应 [#response-33]
 
-A bare `LeadSyncSource` object (same shape as a list item).
+直接返回 `LeadSyncSource` 对象，结构与列表项相同。
 
-## Update a lead-sync source
+## 更新潜在客户同步来源 [#update-a-lead-sync-source]
 
 `PATCH /lead-sync/sources/:id`
 
-Edits a saved source. All fields are optional; omitting a field leaves the stored value untouched.
+编辑已保存来源。所有字段均可选，省略字段保留已存值。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Source id. |
+| `id` | path | uuid | 来源 ID。 |
 
-### Request body
+### 请求体 [#request-body-12]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `sheet_id` | string | No | New spreadsheet id. |
-| `sheet_title` | string | No | New title. |
-| `tab_title` | string | No | New tab. |
-| `has_header` | boolean | No | Header toggle. |
-| `column_mapping` | array | No | Replacement mappings. |
-| `dedup` | string | No | Collision strategy. |
-| `target_campaign_id` | uuid | No | New target campaign. |
-| `clear_campaign` | boolean | No | When `true`, unsets the target campaign. |
-| `category_ids` | string[] | No | Replacement set of label IDs. |
-| `segment_ids` | string[] | No | Replacement segment target set. An unknown id is a `400`; an empty array clears the targets. |
-| `subscribed_default` | boolean | No | Default subscription state. |
-| `label` | string | No | New label. |
+| `sheet_id` | string | 否 | 新的电子表格 ID。 |
+| `sheet_title` | string | 否 | 新标题。 |
+| `tab_title` | string | 否 | 新的工作表标签。 |
+| `has_header` | boolean | 否 | 是否有表头的开关。 |
+| `column_mapping` | array | 否 | 替换现有映射。 |
+| `dedup` | string | 否 | 冲突策略。 |
+| `target_campaign_id` | uuid | 否 | 新的目标营销活动。 |
+| `clear_campaign` | boolean | 否 | 为 `true` 时，取消目标营销活动。 |
+| `category_ids` | string[] | 否 | 替换现有标签 ID 集合。 |
+| `segment_ids` | string[] | 否 | 替换目标分群集合。未知 ID 返回 `400`；空数组清除全部目标。 |
+| `subscribed_default` | boolean | 否 | 默认订阅状态。 |
+| `label` | string | 否 | 新标签。 |
 
 ```json
 {
@@ -1317,41 +1317,41 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
 }
 ```
 
-### Response
+### 响应 [#response-34]
 
-The updated `LeadSyncSource` (bare object).
+更新后的 `LeadSyncSource`，直接返回对象。
 
-## Delete a lead-sync source
+## 删除潜在客户同步来源 [#delete-a-lead-sync-source]
 
 `DELETE /lead-sync/sources/:id`
 
-Removes a saved source.
+移除已保存来源。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Source id. |
+| `id` | path | uuid | 来源 ID。 |
 
-### Response
+### 响应 [#response-35]
 
 `204 No Content`.
 
-## Run a lead-sync source now
+## 立即运行指定来源的潜在客户同步 [#run-a-lead-sync-source-now]
 
 `POST /lead-sync/sources/:id/sync`
 
-Runs the source on demand: reads the sheet and upserts contacts through the contact importer. New rows create contacts; rows matching an existing contact by email are updated. Naturally idempotent (email upsert), so retries are safe without an `Idempotency-Key`.
+按需运行来源：读取电子表格，并通过联系人导入器插入或更新联系人。新行创建联系人，按邮件地址匹配已有联系人的行则更新。按邮件地址插入或更新本身具有幂等性，因此无需 `Idempotency-Key` 也可安全重试。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`.
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|-----|------|-------------|
-| `id` | path | uuid | Source id. |
+| `id` | path | uuid | 来源 ID。 |
 
-### Response
+### 响应 [#response-36]
 
-The source id plus the underlying contact-import counts.
+来源 ID，以及底层联系人导入的计数。
 
 ```json
 {

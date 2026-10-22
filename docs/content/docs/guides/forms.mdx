@@ -1,232 +1,232 @@
 ---
-title: "Forms"
-description: "Build a hosted lead-capture form, style it to match your site, embed it anywhere, and turn every submission into a contact."
+title: "表单"
+description: "创建托管式潜在客户收集表单，设置与网站一致的样式，嵌入所需位置，并将每次提交转为联系人。"
 ---
 
-Forms turn website visitors into contacts. You build a form, publish it to a hosted page, and share the link or embed it on any website.
+表单可以将网站访客转化为联系人。你可以构建表单，将其发布到托管页面，然后分享链接或嵌入任意网站。
 
-## Publish a form
+## 发布表单 [#publish-a-form]
 
 <Steps>
 
 <Step>
 
-Open **Forms** in the sidebar and choose **New form**.
+打开侧边栏中的**表单**，选择**新建表单**。
 
 </Step>
 
 <Step>
 
-Add and arrange blocks in the builder. The canvas shows exactly what the hosted page renders.
+在构建器中添加并排列内容块。画布显示的效果与托管页面完全一致。
 
 </Step>
 
 <Step>
 
-Style it on the **Design** tab, then pick labels or a campaign on the **Settings** tab.
+在**设计**标签页设置样式，再到**设置**标签页选择标签或营销活动。
 
 </Step>
 
 <Step>
 
-Press **Publish**, then copy a link or embed code from the **Share** tab.
+点击**发布**，然后从**分享**标签页复制链接或嵌入代码。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- A submission with an email answer creates or updates a contact. Without one, it is stored but never touches the contact list.
-- **Add to campaign** enrolls new contacts as leads, but a form never causes immediate mail.
-- Every published form has spam protection with nothing to configure.
-- Edits to a published form go live when you save.
-- Viewing forms takes the same permission as viewing contacts; building and publishing take the manage-contacts permission.
+- 提交内容中包含电子邮件地址时，会创建或更新联系人。没有电子邮件地址时，提交内容仍会存储，但不会影响联系人列表。
+- **加入营销活动**会将新联系人作为潜在客户加入活动，但表单绝不会直接触发即时发信。
+- 每个已发布的表单都自带垃圾内容防护，无需配置。
+- 修改已发布的表单后，保存即生效。
+- 查看表单需要与查看联系人相同的权限；构建和发布表单需要管理联系人权限。
 
 <Fold>
 
-## What forms do and who can use them
+## 表单的用途与使用权限 [#what-forms-do-and-who-can-use-them]
 
-Browsing filters, searches and view choices are [remembered in your browser tab](/guides/browsing/) across refreshes and navigation, separately for each user and workspace.
+浏览时使用的筛选、搜索和视图选项会[保存在浏览器标签页中](/guides/browsing/)，刷新页面或切换页面后仍然保留，并按用户和工作区分别保存。
 
-Forms turn website visitors into contacts. You build a form in the dashboard, publish it to a hosted page, and either share the link or embed the form on any website. Every submission is stored, and when it carries an email address it creates or updates a contact, applies the labels you chose, and can drop it straight into a campaign.
+表单可以将网站访客转化为联系人。你可以在控制台中构建表单，将其发布到托管页面，然后分享链接或嵌入任意网站。每次提交都会存储；如果包含电子邮件地址，系统会创建或更新联系人，应用你选择的标签，并可直接将其加入营销活动。
 
-Open **Forms** in the sidebar. Viewing takes the same permission as viewing contacts; building and publishing take the manage-contacts permission.
+打开侧边栏中的**表单**即可使用。查看表单需要与查看联系人相同的权限；构建和发布表单需要管理联系人权限。
 
 </Fold>
 
 <Fold>
 
-## Building a form
+## 创建表单 [#building-a-form]
 
-**New form** creates a draft seeded with first name, last name and email, and opens the builder. The canvas in the middle is a live preview: what you see is exactly what the hosted page renders.
+**新建表单**会创建一份预置了名字、姓氏和电子邮件字段的草稿，并打开构建器。中央画布是实时预览，你看到的效果与托管页面完全一致。
 
-- Add blocks by clicking them in the left palette or dragging them onto the canvas. A blue line marks the slot the block will land in, and releasing anywhere outside the canvas cancels the drag.
-- Click a block to edit it in the right panel: label, placeholder, help text, required, and width. Two half-width fields share a row.
-- Drag the grip on a block to reorder it. The form itself holds still while you drag, so the blue line is what tells you where the block lands. The grip also works without a mouse: tab to it, press space to pick the block up, move it with the arrow keys, then press space to drop it or escape to cancel.
-- The copy and trash buttons on a block duplicate and remove it.
+- 点击左侧组件面板中的内容块，或将其拖到画布上，即可添加。蓝线标出内容块将插入的位置；在画布之外松开鼠标会取消拖动。
+- 点击内容块，在右侧面板编辑其标签、占位文本、帮助文字、必填设置和宽度。两个半宽字段会共用一行。
+- 拖动内容块上的拖拽手柄可以调整顺序。拖动期间，表单本身保持不动，由蓝线提示内容块的落点。手柄也支持不用鼠标操作：按 Tab 聚焦手柄，按空格拾起内容块，用方向键移动，再按空格放下，或按 Escape 取消。
+- 内容块上的复制和垃圾桶按钮分别用于复制和移除该块。
 
-### Field types
+### 字段类型 [#field-types]
 
-| Block | Collects |
+| 内容块 | 收集的内容 |
 |---|---|
-| Text, Email, Phone, Long text, Number, Date | A single value |
-| Dropdown, Radio buttons | One of the options you define |
-| Checkbox group | Any number of the options |
-| Single checkbox | A yes, for consent lines like "I agree" |
-| Hidden field | A constant you set, invisible to visitors. Useful for tagging which page or campaign a form sits on |
-| Heading, Text block, Divider | Nothing. Layout only |
-| Page break | Nothing. Everything after it starts a new page |
+| 文本、电子邮件、电话、长文本、数字、日期 | 单个值 |
+| 下拉列表、单选按钮 | 你定义的选项中的一项 |
+| 复选框组 | 任意数量的选项 |
+| 单个复选框 | 一个肯定答复，适用于“我同意”等同意条款 |
+| 隐藏字段 | 由你设置、访客不可见的固定值，可用于标识表单所在的页面或营销活动 |
+| 标题、文本块、分隔线 | 不收集内容，仅用于布局 |
+| 分页符 | 不收集内容，其后的所有内容从新的一页开始 |
 
-### Pages
+### 页面 [#pages]
 
-Drop a **Page break** block anywhere to split the form into steps. Visitors move through pages with Next and Back, each page validates before advancing, and an optional progress bar (Design tab) shows how far along they are. A break can carry a page title, which labels the page on the form and in analytics. Avoid a break as the very first or last block; an empty page renders nothing and the builder warns before publishing.
+在任意位置放入**分页符**，即可将表单拆分为多个步骤。访客通过“下一步”和“返回”切换页面，每页都会在继续之前进行验证；可选的进度条（在设计标签页设置）显示填写进度。分页符可以带有页面标题，用于标识表单中的页面以及分析报表中的页面。避免将分页符放在最开头或最后：空白页不会渲染任何内容，构建器也会在发布前发出警告。
 
-### Where answers go
+### 提交内容的保存位置 [#where-answers-go]
 
-Every answer is kept verbatim on the submission. On top of that, each input field can feed the contact:
+每个回答都会原样保存在提交记录中。此外，每个输入字段还可以写入联系人：
 
-- **Contact columns.** A field mapped to first name, last name, email, company or phone fills that column. The email field always maps to email, and only one field can map to each column.
-- **Custom fields.** An unmapped field stores its answer as a contact custom field named after the label, so a "Company size" question becomes a `Company size` custom field you can use in [segments](/guides/segments/) and email personalization.
+- **联系人列。** 映射到名字、姓氏、电子邮件、公司或电话的字段，会填入相应列。电子邮件字段始终映射到电子邮件列，每一列只能映射一个字段。
+- **自定义字段。** 没有映射的字段会以其标签作为名称，将答案保存为联系人自定义字段。例如，“Company size”（公司规模）这一问题会生成 `Company size` 自定义字段，可用于[分群](/guides/segments/)和邮件个性化。
 
-A form needs an email answer to create a contact. Forms without an email field still collect submissions; they just never touch the contact list.
-
-</Fold>
-
-<Fold>
-
-## Design
-
-The **Design** tab styles the form while the canvas updates live. The defaults are a clean, neutral card that looks right on most sites; changing nothing is a fine choice.
-
-- **Themes.** One-click presets (light, dark, gradients, serif and more) that set the colors and font in one go. A theme never touches your layout, pages or button text, and every color stays editable afterwards.
-- **Layout.** *Card* is the classic centered box. *Wide* drops the box and lets the fields sit directly on the page background. *Split* adds a side panel that shows your cover image (or the page background) next to the form.
-- **Mode.** *Classic* shows each page of fields at once. *Focus* asks one question per screen, advancing on Enter, in the style of full-page survey tools.
-- **Colors and type.** Every color (page, card, inputs, labels, placeholder, accent, button), eight fonts, corner radius, spacing, width and alignment. Each color opens a full picker: drag the shade area, pick a hue, paste a hex value, or use one of the presets. On Chromium browsers there is also an eyedropper for sampling a color anywhere on screen. The page background can be a two-color gradient.
-- **Header bar.** An optional bar carrying your logo and a title. **Across the page** runs it edge to edge above everything; **with the form** puts it on the form itself, above the fields with a rule under it, which reads as part of the card rather than as chrome above it. Its contents sit left, centered or apart (logo one side, title the other), following the form's own alignment until you choose otherwise; centering stacks the logo above the title, since that is the shape a centered lockup wants. A page-width bar can take its own background color and stay on screen while the form scrolls; neither applies to an inline header, so neither is offered for one. The header takes the logo by default, and turning that off leaves the logo in its own placement and gives the header the title alone. A header with neither a logo nor a title is skipped on the live page.
-- **Side panel.** On the Split layout, the panel takes a title and a paragraph of text on top of the cover image, rendered in white with a soft shadow so it stays readable on any photo.
-- **Branding and backgrounds.** Upload a logo (PNG or JPG, up to 1 MB), a cover image for the Split layout, and a background image behind the whole page (both up to 4 MB). The logo renders small, medium or large, and on the Card layout it can sit on the card or above it on the page background; check contrast if you move it out, since a dark page can swallow a dark logo. A background image can fill, fit or tile, and the **veil** slider fades the page color over it: raise it when text on a busy photo gets hard to read.
+表单必须收到电子邮件地址才能创建联系人。没有电子邮件字段的表单仍可收集提交内容，只是不会影响联系人列表。
 
 </Fold>
 
 <Fold>
 
-## Settings
+## 设计 [#design]
 
-The **Settings** tab controls what a submission does:
+**设计**标签页用于设置表单样式，画布会实时更新。默认样式是简洁、中性的卡片，适合大多数网站；保留默认设置也完全可以。
 
-- **Success message** is shown after submitting, or set a **redirect URL** to send the visitor to your own thank-you page instead.
-- **Add to labels** puts the labels you pick on every submitted contact, for example "Website leads".
-- **Add to campaign** enrolls new contacts as leads in the campaign you pick. Sending still follows the campaign's own schedule, limits and windows; a form never causes immediate mail. Picking a campaign turns on its **Keep running for new leads** setting, so it waits between submissions instead of finishing; a campaign that had already finished restarts when a lead arrives, through the usual launch checks, and a refused restart is noted in its activity log while the lead waits.
-- **Spam protection** and **allowed embed domains** are covered below.
-
-</Fold>
-
-<Fold>
-
-## Publishing and sharing
-
-**Publish** puts the form online; **Unpublish** takes it offline again (the page starts answering not found). Archiving keeps the data but takes the page offline too. Edits to a published form go live when you save.
-
-The **Share** tab has four ways to use a published form:
-
-- **Hosted link.** The form's own page. Share it in an email signature or on social; no website needed.
-- **JavaScript embed** (recommended). A script tag plus a `div` with a `data-warmbly-form` attribute. The form renders in place and sizes itself to its content, so there is no clipped bottom edge or dead space.
-- **Popup.** The same script plus any element with a `data-warmbly-popup` attribute. Clicking it opens the form in an overlay, which closes on Escape, on the backdrop, and shortly after a successful submit.
-- **Plain iframe.** For site builders that strip scripts. Fixed height, so set the `height` attribute to fit your form.
-
-These work in WordPress, Elementor, Webflow, Shopify, Framer and anywhere else custom HTML is allowed. The form itself always runs on the Warmbly origin, so the host page's CSS cannot break it and no visitor data flows through the host page. The script also fires a `warmbly:submitted` DOM event on the host page after each successful submit, if you want to run your own tracking.
-
-### Personalized links
-
-A personalized link is the form URL with a per-contact ticket (`?t=...`). Opening it pre-fills the contact's mapped fields, and the visit and submission are attributed to that contact even when they type a different email. There is no separate email verification step; holding the link is the identity, the same way an unsubscribe link works.
-
-Two ways to get them:
-
-- **In campaign emails.** Use the form button in the editor toolbar, or type `{{` and pick the form under **Forms**. Either inserts a chip you can click to swap the form later. At send time every recipient gets their own link, and it is click-tracked like any other link.
-- **For one contact.** The Share tab has a contact search; Copy link mints that contact's URL for use anywhere.
-
-Personalized links make the analytics personal too: the form's Analytics tab shows which contacts opened the form, how far they got, and whether they finished.
-
-### Custom domain
-
-Form links go out on a shared host by default, which means their reputation and their look are the sum of everyone using it. Pointing a subdomain of the domain you send from at that host puts every form link on your own name instead: the hosted page, the embeds, and the personalized links inside campaign emails.
-
-This matters more than it looks. Click tracking already rewrites links in the HTML part of an email onto your [tracking domain](/guides/mailboxes/#custom-tracking-domain), but the plain-text alternative is never rewritten, so without a custom forms domain the shared host still appears in every message that carries a form link.
-
-Type the subdomain into **Custom domain** on any form's Share tab, add the `CNAME` it shows you at your DNS provider, then press **Save and verify**. It is a workspace setting, so it covers every form at once and needs the manage-settings permission.
-
-Verification reports the same outcomes as a tracking domain: verified, no record yet, points at something else, or nothing to point at when the install has no forms host. Until it verifies, links keep working on the shared host, so an unverified domain never breaks a form. Warmbly re-checks hourly, so a record that finishes propagating starts being used on its own, and one that later stops pointing here stops being used instead of quietly serving links from a host that no longer answers.
-
-A visitor who opens the domain itself, with no form in the path, gets a short page saying the address serves forms and that each one has its own link. No form is listed there, and nothing on it identifies your workspace, so a customer who types the domain out of curiosity sees something deliberate rather than an error.
-
-Verification proves DNS, not HTTPS. Warmbly Cloud and a self-hosted instance installed with the bundled Caddy both obtain the certificate for your domain on their own, the first time a page on it is loaded. Behind an operator's own proxy it is that proxy's job, so a domain that verifies here but serves a certificate warning is something to raise with the operator.
-
-Links already sent keep resolving on whichever host they were built with. Only new links pick up a change.
-
-### Forms in a campaign
-
-A campaign that links to a form grows a **Forms** panel on its overview page, listing every form it references with, per form: how many recipients were handed a personalized link, how many opened it, how many started filling it in, how many submitted, and the resulting submission rate. A form appears there as soon as it is written into a step, at zero, so you can confirm the wiring before launching.
-
-Because each recipient's link is unique, those numbers are per contact rather than per click: the same person opening twice counts once, and every submission names the campaign that sent them. The form's own Analytics tab has the mirror image, a **Campaigns** breakdown of where its traffic came from, and every submission row shows its campaign.
+- **主题。** 一键应用预设样式，包括浅色、深色、渐变、衬线字体等，同时设置颜色和字体。主题不会改动布局、分页或按钮文本，应用后每种颜色仍可编辑。
+- **布局。** *卡片*是经典的居中方框。*宽版*去掉外框，让字段直接显示在页面背景上。*分栏*在表单旁增加侧面板，展示封面图片或页面背景。
+- **模式。** *经典*模式一次显示当前页的全部字段。*专注*模式每屏只问一个问题，按回车继续，类似全屏问卷工具。
+- **颜色与文字。** 可调整所有颜色，包括页面、卡片、输入框、标签、占位文本、强调色和按钮；还可选择八种字体，调整圆角、间距、宽度和对齐方式。每个颜色选项都会打开完整的颜色选择器：拖动明暗区域、选择色相、粘贴十六进制值，或使用预设颜色。基于 Chromium 的浏览器还提供吸管，可从屏幕任意位置取色。页面背景可以使用双色渐变。
+- **顶部栏。** 可选的顶部栏用于展示徽标和标题。**横跨页面**使其铺满页面宽度并位于所有内容上方；**随表单显示**将其放在表单内部、字段上方，下方有分隔线，视觉上属于卡片，而非卡片外的界面栏。内容可以左对齐、居中或分置两侧（一侧徽标，另一侧标题），在单独设置之前沿用表单本身的对齐方式；居中时，徽标会叠放在标题上方，以适合居中的组合布局。全页宽度的顶部栏可以设置独立背景色，并在表单滚动时固定在屏幕上；嵌在表单内部的顶部栏不适用这两项，因此不会提供相应选项。默认情况下，顶部栏会容纳徽标；关闭该选项后，徽标保留在自己的位置，顶部栏只显示标题。既没有徽标也没有标题的顶部栏不会在正式页面中显示。
+- **侧面板。** 在分栏布局中，可以在封面图片上添加标题和一段文字。文字使用白色并带柔和阴影，以便在各种照片上保持清晰。
+- **品牌与背景。** 可以上传徽标（PNG 或 JPG，最大 1 MB）、分栏布局的封面图片，以及整页背后的背景图片（后两者最大均为 4 MB）。徽标可按小、中、大尺寸展示；在卡片布局中，可放在卡片上，也可放在卡片上方的页面背景上。移到卡片外时请检查对比度，因为深色页面可能让深色徽标难以辨认。背景图片可以填充、适应或平铺；**遮罩**滑块控制页面颜色覆盖图片的程度：复杂照片使文字难以阅读时，可以调高遮罩。
 
 </Fold>
 
 <Fold>
 
-## Submissions
+## 设置 [#settings]
 
-The **Submissions** tab is a table of everyone who engaged, newest activity first and live: a new submission appears for everyone with the form open, without a refresh. Alongside completed responses it lists people who opened a personalized link but have not finished, marked **In progress** with the page they reached, so a stalled lead is visible instead of invisible. Search and the status filter narrow the list; click a response for every answer; the trash button deletes it (the contact it created is kept), and selecting rows offers a bulk delete.
+**设置**标签页控制提交后执行的操作：
 
-Each submitted contact carries `form` as its first-touch source, gets a "Submitted a form" entry on its activity timeline, and can be filtered in segments by source. The form's page views, submission count and conversion rate show on the Forms list.
-
-A submission is also the **Form submitted** [automation trigger](/guides/automations/#triggers) and the `form.submitted` webhook event, carrying the form, the contact and every answer by its key, so a flow can tag the contact, open a task or post to Slack the moment it lands.
-
-Submissions also fire the `form.submitted` [webhook](/guides/webhooks/), carrying the answers and the contact id, so you can forward leads to any external system.
-
-</Fold>
-
-<Fold>
-
-## Analytics
-
-The **Analytics** tab shows the funnel for the last 7, 30 or 90 days:
-
-- **Totals and trend.** Views, starts (first interaction), submissions and the completion rate, with a daily chart.
-- **Page funnel.** On multi-page forms, how many visitors reached each page and how many of those finished, so you can see exactly where people drop off.
-- **Where visitors come from.** Top referrer domains, countries and device types. Location is resolved to country only and the visitor's IP address is never stored.
-- **Identified visitors.** Contacts who opened the form through a personalized link: when they were last seen, the furthest page they reached, and whether they completed it.
-
-Funnel events are kept for 180 days; the lifetime view and submission counters on the Forms list are kept forever.
+- **成功消息**在提交后显示；也可以设置**跳转 URL**，将访客带到你自己的感谢页面。
+- **添加标签**为每个提交的联系人应用所选标签，例如“网站潜在客户”。
+- **加入营销活动**将新联系人作为潜在客户加入所选营销活动。发送仍然遵循该活动自身的计划、限额和时间窗口；表单绝不会导致即时发信。选择营销活动会开启该活动的**持续运行以接收新潜在客户**设置，使其在两次提交之间等待，而不是结束。已经结束的活动会在新潜在客户到来时，通过常规启动检查后重新启动；如果重启被拒绝，活动日志会记录原因，潜在客户继续等待。
+- **垃圾内容防护**和**允许嵌入的域名**见下文。
 
 </Fold>
 
 <Fold>
 
-## Spam protection
+## 发布与分享 [#publishing-and-sharing]
 
-Every published form has layered protection with nothing to configure:
+**发布**将表单上线；**取消发布**再次下线，页面会开始返回“未找到”。归档会保留数据，同时也会使页面下线。已发布表单的修改在保存时立即生效。
 
-- a honeypot field invisible to people but filled in by naive bots
-- a minimum fill time, discarding submissions that arrive faster than a human can type
-- per-address rate limits on the submit endpoint
-- a size cap on every submission
-- a render token: the form's data and submit endpoints only answer requests carrying a token minted when the page was served, so scripts cannot scrape form definitions or spray submissions without loading the page. A tab left open for more than 12 hours shows a refresh prompt instead of failing silently
+**分享**标签页提供四种使用已发布表单的方式：
 
-Three more controls are yours:
+- **托管链接。** 表单自己的页面，可分享到电子邮件签名或社交平台，无需自建网站。
+- **JavaScript 嵌入**（推荐）。一段 script 标签，加上一个 `div`，并为其设置 `data-warmbly-form` 属性。表单在指定位置渲染，并根据内容自动调整尺寸，避免底部截断或留出多余空白。
+- **弹窗。** 使用相同脚本，再为任意元素添加 `data-warmbly-popup` 属性。点击该元素会在浮层中打开表单；按 Escape、点击遮罩，或成功提交后稍等片刻，弹窗都会关闭。
+- **普通 iframe。** 适用于会移除脚本的网站构建器。高度固定，因此需要设置 `height` 属性以适配表单。
 
-- **Captcha challenge** adds a Cloudflare Turnstile check to the form. The toggle appears once the operator has configured Turnstile for the instance.
-- **Triage** classifies every submission as a **buyer** (a prospective customer or someone asking about what you offer), a **vendor** (someone pitching you), a **job seeker**, **other**, or **junk** (spam, gibberish, a test entry, or an unsolicited pitch). The verdict shows as a chip on the submissions list and can be filtered on. Junk is stored and flagged but creates no contact and joins no campaign, so a bot cannot put itself in your outreach. Everything else is handled exactly as before. Triage is off for each form until you switch it on, and the toggle appears once the operator has configured a `TYPESAFE_API_KEY` for the instance. The answers the visitor typed (and nothing about their connection) are sent to TypeSafe for the judgment; a slow or failed call leaves the submission untriaged rather than delaying the visitor.
-- **Allowed embed domains** limits which sites may embed the form. With domains listed, browsers refuse to frame the page anywhere else (a domain covers its subdomains); empty allows any site. The hosted link keeps working either way.
+这些方式可用于 WordPress、Elementor、Webflow、Shopify、Framer，以及任何允许自定义 HTML 的地方。表单本身始终在 Warmbly 的源站上运行，因此宿主页面的 CSS 不会破坏表单，访客数据也不会经过宿主页面。每次成功提交后，脚本还会在宿主页面触发 `warmbly:submitted` DOM 事件，供你执行自己的跟踪逻辑。
 
-  Worth listing your domains even if you only embed on one site. A form left open to any origin can be framed invisibly under someone else's page and used to collect leads that look like yours, and the browser is the only thing that can prevent it.
+### 个性化链接 [#personalized-links]
+
+个性化链接是在表单 URL 中加入专属于联系人的票据（`?t=...`）。打开后会预填该联系人已映射的字段；即使访客输入了不同的电子邮件地址，访问和提交仍会归属于原联系人。没有单独的电子邮件验证步骤；持有链接即代表身份，与退订链接的工作方式相同。
+
+有两种获取方式：
+
+- **在营销活动邮件中。** 使用编辑器工具栏的表单按钮，或输入 `{{`，再在**表单**下选择目标表单。两种方式都会插入一个可点击的标签，之后可用它更换表单。发送时，每位收件人都会获得自己的链接，且与其他链接一样接受点击跟踪。
+- **为单个联系人生成。** 分享标签页提供联系人搜索；点击“复制链接”会生成该联系人的 URL，可用于任意位置。
+
+个性化链接也让分析数据精确到个人：表单的分析标签页会显示哪些联系人打开了表单、填写到了哪一步，以及是否完成。
+
+### 自定义域名 [#custom-domain]
+
+默认情况下，表单链接使用共享主机，因此其信誉和外观体现的是所有使用者的共同情况。将发件域名下的一个子域名指向该主机，可以让所有表单链接使用你自己的域名，包括托管页面、嵌入表单，以及营销活动邮件中的个性化链接。
+
+这一点比表面看起来更重要。点击跟踪已经会将邮件 HTML 部分中的链接改写到你的[跟踪域名](/guides/mailboxes/#custom-tracking-domain)，但纯文本版本绝不会改写。因此，如果没有自定义表单域名，每封包含表单链接的邮件中仍然会出现共享主机。
+
+在任意表单分享标签页的**自定义域名**中输入子域名，在 DNS 服务商处添加界面给出的 `CNAME`，然后点击**保存并验证**。这是工作区级设置，会同时覆盖所有表单，需要管理设置权限。
+
+验证会报告与跟踪域名相同的结果：已验证、尚无记录、指向其他位置，或当前安装没有表单主机，因此无可指向的目标。在验证通过之前，链接继续使用共享主机，未验证的域名不会导致表单失效。Warmbly 每小时重新检查一次，DNS 记录传播完成后会自动开始使用该域名；若之后不再指向这里，也会停止使用，避免继续默默提供来自已无法响应的主机的链接。
+
+访客直接打开域名、路径中没有指定表单时，会看到一个简短页面，说明该地址用于提供表单，每个表单都有自己的链接。此页面不列出任何表单，也不包含可识别工作区的信息，因此客户出于好奇输入域名时，会看到有意设计的页面，而不是错误。
+
+验证证明的是 DNS 配置，而非 HTTPS。Warmbly Cloud 和使用随附 Caddy 安装的自托管实例，都会在首次加载该域名下的页面时自行申请证书。如果部署在运维人员自己的代理后面，则由该代理负责证书；若这里显示域名验证通过，但访问时出现证书警告，请联系运维人员处理。
+
+已经发送的链接仍会在生成时使用的主机上解析。只有新链接会采用变更后的域名。
+
+### 营销活动中的表单 [#forms-in-a-campaign]
+
+营销活动引用表单后，其概览页面会增加**表单**面板，列出引用的每个表单，并分别显示：多少收件人获得了个性化链接、多少人打开、多少人开始填写、多少人提交，以及由此计算的提交率。只要将表单写入某个步骤，它就会以零数据出现在该面板，便于启动前确认关联正确。
+
+每位收件人的链接都是唯一的，因此这些数字按联系人统计，而非按点击统计：同一人打开两次只计一次，每次提交也会标明将其引导过来的营销活动。表单自身的分析标签页提供对应的**营销活动**来源分布，每条提交记录也显示其营销活动。
 
 </Fold>
 
 <Fold>
 
-## Data and portability
+## 提交记录 [#submissions]
 
-Forms, their design, their logo and cover images, their submissions, personalized link tickets and funnel events all belong to the **Contacts** data group of a [workspace archive](/guides/workspace-export-import/). The public form id travels with them, so embed codes installed on your website keep working after a move to another instance (point your embeds at the new host), and link tickets travel verbatim, so personalized links already sitting in sent emails keep identifying their contacts. A form's campaign link is dropped on import when campaigns stay behind.
+**提交记录**标签页按最新活动优先排列所有参与者，并实时更新：任何打开该表单的团队成员都能看到新提交，无需刷新。除已完成的回答外，还会列出打开个性化链接但尚未完成的人，标记为**进行中**并显示到达的页面，让停滞的潜在客户清晰可见。搜索和状态筛选可以缩小列表；点击某条记录可查看全部回答；垃圾桶按钮会删除该记录，但保留由其创建的联系人；选择多行后可以批量删除。
+
+每个提交的联系人都以 `form` 作为首次接触来源，在活动时间线上获得一条“提交了表单”记录，并可在分群中按来源筛选。表单的页面浏览量、提交数量和转化率显示在表单列表中。
+
+提交也会触发**表单已提交**[自动化触发器](/guides/automations/#triggers)和 `form.submitted` Webhook 事件，携带表单、联系人以及按键名组织的所有回答。因此，流程可以在提交到达时立即为联系人添加标签、创建任务或向 Slack 发消息。
+
+提交还会触发 `form.submitted` [Webhook](/guides/webhooks/)，携带回答和联系人 ID，便于将潜在客户转发到任何外部系统。
+
+</Fold>
+
+<Fold>
+
+## 数据分析 [#analytics]
+
+**分析**标签页展示最近 7、30 或 90 天的转化漏斗：
+
+- **总量与趋势。** 浏览量、开始填写次数（首次互动）、提交量和完成率，以及每日趋势图。
+- **页面漏斗。** 对于多页表单，显示到达每一页的访客数，以及其中最终完成的人数，便于准确找出流失位置。
+- **访客来源。** 主要来源域名、国家和设备类型。位置仅解析到国家级别，绝不存储访客的 IP 地址。
+- **已识别的访客。** 通过个性化链接打开表单的联系人，以及其最近出现时间、到达的最远页面和是否完成。
+
+漏斗事件保留 180 天；表单列表中的累计浏览量和提交计数永久保留。
+
+</Fold>
+
+<Fold>
+
+## 垃圾内容防护 [#spam-protection]
+
+每个已发布表单都提供多层防护，无需配置：
+
+- 蜜罐字段：对人不可见，但简单机器人会填写它
+- 最短填写时间：丢弃快于正常人工输入速度的提交
+- 提交端点按来源地址实施频率限制
+- 每次提交的大小上限
+- 渲染令牌：表单数据端点和提交端点只响应携带令牌的请求，该令牌在页面加载时签发。因此，脚本不能不加载页面就抓取表单定义或批量发送提交。标签页打开超过 12 小时后，会提示刷新，而不会默默失败
+
+另外三项控制由你决定：
+
+- **验证码挑战**为表单添加 Cloudflare Turnstile 检查。运维人员为实例配置 Turnstile 后，才会显示此开关。
+- **分类筛选**将每次提交分为**买家**（潜在客户或询问你的产品与服务的人）、**供应商**（向你推销的人）、**求职者**、**其他**或**垃圾内容**（垃圾信息、无意义文本、测试内容或未经请求的推销）。判定结果以标签显示在提交列表中，并可用于筛选。垃圾内容会被存储并标记，但不会创建联系人，也不会加入营销活动，因此机器人不能将自己加入你的客户触达流程。其他类别的处理方式保持不变。每个表单默认关闭分类筛选，需要自行开启；运维人员为实例配置 `TYPESAFE_API_KEY` 后才会出现该开关。只有访客填写的回答会发送到 TypeSafe 供其判断，不包含任何连接信息；调用缓慢或失败时，提交会保持未分类状态，不会让访客等待。
+- **允许嵌入的域名**限制哪些网站可以嵌入表单。列出域名后，浏览器会拒绝在其他网站中通过框架嵌入该页面；一个域名也覆盖其子域名。留空表示允许所有网站。无论如何设置，托管链接都继续可用。
+
+  即使只在一个网站嵌入，也建议列出自己的域名。若表单允许任何来源，别人就可能在其页面下方通过不可见框架嵌入表单，用来收集看似来自你的潜在客户；只有浏览器能阻止这种行为。
+
+</Fold>
+
+<Fold>
+
+## 数据与迁移 [#data-and-portability]
+
+表单、设计、徽标和封面图片、提交记录、个性化链接票据以及漏斗事件，都属于[工作区归档](/guides/workspace-export-import/)的**联系人**数据组。公开表单 ID 会随归档迁移，因此迁移到另一个实例后，网站上已有的嵌入代码仍可使用，只需将嵌入目标改为新主机。链接票据会原样迁移，因此已发送邮件中的个性化链接仍能识别对应联系人。如果导入时未包含营销活动，表单与活动的关联会被移除。
 
 </Fold>

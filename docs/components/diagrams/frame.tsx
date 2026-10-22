@@ -51,7 +51,7 @@ export function Arrow() {
 export function ShortVersion({ children }: { children: ReactNode }) {
   return (
     <div className="wd-short not-prose my-6 rounded-[10px] border border-fd-border bg-fd-muted/50 px-5 py-4">
-      <Label>The short version</Label>
+      <Label>内容速览</Label>
       <div className="wd-short-body mt-2 text-[15px] leading-[1.65] text-fd-foreground">{children}</div>
     </div>
   );

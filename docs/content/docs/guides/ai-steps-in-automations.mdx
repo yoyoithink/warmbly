@@ -1,161 +1,161 @@
 ---
-title: AI steps in automations
-description: Add an AI step or an AI switch to an automation so a flow can read the event with a model, take reversible actions, or route down one of your cases.
+title: 自动化流程中的 AI 步骤
+description: 在自动化流程中添加 AI 步骤或 AI 分支选择节点，让模型理解事件、执行可撤销的操作，或进入你定义的某个分支。
 ---
 
-AI steps let an automation read an event with a model and act on it, or route it down one of your cases. They are built in and need no integration.
+AI 步骤让自动化流程通过模型理解事件，并执行操作，或将事件路由到你定义的某个分支。这些功能内置于系统，无需连接集成。
 
-## Add an AI step
+## 添加 AI 步骤 [#add-an-ai-step]
 
 <Steps>
 
 <Step>
 
-In an automation, add an action node.
+在自动化流程中添加一个操作节点。
 
 </Step>
 
 <Step>
 
-Under **Run**, choose **Warmbly (built-in)**, then **AI step** or **AI switch**.
+在**执行**下选择 **Warmbly（内置）**，再选择 **AI 步骤**或 **AI 分支选择**。
 
 </Step>
 
 <Step>
 
-Write a plain-language instruction. Drop in event fields with `{{.field}}`.
+用自然语言编写指令，通过 `{{.field}}` 插入事件字段。
 
 </Step>
 
 <Step>
 
-Press **Test** to see the real output. AI steps run for real in a test and spend credits.
+点击**测试**查看真实输出。测试时 AI 步骤会实际运行并消耗积分。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- No AI step ever sends email or contacts anyone.
-- Classify, extract and generate cost 1 credit; the agent costs 1 per step it takes. Provider failures refund automatically.
-- Out of credits, the step fails and the run continues down the normal path.
-- **Ask AI (yes/no)** fails safe: if the model can't answer, the **no** path runs.
-- An automation whose AI steps keep failing for lack of credits is switched off.
+- AI 步骤绝不会发送邮件或联系任何人。
+- 分类、提取和生成每次消耗 1 个积分；智能体每执行一个步骤消耗 1 个积分。服务商失败时自动返还。
+- 积分不足时，该步骤失败，运行继续沿正常路径进行。
+- **询问 AI（是/否）** 采用安全回退：模型无法回答时，执行 **否** 路径。
+- 如果自动化流程的 AI 步骤持续因积分不足而失败，该流程会被关闭。
 
 <Fold>
 
-## The two AI nodes
+## 两种 AI 节点 [#the-two-ai-nodes]
 
-Automations have two AI nodes, mirroring the AI steps in campaign sequences: an **AI step** that reads the event and transforms or acts on it, and an **AI switch** that routes it down one of your cases. Both are built-in, needing no integration. Add one from an action node: **Warmbly (built-in)** under **Run**, then **AI step** or **AI switch**.
+自动化流程有两种 AI 节点，与营销活动邮件序列中的 AI 步骤相对应：**AI 步骤**读取事件并转换数据或执行操作；**AI 分支选择**将事件路由到你定义的某个分支。两者都是内置功能，无需集成。添加时，在操作节点的**执行**下选择 **Warmbly（内置）**，然后选择 **AI 步骤**或 **AI 分支选择**。
 
 </Fold>
 
 <Fold>
 
-## The AI step
+## AI 步骤 [#the-ai-step]
 
-Every mode takes a plain-language **instruction**, templated so you can drop event fields in with `{{.field}}`. The step also sees the rest of the event data, so you need not list every field.
+每种模式都接受自然语言**指令**，并支持模板，因此可以使用 `{{.field}}` 插入事件字段。步骤也能看到事件的其他数据，无需在指令中逐一列出所有字段。
 
-| Mode | What it does | Result lands in |
+| 模式 | 作用 | 结果保存位置 |
 | --- | --- | --- |
-| Agent | Follows your instruction and takes the reversible actions you allow | The contact / event |
-| Generate text | Writes a short piece of text | `ai_text` |
-| Classify | Picks exactly one of your labels | `ai_class` |
-| Extract fields | Pulls the fields you name out of the event text | One variable per field |
+| 智能体 | 遵循指令，执行你允许的可撤销操作 | 联系人 / 事件 |
+| 生成文本 | 撰写一小段文本 | `ai_text` |
+| 分类 | 从你提供的标签中准确选择一个 | `ai_class` |
+| 提取字段 | 从事件文本中提取你指定的字段 | 每个字段对应一个变量 |
 
-**Agent** is the default. Check which reversible actions it may take: add or remove a label, label the conversation, create a task, create a deal, move a deal stage, set variables, and unsubscribe. It decides which fit, can chain several, and writes the details itself (task title, deal name, variable value). It only ever takes the actions you enable, and **never sends email or replies**. Billed one credit per step it takes.
+默认模式是**智能体**。勾选允许执行的可撤销操作：添加或移除标签、为会话添加标签、创建任务、创建商机、移动商机阶段、设置变量和退订。智能体会判断哪些操作合适，可以连续执行多个，并自行填写任务标题、商机名称、变量值等细节。它只会执行你启用的操作，且**绝不发送邮件或回复**。每执行一个步骤计费 1 个积分。
 
-For the label actions, an optional **pool** limits which labels it may choose: the labels it can add or remove on the contact, and the conversation labels it can apply. An empty pool lets it use any of yours, and optionally create a new one when nothing fits.
+对于标签操作，可以选择设置一个**候选池**，限制可选标签：联系人上允许添加或移除的标签，以及可用于会话的标签。候选池为空时，智能体可以使用你的任意标签；也可选择允许它在没有合适标签时新建一个。
 
-On a Reply received trigger, an instruction like "If they ask about pricing, label them and open a follow-up task; if they ask to stop, unsubscribe them" with those three actions enabled handles all three outcomes in one step.
+在“收到回复”触发器中，可以写“如果对方询问价格，添加标签并创建跟进任务；如果对方要求停止联系，就将其退订”，并启用这三类操作，一个步骤即可处理三种结果。
 
-**Classify** needs at least two labels and returns exactly one, stored in `ai_class`. A non-exact answer resolves to the closest match; if none is close, the raw answer is stored so you can see what happened in run history.
+**分类**至少需要两个标签，结果必须且只能选一个，存入 `ai_class`。如果模型答案不是精确匹配，系统会选择最接近的标签；如果没有足够接近的匹配，则保存原始回答，便于在运行历史中查看。
 
-**Extract fields** returns one value per output key you name, each in a variable of that name, turning free text into structured fields like `company_size` or `budget`. An unfillable key is stored as an empty string, so a later condition can test whether it was found.
+**提取字段**会为你命名的每个输出键返回一个值，并保存到同名变量，将自由文本转为 `company_size` 或 `budget` 等结构化字段。无法填入的键保存为空字符串，后续条件即可判断是否找到该信息。
 
-<Callout type="warn" title="Generated text is never sent on its own">
-A generate step only writes text into a variable. To use it you connect a later step you control (a Slack message, a task, a webhook). Warmbly never sends outreach email from an AI step.
+<Callout type="warn" title="生成的文本不会自行发送">
+生成步骤只会将文本写入变量。要使用它，需要连接一个由你控制的后续步骤，例如 Slack 消息、任务或 Webhook。Warmbly 绝不会通过 AI 步骤发送外联邮件。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## The AI switch
+## AI 分支选择节点 [#the-ai-switch]
 
-Routes the event down exactly one of your **cases** (at least two), each its own column under the switch. Put ordinary action steps under a case to make things happen for events routed down it. Steps under **Always** run whichever case is picked; a renamed case keeps the steps under it.
+将事件准确路由到你的某一个**分支**（至少两个），每个分支在选择节点下占一列。在分支下添加普通操作步骤，就能处理进入该分支的事件。**始终执行**下的步骤无论选中哪个分支都会运行；分支重命名后，其下的步骤仍会保留。
 
-| Decided by | How | Cost |
+| 决策方式 | 工作方式 | 费用 |
 |-----------|-----|------|
-| **AI prompt** | The model reads the event and picks one case | 1 credit per event |
-| **Value** | A template under **Value to match** (`{{.intent}}`) is rendered and matched to case names, ignoring casing and extra spaces. Wrap a case in slashes for a regex (`/^(vip\|enterprise)/`); first match wins | None |
+| **AI 提示词** | 模型读取事件并选择一个分支 | 每个事件 1 个积分 |
+| **值匹配** | 渲染**待匹配值**下的模板（`{{.intent}}`），再与分支名称匹配，忽略大小写和多余空格。用斜杠包裹分支名称可使用正则表达式（`/^(vip\|enterprise)/`），优先采用第一个匹配项 | 免费 |
 
-An unmatched value, or a model picking no case, takes the fallback.
-
-</Fold>
-
-<Fold>
-
-## Capabilities
-
-Both nodes can enable **extended thinking**, routing to the stronger model with a larger reasoning budget, metered by usage rather than a flat credit.
-
-The AI switch in prompt mode can also enable **web search**: it looks up the event's company before deciding. The query is built only from event fields such as company name or corporate email domain, **never from the reply text**, and costs one extra credit only when it returns results.
+值未匹配，或模型未选择任何分支时，进入默认回退分支。
 
 </Fold>
 
 <Fold>
 
-## The Ask AI branch
+## 功能能力 [#capabilities]
 
-A condition node can ask the model directly. Pick **Ask AI (yes/no)** and write a question about the event ("Is this reply asking about pricing?"): yes follows the Yes column, no the No column.
+两种节点都可以启用**扩展思考**，改用推理额度更大的强模型，按实际用量计费，而非固定一个积分。
 
-- Templated, so `{{.subject}}` and `{{.snippet}}` work inside it.
-- One credit per evaluation, refunded if the provider call fails.
-- **Fails safe**: if the model can't answer, you are out of credits, or the answer is ambiguous, the **no** path runs and the reason is recorded.
-- Use an AI switch when you need more than two outcomes.
+提示词模式下的 AI 分支选择还可以启用**网络搜索**：先查询事件中的公司，再作决定。查询只根据公司名称或企业邮箱域名等事件字段构建，**绝不使用回复文本**；只有返回结果时才额外消耗一个积分。
 
 </Fold>
 
 <Fold>
 
-## Using the result downstream
+## Ask AI 分支 [#the-ask-ai-branch]
 
-Classify, extract, and generate write into the flow exactly like a **Set variables** step, so every later step can read them:
+条件节点可以直接向模型提问。选择**询问 AI（是/否）**，编写针对事件的问题，例如“这封回复是在询问价格吗？”回答“是”进入“是”列，回答“否”进入“否”列。
 
-- **Conditions**: test the variable in an IF node (`ai_class equals interested`, `budget exists`).
-- **Action text**: reference `{{.ai_class}}`, `{{.ai_text}}`, or `{{.your_key}}` in any templated field.
-
-If two AI steps would both write `ai_class` or `ai_text`, set an **output variable name** on one so they do not overwrite each other.
+- 支持模板，因此可以在问题中使用 `{{.subject}}` 和 `{{.snippet}}`。
+- 每次判断消耗一个积分；服务商调用失败时返还。
+- **安全回退**：模型无法回答、积分不足，或答案不明确时，执行**否**路径并记录原因。
+- 如果需要两个以上结果，应使用 AI 分支选择。
 
 </Fold>
 
 <Fold>
 
-## Cost, failures, and safety
+## 在后续步骤中使用结果 [#using-the-result-downstream]
 
-| Topic | Behavior |
+分类、提取和生成与**设置变量**步骤一样，将结果写入流程，供后续所有步骤读取：
+
+- **条件**：在 IF 节点中检查变量（`ai_class equals interested`、`budget exists`）。
+- **操作文本**：在任意支持模板的字段中引用 `{{.ai_class}}`、`{{.ai_text}}` 或 `{{.your_key}}`。
+
+如果两个 AI 步骤都会写入 `ai_class` 或 `ai_text`，请为其中一个设置**输出变量名**，避免互相覆盖。
+
+</Fold>
+
+<Fold>
+
+## 费用、故障与安全 [#cost-failures-and-safety]
+
+| 项目 | 行为 |
 |-------|----------|
-| Credits | Single-shot steps (classify, extract, generate) cost 1; the agent costs 1 per step taken; an AI switch costs 1 in AI mode, nothing in value mode. Provider failures refund automatically |
-| Out of credits | The step fails with a clear message and the run continues down the normal path. Nothing is half-charged. Connect the **on error** branch for a specific fallback |
-| Auto-pause | An automation whose AI steps keep failing for lack of credits is switched off, so it stops trying against an empty balance |
-| Timing | Each step is bounded to a few seconds so a slow model never stalls the flow |
-| Sending safety | **No AI step ever sends email or contacts anyone.** The agent takes only the reversible actions you enable; other modes only write a variable |
+| 积分 | 单次调用步骤（分类、提取、生成）消耗 1；智能体每执行一步消耗 1；AI 分支选择在 AI 模式消耗 1，在值匹配模式免费。服务商失败时自动返还 |
+| 积分不足 | 步骤会失败并明确提示，运行继续沿正常路径进行，不会部分扣费。可以连接**发生错误时**分支，设置专门的回退处理 |
+| 自动暂停 | AI 步骤持续因积分不足而失败时，自动化流程会关闭，避免在空余额下反复尝试 |
+| 时限 | 每个步骤限制在数秒内，避免慢速模型阻塞流程 |
+| 发送安全 | **任何 AI 步骤都不会发送邮件或联系任何人。** 智能体只执行你启用的可撤销操作，其他模式只写入变量 |
 
 </Fold>
 
 <Fold>
 
-## Testing
+## 测试 [#testing]
 
-**Test** dry-runs the flow, but AI steps and Ask AI branches run **for real** so you see actual output and the branch it drives, which spends credits. The agent reports what it would do without applying it. The trace panel shows each step's output beside its node. See [Testing and history](/guides/automations/).
+**测试**会模拟执行流程，但 AI 步骤和“询问 AI”分支会**实际运行**，让你查看真实输出及所进入的分支，因此会消耗积分。智能体会报告拟执行的操作，但不实际应用。跟踪面板会在每个节点旁显示其输出。参见[测试与历史记录](/guides/automations/)。
 
 </Fold>
 
-## See also
+## 另请参阅 [#see-also]
 
-- [Automations](/guides/automations/) for the builder, triggers, and conditions.
-- [Sequences](/guides/sequences/) for the same two steps run per contact in campaigns.
-- [AI credits](/guides/ai-credits/) for costs and balances.
-- [Personalization and expressions](/guides/expressions/) for each trigger's variables.
+- [自动化流程](/guides/automations/)：编辑器、触发器与条件。
+- [邮件序列](/guides/sequences/)：在营销活动中按联系人执行的相同两类步骤。
+- [AI 积分](/guides/ai-credits/)：费用与余额。
+- [个性化与表达式](/guides/expressions/)：各个触发器可用的变量。

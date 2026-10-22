@@ -1,61 +1,61 @@
 ---
-title: Send safety and diagnostic controls
-description: Shared admission, explicit diagnostic participation, actual-message DKIM and conservative upgrade behavior.
+title: 发送安全与诊断控制
+description: 共用准入机制、明确授权参与诊断、实际邮件的 DKIM 验证，以及谨慎的升级行为。
 ---
 
-This control system restricts sending using current authority and observed evidence. It does not manufacture engagement, promise inbox placement or establish a reputation benefit from local tests.
+这套控制系统依据当前授权和观察到的证据限制发送。它不会制造互动，不承诺进入收件箱，也不会根据本地测试声称能够提升信誉。
 
-## Explicit participation and complete stop
+## 明确授权参与及彻底停止 [#explicit-participation-and-complete-stop]
 
-`PATCH /emails/:id` keeps its existing `WRITE_EMAILS` scope and organization boundary. The additive fields are:
+`PATCH /emails/:id` 保留现有 `WRITE_EMAILS` 权限范围和组织边界。新增字段如下：
 
-| Field | Behavior |
+| 字段 | 行为 |
 |---|---|
-| `test_mode` | New actions accept `diagnostic` or `off`. Historical `legacy` and NULL remain readable without relabeling; newly connected mailboxes default to `off` |
-| `test_send_enabled` | Enables diagnostic sending only in `diagnostic` mode |
-| `test_receive_enabled` | Separately enables receiving and provider-supported automated warmup mailbox actions in `diagnostic` mode |
-| `shared_daily_limit` | Positive mailbox-wide calendar-day ceiling across outbound lanes; PATCH zero clears the override, restoring the default shared ceiling. Manual Unibox sends do not count toward it; they have their own fair-use limits |
-| `rolling_recipient_limit` | Positive rolling 24-hour ceiling counting each To/CC/BCC occurrence; PATCH zero restores the default ceiling. Manual Unibox sends do not count toward it; they have their own fair-use limits |
+| `test_mode` | 新操作接受 `diagnostic` 或 `off`。历史 `legacy` 和 NULL 仍可读取，不会重新标记；新连接邮箱默认为 `off` |
+| `test_send_enabled` | 仅在 `diagnostic` 模式中启用诊断发送 |
+| `test_receive_enabled` | 在 `diagnostic` 模式中单独启用接收，以及服务商支持的自动化预热邮箱操作 |
+| `shared_daily_limit` | 跨出站通道的正数邮箱日历日总上限；PATCH 传零会清除覆盖值，恢复默认共享上限。统一收件箱人工发送不计入此限额，而使用自己的合理使用限制 |
+| `rolling_recipient_limit` | 正数滚动 24 小时上限，每次 To/CC/BCC 出现均计数；PATCH 传零恢复默认上限。统一收件箱人工发送不计入此限额，而使用自己的合理使用限制 |
 
-Choose sender-only, recipient-only or both explicitly. Receiving participation authorizes probabilistic spam rescue, reads, importance and stars or flags on verified warmup messages where the provider supports them. This applies to existing receive-enabled diagnostic mailboxes too; no database backfill or new setting is required. Recipient-only does not authorize a reply. Sender-only and `off` deny recipient engagement. `off` also excludes diagnostic starts, active-campaign health checks, reply-back and new recipient selection. It does not stop legitimate campaign/manual traffic by itself: pause the campaign or mailbox for that. These are disclosed automated actions, not human engagement or proof of improved reputation. Authorized filing and deletion remain housekeeping, not positive deliverability evidence. Cleanup can remove an already received diagnostic after participation stops.
+应明确选择仅发送、仅接收或双向参与。参与接收会授权对已验证预热邮件按概率执行服务商支持的移出垃圾邮件、已读、重要标记以及星标或旗标。这也适用于现有已启用接收的诊断邮箱，无需数据库回填或新设置。仅接收不授权回复。仅发送和 `off` 都不允许接收端互动。`off` 还会排除诊断启动、活跃营销活动健康检查、回信和新的收件人选择。但它本身不会停止合法的营销活动或人工流量；要停止这些流量，应暂停营销活动或邮箱。这些都是明确标注的自动化操作，不是真人互动，也不能证明信誉改善。经授权的归档和删除仍属于日常整理，不是正面的送达能力证据。参与停止后，清理仍可删除已收到的诊断邮件。
 
-Deploy the updated consumer, backend and workers together before expecting restored engagement. The consumer still persists delayed actions and reloads current receiving permission and worker assignment when they become due; the worker rechecks admission after acquiring the mailbox execution context, just before provider dispatch. Revoking receiving or switching Off prevents queued recipient engagement, but cannot recall an action already dispatched to the provider. Previously filtered-out actions are not recreated, and old message recovery remains filing-only. Provider errors can still prevent individual actions; existing rescue-request counters are not confirmation of provider success.
+在期待互动恢复之前，请一同部署更新后的消费者、后端和工作节点。消费者仍会持久化延迟操作，并在到期时重新加载当前接收权限和工作节点分配；工作节点在获得邮箱执行上下文后、派发给服务商之前，会再次检查准入。撤销接收或切换为关闭，会阻止排队中的接收端互动，但无法召回已派发给服务商的操作。此前被过滤掉的操作不会重建，旧邮件恢复也仍仅限归档。服务商错误仍可能阻止个别操作；现有移出垃圾邮件请求计数不代表服务商已成功执行。
 
-The control plane checks participation before publication; capable executors recheck it immediately before native execution. A queued command is not consent. Queue callbacks, received text and model output cannot authorize sending. Revoke receiving before a queued diagnostic starts and it is denied; revoke sending and a recipient-only mailbox cannot reply. No software can retroactively cancel a provider submission that already began.
+控制平面在发布前检查参与状态；具备相应能力的执行器在原生执行前立即复查。排队命令不代表同意。队列回调、收到的文本和模型输出都不能授权发送。在排队诊断开始前撤销接收，它就会被拒绝；撤销发送后，仅接收邮箱不能回复。任何软件都无法追溯取消已经开始的服务商提交。
 
-`warmup_generation.generation_enabled=false` is independent. It blocks new generation submissions, edits/replacements and generated source use; an already submitted provider job can drain. Preserve the configured credentials while it does. See [generation controls](/development/warmup-generation/).
+`warmup_generation.generation_enabled=false` 是独立控制。它阻止新的生成提交、编辑/替换和生成来源使用；已经提交的服务商任务仍可处理完。期间应保留配置的凭据。参见[生成控制](/development/warmup-generation/)。
 
-### Local aliases versus Cloud mailboxes
+### 本地别名与 Cloud 邮箱的区别 [#local-aliases-versus-cloud-mailboxes]
 
-Local participation restricts local use of an alias. Individually removing a managed mailbox stops diagnostic sending and receiving on Cloud before releasing the link; it retains the Cloud-owned mailbox, history and provider OAuth grant. Disconnecting an entire instance only releases managed links and preserves their Cloud warmup settings. Neither operation recalls already accepted provider sends. To erase the native mailbox and its grant, delete it directly on Cloud. Enrolled SMTP mirrors also have Cloud-side participation; a newly created Cloud mailbox is off until its owner explicitly enables it. Do not treat healthy standing as participation consent. Existing lifecycle enrollment and account IDs remain unchanged.
+本地参与设置限制的是别名的本地使用。单独移除托管邮箱时，会先停止 Cloud 上的诊断收发，再释放链接；Cloud 持有的原生邮箱、历史和服务商 OAuth 授权仍保留。断开整个实例只会释放托管链接，保留它们的 Cloud 预热设置。两种操作都无法召回服务商已接受的发送。若要清除原生邮箱及其授权，请直接在 Cloud 删除。已登记的 SMTP 镜像也有 Cloud 侧参与设置；新建 Cloud 邮箱默认关闭，直到所有者明确启用。不要把健康状态当成参与同意。现有生命周期登记和账户 ID 保持不变。
 
-## Shared send-time admission
+## 共用的发送时准入检查 [#shared-send-time-admission]
 
-Every new outbound lane goes through a mailbox/task advisory lock and one durable SQL reservation: campaigns, manual/Unibox sends, normal warmup, campaign-backed health checks/reply-back, and placement/seed probes. Campaign progress already reserved for the same task is not counted twice. Cold and diagnostic allocations remain distinct constraints, with optional shared and rolling ceilings layered above them. Manual Unibox sends (reply, forward, compose) are conversations rather than outreach: they spend none of those allocations and are not refused by them, so a mailbox at its campaign limit can still answer a lead. They are held to fair use instead: a rolling 24-hour recipient allowance sized below the mailbox's provider cap and lowered by connection age, warmup standing and workspace risk, with an hourly, a per-message and a new-conversation bound under it, and a workspace-wide allowance of twice the plan's daily email limit (floor 100) checked under a per-workspace lock. `BILLING_PROVIDER=none` and plans without a daily limit set no workspace allowance (see [unibox sending controls](/guides/unibox/#sending-controls)). The same mailbox standing as every other lane still applies: active, current worker, no recovery hold or cooldown, no suppressed recipient. A Unibox forward is the one send exempt from the suppression list, because it relays received mail to recipients picked by hand; a refusal for a suppressed recipient is `RECIPIENT_SUPPRESSED` and names the address. Calendar days use the mailbox/organization timezone, including daylight-saving changes; rolling recipient totals do not reset at midnight.
+每个新的出站通道都经过邮箱/任务咨询锁和一次持久 SQL 预留，包括营销活动、人工或统一收件箱发送、普通预热、营销活动支持的健康检查和回信，以及投递位置/种子探测。同一任务已经预留的营销活动进度不会重复计数。冷邮件和诊断额度仍是独立约束，上方再叠加可选的共享及滚动上限。统一收件箱人工发送，包括回复、转发和新建邮件，属于会话而非外联：不消耗这些额度，也不会被这些额度拒绝，因此邮箱达到营销活动上限后仍能回复潜在客户。它们改为受合理使用约束：滚动 24 小时收件人额度低于邮箱服务商上限，并根据连接时长、预热状态和工作区风险降低；其下还有限制每小时、每封邮件和新会话的边界。工作区总额度为套餐每日邮件限额的两倍，最低 100，在工作区级锁下检查。`BILLING_PROVIDER=none` 和没有每日限额的套餐不设置工作区额度，参见[统一收件箱发送控制](/guides/unibox/#sending-controls)。其他通道使用的同一套邮箱状态要求仍然适用：邮箱活跃、工作节点当前有效、无恢复暂停或冷却期，且收件人未被禁止发送。统一收件箱转发是唯一免于禁止发送名单的发送，因为它把已收到的邮件转给人工选定的收件人；因收件人被禁止发送而拒绝时，错误为 `RECIPIENT_SUPPRESSED`，并指出地址。日历日使用邮箱或组织时区，包括夏令时变化；滚动收件人总量不会在午夜重置。
 
-Before using suppressed-recipient forwarding, upgrade every backend handling submissions, queued send callbacks and worker/control-plane authorization, then drain old requests and retire old replicas. An old backend still refuses the forward. Pause Unibox submissions and queued send dispatch during a mixed-backend rollout. Existing clients can already submit forwards, so frontend ordering alone is insufficient. Verify old-replica retirement explicitly; release completion or a healthy backend does not establish it. This exemption requires no worker schema change or mailbox reconnect. See [self-host upgrade order](/development/install/#unibox-forwarding-upgrade-order).
+在使用向禁止发送收件人转发的功能前，应升级所有处理提交、排队发送回调和工作节点/控制平面授权的后端，再处理完旧请求并停用旧副本。旧后端仍会拒绝这种转发。混合后端发布期间，应暂停统一收件箱提交和排队发送派发。现有客户端已经能够提交转发，因此仅安排前端升级顺序不够。必须明确确认旧副本已停用；发布完成或后端健康并不能证明这一点。此例外无需工作节点 Schema 变更，也无需重新连接邮箱。参见[自托管升级顺序](/development/install/#unibox-forwarding-upgrade-order)。
 
-Reservation requires an active organization-owned mailbox, its current configured provider and worker, current suppression and recovery state, and the exact recipient envelope. Campaign sends additionally require active campaign/lead/progress state and current calendar/pacing policy. Diagnostic partners retain their real pool, role, tier, trust, standing and inbound capacity constraints. Seed mailboxes stay measurements, not conversation partners. Future, missing or stale positive Cloud standing is unavailable evidence; restrictive holds are not erased.
+预留要求邮箱活跃且归属于组织，服务商和工作节点与当前配置一致，禁止发送及恢复状态有效，并使用精确的收件人信封。营销活动发送还要求营销活动、潜在客户和进度处于活跃状态，并符合当前日历和节奏策略。诊断伙伴仍受其真实预热池、角色、等级、信任、状态和入站容量约束。种子邮箱只用于测量，不是会话伙伴。时间在未来、缺失或过期的正面 Cloud 状态属于不可用证据；限制性暂停不会因此清除。
 
-Provider starts also write immutable per-nonce `outbound_attempts`. A definitive failure may refund successful-message capacity but never refunds attempt-rate evidence. Daily and rolling limits count those attempts plus outstanding reservations without double counting the same nonce. Campaign test sends create a real task before shared admission; rejection/publication failure records a task failure, with tracking still disabled.
+服务商执行开始时，还会按随机令牌写入不可变的 `outbound_attempts`。明确失败可以退还成功邮件容量，但绝不退还尝试速率证据。每日和滚动限额会统计这些尝试及尚未完成的预留，同一随机令牌不会重复计数。营销活动测试发送在共享准入前会创建真实任务；拒绝或发布失败会记录任务失败，跟踪仍保持关闭。
 
-The executor rechecks organization, mailbox, worker, provider, durable task/nonce and exact recipients before starting. A command cannot broaden its CC/BCC or switch tenants after reservation. Worker silence, publication uncertainty, provider timeout and executor restart are unknown outcomes, not unsent proof. Their reservations and mailbox hold remain until a correlated definite result resolves them. Terminal replay returns the saved result without resending. A definite native throttle records only the evidence and scope actually observed; legacy codes preserve conservative mailbox/provider cooldowns without invented HTTP or SMTP codes.
+执行器开始前会再次检查组织、邮箱、工作节点、服务商、持久任务及随机令牌，以及精确收件人。命令不能在预留后扩展 CC/BCC 或切换租户。工作节点无响应、发布不确定、服务商超时和执行器重启都表示结果未知，不能证明未发送。相关预留和邮箱暂停会保持，直到关联的明确结果解决它们。终态重放返回已保存结果，不会重发。明确的原生限流只记录实际观察到的证据和范围；旧版代码保留保守的邮箱或服务商冷却期，不会虚构 HTTP 或 SMTP 代码。
 
-Warmup authorization and execution take shared participation locks before task/mailbox locks. Stop takes the exclusive participation lock and retires provably unstarted requests in both directions in the same transaction as disabling participation. Directional settings retire only that direction; switching the mailbox off retires both. Started sends, stored results, outbound attempts, delivered tokens and ambiguous completed legacy history remain intact. Only recorded warmup charges are refunded, once. Re-enabling an already-off mailbox also retires its older outstanding approvals, covering stops made before this upgrade.
+预热授权和执行先获取共享参与锁，再获取任务/邮箱锁。停止操作获取独占参与锁，在关闭参与的同一事务中，使双向能够证明尚未开始的请求失效。方向性设置只使相应方向失效；关闭邮箱则使双向失效。已开始的发送、已存储结果、出站尝试、已投递令牌，以及存在歧义的已完成旧版历史，都保持完整。只有已记录的预热计费会退还，且只退还一次。重新启用已经关闭的邮箱，也会使其较早的未完成批准失效，覆盖本次升级之前发生的停止。
 
-Warmup commands without current durable execution authority are refused, including old nonce-free commands and compatibility responses from an older backend. Old JSON/Avro payloads remain readable, but readability is not permission to send. Non-warmup compatibility and replay of already-recorded provider results are preserved. Upgrade the backend and execution workers together; an updated worker intentionally will not start legacy warmup against a backend that cannot authorize it. No new environment setting is required.
+没有当前持久执行授权的预热命令会被拒绝，包括旧的无随机令牌命令，以及旧后端返回的兼容响应。旧 JSON/Avro 载荷仍可读取，但可读取不等于有权发送。非预热兼容性和已记录服务商结果的重放会保留。请一起升级后端和执行工作节点；更新后的节点会有意拒绝在无法授权的后端上启动旧版预热。无需新增环境设置。
 
-Migration 300 adds typed `warmup_stopped_at` evidence and indexed mailbox/recipient lookups. For warmup mailboxes already off at upgrade, it records the upgrade time as a monitoring baseline, not an invented historical stop time. It does not rewrite mailbox history. The operations monitor checks actual execution-start timestamps in the last hour against a recorded stop for both sender and recipient, grouped by executor worker or fleet and deduplicated for six hours. Delayed consumer result application, old execution starts and provider delivery notices do not trigger this alert. Subscribe operator channels to `warmup.dispatch_after_stop` or their normal catch-all policy. Previously stopped mailboxes remain blocked by current eligibility; historical starts before the upgrade are not retrospectively labeled violations.
+迁移 300 添加类型化的 `warmup_stopped_at` 证据，以及带索引的邮箱/收件人查询。对于升级时已经关闭的预热邮箱，它记录升级时间作为监控基线，不会虚构历史停止时间，也不会改写邮箱历史。运维监控会将最近一小时的实际执行开始时间，与发件人和收件人的停止记录对比，按执行工作节点或节点集群分组，并在六小时内去重。消费者延迟应用结果、旧执行开始记录和服务商投递通知不会触发此警报。运维渠道可订阅 `warmup.dispatch_after_stop`，或通过正常的全事件策略接收。此前已停止的邮箱仍由当前资格检查阻止；升级前的历史开始记录不会被追溯标记为违规。
 
-Result reconciliation commits task, campaign progress, variant, suppression and warmup-health changes together. Bounce webhooks and notifications enter an idempotent durable outbox in that transaction, and result consumers drain it after commit. Failed delivery retains a leased retry row; a consumer restart does not lose the effect. Stable downstream webhook delivery and notification-feed IDs prevent duplicate stored rows. External integration, Slack/push and realtime delivery remain at least once/best effort, not exactly-once delivery. Core accounting and unknown holds remain durable.
+结果核对会将任务、营销活动进度、变体、禁止发送和预热健康变更一同提交。退信 Webhook 和通知在该事务中进入幂等持久发件箱，结果消费者在提交后投递。投递失败会保留带租约的重试行；消费者重启不会丢失该效果。稳定的下游 Webhook 投递 ID 和通知流 ID 可以防止重复存储行。外部集成、Slack/推送和实时投递仍为至少一次或尽力而为，不保证恰好一次。核心计数和未知结果暂停始终持久保存。
 
-Warmup authorization records the UTC charge day and whether a reply was counted in the same transaction as the statistics increment. Outbound reservation preserves the initial completion timestamp. A definitive failure or safe unstarted cancellation refunds only that recorded charge, at most once, in the same transaction as the task change. Completion timestamps and dispatch/executor nonces alone never authorize a refund. Pre-upgrade and imported tasks have no positive charge record: known outcomes can still settle, but historical statistics are not decremented by inference. Unknown outcomes remain held and unresolved.
+预热授权会在统计递增的同一事务中，记录 UTC 计费日期和是否计入回复。出站预留保留最初完成时间戳。明确失败或安全的未开始取消，只能在任务变更的同一事务中退还该项已记录计费，且最多一次。完成时间戳及派发/执行器随机令牌本身，绝不能授权退款。升级前及导入的任务没有正面的计费记录：已知结果仍可结算，但不能靠推断减少历史统计。未知结果仍保持暂停且未解决。
 
-If a modern warmup task becomes dead-lettered after its definitive failure and refund were committed, the matching authoritative result repairs only task and dead-letter metadata. It does not repeat accounting, callbacks or mailbox hold changes. Already-applied failures without positive refunded-charge proof remain protected.
+如果现代预热任务在明确失败和退款均已提交后进入死信，匹配的权威结果只会修复任务和死信元数据，不会重复计数、回调或邮箱暂停变更。对于已应用失败但没有明确退款计费证据的任务，保护仍然有效。
 
-## Evidence-based repair holds
+## 依据证据解除修复期间的暂停限制 [#evidence-based-repair-holds]
 
-Authentication, permanent and conflicting-result holds do not clear merely because time passed or an unrelated send succeeded. An authentication hold clears when the mailbox is reconnected: both reconnect flows (OAuth re-authorization and replacement SMTP/IMAP credentials) only complete after the provider accepted the credential, and SMTP/IMAP credentials pass a worker's SMTP AUTH and IMAP login check first. The release is recorded in `send_recovery_resolutions` with evidence type `credentials_reverified`, scoped to the mailbox's organization, and the hold is then recomputed, so an unresolved unknown send or outcome conflict still holds the mailbox. Permanent and conflicting-result holds are not released by a reconnect. An organization-authorized operator can also use `send_recovery_resolution` in the existing mailbox PATCH after investigating the current held task and reason:
+身份验证、永久性错误和结果冲突暂停，不会仅因时间经过或无关发送成功而清除。重新连接邮箱可以解除身份验证暂停：OAuth 重新授权和替换 SMTP/IMAP 凭据两种流程，都只在服务商接受凭据后完成；SMTP/IMAP 凭据还会先通过工作节点的 SMTP AUTH 和 IMAP 登录检查。解除记录写入 `send_recovery_resolutions`，证据类型为 `credentials_reverified`，作用域限定到邮箱所属组织；之后重新计算暂停，因此未解决的未知发送或结果冲突仍会暂停邮箱。永久性错误和结果冲突暂停不会因重新连接解除。经组织授权的运维人员，在调查当前被暂停任务和原因后，也可以在现有邮箱 PATCH 中使用 `send_recovery_resolution`：
 
 ```json
 {
@@ -68,23 +68,23 @@ Authentication, permanent and conflicting-result holds do not clear merely becau
 }
 ```
 
-`authentication_repaired` requires `evidence_task_id` naming a newer definitive, applied successful outbound send on the same mailbox; fresh inbox sync alone is not repair proof. `operator_provider_confirmation` requires a same-mailbox definitive, applied evidence task and non-empty `confirmation_reference`. Include the exact held task and reason (`authentication`, `permanent`, `conflict`). Changed holds, inactive mailboxes, cross-organization requests and remaining unknown sends refuse these repair resolutions. Repair history is inserted atomically before clearing only the repair hold. Cooldowns, suppression and other restrictions remain. References must not contain credentials, message bodies or provider payloads.
+`authentication_repaired` 要求 `evidence_task_id` 指向同一邮箱中更新的、结果明确且已应用的成功出站发送；仅有新收件箱同步不是修复证据。`operator_provider_confirmation` 要求同一邮箱中结果明确且已应用的证据任务，以及非空 `confirmation_reference`。必须提供精确的被暂停任务和原因，原因包括 `authentication`、`permanent` 和 `conflict`。暂停已变化、邮箱未激活、跨组织请求或仍存在未知发送时，这些修复请求会被拒绝。修复历史先原子插入，再仅清除修复暂停。冷却期、禁止发送及其他限制仍然保留。引用中不得包含凭据、邮件正文或服务商载荷。
 
-### Resolving an unknown send
+### 处理结果未知的发送 [#resolving-an-unknown-send]
 
-#### Automatic warmup retirement
+#### 自动终止结果未知的预热任务 [#automatic-warmup-retirement]
 
-Warmup-only unknown sends have an automatic alternative to confirming the old outcome: permanently retire the individual task without replaying it, then admit new, distinct tasks. After ten minutes, the warmup scheduler checks for an existing execution authorization and attempt, no definitive recorded result or receipt, and an exact `unknown` hold for that task. It rechecks under scheduling, task and mailbox send locks. Unstarted dispatches use their separate safe cancellation and refund path first.
+仅限预热的未知发送，有一种无需确认旧结果的自动替代方案：永久退役单个任务且不重放，然后允许新的不同任务进入。十分钟后，预热调度器会检查是否已有执行授权和尝试、没有明确记录结果或回执，且该任务存在精确的 `unknown` 暂停。它会在调度、任务和邮箱发送锁下复查。尚未开始的派发先走独立的安全取消和退款路径。
 
-Retirement records `tasks.warmup_send_retired_at`, cancels execution permanently, preserves `send_result_state='unknown'`, and keeps all original reservation, charge, message ID, nonce, worker and result evidence. It neither refunds nor reconstructs charges, marks the message sent or failed, nor retries it. Late results cannot apply accounting, reauthorize the retired task or change a later task's hold. Other unresolved sends and conflict, authentication or permanent holds remain restrictive. The normal scheduler respects all existing warmup eligibility, cooldown and volume limits.
+退役会记录 `tasks.warmup_send_retired_at`，永久取消执行，保留 `send_result_state='unknown'`，并保留所有原始预留、计费、邮件 ID、随机令牌、工作节点和结果证据。它不退款、不重建计费、不将邮件标为已发送或失败，也不重试。迟到结果不能应用计数、重新授权已退役任务，或改变后续任务的暂停。其他未解决发送，以及冲突、身份验证和永久性错误暂停，仍保持限制。正常调度器继续遵守所有现有预热资格、冷却期和数量限制。
 
-This recovery includes eligible historical holds after upgrade. Legacy sends without execution fencing, messages with confirmed receipt/provider evidence, and tasks with a definitive result or operator confirmation awaiting reconciliation are not retired. Campaign and other non-warmup sends keep the provider-confirmation-only policy below. No additional customer action or configuration is required for eligible warmup sends.
+升级后，符合条件的历史暂停也可按此恢复。没有执行隔离保护的旧版发送、已有确认回执或服务商证据的邮件，以及已有明确结果或等待核对的运维确认的任务，都不会退役。营销活动和其他非预热发送继续遵循下文仅凭服务商确认解决的策略。符合条件的预热发送无需客户额外操作或配置。
 
-Apply migration 315 before running the updated backend, consumer and scheduler. Upgrade all control-plane replicas before relying on the new policy. An old replica may temporarily reassert a retired task's unknown hold; the updated scheduler repairs that hold without replaying the task or touching a newer restrictive hold. Whole-instance backups and organization send-history exports retain the retirement marker. The down migration refuses to remove recorded retirements; retain the schema and roll forward rather than discarding the replay fence.
+运行更新后的后端、消费者和调度器前，先应用迁移 315。只有所有控制平面副本升级后，才能依赖新策略。旧副本可能暂时重新施加已退役任务的未知暂停；更新后的调度器会修复该暂停，不会重放任务或触碰更新的限制性暂停。整实例备份和组织发送历史导出会保留退役标记。向下迁移会拒绝删除已记录退役；应保留 Schema 并向前修复，不要丢弃防重放边界。
 
-#### Provider-confirmed resolution
+#### 依据服务商确认结果进行处置 [#provider-confirmed-resolution]
 
-Unknown means the provider outcome is unproven, not that sending failed. Neither an expired timeout nor the absence of a synced Sent copy is proof that nothing was sent. Obtain explicit provider evidence for the exact task before using the mailbox PATCH:
+未知表示服务商结果尚未证实，不表示发送失败。超时到期或没有同步到已发送副本，都不能证明没有发出邮件。在使用邮箱 PATCH 前，先取得针对精确任务的明确服务商证据：
 
 ```json
 {
@@ -100,94 +100,94 @@ Unknown means the provider outcome is unproven, not that sending failed. Neither
 }
 ```
 
-- `operator_confirmed_sent` requires the provider-confirmed `message_id`. It records success and preserves the campaign step without resending it. Optional provider/thread handles preserve conversation routing.
-- `operator_confirmed_not_sent` requires explicit provider confirmation that this task did not send. Omit all message/thread handles. Normal failure reconciliation releases the reservation and makes the step eligible for retry, subject to the existing attempt limit.
-- Both require a non-empty, bounded `confirmation_reference`, the exact current `held_task_id`/`held_reason`, and no `evidence_task_id`. A timeout or missing Sent copy alone is not an acceptable confirmation. Never use a not-sent confirmation merely to free capacity: an incorrect confirmation can duplicate an email.
+- `operator_confirmed_sent` 要求服务商确认的 `message_id`。它记录成功并保留营销活动步骤，不重发。可选服务商和会话句柄用于保留会话路由。
+- `operator_confirmed_not_sent` 要求服务商明确确认该任务没有发送。应省略所有邮件和会话句柄。正常失败核对会释放预留，使步骤可按现有尝试上限重试。
+- 两者都要求非空且有长度上限的 `confirmation_reference`、精确匹配当前 `held_task_id`/`held_reason`，且不能带 `evidence_task_id`。单纯超时或缺少已发送副本不能作为有效确认。绝不能仅为释放容量而提交“未发送”确认：错误确认可能造成重复邮件。
 
-Execution must have been unresolved for at least two minutes, so a normal in-flight send and its bounded report cannot be overridden. Changed holds, inactive mailboxes, another organization's task, duplicate confirmations and already-recorded definitive outcomes are rejected. Definitive worker outcomes take precedence over queued operator confirmations.
+执行结果必须已持续未解决至少两分钟，避免覆盖正常在途发送及其有界报告。暂停已变化、邮箱未激活、任务属于其他组织、重复确认，以及已有明确结果时，都会拒绝。明确工作节点结果优先于排队中的运维确认。
 
-The PATCH atomically queues an immutable audited result; it does **not** immediately clear the hold. The consumer checks recorded results every 15 seconds and applies the normal success/failure accounting transaction exactly once. Admission stays closed until that transaction commits. If another unknown task remains, the hold moves to that task instead of reopening the mailbox. A later contradictory provider outcome produces a conflict hold rather than rewriting the earlier accounting.
+PATCH 会原子地将不可变、带审计的结果加入队列，**不会**立即清除暂停。消费者每 15 秒检查已记录结果，恰好一次地应用正常成功或失败计数事务。该事务提交前，准入保持关闭。如果还有其他未知任务，暂停会转移到该任务，而不是重新开放邮箱。之后出现矛盾的服务商结果会产生冲突暂停，不会改写此前计数。
 
-### Campaign placement and result reporting
+### 营销活动投递位置与结果上报 [#campaign-placement-and-result-reporting]
 
-Campaign routing, placement, day plans and estimates share durable mailbox send admission. Recovery-held or currently cooling mailboxes contribute no immediately available capacity and do not trap a lead when another healthy sender is available. Plans identify send recovery and provider cooldown separately. When the entire pool is unavailable, the campaign defers with a bounded recheck rather than completing or repeatedly dispatching refused sends. An admission read failure also closes the affected mailbox for that pass.
+营销活动路由、分配、每日计划和估算共用持久邮箱发送准入。处于恢复暂停或当前冷却期的邮箱不贡献即时可用容量；如果有其他健康发件人，也不会把潜在客户困在不可用邮箱上。计划会分别指出发送恢复和服务商冷却。当整个池都不可用时，营销活动会延期并有界复查，不会直接完成，也不会反复派发被拒发送。准入读取失败也会在该轮关闭受影响邮箱。
 
-Provider execution gets 120 seconds, which covers the SMTP client's own 90-second budget for a slow server's verdict after the message, so a send is not cut off waiting for an answer the server was about to give. After provider execution, workers record and publish the result on an independent 45-second context with at most four attempts, each bounded to 10 seconds. Failed reports retain the exact outcome in memory for command redelivery without another provider send. Persisted results survive worker replacement and lost broker events: the consumer replays them through the same idempotent reconciliation. A worker crash before durable recording can still leave an unknown outcome requiring investigation.
+服务商执行时限为 120 秒，覆盖 SMTP 客户端等待慢服务器在邮件提交后给出判断的自身 90 秒预算，避免在服务器即将答复时切断发送。执行后，工作节点通过独立的 45 秒上下文记录和发布结果，最多尝试四次，每次最多 10 秒。报告失败会在内存保留精确结果，供命令重投时返回，不会再次向服务商发送。持久结果可在工作节点替换和代理事件丢失后保留；消费者通过相同幂等核对重放它们。若工作节点在持久记录前崩溃，仍可能留下需要调查的未知结果。
 
-Already-failed tasks with no outbound reservation or execution authorization cannot create unknown provider holds. The recorded-result sweep also reconciles existing invalid holds for such tasks. Real reserved or started unknown sends remain held until a definitive result is reconciled or an eligible warmup task is permanently retired; upgrades never infer failure from elapsed time. Deploy the backend/consumer (including the additive migration) before updated workers. No new configuration is required. Non-warmup and ineligible unknown holds need definitive worker evidence or the explicit operator confirmation above.
+已经失败、且没有出站预留或执行授权的任务，不能产生服务商结果未知暂停。已记录结果扫描也会核对此类任务现有的无效暂停。真实已预留或已开始的未知发送，保持暂停直到明确结果核对完成，或符合条件的预热任务永久退役；升级绝不会根据时间经过推断失败。先部署后端和消费者，包括新增迁移，再部署更新后的工作节点。无需新配置。非预热和不符合条件的未知暂停，需要明确工作节点证据，或前文说明的运维明确确认。
 
-## Actual-message authentication
+## 实际邮件的身份验证 [#actual-message-authentication]
 
-An updated worker retrieves bounded raw MIME for one authorized application-owned diagnostic through Gmail, Graph or IMAP. Authority binds the immutable token/task, exact identities, stamped message ID, current mailbox/worker and participation. A short-lived nonce binds completion. Gmail uses raw format, Graph the exact message's MIME `$value`, and IMAP the exact folder/UIDVALIDITY/UID with bounded `BODY.PEEK[]`. IMAP uses the existing authenticated connection after sync releases its folder mutex, never widening inbox ingestion or reconnecting outside the deadline.
+更新后的工作节点通过 Gmail、Graph 或 IMAP，为一封已授权、属于应用自身的诊断邮件获取有界原始 MIME。授权绑定不可变令牌/任务、精确身份、已记录邮件 ID、当前邮箱/工作节点和参与状态，完成结果再由短期随机令牌绑定。Gmail 使用 raw 格式，Graph 使用该精确邮件的 MIME `$value`，IMAP 使用精确的文件夹/UIDVALIDITY/UID，以及有界的 `BODY.PEEK[]`。IMAP 在同步释放文件夹互斥锁后，使用现有已验证连接，不会扩大收件箱导入范围，也不会在截止时间之外重新连接。
 
-Receipt-before-send-result and transient DNS unknowns have metadata-only retries, at most three attempts within fifteen minutes. Each retries current authorization; absent, expired or revoked context never fetches MIME. The retry queue is bounded to 64 per worker mailbox and is in memory; restart or exhaustion can leave unknown rather than manufacture proof. Definitive stored pass/fail results do not authorize another raw fetch. Raw bytes are cleared after verification or errors and never stored or logged.
+回执先于发送结果到达，以及临时 DNS 未知情况，支持仅含元数据的重试，十五分钟内最多三次。每次都重新检查当前授权；上下文缺失、过期或撤销时，绝不获取 MIME。重试队列保存在内存，每个工作节点邮箱最多 64 项；重启或重试耗尽可能留下未知，不会制造证明。已存储的明确通过/失败结果不会授权再次获取原文。原始字节在验证完成或出错后清除，从不存储或写入日志。
 
-Cryptographic verification uses `go-msgauth/dkim-v0.7.0`, at most 1 MiB of MIME and four signatures, with context-bounded key lookup. A valid DKIM signature is pass; exact From-domain/signer equality establishes only a conservative alignment-pass subset. Body mutation fails verification. Forged or copied Authentication-Results cannot become proof. The stored result includes verifier/version and observation time, not raw MIME or DNS responses. The exact receipt receives the minimal proof; duplicate results cannot replace it with unrelated evidence.
+加密验证使用 `go-msgauth/dkim-v0.7.0`，最多处理 1 MiB MIME 和四个签名，密钥查询受上下文时限约束。有效 DKIM 签名表示通过；From 域与签名者精确相同，只能证明一种保守的对齐通过子集。正文被修改会导致验证失败。伪造或复制的 Authentication-Results 不能成为证明。存储结果包含验证器、版本和观察时间，不保存原始 MIME 或 DNS 响应。最小证明附到精确回执上，重复结果不能用无关证据替换它。
 
-SPF, DMARC and receiving-hop TLS remain unknown absent independent evidence. Unauthorized diagnostics, seed/placement messages outside this context, legacy workers, unavailable MIME, transient DNS failures and byte/signature bounds remain unknown. Parsed Authentication-Results stay unverified claims. DNS configuration is readiness input, not actual-message authentication. Generated prose cannot claim a provider/client check passed.
+缺少独立证据时，SPF、DMARC 和接收跳点 TLS 仍为未知。未授权诊断、此上下文之外的种子或投递位置邮件、旧版工作节点、MIME 不可用、临时 DNS 失败，以及超出字节或签名边界的情况，也都保持未知。解析出的 Authentication-Results 仍是未经验证的声明。DNS 配置是准备就绪的输入，不是实际邮件身份验证。生成文字不能宣称服务商或客户端检查已通过。
 
-## Unsubscribe and negative feedback
+## 退订与负面反馈 [#unsubscribe-and-negative-feedback]
 
-The existing signed unsubscribe URL provides scanner-safe GET and a context-independent POST that durably suppresses future matching traffic. HTTPS messages emit `List-Unsubscribe` and `List-Unsubscribe-Post: List-Unsubscribe=One-Click`; the visible body link and suppression checks remain. A connected transport's DKIM signer must cover both headers for full RFC 8058 signing compliance. Warmbly cannot assert that arbitrary external SMTP/API signers covered them without inspecting a genuine delivered message. The scoped diagnostic DKIM verifier does not establish that broader signing requirement.
+现有签名退订 URL 提供对扫描器安全的 GET，以及不依赖上下文、会持久禁止后续匹配流量的 POST。HTTPS 邮件会发出 `List-Unsubscribe` 和 `List-Unsubscribe-Post: List-Unsubscribe=One-Click`，同时保留正文可见链接和禁止发送检查。连接的传输服务所用 DKIM 签名器必须覆盖这两个邮件头，才完整符合 RFC 8058 签名要求。未检查真实已投递邮件前，Warmbly 无法断言任意外部 SMTP/API 签名器已覆盖它们。限定作用域的诊断 DKIM 验证器不能证明这一更广泛的签名要求。
 
-Hard bounce/complaint/suppression and authentication failures remain negative evidence. Spam placement can slow sending but is not alone a quarantine reason. First-folder observation, native outcome, Cloud trust and content provenance are distinct measurements, not a synthetic engagement score. Coherent disclosed hypothetical diagnostic conversations preserve immutable subjects, versions, facts and exact-parent closure; they do not invent real customer relationships or actions.
+硬退信、投诉、禁止发送和身份验证失败仍属于负面证据。进入垃圾邮件可以减慢发送，但本身不是隔离理由。首次文件夹观察、原生结果、Cloud 信任和内容来源是不同测量，不应合成为模拟互动分数。连贯、明确标注为假设的诊断会话保留不可变主题、版本、事实和精确父邮件结束关系，不会虚构真实客户关系或操作。
 
-## Upgrade, rollback and portability
+## 升级、回滚与可迁移性 [#upgrade-rollback-and-portability]
 
-1. Back up and preserve released migrations 1 through 265 byte-for-byte and main's workspace-link migration 266. Apply the contiguous additive 267 through 274 sequence; no new environment variable is required. Migration 274 preserves historical executor starts as attempt evidence and refuses rollback while attempts from the last 24 hours remain.
-2. Pause dispatch during a mixed control-plane rollout. Upgrade every backend/result consumer, including Cloud replicas, before relying on generation stop, exact-parent resolution, current participation or correlated managed consent.
-3. Drain/reconcile previously accepted work, then upgrade execution workers. Protocol `warmup_send_protocol=2` is required for shared reservations, execution-time action authority and cryptographic diagnostics. Protocol 1 supports only its previous lineage capability. Old JSON and Avro payloads remain readable; old capability is not stronger cancellation/admission support. Use matching Kafka-tagged binaries where applicable.
-4. Recheck holds, actual configured provider, worker liveness, schedules, directional participation, shared/rolling limits and Cloud-side settings before resuming. New mailboxes default off; existing NULL participation stays legacy rather than silently relabeling historical consent. No migration rewrites legacy AI provenance as reviewed. Legacy NULL-provenance sources do not count toward new versioned selection/readiness; existing exact-parent ambiguity stays closed.
+1. 备份并逐字节保留已发布迁移 1 至 265，以及主分支的工作区链接迁移 266。按连续顺序应用新增迁移 267 至 274，无需新增环境变量。迁移 274 将历史执行器启动保留为尝试证据；最近 24 小时仍有尝试时，会拒绝回滚。
+2. 混合控制平面发布期间暂停派发。在依赖停止生成、精确父邮件解析、当前参与状态或关联的托管同意前，先升级所有后端和结果消费者，包括 Cloud 副本。
+3. 处理完或核对此前已接受的工作，再升级执行工作节点。共享预留、执行时操作授权和加密诊断要求协议 `warmup_send_protocol=2`。协议 1 只支持此前的来源链能力。旧 JSON 和 Avro 载荷仍可读取；旧能力不代表拥有更强的取消或准入支持。需要 Kafka 时，使用匹配的带 Kafka 标签二进制。
+4. 恢复前重新检查暂停、实际配置的服务商、工作节点存活状态、计划、双向参与设置、共享/滚动限额及 Cloud 侧设置。新邮箱默认关闭；现有 NULL 参与状态仍按旧版处理，不会悄悄重新标记历史同意。没有迁移会把旧版 AI 来源改写为已审核。旧版 NULL 来源不计入新的带版本选择或准备就绪；现有精确父邮件歧义仍不开放。
 
-Organization export retains participation, ceilings, restrictive task/account evidence and repair history. Executor worker/nonce/start/result handles reset on import. Exact diagnostic authorization and nonces, including raw warmup receipt provenance, are instance-local and excluded; registered placement aggregates travel as history, never as execution grants. See [workspace moves](/guides/workspace-export-import/).
+组织导出保留参与设置、上限、任务/账户限制性证据和修复历史。导入时重置执行器工作节点、随机令牌、开始和结果句柄。精确诊断授权和随机令牌，包括原始预热回执来源，仅属于原实例，不导出；已登记投递位置汇总可以作为历史迁移，绝不是执行授权。参见[迁移工作区](/guides/workspace-export-import/)。
 
-Per-task warmup charge and refund markers reset on organization import; imported statistics remain history, not destination-instance refund authority. Whole-instance database backups retain those markers. The additive charge-provenance migration leaves all historical markers NULL without backfill; apply it before starting the updated backend and result consumers. Rollback refuses to remove recorded charge or refund evidence; retain the additive schema and roll forward.
+按任务记录的预热计费和退款标记在组织导入时重置；导入统计只是历史，不是目标实例的退款授权。整实例数据库备份保留这些标记。新增计费来源迁移将所有历史标记留为 NULL，不回填；应在启动更新后的后端和结果消费者前应用。回滚会拒绝删除已记录计费或退款证据，应保留新增 Schema 并向前修复。
 
-Immutable attempt timestamps and recipient counts travel with the sending group and retain restrictive rate evidence; their historical nonces do not authorize execution. Raw warmup receipt provenance remains source-instance-local and excluded, while registered placement aggregates travel.
+不可变尝试时间戳和收件人数随发送组迁移，保留限制性速率证据；历史随机令牌不授权执行。原始预热回执来源仍只保留在源实例，不导出；已登记投递位置汇总则可迁移。
 
-The source-instance reconciliation outbox is excluded from organization archives so an import cannot replay customer notifications. Drain pending effects before moving; whole-instance backups retain the queue. Delivered outbox rows expire after seven days; pending rows remain until delivery or organization/task deletion. They contain event/notification metadata, not raw MIME, provider responses or credentials. Repair history lasts with the organization and must not contain sensitive message content.
+源实例核对发件箱不包含在组织归档中，避免导入后重放客户通知。迁移前应处理完待投递效果；整实例备份保留该队列。已投递发件箱行七天后过期；待处理行会保留到投递完成或组织/任务删除。它们只包含事件和通知元数据，不含原始 MIME、服务商响应或凭据。修复历史与组织一同保留，不能包含敏感邮件内容。
 
-Rollback refuses unresolved reservations, explicit participation state, diagnostic authorization/proof, pending outbox effects and repair history instead of discarding them. Earlier component migrations also refuse restrictive dispatch or managed consent history. Restore or complete a reviewed reconciliation; do not delete negative evidence simply to make downgrade succeed. Legacy deployments remain readable, but do not resume a mixed-old executor fleet assuming new guarantees.
+存在未解决预留、明确参与状态、诊断授权/证明、待处理发件箱效果或修复历史时，回滚会被拒绝，而不是丢弃它们。更早的组件迁移也会拒绝删除限制性派发或托管同意历史。应恢复或完成经审核的核对，不要仅为让降级成功而删除负面证据。旧部署仍可读取，但不要假设混合旧执行器集群具备新保证后就恢复运行。
 
-### Conflict-audit upgrade ordering
+### 冲突审计功能的升级顺序 [#conflict-audit-upgrade-ordering]
 
-The conflict-audit extension adds typed automatic contradiction evidence, local-record provenance and an explicit conflict-resolution projection. All historical rows remain intact, with no inferred provenance backfill. A historical confirmation without trustworthy local origin is history, not permission to apply an outcome or clear an unknown/conflict hold. Independent authoritative worker/provider results continue to reconcile unknown sends automatically. A genuine contradiction between definitive results preserves the original accounting and hold until a validated provider confirmation resolves the known conflict; arrival order and duplicate delivery do not decide the outcome.
+冲突审计扩展添加类型化的自动矛盾证据、本地记录来源，以及明确的冲突解决投影。所有历史行保持完整，不会推断回填来源。没有可信本地来源的历史确认只是历史，不是应用结果或清除未知/冲突暂停的权限。独立、权威的工作节点或服务商结果仍会自动核对未知发送。明确结果之间若有真实矛盾，会保留原计数和暂停，直到经验证的服务商确认解决该已知冲突；到达顺序和重复投递不决定结果。
 
-Normal customer sending, connection and authentication steps do not change. Exceptional uncertain history is an administrator recovery workflow using the existing `PATCH /emails/:id` recovery payload, workspace boundary and `manage_emails`/`WRITE_EMAILS` permissions. It does not add a customer log-reading or confirmation form. These are existing workspace/API permissions, not a new platform-admin-only authorization gate. Confirming an unknown outcome keeps admission held until the normal result reconciler commits accounting and hold transfer together. Authentication repair cannot resolve an unrelated outcome conflict.
+客户正常发送、连接和身份验证步骤不变。例外的不确定历史属于管理员恢复流程，使用现有 `PATCH /emails/:id` 恢复载荷、工作区边界，以及 `manage_emails`/`WRITE_EMAILS` 权限。它不会新增让客户读日志或填写确认的表单。这些都是现有工作区/API 权限，不是新增的平台管理员专属授权门槛。确认未知结果后，准入仍保持暂停，直到正常结果核对器将计数和暂停转移一同提交。身份验证修复不能解决无关的结果冲突。
 
-An additive schema alone is **not** a safe active mixed-version rollout. Old readers can still execute historical confirmations without checking provenance; old hold-clearing code cannot recognize automatic conflict rows. New binaries also require the added columns before using these paths. Use this ordering for a separately approved rollout:
+只有新增 Schema，**不足以**安全地进行活跃混合版本发布。旧读取器仍可能在不检查来源的情况下执行历史确认，旧的暂停清除代码也无法识别自动冲突行。新二进制在使用这些路径前，同样要求新增列已经存在。经单独批准的发布应遵循以下顺序：
 
-1. Preserve the database and audit evidence. Finish all predecessor migrations and review the allocated extension's up/down tests. Do not allocate a colliding migration or delete history to force rollback.
-2. Quiesce old dispatch/scheduling and all old processes that can apply send outcomes, mutate recovery holds, accept recovery confirmations or import workspace data. Preserve queued results and durable evidence. Merely disabling the admin confirmation screen or stopping one result consumer is insufficient.
-3. Apply the reviewed additive extension, then start only compatible backend, result-consumer, scheduler and import/repair binaries. Verify every control-plane replica, including Cloud and independently running consumers, before resuming these operations. Worker message/result formats are unchanged by this extension; it needs no new worker capability, credentials or customer configuration.
-4. Resume automatic stored-result reconciliation first, without resending tasks. Check task-scoped outcome, accounting, dead-letter and hold evidence. Remaining historical confirmations without local provenance require fresh administrator/provider confirmation only when independent authoritative evidence cannot resolve the unknown. Unknown outcomes and genuine conflicts remain restrictive.
-5. Keep the new schema and roll forward if a binary rollout fails. Recovery-audit down refuses whenever audit rows remain, including historical rows; older binaries must not resume recovery mutation against retained new evidence. A validated empty-audit downgrade still requires its matching compatible binaries.
+1. 保留数据库和审计证据。完成所有前置迁移，审核已分配扩展的向上/向下测试。不要分配冲突迁移，也不要为强制回滚删除历史。
+2. 暂停旧派发和调度，以及所有能应用发送结果、修改恢复暂停、接受恢复确认或导入工作区数据的旧进程。保留排队结果和持久证据。仅禁用管理员确认界面，或只停止一个结果消费者，都不够。
+3. 应用已审核的新增扩展，再仅启动兼容的后端、结果消费者、调度器及导入/修复二进制。恢复这些操作之前，验证每个控制平面副本，包括 Cloud 和独立运行的消费者。本扩展不改变工作节点消息或结果格式，不需要新的工作节点能力、凭据或客户配置。
+4. 先恢复已存储结果的自动核对，不重发任务。检查任务作用域的结果、计数、死信和暂停证据。缺少本地来源的历史确认，只有在独立权威证据无法解决未知结果时，才需要新的管理员/服务商确认。未知结果和真实冲突仍保持限制。
+5. 二进制发布失败时，应保留新 Schema 并向前修复。只要仍有审计行，包括历史行，恢复审计的向下迁移就会拒绝；不能让旧二进制在保留的新证据上恢复修改恢复状态。即使已验证审计为空、允许降级，也仍需要匹配的兼容二进制。
 
-A refused downgrade preserves recovery rows, columns, constraints and indexes, but `golang-migrate` records the attempted down target as dirty before executing SQL. This is not a successful downgrade. Keep mutators quiesced and have an operator verify the retained schema and migration state before a reviewed roll-forward; do not blindly force a version, restart older binaries or delete evidence to bypass the refusal.
+被拒绝的降级会保留恢复行、列、约束和索引，但 `golang-migrate` 会在执行 SQL 前，将尝试的向下目标记为 dirty。这不代表降级成功。应继续暂停修改进程，由运维人员验证保留的 Schema 和迁移状态，再进行经审核的向前修复；不要盲目强制版本、重启旧二进制，或删除证据绕过拒绝。
 
-This ordering is an operator deployment requirement, not permission to merge, deploy, replay, retire uncertain tasks or manually clear holds. A later applied send or failed/cancelled task is not recovery proof for a different held-task cohort. Local tests cannot establish that a provider executed a send.
+这一顺序是运维部署要求，不代表授予合并、部署、重放、退役不确定任务或手动清除暂停的权限。之后已应用的发送或失败/取消任务，不能作为另一组被暂停任务的恢复证据。本地测试不能证明服务商实际执行过发送。
 
-## Verification and limits
+## 验证与限制 [#verification-and-limits]
 
-### Research coverage and external gates
+### 调研覆盖范围与外部验证条件 [#research-coverage-and-external-gates]
 
-The twelve research proposals have different evidence requirements. Implemented controls and local fixtures are not substitutes for provider approval, native-language review or a real-recipient experiment.
+十二项研究建议各有不同证据要求。已实现控制和本地测试样例，不能替代服务商批准、母语审核或真实收件人实验。
 
-| Proposal | Implemented path and regression coverage | Remaining external verification |
+| 建议 | 已实现路径和回归覆盖 | 仍需外部验证的内容 |
 |---|---|---|
-| R1: consent and complete stop | Mailbox and Cloud participation, final action authority; `review_corrections_live_test.go` and lifecycle/Cloud UI-model fixtures | Drain old accepted commands; verify every deployed control plane and worker before relying on cancellation |
-| R2: shared admission | `send_admission.go`, immutable attempt ledger, mixed-lane concurrency and failed-attempt fixtures | Operators must reserve headroom for other mail clients and configure known applicable provider limits; their traffic is not automatically metered here |
-| R3: errors and recovery | Native provider classification, durable holds, transactional accounting and outbox; recovery and legacy JSON/Avro fixtures | Reconcile ambiguous native outcomes with real provider evidence; external notifications remain at least once |
-| R4: measurement provenance | Separate receipt/folder/authentication observations, unknown categories and placement denominators; observation-evidence upgrade fixtures | Real provider/dashboard coverage and missingness remain measured inputs, not inferred success |
-| R5: message authentication and unsubscribe | Authorized bounded Gmail/Graph/IMAP DKIM and exact-domain alignment; cryptographic/raw-MIME fixtures and existing scanner-safe unsubscribe | SPF, DMARC, receiving-hop TLS and delivered RFC 8058 signer coverage require actual evidence; provider enrollment and route remediation remain operator tasks |
-| R6: exact-parent lifecycle | Durable token/receipt ancestry, stable subject/References and one successor; `warmup_lineage_live_test.go` and dispatch fixtures | Canary the actual deployed queue/provider path; ambiguous legacy ancestry never becomes a reply grant |
-| R7: coherent content | Versioned vetted scenarios and final canonical rendering; `content_quality_test.go` and generation fixtures | Human and native-language quality benchmarks have not been run; prose never proves a real provider outcome |
-| R8: effective generation controls | Settings round-trip, effective settings and credential-independent stop; warmup-content control/batch and upgrade fixtures | Configured model visibility is not Batch/structured-output support; actual provider submission must confirm capability |
-| R9: trust and Cloud reconciliation | Current role/tier/standing gates, durable consent and restrictive history; managed-consent fault/import fixtures | Upgrade all Cloud replicas before correlated operations; local alias unlink is not global native-mailbox revocation |
-| R10: queue and diagnostic parity | SQL-bound callbacks, replay fencing, untouched first-folder evidence and seed isolation; lineage, worker and placement fixtures | Actual hosted/local queue fleets and fixed-panel coverage require rollout verification; missing reports remain unknown |
-| R11: legitimate response-adaptive pacing | Conservative cold ceiling uses fresh distinct campaign replies, with negative feedback and configured caps; unknown lookups preserve known warmup and conservative execution/projection/explanation fixtures | Adequate real-recipient coverage, provider-stratified holdouts and a preregistered controlled evaluation are required before any efficacy claim |
-| R12: readiness and claims | DNS discovery is not authentication; operational health is not reputation; UI/docs explain diagnostic scope and unknowns | No guaranteed inbox or universal safe-volume claim; marketing benefits require replicated real-recipient evidence |
+| R1：同意与完全停止 | 邮箱和 Cloud 参与、最终操作授权；`review_corrections_live_test.go` 及生命周期/Cloud UI 模型测试样例 | 处理完旧的已接受命令；依赖取消之前，验证每个已部署控制平面和工作节点 |
+| R2：共享准入 | `send_admission.go`、不可变尝试账本、混合通道并发和失败尝试测试样例 | 运维人员必须为其他邮件客户端预留余量，并配置已知适用的服务商限额；它们的流量不会在这里自动计量 |
+| R3：错误与恢复 | 原生服务商分类、持久暂停、事务计数和发件箱；恢复及旧 JSON/Avro 测试样例 | 用真实服务商证据核对模糊的原生结果；外部通知仍为至少一次 |
+| R4：测量来源 | 分开记录回执、文件夹和身份验证观察、未知类别及投递位置分母；观察证据升级测试样例 | 真实服务商和控制台的覆盖情况及缺失程度，仍需实际测量，不能推断为成功 |
+| R5：邮件身份验证和退订 | 经授权、有界的 Gmail/Graph/IMAP DKIM 及精确域对齐；加密和原始 MIME 测试样例，以及现有扫描器安全退订 | SPF、DMARC、接收跳点 TLS 和已投递 RFC 8058 签名覆盖需要真实证据；服务商登记和路由修复仍由运维负责 |
+| R6：精确父邮件生命周期 | 持久令牌/回执来源、稳定主题/References 和单一后继；`warmup_lineage_live_test.go` 及派发测试样例 | 对实际部署的队列/服务商路径做金丝雀验证；模糊的旧版来源链绝不变成回复授权 |
+| R7：连贯内容 | 带版本的审核场景和最终标准渲染；`content_quality_test.go` 及生成测试样例 | 尚未运行人工和母语质量基准；文字绝不能证明真实服务商结果 |
+| R8：实际生效的生成控制 | 设置保存读回、实际生效设置和独立于凭据的停止；预热内容控制/批处理及升级测试样例 | 能看到配置的模型，不代表支持 Batch 或结构化输出；必须通过实际服务商提交确认能力 |
+| R9：信任与 Cloud 核对 | 当前角色、等级和状态限制，持久同意及限制性历史；托管同意故障/导入测试样例 | 关联操作前升级所有 Cloud 副本；解除本地别名链接不等于全局撤销原生邮箱 |
+| R10：队列与诊断一致性 | SQL 绑定回调、防重放边界、不改写首次文件夹证据，以及种子隔离；来源链、工作节点和投递位置测试样例 | 实际托管/本地队列集群和固定样本组覆盖需要发布验证；缺失报告仍为未知 |
+| R11：依据真实回复调整节奏 | 保守冷邮件上限使用近期不同营销活动的回复，结合负面反馈和配置上限；未知查询保留已知预热，以及保守执行、投影和解释测试样例 | 任何有效性声明之前，都需要足够真实收件人覆盖、按服务商分层的保留对照组，以及预注册的受控评估 |
+| R12：准备就绪与声明 | DNS 发现不等于身份验证，运行健康不等于信誉；界面和文档解释诊断范围及未知状态 | 不保证进入收件箱，也不宣称存在通用安全发送量；营销收益需要可重复的真实收件人证据 |
 
-Upgrade fixtures start at the released 265 schema and preserve legacy IDs/state. Mixed campaign/warmup/placement/manual contenders prove shared capacity and unknown reservation retention; worker fixtures exercise replay, envelope binding, current consent and old JSON/Avro readability. Provider MIME fixtures test mutation, forged headers, timeout and bounds without provider access.
+升级测试样例从已发布的 265 Schema 开始，保留旧 ID 和状态。混合营销活动、预热、投递位置和人工发送竞争者验证共享容量及未知预留保留；工作节点样例覆盖重放、信封绑定、当前同意，以及旧 JSON/Avro 可读性。服务商 MIME 样例在不访问服务商的情况下，测试内容修改、伪造邮件头、超时和边界。
 
-These checks establish local engineering behavior, not production efficacy, provider consent, real delivery, all-provider authentication, signed RFC 8058 headers or exactly-once external notification delivery. They perform no live sends, browser proof or production reads.
+这些检查证明的是本地工程行为，不是生产有效性、服务商同意、真实投递、全服务商身份验证、RFC 8058 邮件头签名覆盖，或外部通知恰好一次投递。它们不会实际发信，不进行浏览器证明，也不读取生产环境。

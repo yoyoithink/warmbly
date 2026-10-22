@@ -1,11 +1,11 @@
 ---
-title: Split deployment
-description: Running the control plane on a container host, the fleet on machines you own, and the database, root key and object store in a cloud region, with what each piece costs.
+title: 分拆部署
+description: 将控制平面放在容器托管平台、节点集群放在自有主机，并将数据库、根密钥和对象存储放在云区域，介绍各部分的部署成本。
 ---
 
-The [self-hosting guide](/development/deployment-guide/) puts everything on one machine, which is the right answer until it is not. This page is the other shape: the control plane on a container host, the worker fleet on machines you own, and the durable pieces in a cloud region next to the control plane.
+[自托管指南](/development/deployment-guide/)把所有组件放在一台机器上，在需求增长到不再适合之前，这通常是正确选择。本页介绍另一种布局：控制平面运行在容器托管平台，工作节点集群运行在你自己的机器上，持久化组件放在靠近控制平面的云区域。
 
-It is the deployment Warmbly's own architecture describes. The control plane owns relational state and runs where a container host is convenient. The execution plane is a fleet of machines you rent, because a worker's value is being a distinct machine somewhere.
+这也是 Warmbly 自身架构描述的部署方式。控制平面持有关系型状态，运行在方便使用的容器平台；执行平面由你租用的一组机器组成，因为工作节点的价值就在于它是某处的一台独立机器。
 
 ```
 container host          machines you own        cloud region
@@ -18,119 +18,119 @@ forms
 web / admin
 ```
 
-Everything here is env-var configuration and manifests in [`deploy/split-cloud/`](https://github.com/warmbly/warmbly/tree/main/deploy/split-cloud). No code changes, no fork.
+这里所有内容都通过环境变量和 [`deploy/split-cloud/`](https://github.com/warmbly/warmbly/tree/main/deploy/split-cloud) 中的清单配置完成，无需改代码或维护分支。
 
-## What goes where, and why
+## 各组件的部署位置及原因 [#what-goes-where-and-why]
 
-| Service | Plane | Why there |
+| 服务 | 平面 | 部署理由 |
 |---------|-------|-----------|
-| backend | control | Owns Postgres and applies migrations on boot |
-| consumer | control | Opens Postgres directly, so it belongs next to it |
-| realtime | control | Websocket fanout; needs Redis and a public hostname |
-| tracking | control | Public pixel and click endpoints on their own domain |
-| forms | control | Only if you use hosted forms |
-| web, admin | control | Static builds, configured at container start |
-| worker | execution | Sends and syncs from machines you control |
-| NATS, Redis | execution side | Both planes reach them; keeping them near the fleet keeps the noisy hop local |
-| Postgres, KMS, S3, SES | cloud | Durability, a root of trust, and shared blob storage |
+| backend | 控制 | 持有 Postgres 访问并在启动时应用迁移 |
+| consumer | 控制 | 直接连接 Postgres，因此应靠近数据库 |
+| realtime | 控制 | WebSocket 分发，需要 Redis 和公开主机名 |
+| tracking | 控制 | 在独立域名上提供公开像素和点击端点 |
+| forms | 控制 | 仅在使用托管表单时需要 |
+| web、admin | 控制 | 静态构建，在容器启动时配置 |
+| worker | 执行 | 从你控制的机器发送和同步 |
+| NATS、Redis | 执行侧 | 两个平面都要访问；靠近节点集群可以让频繁通信留在本地 |
+| Postgres、KMS、S3、SES | 云 | 提供持久性、信任根和共享 Blob 存储 |
 
-The consumer is the one people put in the wrong place. It is not a worker: it updates relational state, and it needs the database DSN a worker is deliberately never given. Running it beside the backend saves a database connection crossing the internet for every event.
+消费者最容易被放错位置。它不是工作节点：它更新关系型状态，需要数据库 DSN，而工作节点被有意禁止获得该值。将消费者放在后端旁，可避免每个事件都让数据库连接跨越互联网。
 
-## Keep the three regions close
+## 让三个区域尽量接近 [#keep-the-three-regions-close]
 
-The backend reaches Postgres and Redis on every request, so the round trips between the three providers are the latency floor of the whole product. Pick a container-host region, a cloud region, and a datacentre for the machines that are near each other, and confirm it before you build anything on top.
+后端每个请求都会访问 Postgres 和 Redis，因此三个服务商之间的往返延迟，构成整个产品延迟的下限。请选择彼此邻近的容器托管区域、云区域和机器数据中心，并在搭建其他内容之前验证距离和延迟。
 
-## Two things that are not optional
+## 两项必备条件 [#two-things-that-are-not-optional]
 
-<Callout title="RDS needs AWS's certificate bundle">
-Amazon RDS presents a chain rooted in an RDS CA that is in no public trust store, so `sslmode=verify-full` fails with `x509: certificate signed by unknown authority` against the system bundle alone. The backend, consumer and realtime images ship AWS's truststore at `/etc/ssl/rds/global-bundle.pem`; point `sslrootcert` at it, as above. Realtime is Elixir and reads no DSN parameters, so it takes the same bundle through `DATABASE_SSL_CA_FILE` instead.
+<Callout title="RDS 需要 AWS 证书包">
+Amazon RDS 提供的证书链以 RDS CA 为根，该 CA 不在公共信任库中，因此仅使用系统证书包时，`sslmode=verify-full` 会报 `x509: certificate signed by unknown authority`。后端、消费者和实时服务镜像在 `/etc/ssl/rds/global-bundle.pem` 中包含 AWS 信任库，请将 `sslrootcert` 指向它。实时服务使用 Elixir，不读取 DSN 参数，因此改用 `DATABASE_SSL_CA_FILE` 指定相同证书包。
 
-`sslmode=require` is the fallback if you cannot. It still encrypts, and `rds.force_ssl=1` still forces TLS server side, but nothing verifies the server's identity, so a caller that reaches the wrong host will not notice.
+无法这样配置时，可以回退到 `sslmode=require`。它仍然加密，服务端的 `rds.force_ssl=1` 也仍强制 TLS，但不会验证服务器身份，因此调用方连到错误主机也无法察觉。
 </Callout>
 
-<Callout type="warn" title="Redis has to be TLS here">
-The cache holds each organization's decrypted data key for the life of its entry. A plaintext connection across the internet publishes key material, and a password does not change that. On one machine the loopback bind was the protection; once the control plane is somewhere else, TLS is.
+<Callout type="warn" title="这种部署中的 Redis 必须使用 TLS">
+缓存会在条目有效期内保存每个组织已解密的数据密钥。通过互联网明文连接会暴露密钥材料，密码也无法改变这一点。在单台机器上，回环绑定提供保护；控制平面迁到别处后，保护必须由 TLS 提供。
 </Callout>
 
-**Blobs have to be object storage.** A worker reads the message body the backend wrote. With `BLOB_PROVIDER=filesystem` it has neither the disk nor the permissions, and the failure arrives at the last step of a send with everything else looking healthy. `warmbly join` warns about this and starts the node anyway; the warning is the whole warning you get.
+**Blob 必须使用对象存储。** 工作节点需要读取后端写入的邮件正文。使用 `BLOB_PROVIDER=filesystem` 时，它既没有对应磁盘，也没有权限；其他组件看似健康，却会在发送最后一步失败。`warmbly join` 会警告这一点，但仍启动节点；这就是系统给出的全部提醒。
 
-## Nodes carry no cloud credentials
+## 节点不持有云服务凭据 [#nodes-carry-no-cloud-credentials]
 
-A machine in the fleet needs two privileged things: opening the sealed data key for an organization, and reading and writing message bodies. Both would normally mean an AWS credential on every box, in a file `warmbly join` rewrites on each run.
+节点集群中的机器需要两种特权操作：解开组织密封的数据密钥，以及读写邮件正文。通常这意味着每台机器都要保存 AWS 凭据，而且放在 `warmbly join` 每次运行都会重写的文件中。
 
-It does not work that way. When the control plane runs `KMS_PROVIDER=aws` or `BLOB_PROVIDER=s3`, a joining node is handed the brokered form instead:
+实际并非如此。控制平面使用 `KMS_PROVIDER=aws` 或 `BLOB_PROVIDER=s3` 时，加入节点获得的是代理形式：
 
-| Control plane | What a node is given |
+| 控制平面 | 节点获得的配置 |
 |---|---|
 | `KMS_PROVIDER=aws` | `KMS_PROVIDER=brokered` |
-| `KMS_PROVIDER=local` | `KMS_PROVIDER=local`, with the master key |
+| `KMS_PROVIDER=local` | `KMS_PROVIDER=local`，并附带主密钥 |
 | `BLOB_PROVIDER=s3` | `BLOB_PROVIDER=brokered` |
-| `BLOB_PROVIDER=filesystem` | `BLOB_PROVIDER=filesystem`, and a warning |
+| `BLOB_PROVIDER=filesystem` | `BLOB_PROVIDER=filesystem`，并显示警告 |
 
-A brokered provider authenticates with the internal API token the node already holds and asks the instance to perform the one privileged operation: unwrap this key, sign this blob operation. The instance token is scoped to one deployment and revocable from it, which an IAM access key on a rented machine is not.
+代理提供程序使用节点已有的内部 API 令牌验证身份，再请求实例执行一次特权操作：解封这个密钥，或为这个 Blob 操作签名。实例令牌作用域仅限一个部署，并可从该部署撤销；租用机器上的 IAM 访问密钥不具备这种边界。
 
-Blob bytes are not proxied. The control plane signs a URL and the node transfers directly against the object store, so a mailbox sync costs the backend one small request per object rather than the bytes.
+Blob 字节不经过代理。控制平面签发 URL，节点直接与对象存储传输，因此邮箱同步每个对象只给后端带来一次小请求，而不是传输全部字节。
 
-The cost is one HTTPS call per DEK open, which Redis caches, and one per blob operation. If you would rather a node talk to AWS directly, put `KMS_PROVIDER`, `BLOB_PROVIDER` and the credentials in `/etc/warmbly/node.local.env`, which a re-join does not overwrite.
+代价是每次打开 DEK 需要一次 HTTPS 调用，Redis 会缓存结果，每次 Blob 操作也需要一次。如果希望节点直接访问 AWS，可将 `KMS_PROVIDER`、`BLOB_PROVIDER` 和凭据放入 `/etc/warmbly/node.local.env`，重新加入时不会覆盖该文件。
 
-Two limits are worth knowing. A signed URL covers one verb on one key, and only for the prefixes a node reaches: transport bodies, campaign attachments, and the mailbox bodies a sync stores. Avatars, form assets and workspace export archives cannot be signed for at all, so the credential a node holds is not a credential for the bucket.
+需要了解两个限制。签名 URL 只覆盖一个键上的一种操作，并且仅限节点需要访问的前缀：传输正文、营销活动附件，以及同步保存的邮箱正文。头像、表单资源和工作区导出归档完全不能签名，因此节点持有的凭据并不是整个存储桶的访问凭据。
 
-That credential is `NODE_BROKER_TOKEN`, and it covers every internal route only a node calls: the key and blob brokers, the provider access token for a mailbox Warmbly Cloud manages, data keys, the message map, sync lookups, worker config and the heartbeat. It falls back to `INTERNAL_API_TOKEN`, but set it to its own value here: the tracking and forms services are internet-facing and carry `INTERNAL_API_TOKEN`, and with a separate node token what they hold reaches none of those routes. A node joined after it is set receives it in place of the shared token.
+该凭据是 `NODE_BROKER_TOKEN`，覆盖所有仅节点调用的内部路由：密钥和 Blob 代理、Warmbly Cloud 托管邮箱的服务商访问令牌、数据密钥、邮件映射、同步查询、工作节点配置和心跳。它可以回退到 `INTERNAL_API_TOKEN`，但此处应设为独立值：跟踪和表单服务面向互联网并持有 `INTERNAL_API_TOKEN`；分开节点令牌后，它们持有的值无法访问上述任何路由。设置后加入的节点会收到新值，替代共享令牌。
 
-Upgrading a fleet that already sets `NODE_BROKER_TOKEN` needs no extra step. A node on an older release may still send `INTERNAL_API_TOKEN`; its heartbeat is answered with the version it should run and nothing else, so it updates itself and comes back on `NODE_BROKER_TOKEN`, which its join already wrote to `node.env`. Until then its sync lookups are refused for the few minutes the update takes. A worker stays live meanwhile, because its Redis heartbeat needs no token, so its mailboxes are not moved. A node joined before `NODE_BROKER_TOKEN` was set has no copy of it and is only ever told its version, which the backend logs with the node's id: join it again. To keep older nodes syncing through the upgrade, set `NODE_ACCEPT_INTERNAL_TOKEN=true` on the control plane first and remove it once every node has updated.
+升级已设置 `NODE_BROKER_TOKEN` 的节点集群，无需额外步骤。旧版节点可能仍发送 `INTERNAL_API_TOKEN`；其心跳响应只包含应运行版本，除此之外没有其他内容，因此它会自行更新，再使用 `NODE_BROKER_TOKEN` 返回；加入流程已将该值写入 `node.env`。更新所需的几分钟内，同步查询会被拒绝。工作节点期间仍被视为存活，因为 Redis 心跳无需令牌，因此不会迁移其邮箱。在设置 `NODE_BROKER_TOKEN` 前已加入的节点没有这个值，只会被告知版本，后端会记录其节点 ID；请重新加入该节点。若要让旧节点在升级期间继续同步，先在控制平面设置 `NODE_ACCEPT_INTERNAL_TOKEN=true`，待所有节点更新后移除。
 
-## Building it
+## 搭建步骤 [#building-it]
 
 <Steps>
 
 <Step>
 
-### The cloud resources
+### 云资源 [#the-cloud-resources]
 
 ```bash
 scripts/aws-bootstrap.sh --domain example.com --region eu-central-1
 ```
 
-That creates the KMS key and alias, a private bucket with encryption on, a Postgres instance, an SES domain identity, and an IAM user for the control plane with a least-privilege policy. It is idempotent, and `--dry-run` prints what it would do.
+这会创建 KMS 密钥及别名、启用加密的私有存储桶、Postgres 实例、SES 域身份，以及具有最小权限策略的控制平面 IAM 用户。操作幂等，`--dry-run` 可打印准备执行的内容。
 
-Five things it deliberately leaves to you, because each is a decision rather than a default: an access key for the control-plane user, the database security group, `rds.force_ssl=1` in the parameter group, the DKIM records in DNS, and SES production access.
+有五件事有意留给你决定，因为它们不应由默认值替代：控制平面用户的访问密钥、数据库安全组、参数组中的 `rds.force_ssl=1`、DNS 中的 DKIM 记录，以及 SES 生产访问权限。
 
-<Callout type="warn" title="SES starts sandboxed">
-Until you request production access, SES only delivers to addresses you have verified, which means invitations and password resets silently reach nobody else. This is platform mail only: campaign and warmup mail goes out through the mailboxes your customers connect, and never touches SES.
+<Callout type="warn" title="SES 初始处于沙盒模式">
+申请生产访问权限前，SES 只向已验证地址投递，因此其他人实际上收不到邀请和密码重置邮件。SES 仅用于平台邮件：营销活动和预热通过客户连接的邮箱发送，绝不经过 SES。
 </Callout>
 
 </Step>
 
 <Step>
 
-### The bus and cache
+### 事件总线与缓存 [#the-bus-and-cache]
 
-Point an A record at the machine first, then one command on it:
+先将 A 记录指向机器，再在机器上执行：
 
 ```bash
 curl -fsSLO https://raw.githubusercontent.com/warmbly/warmbly/main/deploy/split-cloud/bus/setup.sh
 sh setup.sh --domain bus.example.com
 ```
 
-It downloads the rest of the bundle next to itself, installs Docker and certbot if they are missing, creates the group that may read the private key, generates the two credentials, obtains the certificate, installs the renewal hook, starts both services, waits for them to report healthy, proves a real client can connect over TLS with each credential and that a wrong one is refused, and prints the two lines your control plane needs.
+脚本会把其余文件下载到自身旁边，安装缺失的 Docker 和 certbot，创建可读取私钥的组，生成两个凭据，获取证书，安装续期钩子，启动两个服务并等待健康，然后验证真实客户端能使用各自凭据通过 TLS 连接、错误凭据会被拒绝，最后打印控制平面所需的两行配置。
 
-<Callout type="warn" title="On Cloudflare, the record must be DNS only">
-Grey cloud, not orange. Cloudflare's proxy passes HTTP and HTTPS on a fixed set of ports and nothing else, so a proxied record swallows 4222 and 6380 entirely. The script checks that the name resolves before spending a Let's Encrypt attempt, but it cannot tell you the answer came from a proxy.
+<Callout type="warn" title="Cloudflare 记录必须设为仅 DNS">
+使用灰云，不使用橙云。Cloudflare 代理只转发固定端口上的 HTTP 和 HTTPS，其他流量不转发，因此代理记录会完全阻断 4222 和 6380。脚本会在消耗一次 Let's Encrypt 尝试前确认名称能解析，但无法判断答案是否来自代理。
 </Callout>
 
-It is idempotent. A second run adopts what is there: it never rotates a secret, never reissues a valid certificate, and never overwrites your `.env`. Re-running is how you pick up a change.
+脚本是幂等的。第二次运行会沿用已有内容，绝不轮换秘密值、不重新签发有效证书，也不覆盖 `.env`。重新运行就是获取变更的方法。
 
-Three flags worth knowing: `--verify` re-runs the connection checks against a box that is already up, `--print-env` prints the control plane lines again, and `--refresh` re-downloads the compose file and config to pick up a fix without touching your secrets.
+三个常用参数：`--verify` 对已经运行的机器重新执行连接检查，`--print-env` 再次打印控制平面配置，`--refresh` 重新下载 Compose 文件和配置以获取修复，不触碰秘密值。
 
-The renewal hook is the part that matters after day one. Neither service re-reads its certificate, so without it everything works for 90 days and then stops. Redis publishes only its TLS port; the plaintext port stays on the container network for a worker running on the same machine.
+安装之后最重要的是续期钩子。两个服务都不会自行重新读取证书，没有钩子就会先正常工作 90 天，然后停止。Redis 仅公开 TLS 端口，明文端口留在容器网络中，供同机工作节点使用。
 
 </Step>
 
 <Step>
 
-### The control plane
+### 控制平面 [#the-control-plane]
 
-`deploy/split-cloud/control-plane.env.example` is every setting, annotated. The ones that decide whether a fleet can exist at all:
+`deploy/split-cloud/control-plane.env.example` 包含带注释的全部设置。以下配置决定节点集群能否正常存在：
 
 ```bash
 PRIMARY_DB=postgres://warmbly:...@db.us-east-1.rds.amazonaws.com:5432/warmbly?sslmode=verify-full&sslrootcert=/etc/ssl/rds/global-bundle.pem
@@ -140,17 +140,17 @@ ENCRYPTED_KEYS_BACKEND_URL=https://api.example.com
 BLOB_PROVIDER=s3
 ```
 
-<Callout title="A node inherits these addresses">
-`warmbly join` renders a node's configuration from the backend's own environment. A value that only resolves inside your container network produces a node that enrols cleanly and then cannot reach anything. Set these to addresses another machine can use before adding one.
+<Callout title="节点会继承这些地址">
+`warmbly join` 根据后端自身环境渲染节点配置。如果值只能在容器网络内解析，节点会顺利登记，却无法访问任何服务。添加节点前，先将它们设为其他机器可以访问的地址。
 </Callout>
 
-Deploy the backend first: it applies the migrations. Then the consumer, realtime, tracking, and the two frontends.
+先部署后端，让它应用迁移；随后部署消费者、实时服务、跟踪服务和两个前端。
 
 </Step>
 
 <Step>
 
-### The fleet
+### 节点集群 [#the-fleet]
 
 ```bash
 warmblyctl fleet join-token
@@ -163,19 +163,19 @@ curl -fsSL https://api.example.com/join.sh | sh -s -- \
   --region eu-central
 ```
 
-Nothing connects back to the machine, then or later. It needs no inbound port and no SSH key, and re-running the same command re-joins it under the same identity, keeping its mailboxes.
+此时及以后，都不会有服务反向连接这台机器。它无需入站端口或 SSH 密钥。重新运行同一命令会以相同身份重新加入，并保留邮箱。
 
-`deploy/split-cloud/node/` has the same thing as a compose file, for when you want a node's configuration in version control. A node run that way keeps itself current with `docker compose pull`; `warmblyctl fleet version` only moves nodes that were joined.
+`deploy/split-cloud/node/` 提供同样功能的 Compose 文件，适合希望把节点配置纳入版本控制的情况。以此方式运行的节点通过 `docker compose pull` 更新；`warmblyctl fleet version` 只更新通过加入流程登记的节点。
 
 </Step>
 
 </Steps>
 
-## The dashboard and admin panel on a static host
+## 将控制台和管理面板部署到静态托管平台 [#the-dashboard-and-admin-panel-on-a-static-host]
 
-`web` and `admin` are static builds, so they do not need a container. Serving them from a CDN is cheaper and faster than running two nginx containers on your container host.
+`web` 和 `admin` 是静态构建，因此不需要容器。通过 CDN 提供它们，比在容器平台运行两个 nginx 容器更便宜、更快。
 
-The one thing to know: both read `window.__WARMBLY_ENV__` from `/config.js`, which the container entrypoint renders from environment at start. A static host has no container start, so the same script renders it at build time instead.
+需要注意的是，两者都读取 `window.__WARMBLY_ENV__`，其来源为 `/config.js`，容器入口脚本在启动时根据环境生成该文件。静态托管没有容器启动过程，因此改为让同一脚本在构建时生成。
 
 ```
 Build command:      pnpm build:pages
@@ -183,9 +183,9 @@ Build output:       dist
 Root directory:     web        (or admin)
 ```
 
-`build:pages` runs the normal build and then the app's own entrypoint with `WARMBLY_CONFIG_OUT=dist/config.js`. One definition of the key set serves both paths, so the container and the static host cannot drift apart.
+`build:pages` 先运行正常构建，再通过 `WARMBLY_CONFIG_OUT=dist/config.js` 调用应用自己的入口脚本。两条路径共用一份键集合定义，因此容器和静态托管配置不会偏离。
 
-Set these as build environment variables on the host:
+在托管平台设置以下构建环境变量：
 
 | `web` | `admin` |
 |---|---|
@@ -197,36 +197,36 @@ Set these as build environment variables on the host:
 | `WARMBLY_SENTRY_DSN` | `WARMBLY_SENTRY_DSN` |
 | `WARMBLY_COMPANY_LOGOS` | |
 
-<Callout title="Both apps ship a _redirects">
-`/* /index.html 200`, copied into the build root. Without it every route below the root returns 404 on a refresh or a shared link, because the file genuinely does not exist and only the app knows the route. It is the static-host equivalent of nginx `try_files`.
+<Callout title="两个应用都提供 _redirects">
+构建根目录会复制 `/* /index.html 200`。没有它，刷新根目录以下的路由或打开分享链接时都会返回 404，因为对应文件确实不存在，只有应用知道该路由。这相当于静态托管版本的 nginx `try_files`。
 </Callout>
 
-Whichever origin you serve them from has to be in the backend's `CORS_ALLOW_ORIGINS`, or the dashboard loads and every API call fails preflight.
+无论从哪个来源提供前端，都必须将其加入后端 `CORS_ALLOW_ORIGINS`，否则控制台可以加载，但每次 API 调用都会在预检时失败。
 
-### Deploy static frontends only on releases
+### 仅在发布新版本时部署静态前端 [#deploy-static-frontends-only-on-releases]
 
-For Cloudflare Pages, keep your existing projects and custom domains. The repository's `Release` workflow can deploy any configured list of the dashboard, admin panel, marketing site, and docs after it successfully publishes a stable GitHub Release. Ordinary merges and prerelease tags do not run these deployment jobs. The workflow is opt-in, so forks and self-hosts do not need Cloudflare credentials.
+使用 Cloudflare Pages 时，保留现有项目和自定义域名。仓库的 `Release` 工作流在成功发布稳定 GitHub Release 后，可以部署任意已配置的控制台、管理面板、营销站点和文档项目列表。普通合并和预发布标签不会运行这些部署作业。该工作流需主动启用，因此分支和自托管无需 Cloudflare 凭据。
 
-Each project gets its own build job, which checks out the exact release commit, reads that project's production branch and public production variables from the Cloudflare API, builds the selected app, and uploads its static output with Wrangler. The upload uses the project's production branch rather than the release tag as its branch name, so it updates production instead of creating a preview. Cloudflare remains the source of truth for frontend configuration; you do not need duplicate API URLs, Turnstile keys, or analytics settings in GitHub.
+每个项目都有独立构建作业：检出精确发布提交，从 Cloudflare API 读取该项目的生产分支及公开生产变量，构建所选应用，再用 Wrangler 上传静态输出。上传使用项目生产分支名，而不是发布标签作为分支名，因此更新生产而非创建预览。前端配置仍以 Cloudflare 为准，无需在 GitHub 重复保存 API URL、Turnstile 密钥或分析设置。
 
-| App | Build | Output | GitHub deployment environment |
+| 应用 | 构建 | 输出 | GitHub 部署环境 |
 |---|---|---|---|
 | `web` | `pnpm build:pages` | `web/dist` | `dashboard-production` |
 | `admin` | `pnpm build:pages` | `admin/dist` | `admin-production` |
 | `site` | `pnpm build` | `site/dist` | `site-production` |
 | `docs` | `pnpm build` | `docs/out` | `docs-production` |
 
-<Callout type="warn" title="Configure GitHub before disabling automatic deployments">
-Each job reads public settings from its own **Pages > Settings > Environment variables > Production**. The dashboard requires `WARMBLY_API_URL`, `WARMBLY_APP_URL`, and `WARMBLY_TURNSTILE_KEY`; the admin panel requires `WARMBLY_API_URL`, `WARMBLY_DASHBOARD_URL`, and `WARMBLY_TURNSTILE_KEY`. Their remaining runtime keys, including analytics settings, are read from each app's entrypoint. The marketing site imports `PUBLIC_*` variables, and docs imports `NEXT_PUBLIC_*` variables. These values are shipped to browsers and must be plaintext Pages variables, not encrypted secrets. Missing required settings or encrypted public values fail before building. Unrelated variables and secrets are not imported.
+<Callout type="warn" title="先配置 GitHub，再关闭自动部署">
+各作业从对应项目的 **Pages > Settings > Environment variables > Production（Pages > 设置 > 环境变量 > 生产）** 读取公开设置。控制台要求 `WARMBLY_API_URL`、`WARMBLY_APP_URL` 和 `WARMBLY_TURNSTILE_KEY`；管理面板要求 `WARMBLY_API_URL`、`WARMBLY_DASHBOARD_URL` 和 `WARMBLY_TURNSTILE_KEY`。其余运行时键，包括分析设置，从各应用入口脚本读取。营销站点导入 `PUBLIC_*` 变量，文档导入 `NEXT_PUBLIC_*` 变量。这些值会发送到浏览器，必须是 Pages 明文变量，不能是加密秘密值。缺少必填设置或公开值被加密时，会在构建前失败。无关变量和秘密值不会导入。
 </Callout>
 
-1. In GitHub, open **Settings > Secrets and variables > Actions**. Under **Secrets**, add `CLOUDFLARE_API_TOKEN`. Create a Cloudflare custom API token with **Pages Read and Pages Write** (also called **Account > Cloudflare Pages > Edit**), restricted to the account containing your projects. No DNS or Workers permissions are needed.
-2. Under **Variables**, add:
+1. 在 GitHub 打开 **Settings > Secrets and variables > Actions（设置 > 秘密值与变量 > Actions）**。在 **Secrets（秘密值）** 中添加 `CLOUDFLARE_API_TOKEN`。创建 Cloudflare 自定义 API 令牌，赋予 **Pages Read 和 Pages Write**，也称 **Account > Cloudflare Pages > Edit（账户 > Cloudflare Pages > 编辑）**，并限定到包含这些项目的账户。无需 DNS 或 Workers 权限。
+2. 在 **Variables（变量）** 中添加：
 
-   | Variable | Value |
+   | 变量 | 值 |
    |---|---|
-   | `CLOUDFLARE_ACCOUNT_ID` | The Cloudflare account ID containing the existing projects |
-   | `CLOUDFLARE_PAGES_PROJECTS` | A JSON array of app/project mappings, shown below |
+   | `CLOUDFLARE_ACCOUNT_ID` | 包含现有项目的 Cloudflare 账户 ID |
+   | `CLOUDFLARE_PAGES_PROJECTS` | 下方所示的应用/项目映射 JSON 数组 |
 
    ```json
    [
@@ -237,63 +237,63 @@ Each job reads public settings from its own **Pages > Settings > Environment var
    ]
    ```
 
-   Use actual Pages project names, not custom domains. Add only the projects you want deployed. Multiple entries can build the same app for different projects, each using its own production settings. A project must appear only once. GitHub permits up to 256 matrix entries. The list must be a repository-level variable because the target list is resolved before deployment environments are loaded.
+   使用真实 Pages 项目名，不是自定义域名。只加入希望部署的项目。多个条目可以为不同项目构建同一个应用，每个项目使用自己的生产设置。一个项目只能出现一次。GitHub 最多允许 256 个矩阵条目。列表必须是仓库级变量，因为目标列表会在加载部署环境前解析。
 
-   Existing single-dashboard setups can keep the repository variable `CLOUDFLARE_PAGES_PROJECT_NAME` instead. When `CLOUDFLARE_PAGES_PROJECTS` is set, it takes precedence.
+   现有单控制台配置也可以继续使用仓库变量 `CLOUDFLARE_PAGES_PROJECT_NAME`。设置了 `CLOUDFLARE_PAGES_PROJECTS` 时，后者优先。
 
-3. Optionally configure the GitHub deployment environments in the table above under **Settings > Environments**, with approvals if needed. Allow release tags such as `v*` if restricting deployment branches and tags. Account variables and the token can be environment-scoped instead; otherwise repository-level values are shared. Optional source-map uploads use `SENTRY_ORG`, the app-specific `SENTRY_PROJECT_WEB` or `SENTRY_PROJECT_ADMIN`, `POSTHOG_CLI_PROJECT_ID`, and `POSTHOG_CLI_HOST`, with the secrets `SENTRY_AUTH_TOKEN` and `POSTHOG_CLI_API_KEY`. Environment-scoped values allow different upload projects for each app. The Sentry release identity is the release tag. See [source maps](/development/configuration/#source-maps).
+3. 可选：在 **Settings > Environments（设置 > 环境）** 中配置上表的 GitHub 部署环境，需要时添加审批。如果限制部署分支和标签，应允许 `v*` 等发布标签。账户变量和令牌也可设置在环境作用域，否则共享仓库级值。可选源码映射上传使用 `SENTRY_ORG`、应用专属的 `SENTRY_PROJECT_WEB` 或 `SENTRY_PROJECT_ADMIN`、`POSTHOG_CLI_PROJECT_ID` 和 `POSTHOG_CLI_HOST`，以及秘密值 `SENTRY_AUTH_TOKEN` 和 `POSTHOG_CLI_API_KEY`。环境级值允许每个应用使用不同上传项目。Sentry 发布标识就是发布标签。参见[源码映射](/development/configuration/#source-maps)。
 
-4. For every listed Cloudflare project, go to **Workers & Pages > your project > Settings > Builds & deployments > Configure Production deployments**, uncheck **Enable automatic production branch deployments**, and save. Keep preview branch deployments enabled if you want PR previews, with their existing Pages build configuration. Do not switch or recreate projects as Direct Upload projects: Git-integrated projects also accept Wrangler uploads.
-5. In GitHub's **Settings > Secrets and variables > Actions > Variables**, set the **repository-level** variable `CLOUDFLARE_PAGES_DEPLOY_ENABLED` to `true`. This toggle must be repository-level because GitHub evaluates the job condition before loading environment-level variables.
-6. Publish the next stable release using the normal version-tag flow. In **Actions > Release**, confirm each **Deploy ... to Pages** job succeeds and every production deployment in Pages shows the release commit.
+4. 对列表中的每个 Cloudflare 项目，进入 **Workers & Pages > your project > Settings > Builds & deployments > Configure Production deployments（Workers 和 Pages > 项目 > 设置 > 构建与部署 > 配置生产部署）**，取消勾选 **Enable automatic production branch deployments（启用生产分支自动部署）** 并保存。需要拉取请求预览时，保留预览分支部署和现有 Pages 构建配置。不要切换或重建为 Direct Upload 项目；Git 集成项目也接受 Wrangler 上传。
+5. 在 GitHub 的 **Settings > Secrets and variables > Actions > Variables（设置 > 秘密值与变量 > Actions > 变量）** 中，将**仓库级**变量 `CLOUDFLARE_PAGES_DEPLOY_ENABLED` 设置为 `true`。此开关必须在仓库级，因为 GitHub 在加载环境级变量之前就会判断作业条件。
+6. 按正常版本标签流程发布下一个稳定版本。在 **Actions > Release** 中确认各个 **Deploy ... to Pages** 作业成功，并且 Pages 中每个生产部署都显示该发布提交。
 
-The deployment is part of the existing release workflow, not a separate `release: published` workflow. Releases created with `GITHUB_TOKEN`, as this workflow does, do not trigger another release-event workflow.
+部署属于现有发布工作流，不是单独的 `release: published` 工作流。使用 `GITHUB_TOKEN` 创建的发布，本工作流正是如此，不会触发另一个发布事件工作流。
 
-A Pages deploy hook would reuse Cloudflare's build configuration too, but it builds the latest commit on its configured branch. These jobs deliberately build the tagged release commit instead, so changes merged while a release is building cannot slip into production. Retries use the same release commit with the current Pages production configuration. Builds use the repository's scripts and output paths in the table, not arbitrary build commands stored in Cloudflare.
+Pages 部署钩子也会复用 Cloudflare 构建配置，但它构建的是配置分支的最新提交。这里的作业有意构建标签对应的发布提交，避免发布构建期间合入的变更混入生产。重试使用相同发布提交和当前 Pages 生产配置。构建使用上表中仓库脚本及输出路径，不执行 Cloudflare 中保存的任意构建命令。
 
-Projects deploy independently, not atomically: one failed build or upload leaves that project's previous deployment live and does not cancel the other projects. After fixing the configuration, use **Re-run failed jobs** on that release run to retry the same release commit without creating another tag or rebuilding successful jobs. Do not retry an older release after a newer one has deployed unless you intend a rollback. To pause release uploads, set `CLOUDFLARE_PAGES_DEPLOY_ENABLED` to `false`; this leaves current deployments live and does not re-enable Cloudflare's automatic deployments. This workflow deploys only the listed static frontends; it does not deploy backend services.
+各项目独立部署，不是原子整体：某个构建或上传失败，会让该项目继续运行旧部署，不取消其他项目。修复配置后，对该次发布运行选择 **Re-run failed jobs（重新运行失败作业）**，即可重试相同提交，无需新建标签或重建已成功作业。除非打算回滚，不要在新版本已部署后重试旧发布。若要暂停发布上传，将 `CLOUDFLARE_PAGES_DEPLOY_ENABLED` 设置为 `false`；现有部署继续在线，也不会重新启用 Cloudflare 自动部署。此工作流仅部署列出的静态前端，不部署后端服务。
 
-## Anything the control plane cannot know
+## 控制平面无法获知的配置 [#anything-the-control-plane-cannot-know]
 
-`warmbly join` writes `/etc/warmbly/node.env` from the control plane's answer and rewrites it on every join. Next to it, `/etc/warmbly/node.local.env` is created once and never written again, and the container reads it second, so a name repeated there wins.
+`warmbly join` 根据控制平面响应写入 `/etc/warmbly/node.env`，每次加入都会重写。旁边的 `/etc/warmbly/node.local.env` 只创建一次，之后不再写入；容器后读取它，因此重复名称以该文件为准。
 
-That is the place for a value this instance does not hold: a DSN kept in a secret manager rather than the environment, credentials for infrastructure of your own, a per-machine tuning knob.
+这里适合保存实例自身没有的值，例如存放在秘密管理器而非环境中的 DSN、自有基础设施凭据，或按机器调整的参数。
 
 ```bash
 printf 'PRIMARY_DB=%s\n' "postgres://..." >> /etc/warmbly/node.local.env
 systemctl restart warmbly-consumer
 ```
 
-## Sizing the fleet
+## 规划节点集群规模 [#sizing-the-fleet]
 
-A worker defaults to a planning target of `100` assigned mailboxes. Every assigned mailbox counts as one, regardless of provider or whether warmup is enabled.
+工作节点默认规划目标为 `100` 个已分配邮箱。每个已分配邮箱计为一个，与服务商和是否启用预热无关。
 
-The target is a local planning value, not a sending quota or a tested maximum. Google and Microsoft enforce their sending and API limits per mailbox, tenant, or API project. Set `WARMBLY_WORKER_CAPACITY` in a machine's `/etc/warmbly/node.local.env` when benchmarks show that host should carry more or less than the conservative default, then restart the worker. Placement spreads mailbox counts, limits provider and tenant concentration, and keeps a mailbox on its existing worker when capacity allows so its provider sees a stable login address.
+该目标是本地规划值，不是发送配额或经过测试的最大容量。Google 和 Microsoft 按邮箱、租户或 API 项目执行发送及 API 限额。基准测试表明主机应承载高于或低于保守默认值的数量时，设置 `WARMBLY_WORKER_CAPACITY`，将其写入机器的 `/etc/warmbly/node.local.env`，然后重启节点。分配逻辑会平衡邮箱数量、限制服务商和租户集中度，并在容量允许时让邮箱留在原工作节点，使服务商看到稳定登录地址。
 
-Give NATS and Redis their own machine once you have more than one worker. Until then the control plane depends on a box that also runs a worker, and restarting that worker takes the bus with it.
+拥有多个工作节点后，应让 NATS 和 Redis 使用独立机器。否则控制平面依赖的机器还运行工作节点，重启该工作节点会同时影响总线。
 
-## What it costs
+## 部署成本 [#what-it-costs]
 
-A starting instance, with one machine running the bus and the first worker:
+起步实例使用一台机器运行总线和第一个工作节点：
 
-| | Item | Monthly |
+| | 项目 | 每月 |
 |---|---|---|
-| Machines | One small VPS: bus, cache, first worker | ~$5 |
-| Cloud | Postgres, smallest burstable instance with 20 GB | $13-15 |
-| | KMS: one key plus requests, which Redis caches away | ~$1 |
-| | Object storage: a few GB | ~$0.20 |
-| | Platform mail: hundreds of messages | ~$0.05 |
-| Container host | The control plane's actual usage | $5-10 |
-| | **Total** | **~$25-32** |
+| 机器 | 一台小型 VPS：总线、缓存、第一个工作节点 | 约 5 美元 |
+| 云 | 最小突发型 Postgres 实例，20 GB | 13–15 美元 |
+| | KMS：一个密钥和请求，Redis 缓存可减少请求 | 约 1 美元 |
+| | 对象存储：几 GB | 约 0.20 美元 |
+| | 平台邮件：数百封 | 约 0.05 美元 |
+| 容器托管 | 控制平面实际用量 | 5–10 美元 |
+| | **总计** | **约 25–32 美元** |
 
-Two things move that number. A cloud account under twelve months old gets the smallest database instance free, which takes roughly $14 off. Turning on a standby doubles the database line, so leave it off at the start and take snapshots instead.
+两件事会改变这个数字。使用不到十二个月的云账户可以免费获得最小数据库实例，约减少 14 美元。启用备用实例会让数据库费用翻倍，因此起步时可以不开启，改为保留快照。
 
-The line that grows quietly is egress. Every query result and every message body a node reads crosses the internet, billed past the first 100 GB a month. It is invisible at launch and becomes the second-largest cloud line once mailbox sync is moving real volume.
+容易悄悄增长的是出站流量。每个查询结果和节点读取的邮件正文都会跨越互联网，每月前 100 GB 之外开始计费。刚上线时几乎看不见，但邮箱同步达到实际规模后，可能成为第二大的云费用项。
 
-## Where things run out
+## 资源瓶颈 [#where-things-run-out]
 
-**One bus machine is one failure domain.** Nothing sends while it is down. Snapshots and a documented rebuild are the honest answer at this size; NATS clustering is the answer when the instance is worth more than the afternoon it costs.
+**一台总线机器就是一个故障域。** 它停机时，所有发送都会停止。在这种规模下，可靠的应对是快照和书面重建流程；当实例价值高于重建所需半天时间时，再考虑 NATS 集群。
 
-**The database is reachable from the internet.** That is what makes a container host and a fleet able to share it. Restrict the security group to the addresses that need it, force TLS, and treat the master password as the credential it is.
+**数据库可从互联网访问。** 这使容器托管平台和节点集群能够共享它。安全组应只允许确实需要访问的地址，强制 TLS，并按重要凭据保护主密码。
 
-**Auto-update covers nodes, not the control plane.** The backend is what tells every node which version to be, so it upgrades the way the rest of your container host does. Upgrade it, and the fleet follows.
+**自动更新覆盖节点，不覆盖控制平面。** 后端负责告诉每个节点应运行哪个版本，因此它按容器平台的常规方式升级。先升级后端，节点集群随后跟进。

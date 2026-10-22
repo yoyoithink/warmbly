@@ -1,6 +1,6 @@
 {
-  "title": "API Reference",
-  "description": "Build on the Warmbly API",
+  "title": "API 参考",
+  "description": "基于 Warmbly API 构建集成",
   "root": true,
   "pages": [
     "index",

@@ -1,65 +1,65 @@
 ---
-title: Warmup diagnostic content generation
-description: Effective generation policy, stopping new jobs, batch draining and versioned diagnostic content.
+title: 预热诊断内容生成
+description: 实际生效的生成策略、停止新增任务、处理已提交批次，以及带版本的诊断内容。
 ---
 
-Warmup content is an explicitly simulated diagnostic exchange for consenting test mailboxes. It is not a customer conversation or evidence of inbox placement, authentication, improved reputation or human engagement. Hypothetical facts and closure must remain consistent across every rendered turn.
+预热内容是在已同意参与的测试邮箱之间进行、并明确说明为模拟的诊断交流。它不是客户对话，也不能作为收件箱到达、身份验证、信誉提升或真人互动的证据。每一轮渲染后的内容都必须保持假设事实和结束语一致。
 
-## Effective policy and stopping
+## 生效策略与停止生成 [#effective-policy-and-stopping]
 
-In **Admin > Warmup content > Overview**, the effective settings editor shows the configuration actually read from `admin_settings.warmup_generation`. Save supported operator values without removing provider credentials. Manage settings permission is required for writes; existing read access is unchanged.
+在**管理 > 预热内容 > 概览**中，实际生效的设置编辑器会显示从 `admin_settings.warmup_generation` 读取的配置。可以保存支持的运维设置，而不必删除服务商凭据。写入需要“管理设置”权限，现有读取权限保持不变。
 
-`PUT /admin/warmup-content/settings` accepts a JSON settings object and returns `{ "data": effectiveSettings }`. Omitted fields retain their current effective values. Unknown fields, non-object payloads, multiple JSON documents and documents over 64 KiB are rejected. The overview returns `effective_settings`, `generation_enabled`, `reserved_today` and `provider_capability`. This is an admin endpoint, not a workspace API-key scope.
+`PUT /admin/warmup-content/settings` 接受 JSON 设置对象，并返回 `{ "data": effectiveSettings }`。省略的字段保留当前生效值。未知字段、非对象载荷、多个 JSON 文档以及超过 64 KiB 的文档都会被拒绝。概览返回 `effective_settings`、`generation_enabled`、`reserved_today` 和 `provider_capability`。这是管理员端点，不属于工作区 API 密钥权限范围。
 
-| Setting | Default for an absent field | Supported behavior |
+| 设置 | 字段缺失时的默认值 | 支持的行为 |
 | --- | --- | --- |
-| `generation_enabled` | `true` | `false` prevents new persisted generation-job reservations. It does not delete credentials or disable cached-content use. |
-| `enabled` | `true` | Controls selection of cached AI content separately from generation. |
-| `schedule_enabled` | `true` | Enables scheduled runs; the generation stop takes precedence. |
-| `cadence_hours` | `6` | Integer from 1 to 168. |
-| `refresh_enabled` | `true` | Permits scheduled retirement and replacement. |
-| `refresh_per_run` | `10` | Integer from 0 to 25; zero means no refresh retirement. |
-| `daily_generation_cap` | `1000` | Non-negative; zero retains the existing unlimited policy. Counts reserved requests, including unfinished, rejected or cancelled work, so concurrent replicas cannot overspend by counting only approved output. Resets at the UTC day boundary. |
-| `ai_selection_share` | `70` | Integer percentage from 0 to 100; zero selects no AI openings. |
-| `model` | Existing default `gpt-6-luna` | A stored non-empty model is retained, not replaced. Availability is provider-checked before submission; the default is not a claim of availability. |
-| `max_messages_per_thread` | `5` | Integer from 1 to 5 ordered replies. |
-| `pools` | One enabled `premium` library with target 200 and the generic segment | Content is shared across mailbox tiers. Legacy multi-pool settings collapse to one canonical library, preferring an enabled entry. Its enabled flag, target from 1 to 5000 and distinct trimmed segments survive. |
-| `engagement` | Existing engagement defaults | Percentages clamp to 0 to 100; dwell bounds clamp to 0 to 3600 seconds with maximum at least minimum. These controls do not constitute consent or evidence of engagement. |
+| `generation_enabled` | `true` | `false` 会阻止新的持久化生成任务预留，不会删除凭据或禁用缓存内容的使用。 |
+| `enabled` | `true` | 单独控制是否选择缓存的 AI 内容，与生成开关独立。 |
+| `schedule_enabled` | `true` | 启用定时运行；停止生成的设置优先。 |
+| `cadence_hours` | `6` | 1 至 168 的整数。 |
+| `refresh_enabled` | `true` | 允许定期退役和替换内容。 |
+| `refresh_per_run` | `10` | 0 至 25 的整数；零表示不因刷新而退役内容。 |
+| `daily_generation_cap` | `1000` | 非负值；零保留现有的不设上限策略。计数包含已预留的请求，包括未完成、被拒绝或已取消的工作，避免并发副本仅统计获批输出而超额消耗。计数在 UTC 日期切换时重置。 |
+| `ai_selection_share` | `70` | 0 至 100 的整数百分比；零表示不选择 AI 首封邮件。 |
+| `model` | 现有默认值 `gpt-6-luna` | 已存储的非空模型保持不变，不会被替换。提交前会向服务商检查可用性；默认值不代表该模型一定可用。 |
+| `max_messages_per_thread` | `5` | 1 至 5 条按顺序排列的回复。 |
+| `pools` | 一个已启用的 `premium` 内容库，目标为 200，使用通用分组 | 内容在不同邮箱等级之间共享。旧版多池设置会合并为一个标准内容库，优先选用已启用条目。其启用标志、1 至 5000 的目标，以及去除首尾空格并去重后的分组都会保留。 |
+| `engagement` | 现有互动默认值 | 百分比限制在 0 至 100；停留时间上下限限制在 0 至 3600 秒，且最大值不小于最小值。这些控制不构成同意，也不是互动证据。 |
 
-Targets are configured floors; demand-based sizing may increase them, bounded at 5000. The scheduler also maintains the generic fallback segment. Supported values round-trip; out-of-range values clamp to the documented bounds. A backend that predates these controls must be upgraded before the admin editor is available.
+目标是配置的最低数量；按需求计算的容量可能增加该值，但最多为 5000。调度器也会维护通用回退分组。支持的值可以正确保存和读回，超范围值会限制在文档规定的边界内。后端如果早于这些控制功能，必须先升级，管理编辑器才可用。
 
-## Outstanding batches and capability
+## 未完成的批次与服务商能力 [#outstanding-batches-and-capability]
 
-A committed stop serializes against new job reservations. Jobs reserved before it, including a provider submission already in progress, cannot be retroactively unsent. Already submitted batches continue polling and ingesting completed output. **Jobs > Cancel** remains an explicit, separate provider operation; cancellation may leave completed output to ingest. Do not remove credentials while batches still need polling or cancellation.
+已提交的停止操作会与新任务预留串行处理。在停止之前已预留的任务，包括正在向服务商提交的任务，无法追溯撤回。已提交的批次会继续轮询并导入完成的输出。**任务 > 取消**仍是明确且独立的服务商操作；取消后可能仍有已完成输出需要导入。批次仍需轮询或取消时，不要删除凭据。
 
-The provider must expose the configured model to the configured client. Model visibility alone does not prove Batch API or structured-output support. Submission errors from the provider determine those capabilities; the system does not silently substitute a different model. A configured client is not an assurance that a generation run will succeed.
+服务商必须向已配置的客户端开放所配置的模型。能看到模型，并不能证明支持 Batch API 或结构化输出。这些能力以服务商返回的提交错误为准；系统不会悄悄换用其他模型。已配置客户端，也不保证某次生成一定成功。
 
-## Rendering, review and old data
+## 渲染、审查与旧数据 [#rendering-review-and-old-data]
 
-New scenario and rendering provenance are `diagnostic-v1` and `canonical-v1`. New jobs retain the requested reply count, so a later settings change does not reinterpret accepted output. Ordered body text, hypothetical numbers, dates, negation, promises and subject are immutable; there is no spintax, random appended question or body humanization. Rendered turns include truthful diagnostic disclosure and the sender identity. New generated content must pass structural checks and a semantic review of the complete rendered thread before activation.
+新的场景及渲染来源标识为 `diagnostic-v1` 和 `canonical-v1`。新任务会保留请求的回复数量，因此后续修改设置不会重新解释已接受的输出。按顺序排列的正文、假设数字、日期、否定表达、承诺和主题都不可变；不会使用随机变体语法、随机附加问题或正文“拟人化”。渲染后的每一轮都包含真实的诊断用途说明和发件人身份。新生成内容在启用前，必须通过结构检查和针对完整渲染会话的语义审核。
 
-Review states distinguish `passed`, `rejected`, `unavailable`, `unreviewed`, `legacy_unknown` and `legacy_unreviewed`. An unavailable judge is not approval. Rejected or unavailable newly generated conversations stay archived and cannot be activated through the status control. Existing stored conversations and their IDs are not replaced or relabeled as reviewed; their missing historical evidence is `legacy_unknown`. Existing provider job IDs remain pollable. Unversioned old-job output is retained archived as `legacy_unreviewed`, without claiming it meets the new contract.
+审核状态区分 `passed`、`rejected`、`unavailable`、`unreviewed`、`legacy_unknown` 和 `legacy_unreviewed`。审核器不可用不等于批准。被拒绝或审核不可用的新生成会话会保持归档，不能通过状态控件启用。现有存储会话及其 ID 不会被替换，也不会被重新标为已审核；缺失的历史证据记为 `legacy_unknown`。现有服务商任务 ID 仍可轮询。没有版本信息的旧任务输出会以 `legacy_unreviewed` 状态归档保留，不会宣称其符合新约定。
 
-Vetted static scenarios use a new stable UUID namespace; historical static source IDs must never be remapped to unrelated scenarios. Exact-parent continuation, exhaustion and missing/retired source handling are required at the live dispatch integration boundary.
+经过审核的静态场景使用新的稳定 UUID 命名空间；历史静态来源 ID 绝不能重新映射到无关场景。实时派发集成边界必须支持精确关联父邮件续接、耗尽判断，以及来源缺失或退役时的处理。
 
-Live continuation binds the exact task, token, recipient receipt and received Message-ID to the provider-reported sent Message-ID. It preserves subject, immutable source/version, ordered References and the original maximum of one opening plus the requested one to five replies, including the final closure. One parent has at most one successor. An unrelated mailbox pair, an expired/retired token or unversioned legacy lineage cannot substitute for that parent. Trusted configured display names, including Unicode and punctuation, remain intact in plaintext signatures and MIME headers; CR/LF/NUL are rejected.
+实时续接会将精确的任务、令牌、收件回执和接收时的 Message-ID，与服务商报告的已发送 Message-ID 绑定。它保留主题、不可变的来源和版本、按顺序排列的 References，以及原定的最多一封首发加请求的一至五封回复，包括最后的结束语。一个父邮件最多只能有一个后继。无关的邮箱配对、已过期或退役的令牌，以及没有版本信息的旧版来源链，都不能代替该父邮件。可信配置中的显示名称，包括 Unicode 和标点符号，在纯文本签名和 MIME 邮件头中完整保留；CR/LF/NUL 会被拒绝。
 
-This application-owned correspondence proof is not itself cryptographic authentication. Updated protocol-2 Gmail/Graph workers can additionally retrieve one exact authorized warmup diagnostic's bounded MIME and verify DKIM cryptographically. IMAP, legacy workers, unrelated seed/placement contexts, unavailable MIME and transient key lookup remain unknown. Copied `Authentication-Results` remains unverified metadata; SPF, DMARC and receiving-hop TLS remain unknown absent independent evidence. See [actual-message authentication and limits](/development/send-safety/#actual-message-authentication). DNS discovery and prose cannot establish pass. Received text and model output do not authorize recipients, permissions or actions.
+这种由应用持有的往来对应证明，本身不是加密身份验证。更新后的协议 2 Gmail/Graph 工作节点还可以获取一封精确授权的预热诊断邮件的有界 MIME，并通过加密方式验证 DKIM。对于 IMAP、旧版工作节点、无关种子或投递位置上下文、MIME 不可用以及临时密钥查询问题，结果仍为未知。复制的 `Authentication-Results` 仍是未经验证的元数据；如果没有独立证据，SPF、DMARC 和接收跳点 TLS 仍为未知。参见[实际邮件身份验证及其限制](/development/send-safety/#actual-message-authentication)。DNS 发现和文字描述不能证明验证通过。收到的文本和模型输出不能授权收件人、权限或操作。
 
-The vetted fallback bank includes eight small causal scenarios: the original fictional clock and sample-count examples, hypothetical document review, summary correction, fixed-offset date/time continuity, plaintext label review, conditional wording and a Hungarian summary. Each preserves its own facts, alternating sender identities and explicit closure. The Hungarian body retains the same English subject-prefix and per-turn diagnostic disclosure; it does not change language controls or translate existing scenarios. Existing scenario IDs and text are immutable; a revised scenario needs a new versioned ID.
+经过审核的回退库包含八个小型因果场景：最初的虚构时钟和样本计数示例，以及假设文档审核、摘要修正、固定偏移量的日期时间连续性、纯文本标签审核、条件措辞和匈牙利语摘要。每个场景都保留自己的事实、交替发件人身份和明确结束语。匈牙利语正文保留相同的英文主题前缀和每轮诊断说明，不会改变语言控制或翻译现有场景。现有场景 ID 和文本不可变；修订场景需要新的带版本 ID。
 
-These examples review hypothetical wording, not customer documents, relationships or real actions. The plaintext example uses application-constructed written labels; it does not claim an email client passed an accessibility test. A scenario saying a check is complete does not establish a provider result, authentication pass or delivery outcome. Genuine diagnostic facts must come from separately verified, application-owned observations, never from generated prose.
+这些示例审核的是假设措辞，不是客户文档、关系或真实操作。纯文本示例使用应用构造的书面标签，不会宣称邮件客户端通过了无障碍测试。场景中说某项检查已完成，不能证明服务商结果、身份验证通过或实际投递结果。真实诊断事实必须来自单独验证、由应用持有的观察，绝不能来自生成的文字。
 
-## Upgrade order
+## 升级顺序 [#upgrade-order]
 
-Apply the additive content-provenance migration before starting the new backend. Deploy every backend instance before relying on `generation_enabled=false`; mixed old backends do not honor the new stop or resolve the new static scenario namespace. Pause warmup dispatch through existing controls during a mixed-version rollout, and resume only after all control-plane replicas understand exact-parent resolution. Deploy the matching admin frontend after the backend. Keep provider credentials while existing jobs drain. No migration replaces saved models, existing job IDs, source IDs or customer credentials, and no live efficacy claim follows from local tests.
+启动新后端之前，先应用新增的内容来源迁移。只有所有后端实例部署完成后，才能依赖 `generation_enabled=false`；混合运行的旧后端既不遵守新的停止控制，也无法解析新的静态场景命名空间。混合版本发布期间，应通过现有控制暂停预热派发，等所有控制平面副本都理解精确父邮件解析后再恢复。后端部署完成后，再部署匹配的管理前端。现有任务尚未处理完时，保留服务商凭据。迁移不会替换已保存的模型、现有任务 ID、来源 ID 或客户凭据；本地测试也不能支持线上有效性的结论。
 
-For the integrated release, preserve released migrations through 265 and main's workspace-link migration 266, then apply additive migrations 267 through 274 in order. Upgrade all result consumers and control-plane replicas, then execution workers. New shared dispatch requires an active worker reporting `warmup_send_protocol=2`; protocol 1 remains only its earlier lineage capability. Duplicate commands replay a durable terminal result rather than executing another native send. An unresolved native outcome holds the mailbox until reconciliation, not a timed blind reset. Known legacy throttle codes produce a conservative mailbox/provider cooldown without fabricated HTTP/SMTP evidence. Authentication, permanent and conflict holds need confirmed repair/operator evidence, not elapsed time or an unrelated success.
+对于集成发布，应保留截至 265 的已发布迁移，以及主分支的工作区链接迁移 266，然后按顺序应用新增迁移 267 至 274。先升级所有结果消费者和控制平面副本，再升级执行工作节点。新的共享派发要求活跃工作节点报告 `warmup_send_protocol=2`；协议 1 仅保留此前的来源链能力。重复命令会重放持久化终态结果，不会再次执行原生发送。原生发送结果未解决时，邮箱会保持暂停直到对账完成，不会定时盲目重置。已知旧版限流代码会产生保守的邮箱或服务商冷却期，不会虚构 HTTP/SMTP 证据。身份验证、永久性错误和冲突暂停需要经确认的修复或运维证据，不能仅靠时间经过或无关成功解除。
 
-### Resolving a repair hold
+### 解除修复期间的暂停限制 [#resolving-a-repair-hold]
 
-There is no automatic hold reset or end-user override. Pause dispatch while an instance operator investigates the exact stored organization, mailbox, configured provider, held task and reason. An unknown send must first receive a correlated definite provider result; do not change its accounting or call it failed merely to release traffic. For an authentication hold, complete the normal authenticated credential repair and independently confirm the provider now accepts it. For permanent/configuration or conflicting results, reconcile that specific provider evidence and accounting first. Record the operator, time and evidence reference in the incident audit record without credentials or message bodies.
+没有自动重置暂停或最终用户强制覆盖功能。实例运维人员调查精确存储的组织、邮箱、已配置服务商、被暂停任务和原因时，应暂停派发。结果未知的发送必须先取得可关联且明确的服务商结果；不要仅为恢复流量就修改其计数，或将其认定为失败。身份验证暂停需要完成正常的身份验证凭据修复，并独立确认服务商现在接受该凭据。对于永久性错误、配置问题或结果冲突，应先核对该项具体的服务商证据和计数。在事件审计记录中保存运维人员、时间和证据引用，不记录凭据或邮件正文。
 
-Only then use the existing organization-scoped mailbox PATCH with `send_recovery_resolution`, the exact inspected `held_task_id` and `held_reason`, and typed repair/provider evidence. A newer successful sync is required for authentication repair; operator provider confirmation requires a same-mailbox definitive evidence task and reference. The guarded transaction refuses inactive/mismatched authority and any unknown task, records durable history, and preserves cooldowns and separate restrictions. See [the resolution contract](/development/send-safety/#evidence-based-repair-holds). Re-read admission before resuming. A changed hold or missing evidence stays restrictive. On hosted Warmbly, ask the platform operator to review; reconnecting, sleeping or another identity is not a quota/hold bypass.
+完成这些步骤后，才可使用现有按组织作用域限定的邮箱 PATCH，携带 `send_recovery_resolution`、已核查的精确 `held_task_id` 和 `held_reason`，以及带类型的修复或服务商证据。身份验证修复要求一次更新的成功同步；运维人员的服务商确认需要同一邮箱中结果明确的证据任务和引用。受保护的事务会拒绝失效或不匹配的授权以及任何未知任务，记录持久历史，并保留冷却期和其他独立限制。参见[解决约定](/development/send-safety/#evidence-based-repair-holds)。恢复前应重新读取准入状态。暂停已变化或证据缺失时，限制保持生效。在托管 Warmbly 上，请联系平台运维人员审核；重新连接、等待或换用其他身份，都不能绕过配额或暂停限制。
 
-Old executors remain compatible with old commands but cannot retroactively cancel work already accepted before upgrade. Pause and drain/reconcile that work before resuming new dispatch; no stronger mixed-old-worker guarantee is claimed. Correlated managed OAuth requires upgrading every Cloud control-plane replica before linked instances, as described in [Warmbly Cloud](/guides/warmbly-cloud/#managed-sign-in-recovery-and-consent). No new environment variable is required. Rollback refuses unresolved dispatches, successors, recovery restrictions or durable managed consent history rather than deleting negative state.
+旧执行器仍兼容旧命令，但无法追溯取消升级前已接受的工作。恢复新派发之前，应先暂停并处理完或核对这些工作；系统不承诺混合旧工作节点环境具有更强保证。具有关联性的托管 OAuth 要求先升级所有 Cloud 控制平面副本，再升级关联实例，详见 [Warmbly Cloud](/guides/warmbly-cloud/#managed-sign-in-recovery-and-consent)。无需新增环境变量。存在未解决派发、后继任务、恢复限制或持久化托管同意历史时，回滚会被拒绝，而不会删除负面状态。

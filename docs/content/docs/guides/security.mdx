@@ -1,280 +1,280 @@
 ---
-title: "Security"
-description: "Two-factor authentication, passkeys, and sessions."
+title: "安全"
+description: "双重身份验证、通行密钥与登录会话。"
 ---
 
-**Settings > Security** is where you protect how you sign in to Warmbly: two-factor authentication, passkeys and your signed-in devices.
+**设置 > 安全**用于保护你的 Warmbly 登录方式，包括双重身份验证、通行密钥以及已登录的设备。
 
-## Secure your account
+## 保护账户安全 [#secure-your-account]
 
 <Steps>
 
 <Step>
 
-Open **Settings > Security**.
+打开**设置 > 安全**。
 
 </Step>
 
 <Step>
 
-Choose **Add a passkey** so daily sign-in is fast and phishing-resistant.
+选择**添加通行密钥**，让日常登录更快捷，并抵御网络钓鱼。
 
 </Step>
 
 <Step>
 
-Turn on two-factor authentication with any standard authenticator app, and store the recovery codes safely.
+使用任意标准身份验证器应用开启双重身份验证，并妥善保存恢复码。
 
 </Step>
 
 <Step>
 
-Review **Sessions** now and then, and sign out anything unfamiliar.
+定期检查**会话**，将任何不认识的会话退出登录。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Recovery codes are shown only once, and each one works once.
-- A passkey skips the emailed code, because unlocking your device already proves it is you.
-- Changing your password ends every session. The device you are on is signed straight back in.
-- Some sensitive changes ask for your password or an authenticator code again. The confirmation lasts five minutes.
-- A password has to be 8 to 128 characters, and commonly breached passwords are refused.
+- 恢复码只显示一次，每个恢复码也只能使用一次。
+- 通行密钥登录会跳过邮件验证码，因为解锁设备已经证明了你的身份。
+- 修改密码会结束所有会话。当前使用的设备会立即重新登录。
+- 某些敏感变更会要求再次输入密码或身份验证器验证码。身份确认的有效期为五分钟。
+- 密码长度必须为 8 至 128 个字符，常见的泄露密码不予接受。
 
 <Fold>
 
-## Where these settings live
+## 设置入口 [#where-these-settings-live]
 
-Everything here lives under **Settings > Security** and concerns signing in to Warmbly. For authenticating the domains you send from (SPF, DKIM, DMARC), see [Deliverability](/guides/deliverability/).
+这里介绍的所有设置都位于**设置 > 安全**，用于保护 Warmbly 登录。有关发件域名的身份验证（SPF、DKIM、DMARC），请参见[邮件送达能力](/guides/deliverability/)。
 
 </Fold>
 
 <Fold>
 
-## How signing in works
+## 登录的工作方式 [#how-signing-in-works]
 
-| Method | Steps |
+| 方式 | 步骤 |
 |--------|-------|
-| Password | Email, password, a 6-digit emailed code, then your authenticator code if 2FA is on |
-| Passkey | Pick the passkey and unlock with Touch ID, Face ID, Windows Hello, or a security key. No password, no emailed code |
-| Google / Apple | One tap, in the dashboard or natively in the iOS app. No emailed code, since the provider already verified you |
+| 密码 | 输入电子邮件地址、密码、邮件中的 6 位验证码；如果开启了双重身份验证，再输入身份验证器验证码 |
+| 通行密钥 | 选择通行密钥，通过 Touch ID、Face ID、Windows Hello 或安全密钥解锁。无需密码或邮件验证码 |
+| Google / Apple | 在控制台或 iOS 应用的原生界面中一键登录。服务商已验证你的身份，因此无需邮件验证码 |
 
-A first sign-in with a new address via Google or Apple creates your account, workspace, and free trial automatically.
+首次通过 Google 或 Apple 使用新地址登录时，会自动创建账户、工作区并开启免费试用。
 
-If the address already has a Warmbly account with a password, the first Google, Apple or single sign-on with it asks for that password before the provider is attached to the account. The provider confirms the address is yours; the password confirms the account is. Once linked, later sign-ins with that provider go straight through. An account that never set a password (created through a provider or an invitation) is linked on the first sign-in.
+如果该地址已经对应一个设有密码的 Warmbly 账户，首次使用该地址通过 Google、Apple 或单点登录时，必须先输入该密码，才能将身份提供商关联到账户。身份提供商确认地址属于你，密码确认账户属于你。关联完成后，之后使用该提供商登录即可直接进入。从未设置过密码的账户（通过身份提供商或邀请创建）会在首次登录时完成关联。
 
-Accounts created through an external sign-in provider have no password initially. Trying password sign-in returns the same invalid-credentials response as an incorrect password. Continue with your provider, or use **Forgot password** to set a password before signing in with it. A reset link works once and only for the password it was requested against: changing your password by any route, including using another reset link, makes every earlier link invalid before it expires.
+通过外部身份提供商创建的账户最初没有密码。尝试使用密码登录时，会收到与密码错误相同的“凭据无效”响应。请继续通过原身份提供商登录，或使用**忘记密码**先设置密码，再用密码登录。重置链接只能使用一次，而且仅对申请重置时的密码状态有效：通过任何途径修改密码，包括使用另一条重置链接，都会使此前所有重置链接提前失效。
 
-<Callout type="info" title="Passwordless by design">
-A passkey is tied to your device and unlocked with biometrics or a PIN, so it already proves both something you have and something you are or know. That is why it skips the emailed code. Warmbly requires that unlock: a security key with no PIN set cannot be added, and cannot sign in, until you set one on the key.
+<Callout type="info" title="无密码登录设计">
+通行密钥与设备绑定，并通过生物识别或 PIN 解锁，因此已经同时证明了你拥有某个设备，以及具备某种生物特征或知道某项秘密。这就是它可以跳过邮件验证码的原因。Warmbly 要求完成这种解锁：未设置 PIN 的安全密钥不能添加，也不能用于登录，必须先在密钥上设置 PIN。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Two-factor authentication
+## 双重身份验证 [#two-factor-authentication]
 
-2FA (TOTP) adds a rotating 6-digit code to every password sign-in, so a stolen password alone is not enough. Any standard authenticator works: Google Authenticator, Microsoft Authenticator, 1Password, Authy, Bitwarden.
+双重身份验证（2FA，使用 TOTP）会为每次密码登录增加一项动态的 6 位验证码，因此仅窃取密码还不足以登录。任意标准身份验证器均可使用，例如 Google Authenticator、Microsoft Authenticator、1Password、Authy 和 Bitwarden。
 
-**Set up** walks through three steps:
+**设置**流程分为三步：
 
-1. **Scan.** Point your authenticator at the QR code. If you cannot scan (a desktop password manager, say), open **Can't scan it? Enter the key manually** and copy the setup key; the account, issuer, digit count, interval and algorithm are listed beside it for apps that ask.
-2. **Verify.** Type the 6-digit code the app now shows for Warmbly. It verifies as soon as the sixth digit lands, and a wrong code clears the field so you can try the next one.
-3. **Save codes.** Ten recovery codes appear once. **Download** saves them as a text file, **Copy** puts them on the clipboard, and **Print** opens a printable sheet. The wizard cannot be closed until you confirm you have saved them.
+1. **扫描。** 使用身份验证器扫描二维码。如果无法扫描，例如使用桌面密码管理器，请打开**无法扫描？手动输入密钥**并复制设置密钥；旁边会列出账户、签发者、位数、时间间隔和算法，供需要这些信息的应用使用。
+2. **验证。** 输入应用当前为 Warmbly 显示的 6 位验证码。输入第六位后会立即验证；验证码错误时会清空输入框，方便尝试下一组验证码。
+3. **保存恢复码。** 十个恢复码只会显示一次。**下载**将其保存为文本文件，**复制**将其放入剪贴板，**打印**则打开可打印的页面。在你确认已保存恢复码之前，无法关闭设置向导。
 
-<Callout type="warn" title="Recovery codes are shown only once">
-Each works once, and they are your way back in if you lose your authenticator. Store them in a password manager before closing the wizard. With no codes and no authenticator you are locked out of your account.
+<Callout type="warn" title="恢复码仅显示一次">
+每个恢复码只能使用一次；如果遗失身份验证器，它们就是重新进入账户的途径。关闭向导前，请将它们保存到密码管理器。既没有恢复码又没有身份验证器时，你将无法访问自己的账户。
 </Callout>
 
-Once 2FA is on, the Security page shows when it was enabled and how many recovery codes are left. **Regenerate** issues a fresh set of ten after a current code; every previous code stops working the moment the new ones are shown. The row turns amber when three or fewer remain.
+开启双重身份验证后，安全页面会显示启用时间和剩余恢复码数量。点击**重新生成**并输入当前验证码后，会签发新的一组十个恢复码；新恢复码显示的瞬间，所有旧恢复码即失效。剩余三个或更少时，该行会变为琥珀色。
 
-At sign-in, the code submits automatically once six digits are in. Without your authenticator, choose **Use a recovery code**.
+登录时，输入六位数字后验证码会自动提交。如果没有身份验证器，请选择**使用恢复码**。
 
-Each code works once. An authenticator code stays valid for about a minute so a slow connection still works, but once it has signed you in, that same code is spent and cannot be used again.
+每个验证码只能使用一次。身份验证器验证码的有效期约为一分钟，以兼容较慢的网络连接；但只要成功登录过，同一验证码便已使用，不能再次使用。
 
-Wrong codes are limited three ways: five per sign-in attempt, after which you sign in again from the start; twenty per network address in fifteen minutes; and ten per account in fifteen minutes, however many times the password is entered in between. A correct code clears the account count.
+错误验证码受到三层限制：每次登录尝试最多五次，超过后需重新从头登录；每个网络地址每十五分钟最多二十次；每个账户每十五分钟最多十次，不论期间重新输入了多少次密码。输入正确验证码会清除该账户的错误次数。
 
-**Turn off** asks for a current code or a recovery code first, then an explicit confirmation. With 2FA off you are protected only by your password plus the emailed code, your recovery codes stop working, and setting it up again issues a fresh secret and new recovery codes.
-
-</Fold>
-
-<Fold>
-
-## Passkeys
-
-A passkey signs you in with whatever unlocks your device. Nothing is phishable, because the credential never leaves the device. Current Chrome, Safari, Edge, and Firefox all support them; if yours does not, the Security page says so and you keep using your password.
-
-**Add a passkey** prompts your device to confirm, then asks you to name it ("MacBook Touch ID", "YubiKey"). Add one per device you sign in from. A passkey syncing through iCloud Keychain or Google Password Manager is marked **Synced** and works on your other signed-in devices.
-
-If your device refuses because it already has a passkey for your account, Warmbly tells you instead of silently dismissing enrollment. Keep using the existing passkey, or choose another device to add one.
-
-Each entry shows when it was added and last used, and can be renamed or removed.
-
-<Callout type="info" title="No passkey on this device?">
-Unsynced passkeys live only on the device that created them. On a device without one, Warmbly says none was found and you sign in with your password, then add a passkey there.
-</Callout>
+**关闭**时先要求输入当前验证码或恢复码，再明确确认。关闭双重身份验证后，账户仅由密码和邮件验证码保护，恢复码会失效；重新设置会生成新的密钥和恢复码。
 
 </Fold>
 
 <Fold>
 
-## Confirming sensitive changes
+## 通行密钥 [#passkeys]
 
-Some changes ask you to confirm it is you even though you are already signed in:
+通行密钥使用设备的解锁方式让你登录。凭据不会离开设备，因此无法被钓鱼网站窃取。当前版本的 Chrome、Safari、Edge 和 Firefox 均支持通行密钥；如果浏览器不支持，安全页面会提示你继续使用密码。
 
-- creating an API key
-- adding or removing a passkey
-- turning on two-factor authentication
-- inviting a member or changing a member's role
-- exporting or importing a whole workspace
-- approving a self-hosted instance's warmup pool link
-- revealing or rotating a webhook or OAuth app signing secret
-- transferring a workspace to someone else
-- scheduling a workspace or account for deletion
+**添加通行密钥**会先提示你在设备上确认，再要求命名，例如“MacBook Touch ID”或“YubiKey”。请为每个用于登录的设备添加通行密钥。通过 iCloud 钥匙串或 Google 密码管理器同步的通行密钥会标记为**已同步**，并可在其他已登录的设备上使用。
 
-The prompt offers only what your account can actually use:
+如果设备因为已经拥有该账户的通行密钥而拒绝添加，Warmbly 会明确提示原因，不会默默结束注册流程。你可以继续使用现有通行密钥，或选择另一台设备添加。
 
-- **a passkey**, if you have added one
-- **Continue with Google, Apple or your single sign-on**, if you sign in that way. A small window opens at your provider, and the account you pick there has to be the one linked to Warmbly. Allow pop-ups for the dashboard if your browser blocks the window
-- **your password**, if your account has one
-- **a code from your authenticator** or a recovery code, if two-factor authentication is on
+每一项都显示添加时间和最近使用时间，并支持重命名或移除。
 
-The confirmation lasts five minutes, so a run of related changes only asks once. In the iOS app the same prompt offers Continue with Apple and Continue with Google alongside your password and authenticator code.
-
-An account with none of these (for example one created through a sign-in provider this server no longer offers) is told so instead of being shown a field it cannot fill. Your sign-in is the confirmation in that case: sign in again and repeat the change within five minutes, then add a passkey or turn on 2FA so it does not happen again.
-
-This exists because the things on that list either hand out a credential that outlives the session that made it, reveal a secret, change who can get in, or cannot be undone from your side. Someone who got hold of a signed-in browser should not be able to do any of them without knowing something you know.
-
-</Fold>
-
-<Fold>
-
-## Sessions
-
-Every signed-in device appears under **Sessions** with its device (`Chrome on macOS`), location where known, sign-in method (Email, Google, Apple, or Passkey), and last activity. Your current device is tagged **This device**.
-
-**Sign out** ends one session; **Sign out other sessions** clears everything except where you are now. Signing out everywhere, changing or resetting your password, and an account ban end every session at once, and close any live connection the dashboard or an API client has open to the realtime service.
-
-A session renews itself in the background, and each renewal replaces the credential that keeps it alive. If an old one is ever presented, a copy of it exists somewhere else, so Warmbly ends that session on the spot and you sign in once more on that device.
-
-<Callout type="warn" title="If something looks wrong">
-Sign out the session, change your password, and make sure 2FA is on. Signing out other sessions is the fastest way to cut off access.
+<Callout type="info" title="此设备上没有通行密钥时怎么办？">
+未同步的通行密钥只存在于创建它的设备上。如果当前设备没有通行密钥，Warmbly 会提示未找到。你可以先使用密码登录，再在该设备上添加通行密钥。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Deleting your account
+## 确认敏感更改 [#confirming-sensitive-changes]
 
-Delete your account from **Settings > Danger zone** in the dashboard, or from **Profile > Delete account** in the iOS app. Type your email address to confirm, then confirm it is you (see [Confirming sensitive changes](#confirming-sensitive-changes)).
+即使已经登录，执行某些变更时仍需确认是你本人：
 
-Deleting your account also deletes every workspace you own. Nothing is removed straight away: the account stays as it is for 30 days, with reminder emails along the way, and you can cancel from the same place at any time before then. After the 30 days it is removed for good and cannot be recovered. Export a workspace first if you want to keep its data (see [Workspace export and import](/guides/workspace-export-import/)).
+- 创建 API 密钥
+- 添加或移除通行密钥
+- 开启双重身份验证
+- 邀请成员或修改成员角色
+- 导出或导入整个工作区
+- 批准自托管实例的预热池关联
+- 显示或轮换 Webhook 或 OAuth 应用的签名密钥
+- 将工作区转移给他人
+- 安排删除工作区或账户
 
-</Fold>
+提示框只会提供你的账户实际可用的验证方式：
 
-<Fold>
+- **通行密钥**：如果已经添加
+- **通过 Google、Apple 或单点登录继续**：如果你使用该方式登录。身份提供商会在小窗口中打开，你在那里选择的账户必须是已关联到 Warmbly 的账户。如果浏览器阻止了窗口，请允许控制台弹出窗口
+- **密码**：如果账户设有密码
+- **身份验证器验证码**或恢复码：如果已开启双重身份验证
 
-## Choosing a password
+身份确认有效期为五分钟，因此连续执行一系列相关变更时只需确认一次。在 iOS 应用中，同一个提示框除密码和身份验证器验证码外，也提供“通过 Apple 继续”和“通过 Google 继续”。
 
-A password has to be between 8 and 128 characters, and it is checked against a list of the 100,000 most commonly breached passwords published by the UK National Cyber Security Centre. If yours appears there, it is refused and you are told why. The check is case-insensitive, so capitalising the first letter of a known password does not get past it.
+如果账户没有任何可用方式，例如创建账户时使用的身份提供商已不再由此服务器提供，界面会说明情况，不会展示无法填写的字段。这种情况下，重新登录本身就是身份确认：请重新登录，在五分钟内再次执行变更，然后添加通行密钥或开启双重身份验证，避免以后再次遇到这种情况。
 
-There is no rule about mixing upper case, digits and symbols. A long passphrase you can remember beats a short one with a symbol bolted on, which is what current guidance from NIST and the NCSC both say. The dashboard shows a strength meter as you type.
-
-Repeated wrong passwords are counted per account, not just per device, so guessing one account from many addresses does not buy an attacker more attempts. After fifty failures in an hour the account stops accepting password attempts until the hour is up. Signing in correctly or completing a password reset clears the count. The current password asked for when you change it, and the password you confirm a sensitive change with, share a separate budget of the same size.
-
-</Fold>
-
-<Fold>
-
-## Names
-
-Your name and your workspace's name appear in emails Warmbly sends to other people, such as invitations. They are plain text only: a name that contains a link, a web address, an email address or invisible formatting characters is refused, and the field tells you why. The full rules are in [Name refusals](/api/error-codes/#name-refusals).
-
-</Fold>
-
-<Fold>
-
-## Password and alerts
-
-Change your password under **Password**: current password, then a new one. **Changing it ends every session, including the one you change it from.** The device you are on is signed straight back in with a new session, so you notice nothing, while anything that held your old session, on any device, is signed out. Accounts that only use Google, Apple, or a passkey have no password to change.
-
-**Sign-in alerts** notify you when your account is accessed from a new browser and OS combination, naming the device and location with a reminder to act if it was not you. They appear in your in-app feed by default; enable email under **Settings > Notifications**, Security section, Email channel. Your first sign-in is never alerted, as there is nothing to compare against.
+这些操作需要额外确认，是因为它们会签发有效期超出当前会话的凭据、泄露机密、改变可访问账户的人员，或产生无法由你自行撤销的结果。即使有人拿到了已登录的浏览器，也不应在不知道你所掌握的验证信息时执行这些操作。
 
 </Fold>
 
 <Fold>
 
-## What is recorded when you sign up
+## 会话 [#sessions]
 
-Creating an account records the address it was created from, the browser's user-agent string, and a score for how the email address itself reads. This is anti-abuse evidence: it is what lets the platform notice one person opening many accounts, or a wave of signups from one place, without which every account looks unrelated to every other.
+每个已登录的设备都会出现在**会话**列表中，显示设备信息（`Chrome on macOS`）、位置（如果已知）、登录方式（电子邮件、Google、Apple 或通行密钥）以及最近活动时间。当前设备标记为**此设备**。
 
-- The email address is also stored in a normalized form, with plus-tags and Gmail dots collapsed, so `ada.lovelace+trial@gmail.com` and `adalovelace@gmail.com` are recognisable as the same person. This form is used only for correlation and never for signing in.
-- It is recorded for every signup, not only suspicious ones. Keeping it only for accounts that already look risky would leave exactly the patterns it exists to find half-empty.
-- It stays on the instance the account was created on. Workspace archives do not carry it.
+**退出登录**结束一个会话；**退出其他会话**清除当前设备以外的所有会话。在所有设备上退出、修改或重置密码，以及账户被封禁，都会立即结束全部会话，并关闭控制台或 API 客户端与实时服务建立的所有活动连接。
 
-Nothing here refuses a signup on its own. A single weak signal is wrong too often, and turning a false positive into a rejected account leaves a real customer with no way through.
+会话会在后台自动续期，每次续期都会替换用于维持会话的凭据。如果旧凭据再次出现，说明其他地方存在它的副本。因此，Warmbly 会立即结束该会话，你需要在对应设备上重新登录。
 
-</Fold>
-
-<Fold>
-
-## Sign-ins from an impossible place
-
-A hijacked workspace owns warmed mailboxes and decryptable sending credentials, so it is worth more to an attacker than an ordinary account. Sign-in alerts tell you after the fact; this stops the sign-in.
-
-Warmbly keeps a short window of where your account was recently used and compares each new sign-in against the last. When the two could not physically be the same person travelling, faster than about `1000` km/h, the sign-in has to pass an emailed code even from a browser you have used before. That is exactly the case a remembered device cannot catch, because an attacker holding your cookie looks like a familiar device.
-
-What it deliberately does not do:
-
-- **It does not judge your first sign-in.** There is nothing to compare against, and challenging it would challenge every new account.
-- **It ignores short hops.** Locations come from a city database, so two sign-ins from opposite sides of one city are not a journey.
-- **It ignores intervals under two minutes.** Two sign-ins seconds apart from different cities are far more likely a proxy than travel, and dividing by that interval makes any distance look impossible.
-- **A real flight passes.** London to New York in nine hours is ordinary and is never challenged.
-- **It respects your login-code setting.** Where an operator has turned emailed codes off entirely, anomalies are recorded for review but no code is demanded, since that deployment may have no working mail.
-
-Repeated anomalies inside a fortnight are recorded against the workspace's posture. One unusual trip is not a pattern.
-
-<Callout type="info" title="Needs a location database">
-This uses the optional MaxMind city database. Without it configured, sign-ins are recorded but never judged, which is the safe direction: a false challenge locks a real person out of their own account.
+<Callout type="warn" title="发现异常时">
+退出可疑会话、修改密码，并确认已开启双重身份验证。退出其他会话是最快的切断访问方式。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Cross-account patterns
+## 删除账户 [#deleting-your-account]
 
-Individually, every abuse control watches one thing: a rate limit watches one account, warmup health one mailbox, verification one address. Someone spreading the same behaviour across several accounts stays under all of them.
+在控制台的**设置 > 危险操作区**，或 iOS 应用的**个人资料 > 删除账户**中删除账户。先输入电子邮件地址确认，再完成身份确认（参见[确认敏感变更](#confirming-sensitive-changes)）。
 
-A nightly sweep looks at the group instead. It groups workspaces that were opened from the same address, or by the same email identity once plus-tags and Gmail dots are collapsed, and notices a workspace that connects an unusual number of mailboxes at once.
-
-Findings are recorded as evidence on the [workspace posture](/guides/deliverability/), never acted on alone:
-
-- **Three workspaces is the floor.** Two sharing an address is a coincidence.
-- **Private and loopback addresses are ignored**, since every self-hosted install signs up over a LAN.
-- **Sharing an address carries little weight** on its own. Offices, co-working spaces and VPNs all produce it honestly.
-- **Only the last 30 days count.** Two workspaces opened from one office a year apart are not related.
+删除账户也会删除你拥有的所有工作区。内容不会立即移除：账户会保持原状 30 天，期间会发送提醒邮件，你可以在此期限之前随时从同一位置取消。30 天后，账户将被永久移除，无法恢复。如果希望保留数据，请先导出工作区（参见[工作区导出与导入](/guides/workspace-export-import/)）。
 
 </Fold>
 
 <Fold>
 
-## Strongest setup
+## 选择密码 [#choosing-a-password]
 
-1. **Add a passkey** so daily sign-in is fast and phishing-resistant.
-2. **Turn on 2FA** and store the recovery codes safely, so password sign-ins keep a second factor.
-3. **Review sessions** periodically and sign out anything unfamiliar.
+密码长度必须为 8 至 128 个字符，并会与英国国家网络安全中心公布的 100,000 个最常见泄露密码列表进行比对。如果密码出现在列表中，系统会拒绝并说明原因。检查不区分大小写，因此仅将已知密码的首字母改为大写无法绕过检查。
+
+没有必须混合大写字母、数字和符号的规定。一个容易记住的长密码短语，比在短密码后硬加一个符号更好；这也符合 NIST 和 NCSC 当前的指南。输入时，控制台会显示密码强度指示。
+
+密码错误次数按账户累计，而非仅按设备累计，因此攻击者从多个地址猜测同一账户，也不能获得更多尝试机会。一个小时内失败五十次后，该账户会停止接受密码尝试，直到这一小时结束。正确登录或完成密码重置会清除计数。修改密码时要求输入的当前密码，以及确认敏感变更时输入的密码，共用另一套同等额度的错误次数限制。
 
 </Fold>
 
-## Related guides
+<Fold>
+
+## 名称 [#names]
+
+你的姓名和工作区名称会出现在 Warmbly 发送给他人的邮件中，例如邀请邮件。它们只能是纯文本：如果名称包含链接、网址、电子邮件地址或不可见的格式字符，系统会拒绝，并在字段旁说明原因。完整规则参见[名称拒绝规则](/api/error-codes/#name-refusals)。
+
+</Fold>
+
+<Fold>
+
+## 密码与安全提醒 [#password-and-alerts]
+
+在**密码**区域修改密码：先输入当前密码，再输入新密码。**修改密码会结束所有会话，包括执行修改的当前会话。** 当前设备会立即通过新会话重新登录，因此你不会察觉中断；任何设备上持有旧会话的客户端都会退出登录。仅使用 Google、Apple 或通行密钥的账户没有可供修改的密码。
+
+**登录提醒**会在账户通过新的浏览器与操作系统组合访问时通知你，显示设备和位置，并提醒你在非本人操作时采取行动。默认情况下，提醒出现在应用内通知列表；如需邮件通知，请在**设置 > 通知**的安全分类中开启邮件渠道。首次登录不会触发提醒，因为没有可供比较的历史记录。
+
+</Fold>
+
+<Fold>
+
+## 注册时记录的信息 [#what-is-recorded-when-you-sign-up]
+
+创建账户时会记录注册来源的网络地址、浏览器的 user-agent 字符串，以及根据电子邮件地址本身特征得出的评分。这些信息是防滥用的证据，帮助平台发现同一人开设多个账户，或来自同一位置的大量注册；缺少这些信息，每个账户看起来都会与其他账户毫无关联。
+
+- 电子邮件地址也会以规范化形式存储，去除加号标签，并合并 Gmail 地址中的点号，因此可以识别 `ada.lovelace+trial@gmail.com` 与 `adalovelace@gmail.com` 对应同一个人。这种形式仅用于关联分析，绝不用于登录。
+- 每次注册都会记录这些信息，而不只记录可疑注册。如果只为已经显得有风险的账户保留记录，恰恰会使需要识别的关联模式缺少大量证据。
+- 信息保留在创建该账户的实例中，工作区归档文件不会携带这些信息。
+
+这里的任何一项信息都不会单独导致注册被拒。单一弱信号误判的概率过高，若把误报直接转化为拒绝创建账户，就会让真实客户无路可走。
+
+</Fold>
+
+<Fold>
+
+## 不可能旅行距离下的异地登录 [#sign-ins-from-an-impossible-place]
+
+被劫持的工作区拥有已完成预热的邮箱和可解密的发件凭据，因此对攻击者的价值高于普通账户。登录提醒是在事后通知你，而这项保护会阻止可疑登录。
+
+Warmbly 保留账户近期使用地点的一小段时间窗口，并将每次新登录与上一次比较。如果两次登录所需的移动速度超过约 `1000` 公里/小时，在物理上不可能由同一人完成，那么即使来自曾使用过的浏览器，也必须通过邮件验证码才能登录。这正是记住设备机制无法发现的情况，因为持有你的 Cookie 的攻击者看起来就像熟悉的设备。
+
+它有意保留了以下例外：
+
+- **不判断首次登录。** 没有历史记录可供比较，对其要求额外验证相当于要求所有新账户都额外验证。
+- **忽略短距离移动。** 位置来自城市数据库，因此同一城市两端的两次登录不视为跨地点旅行。
+- **忽略不足两分钟的间隔。** 相隔数秒却显示在不同城市的登录，更可能是代理造成的，而非真实旅行；用如此短的时间作除数，会使任何距离看起来都不可能完成。
+- **真实航班行程可以通过。** 九小时从伦敦到纽约是正常情况，不会触发额外验证。
+- **遵循登录验证码设置。** 如果运维人员完全关闭了邮件验证码，系统只记录异常供审查，不要求输入验证码，因为该部署可能没有可用的邮件发送功能。
+
+两周内反复出现的异常会记录到工作区的风险状况中。一次不寻常的行程不足以构成模式。
+
+<Callout type="info" title="需要地理位置数据库">
+此功能使用可选的 MaxMind 城市数据库。如果没有配置数据库，系统仍记录登录，但不作判断。这是更稳妥的默认方式，因为错误要求验证可能导致真实用户无法进入自己的账户。
+</Callout>
+
+</Fold>
+
+<Fold>
+
+## 跨账户行为模式 [#cross-account-patterns]
+
+单独来看，每项防滥用控制只观察一个对象：频率限制关注一个账户，预热健康度关注一个邮箱，验证关注一个地址。将相同行为分散到多个账户的人，可能始终不触发任何一项限制。
+
+每晚运行的扫描会改为观察群体。它将从同一网络地址创建的工作区，或去除加号标签并合并 Gmail 点号后属于同一邮件身份的工作区归为一组，也会留意一次连接异常多邮箱的工作区。
+
+发现的问题会作为证据记录在[工作区风险状况](/guides/deliverability/)中，绝不单独据此采取行动：
+
+- **至少三个工作区才纳入判断。** 两个工作区使用同一地址可能只是巧合。
+- **忽略私有地址和环回地址**，因为每套自托管安装都可能通过局域网注册。
+- **仅共享地址的权重很低。** 办公室、共享办公空间和 VPN 都可能正常出现这种情况。
+- **仅统计最近 30 天。** 在同一个办公室相隔一年创建的两个工作区不视为相关。
+
+</Fold>
+
+<Fold>
+
+## 最强安全配置 [#strongest-setup]
+
+1. **添加通行密钥**，让日常登录更快捷，并抵御网络钓鱼。
+2. **开启双重身份验证**并妥善保存恢复码，让密码登录始终需要第二重验证。
+3. **定期检查会话**，将任何不认识的会话退出登录。
+
+</Fold>
+
+## 相关指南 [#related-guides]
 
 <Cards>
-  <Card title="Deliverability" href="/guides/deliverability/" />
-  <Card title="Mailboxes" href="/guides/mailboxes/" />
-  <Card title="Team & roles" href="/guides/team-roles/" />
+  <Card title="邮件送达能力" href="/guides/deliverability/" />
+  <Card title="邮箱" href="/guides/mailboxes/" />
+  <Card title="团队与角色" href="/guides/team-roles/" />
 </Cards>

@@ -1,25 +1,25 @@
 ---
-title: Personalization that works
-description: Merge variables, conditionals, fallbacks, functions, and spintax so one cold-email template reads naturally for every recipient.
+title: 有效的邮件个性化
+description: 结合合并变量、条件判断、回退值、函数和 Spintax，让同一份冷邮件模板对每位收件人都自然贴切。
 ---
 
-Every subject line and email body in Warmbly supports merge variables and simple conditionals. They're rendered separately for each recipient when the email actually sends, so a single template can read naturally for your whole list.
+Warmbly 的每个主题行和邮件正文都支持合并变量与简单条件判断。邮件实际发送时，会针对每位收件人分别渲染，因此一份模板也能自然地适用于整份名单。
 
 <ShortVersion>
 
-- Variables like `{{.FirstName}}` are filled in for each recipient when the email sends.
-- A missing value renders as blank, so write around it or guard it with a conditional.
-- Conditionals show text only when a field has a value, or matches one.
+- `{{.FirstName}}` 等变量会在发送时，按每位收件人的信息填入。
+- 缺失值会渲染为空，因此应让周围文字能够适应空值，或使用条件判断保护。
+- 条件判断可以让文本只在字段有值，或匹配指定值时出现。
 
 </ShortVersion>
 
-<Callout type="info" title="Full syntax reference">
-  This page covers the ideas and how to combine them. The complete syntax reference (every field, helper, and rule) lives in the [Expressions guide](/guides/expressions/).
+<Callout type="info" title="完整语法参考">
+  本页介绍基本概念及组合方式。包含每个字段、辅助函数和规则的完整语法参考，见[表达式指南](/guides/expressions/)。
 </Callout>
 
-## Variables
+## 变量 [#variables]
 
-Insert a variable and it's replaced with that contact's detail on send. The standard contact fields are `{{.FirstName}}`, `{{.LastName}}`, `{{.Email}}`, `{{.Company}}`, and `{{.Phone}}`:
+插入变量后，发送时会将其替换为对应联系人的具体信息。标准联系人字段包括 `{{.FirstName}}`、`{{.LastName}}`、`{{.Email}}`、`{{.Company}}` 和 `{{.Phone}}`：
 
 ```
 Hi {{.FirstName}},
@@ -27,55 +27,55 @@ Hi {{.FirstName}},
 Thanks for the work you're doing at {{.Company}}.
 ```
 
-If a contact is missing a value, it renders as nothing (blank). Write so the sentence still reads, or guard it with a conditional (below).
+如果联系人缺少某个值，该变量不会输出任何内容，也就是留空。编写句子时，应确保空值不会破坏语句，或使用下文介绍的条件判断。
 
-## Custom fields
+## 自定义字段 [#custom-fields]
 
-Any custom field on your contacts works too. Reference it by its exact name. For a field called `role`:
+联系人上的任何自定义字段也能使用，引用时必须与字段名称完全一致。例如，字段名为 `role` 时：
 
 ```
 You're the {{.role}} at {{.Company}}, right?
 ```
 
-Fields whose name has spaces or punctuation (for example `Job Title`) work the same way with the dot. Write them exactly as named, and they work everywhere, including inside conditionals:
+名称包含空格或标点的字段（例如 `Job Title`）同样可以通过点号引用。按原始名称准确书写即可在任何位置使用，包括条件判断中：
 
 ```
 {{if .Job Title}}Role: {{.Job Title}}{{end}}
 ```
 
-The equivalent `index` form (`{{index . "Job Title"}}`) also works if you prefer it. Both spellings are covered in the [Expressions guide](/guides/expressions/).
+如果你更习惯 `index` 写法，也可以使用等价的 `{{index . "Job Title"}}`。[表达式指南](/guides/expressions/)介绍了这两种形式。
 
-The name must match a field that exists on the contact; if it doesn't, the value is blank. So pair custom fields with a conditional whenever the surrounding text depends on them.
+名称必须匹配联系人上实际存在的字段，否则值为空。因此，只要周围文本依赖某个自定义字段，就应配合条件判断使用。
 
-## Conditionals (if / else)
+## 条件判断（if / else） [#conditionals-if--else]
 
-Wrap text so it only appears when a field has a value, or matches a specific value.
+用条件语句包裹文本，使其只在字段有值，或匹配某个指定值时显示。
 
-Show text only when a field is set:
+仅在字段有值时显示文本：
 
 ```
 Hi {{.FirstName}},{{if .Company}} I saw {{.Company}} is hiring.{{end}}
 ```
 
-That renders as "Hi Alex, I saw Acme is hiring." when Company is set, and "Hi Alex," when it's blank.
+Company 有值时，结果为“Hi Alex, I saw Acme is hiring.”；字段为空时，结果为“Hi Alex,”。
 
 <MergePreview />
 
-Provide a fallback with `else`:
+通过 `else` 提供回退内容：
 
 ```
 {{if .FirstName}}Hi {{.FirstName}}{{else}}Hi there{{end}},
 ```
 
-Match a specific value with `eq`:
+使用 `eq` 匹配指定值：
 
 ```
 {{if eq .city "Berlin"}}I'll be in Berlin next week.{{else}}Let's set up a call.{{end}}
 ```
 
-`eq` compares exact text and is case-sensitive: `eq .Company "acme"` will not match "Acme".
+`eq` 按文本精确比较，并且区分大小写：`eq .Company "acme"` 不会匹配“Acme”。
 
-You can chain options with `else if` and combine checks with `and` / `or`:
+可以使用 `else if` 串联多个选项，也可以使用 `and` / `or` 组合条件：
 
 ```
 {{if eq .plan "enterprise"}}your team's size{{else if eq .plan "pro"}}your growing team{{else}}teams like yours{{end}}
@@ -85,11 +85,11 @@ You can chain options with `else if` and combine checks with `and` / `or`:
 {{if and (.FirstName) (eq .Company "Acme")}}Hi {{.FirstName}} at Acme{{end}}
 ```
 
-A missing or empty field counts as "not set" (false). The full list of supported keywords and operators is in the [Expressions guide](/guides/expressions#conditionals).
+缺失或为空的字段视为“未设置”（false）。支持的关键字与运算符完整列表见[表达式指南](/guides/expressions#conditionals)。
 
-## A complete, complex template
+## 一个完整的复杂模板 [#a-complete-complex-template]
 
-Here's everything together: one template whose subject, greeting, opening line (by role), city aside, and call to action (by plan) all adapt per recipient. It uses three custom fields (`role`, `city`, `plan`) alongside the standard ones:
+下面将这些能力组合起来：一份模板中的主题、称呼、按职务调整的开场句、与城市相关的补充内容，以及按套餐调整的行动邀请，都会针对不同收件人变化。除了标准字段，它还使用三个自定义字段（`role`、`city`、`plan`）：
 
 ```
 Subject: {{if .Company}}quick idea for {{.Company}}{{else}}a quick idea{{end}}
@@ -106,25 +106,25 @@ Best,
 Sam
 ```
 
-Build these up gradually and lean on the editor's Preview tab. It evaluates your conditionals against sample data so you can see each branch before you send.
+应逐步完善这些模板，并多使用编辑器的“预览”标签页。它会用示例数据计算条件判断，让你在发送前查看每个分支的结果。
 
-## Fallbacks
+## 回退值 [#fallbacks]
 
-When a field might be blank, give it a fallback with `default` instead of a full `{{if}}` block. The value goes first, the fallback second:
+字段可能为空时，可以使用 `default` 设置回退值，而不必编写完整的 `{{if}}` 代码块。先写原值，再写回退值：
 
 ```
 Hi {{.FirstName | default "there"}},
 ```
 
-That renders as "Hi Alex," when the first name is set and "Hi there," when it's blank. This is the cleanest fix for the classic "Hi ," problem. Use `| default "…"` anywhere a field could be empty.
+名字有值时，结果为“Hi Alex,”；为空时，结果为“Hi there,”。这是解决常见“Hi ,”问题最简洁的方式。任何字段可能为空的位置，都可以使用 `| default "…"`。
 
-## Functions
+## 函数 [#functions]
 
-A handful of helpers let you reshape text and work with numbers. They go inside any `{{ }}` or condition:
+一些辅助函数可以调整文本或处理数字，它们可写在任意 `{{ }}` 或条件表达式中：
 
-- Text: `upper`, `lower`, `title` (change case), `trim`, `contains`, `hasPrefix`, `hasSuffix`
-- Lists: `has` (holds a whole item), `join` (one line of text)
-- Numbers: `add`, `sub`, `mul`, `div`, `mod`, `num`, and the coercing comparisons `gtf`, `ltf`, `gef`, `lef`, which treat a value as a number even if it arrives as text
+- 文本：`upper`、`lower`、`title`（转换大小写）、`trim`、`contains`、`hasPrefix`、`hasSuffix`
+- 列表：`has`（判断是否包含完整项）、`join`（连接为一行文本）
+- 数字：`add`、`sub`、`mul`、`div`、`mod`、`num`，以及会进行类型转换的比较函数 `gtf`、`ltf`、`gef`、`lef`。即使输入值是文本，它们也会按数字处理。
 
 ```
 {{upper .Company}} team - {{title .role}}
@@ -134,11 +134,11 @@ A handful of helpers let you reshape text and work with numbers. They go inside 
 {{if gtf .score 80}}You're in our top tier.{{end}}
 ```
 
-Tip: prefer `gtf`/`ltf` over the plain `gt`/`lt` whenever a value might be text. They convert first, so you never hit a type error. See the [Expressions guide](/guides/expressions#functions) for the complete helper list and details.
+提示：只要值可能是文本，就应优先使用 `gtf`/`ltf`，而不是普通的 `gt`/`lt`。它们会先转换类型，避免类型错误。完整辅助函数列表和细节见[表达式指南](/guides/expressions#functions)。
 
-## Spintax: vary your wording
+## Spintax：变化表达方式 [#spintax-vary-your-wording]
 
-Wrap a few options in braces separated by `|` and Warmbly picks one at random for each recipient. Varying your phrasing keeps a large send from looking like one identical blast, which helps [deliverability](/learn/deliverability/).
+将几个选项放在花括号内，并用 `|` 分隔，Warmbly 就会为每位收件人随机选择一个。变化措辞可以避免大量邮件看起来像完全相同的群发内容，有助于改善[邮件送达能力](/learn/deliverability/)。
 
 ```
 {Hi|Hey|Hello} {{.FirstName | default "there"}},
@@ -146,36 +146,36 @@ Wrap a few options in braces separated by `|` and Warmbly picks one at random fo
 {Hope your week is going well|Hope you're doing well} over at {{.Company}}.
 ```
 
-Only groups that contain a `|` are touched, so ordinary braces (links, snippets, styling) are left exactly as you wrote them. Spintax is expanded after your variables render, so you can mix the two freely.
+只有包含 `|` 的分组才会被处理，因此普通花括号（用于链接、片段或样式）会保持原样。Spintax 在变量渲染之后展开，所以可以自由混用两者。
 
-## Automation conditions: advanced expressions
+## 自动化条件：高级表达式 [#automation-conditions-advanced-expressions]
 
-Automation **IF** steps have an **Advanced expression** mode for logic the dropdowns can't express. Write a condition that passes the "yes" branch whenever it's true, either in the bare form (`gt .confidence 0.8`) or combined with `and` / `or` / `not`:
+自动化流程的 **IF** 步骤提供**高级表达式**模式，用于编写下拉选项无法表达的逻辑。条件为真时进入“是”分支。可以直接写条件（`gt .confidence 0.8`），也可以使用 `and` / `or` / `not` 组合：
 
 ```
 and (gtf .confidence 0.8) (eq .intent "positive")
 ```
 
-Reference event fields with a leading dot (`.confidence`, `.intent`); the variables available depend on the trigger. Action values (a Slack message, webhook body, or CRM field) render the same way conditions do, against the live trigger data: numbers stay numbers, so plain `gt` works, and you have the full template (conditionals, nested fields, and `{{range}}` all work). Reach for `gtf` only when a value might arrive as text, like a contact custom field:
+引用事件字段时，前面加点号（`.confidence`、`.intent`）；可用变量取决于触发器。操作中的值（例如 Slack 消息、Webhook 请求体或 CRM 字段）与条件一样，基于实际触发数据渲染：数字仍保留数字类型，因此普通 `gt` 即可使用；同时也能使用完整模板功能，包括条件判断、嵌套字段和 `{{range}}`。只有值可能以文本形式传入时，例如联系人自定义字段，才需要使用 `gtf`：
 
 ```
 {{if gt .confidence 0.8}}hot lead{{else}}follow up{{end}}
 ```
 
-The "Reference" button next to the expression box lists every variable and function inline, and the [Expressions guide](/guides/expressions#automation-advanced-expressions) covers the details.
+表达式输入框旁的“参考”按钮会在当前界面列出所有变量和函数；详细说明见[表达式指南](/guides/expressions#automation-advanced-expressions)。
 
-## If something goes wrong
+## 出现问题时怎么办 [#if-something-goes-wrong]
 
-Warmbly guards against broken templates at three points:
+Warmbly 会在三个环节防止模板出错：
 
-- While editing, an unbalanced conditional (an `{{if}}` with no `{{end}}`) shows an inline warning.
-- A campaign won't start if any step's template is malformed. You get an error naming the step, so recipients never receive raw `{{if ...}}` text.
-- If a broken template ever reaches sending, it falls back to plain variable substitution rather than failing the send.
+- 编辑时，如果条件语句不配对（例如有 `{{if}}` 却没有 `{{end}}`），会在当前位置显示警告。
+- 只要某个步骤的模板格式错误，营销活动就无法启动。错误会指出具体步骤，避免收件人收到未处理的 `{{if ...}}` 文本。
+- 如果错误模板仍进入发送环节，系统会回退到简单的变量替换，而不是让发送失败。
 
-Templates also have limits, so one template cannot tie up the server. `{{range}}` only loops over a field of the data (`{{range .items}}`), never over a number or a function's result, and loops nest at most two deep. `{{template}}` and `{{block}}` are not supported. A template that breaks one of these rules is treated as malformed, and one whose output passes 1 MB falls back to plain substitution.
+模板也有使用限制，避免单个模板长时间占用服务器。`{{range}}` 只能遍历数据字段（`{{range .items}}`），不能遍历数字或函数结果，且循环最多嵌套两层。不支持 `{{template}}` 和 `{{block}}`。违反这些规则的模板会被视为格式错误；输出超过 1 MB 时，则回退到简单替换。
 
-Always check Preview and send yourself a test email before launching.
+启动前始终应检查预览，并先向自己发送一封测试邮件。
 
-## Quick reference
+## 快速参考 [#quick-reference]
 
-For the condensed cheat sheet of every variable form, conditional, helper, and spintax rule, see the [Expressions guide](/guides/expressions#quick-reference).
+所有变量形式、条件判断、辅助函数和 Spintax 规则的简明速查表，见[表达式指南](/guides/expressions#quick-reference)。

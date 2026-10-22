@@ -1,51 +1,51 @@
 ---
-title: Authentication
-description: Learn how to authenticate with the Warmbly API using API keys.
+title: "身份验证"
+description: "了解如何使用 API 密钥对 Warmbly API 请求进行身份验证。"
 ---
 
-The Warmbly API uses API keys for authentication. Each API key has specific permissions that control what operations it can perform.
+Warmbly API 使用 API 密钥进行身份验证。每个 API 密钥都具有特定权限，用于控制其可执行的操作。
 
-API responses use `Cache-Control: no-store` by default to instruct browsers and intermediaries not to retain private data. Public uploaded assets keep their explicit caching policy.
+API 响应默认使用 `Cache-Control: no-store`，指示浏览器和中间节点不要保留私有数据。公开上传的资源仍遵循各自明确设置的缓存策略。
 
-## API key format
+## API 密钥格式 [#api-key-format]
 
-API keys follow this format:
+API 密钥采用以下格式：
 
 ```
 wmbly_<43-character-random-string>
 ```
 
-The `wmbly_` prefix identifies the key as a Warmbly key. The remaining 43 characters are 32 random bytes encoded as base64url (no padding): 256 bits of entropy, so brute-forcing a valid key is computationally infeasible.
+`wmbly_` 前缀表明这是 Warmbly 密钥。其余 43 个字符由 32 个随机字节经 base64url 编码生成，不含填充字符：熵为 256 位，因此在计算上无法实际通过暴力破解获得有效密钥。
 
-Keys are stored as a SHA-256 hash; the plaintext is shown exactly once on creation. To help you spot a key in the dashboard without exposing the secret, we store the first 8 characters (`key_prefix`, e.g. `wmbly_ab`) and the last 4 characters (`key_suffix`, e.g. `wxyz`). Render them as `wmbly_ab…wxyz`.
+密钥以 SHA-256 哈希形式存储，明文只在创建时显示一次。为便于在控制台识别密钥而不暴露机密值，我们保存前 8 个字符（`key_prefix`，例如 `wmbly_ab`）和后 4 个字符（`key_suffix`，例如 `wxyz`）。显示时使用 `wmbly_ab…wxyz` 形式。
 
-## Three ways to get a key
+## 获取密钥的三种方式 [#three-ways-to-get-a-key]
 
-1. **The dashboard.** Settings > API keys, pick the scopes, copy the secret. This is the right path for a key a server will use.
-2. **The CLI.** [`warmbly auth login`](/api/cli/) opens a browser approval and mints a key named for the machine that asked, then stores it at 0600. This is the right path for a key you will use yourself, and it is the only one that does not involve pasting a secret into a shell.
-3. **The API.** `POST /v1/api-keys` with a key that carries `API_KEYS`. The secret is in that response and nowhere else.
+1. **控制台。** 进入“设置 > API 密钥”，选择权限范围并复制机密值。服务器使用的密钥适合通过此方式创建。
+2. **CLI。**[`warmbly auth login`](/api/cli/) 会打开浏览器审批流程，创建以发起请求的计算机命名的密钥，并以 0600 权限保存。你自己使用的密钥适合通过此方式创建；这也是唯一无需将机密值粘贴到 shell 中的方式。
+3. **API。** 使用具有 `API_KEYS` 权限的密钥调用 `POST /v1/api-keys`。机密值仅出现在此次响应中，不会在其他地方显示。
 
-All three produce the same thing: a `wmbly_` key with a scope bitmask, listed under Settings > API keys, revocable there.
+三种方式均会生成相同类型的结果：带有权限范围位掩码的 `wmbly_` 密钥，会显示在“设置 > API 密钥”中，并可在那里撤销。
 
-### The CLI device flow
+### CLI 设备授权流程 [#the-cli-device-flow]
 
-`warmbly auth login` uses a device-code handshake, so the terminal never handles your password and the browser never handles the key:
+`warmbly auth login` 使用设备码握手流程，因此终端无需处理你的密码，浏览器也不会处理密钥：
 
-1. The CLI calls `POST /v1/auth/cli/code` with the scopes it wants and the machine's hostname. It gets back a `device_code` it keeps, a `user_code` it prints, and a `verification_uri_complete` it opens.
-2. You approve at `app.warmbly.com/cli`, choosing which workspace the key belongs to. The approval is what mints the key, so it requires the `MANAGE_API_KEYS` organization permission and a recent sign-in, and the key is capped to the scopes your role in that workspace allows.
-3. The CLI polls `POST /v1/auth/cli/poll` and receives the key exactly once, on the first poll after approval.
+1. CLI 调用 `POST /v1/auth/cli/code`，传入所需权限范围和计算机主机名。返回后，它会保留 `device_code`，打印 `user_code`，并打开 `verification_uri_complete`。
+2. 在 `app.warmbly.com/cli` 批准请求，并选择密钥所属的工作区。批准操作会实际创建密钥，因此需要 `MANAGE_API_KEYS` 组织权限和近期登录记录；密钥的权限范围不会超出你在该工作区角色所允许的范围。
+3. CLI 轮询 `POST /v1/auth/cli/poll`，并在批准后的第一次轮询中接收密钥，且只会接收一次。
 
-Codes expire after ten minutes, both halves are per-IP rate limited, and the `device_code` is stored hashed. Anything else can drive the same flow: it is two public endpoints and a browser.
+代码在十分钟后过期，流程两端均按 IP 限流，`device_code` 以哈希形式存储。其他客户端也可以驱动同一流程，只需两个公开端点和一个浏览器。
 
-### Ending a key
+### 撤销与删除密钥 [#ending-a-key]
 
-`DELETE /v1/api-keys/:id` revokes any key in the workspace and needs the `API_KEYS` scope. `DELETE /v1/api-keys/self` revokes the key the call was made with and needs no scope at all, so a narrowly scoped credential can always end itself. This is what `warmbly auth logout` uses.
+`DELETE /v1/api-keys/:id` 可撤销工作区中的任意密钥，需要 `API_KEYS` 权限范围。`DELETE /v1/api-keys/self` 撤销用于发起此次调用的密钥，无需任何权限范围，因此即使权限很少的凭据也始终可以自行失效。`warmbly auth logout` 使用的就是此端点。
 
-Revoking leaves the key listed, with the time and reason it ended, and its request history intact. `DELETE /v1/api-keys/:id/permanent` removes the row for good, along with its usage logs, and is how the **Delete key** button under a revoked key in Settings > API keys works. It refuses a key that could still authenticate with a `409`: revoke it first, so what ended the credential is on the record. A key past its `expires_at` can be deleted directly, since it already authenticates nothing.
+撤销操作会保留密钥列表记录、失效时间和原因，以及完整的请求历史。`DELETE /v1/api-keys/:id/permanent` 会永久删除该记录及其用量日志；“设置 > API 密钥”中已撤销密钥下方的**删除密钥**按钮使用的就是此端点。如果密钥仍可用于身份验证，端点会返回 `409` 并拒绝删除：应先撤销，以便记录凭据失效的原因。超过 `expires_at` 的密钥可直接删除，因为它已无法用于任何身份验证。
 
-## Using your API key
+## 使用 API 密钥 [#using-your-api-key]
 
-Include your API key in the `Authorization` header of every request:
+在每次请求的 `Authorization` 请求头中包含 API 密钥：
 
 ```bash
 curl -X GET "https://api.warmbly.com/v1/api-keys" \
@@ -53,11 +53,11 @@ curl -X GET "https://api.warmbly.com/v1/api-keys" \
   -H "Content-Type: application/json"
 ```
 
-For mutation retries, include an `Idempotency-Key` header with a unique value per logical operation. Warmbly stores completed mutation responses for 24 hours per organization and key, then replays matching retries instead of performing the operation again.
+重试修改操作时，请带上 `Idempotency-Key` 请求头，并为每个逻辑操作使用唯一值。Warmbly 按组织和密钥保存已完成修改操作的响应，保留 24 小时；对于匹配的重试，会重放已有响应，而不再次执行操作。
 
-## Verifying a credential
+## 验证凭据 [#verifying-a-credential]
 
-To check that a credential is valid and see who it belongs to, call `GET /v1/me`. It works with an API key, an OAuth access token, or a dashboard session, requires no specific permission, and returns the caller's identity:
+要检查凭据是否有效并查看其所属身份，请调用 `GET /v1/me`。它支持 API 密钥、OAuth 访问令牌或控制台会话，无需特定权限，并返回调用者身份：
 
 ```bash
 curl -X GET "https://api.warmbly.com/v1/me" \
@@ -76,53 +76,53 @@ curl -X GET "https://api.warmbly.com/v1/me" \
 }
 ```
 
-`auth_type` is `api_key`, `oauth`, or `jwt`, and `scopes` lists the granted API scopes for key and OAuth callers (empty for dashboard sessions, which use organization roles instead). This is the right endpoint for an integration to validate a connection and render a label. The separate `GET /v1/auth/me` is session-only and is not reachable with an API key or OAuth token.
+`auth_type` 的取值为 `api_key`、`oauth` 或 `jwt`；对于 API 密钥和 OAuth 调用者，`scopes` 列出已授予的 API 权限范围（控制台会话为空，因为其采用组织角色）。集成应使用此端点验证连接并显示身份标签。另一个端点 `GET /v1/auth/me` 仅供会话使用，API 密钥和 OAuth 令牌无法访问。
 
-For a restricted session, `/auth/me` returns only conversation categories applied to messages in its granted mailboxes. Campaign grants do not grant inbox access. Workspace-wide category registries remain available to unrestricted members. See [member access scope](/guides/team-roles/#access-scope) for the summary, notification and workspace-creation boundaries that also apply to existing members and credentials.
+对于访问范围受限的会话，`/auth/me` 只返回其获准访问的邮箱中，实际应用于邮件的会话分类。授予营销活动访问权限不会同时授予收件箱访问权限。访问范围不受限的成员仍可使用工作区完整分类注册表。摘要、通知和工作区创建方面的边界同样适用于现有成员和凭据，概述见[成员访问范围](/guides/team-roles/#access-scope)。
 
-## OAuth access tokens
+## OAuth 访问令牌 [#oauth-access-tokens]
 
-API keys authenticate your own scripts. If you are building an app that other people connect their Warmbly workspace to, use OAuth instead: the user grants your app scoped access and you receive a bearer **access token** (prefix `wmat_`). It goes in the same `Authorization: Bearer` header and is checked against the same permissions, so every endpoint below behaves identically whether you present an API key or an OAuth token, with two differences: an OAuth token also acts within the approving member's current role, and it can never manage API keys or OAuth apps. See [OAuth](/api/oauth/) for the full flow.
+API 密钥用于验证你自己的脚本。如果你正在构建让其他人连接其 Warmbly 工作区的应用，应改用 OAuth：用户向应用授予限定范围的访问权限，你会获得一个 Bearer **访问令牌**（前缀为 `wmat_`）。它通过相同的 `Authorization: Bearer` 请求头传入，并受同一组权限检查约束，因此以下各端点对 API 密钥与 OAuth 令牌的行为一致，但有两点区别：OAuth 令牌还必须处于批准授权成员的当前角色权限范围内，而且永远不能管理 API 密钥或 OAuth 应用。完整流程见 [OAuth](/api/oauth/)。
 
-## Key security best practices
+## 密钥安全最佳实践 [#key-security-best-practices]
 
-<Callout type="warn" title="Keep Your Keys Secret">
-  Never expose API keys in client-side code, public repositories, or logs. Treat them like passwords.
+<Callout type="warn" title="妥善保管密钥">
+  切勿将 API 密钥暴露在客户端代码、公开代码仓库或日志中。应像保护密码一样保护它们。
 </Callout>
 
-### Do
+### 建议做法 [#do]
 
-- Store API keys in environment variables or secure secret managers
-- Use different keys for development and production
-- Restrict keys to only the permissions they need
-- Set expiration dates for keys when possible
-- Use IP allowlists to restrict key usage
+- 将 API 密钥保存在环境变量或安全的密钥管理服务中
+- 开发环境和生产环境使用不同的密钥
+- 将密钥限制为仅具有必要权限
+- 尽可能为密钥设置过期时间
+- 通过 IP 允许列表限制密钥的使用来源
 
-### Don't
+### 应避免的做法 [#dont]
 
-- Commit API keys to version control
-- Share API keys via email or chat
-- Use production keys in development
-- Give keys more permissions than necessary
+- 将 API 密钥提交到版本控制系统
+- 通过电子邮件或聊天分享 API 密钥
+- 在开发环境中使用生产密钥
+- 授予密钥超出所需的权限
 
-## Permissions
+## 权限 [#permissions]
 
-Each API key has a permissions bitmask that controls its capabilities. See the [Permissions Reference](/api/permissions/) for a complete list.
+每个 API 密钥都有一个控制其能力的权限位掩码。完整列表见[权限参考](/api/permissions/)。
 
-A key acts for the member who created it. Every route checks the key's bits and that member's current role in the workspace, so a key never does more than its creator could do in the dashboard today: if the creator's role loses a permission, the key loses it too. When the creator leaves the workspace, the key stops working and answers `401` with code `api_key_holder_left`; create a new key from a current member.
+密钥代表创建它的成员执行操作。每条路由都会检查密钥的权限位，以及该成员当前在工作区中的角色，因此密钥的能力绝不会超出其创建者当前在控制台可执行的操作：如果创建者的角色失去某项权限，密钥也会同时失去该权限。创建者离开工作区后，密钥将停止工作，并返回 `401`，错误码为 `api_key_holder_left`；此时应由当前成员创建新密钥。
 
-### Permission categories
+### 权限类别 [#permission-categories]
 
-| Category | Description |
+| 类别 | 说明 |
 |----------|-------------|
-| **Read** | View resources (emails, campaigns, contacts, etc.) |
-| **Write** | Create and modify resources |
-| **Bulk** | Perform bulk operations |
-| **Special** | Advanced features (realtime, webhooks, API key management) |
+| **读取** | 查看资源（邮箱、营销活动、联系人等） |
+| **写入** | 创建和修改资源 |
+| **批量操作** | 执行批量操作 |
+| **特殊权限** | 高级功能（实时通信、Webhook、API 密钥管理） |
 
-### Example: read-only key
+### 示例：只读密钥 [#example-read-only-key]
 
-A read-only API key might have these permissions:
+只读 API 密钥可以具有以下权限：
 
 ```json
 {
@@ -130,18 +130,18 @@ A read-only API key might have these permissions:
 }
 ```
 
-This combines:
+它组合了以下权限：
 - `READ_EMAILS` (1)
 - `READ_CAMPAIGNS` (2)
 - `READ_CONTACTS` (4)
 - `READ_UNIBOX` (8)
 - `READ_ANALYTICS` (16)
 
-Total: 1 + 2 + 4 + 8 + 16 = 31
+总计：1 + 2 + 4 + 8 + 16 = 31
 
-## IP restrictions
+## IP 限制 [#ip-restrictions]
 
-You can restrict API keys to specific IPs or CIDR ranges. Entries can be bare IPs (v4 or v6) or CIDR blocks; an empty list means "any IP".
+可以将 API 密钥限制为仅允许来自特定 IP 或 CIDR 范围的请求。条目可以是单个 IPv4 或 IPv6 地址，也可以是 CIDR 网段；空列表表示允许任意 IP。
 
 ```json
 {
@@ -156,11 +156,11 @@ You can restrict API keys to specific IPs or CIDR ranges. Entries can be bare IP
 }
 ```
 
-Requests from outside every listed range are rejected with `403 Forbidden`. There's a soft cap of 64 entries per key.
+如果请求来源不在任何列出的范围内，将返回 `403 Forbidden` 并拒绝请求。每个密钥的允许列表软上限为 64 个条目。
 
-## Email account restrictions
+## 邮箱账户限制 [#email-account-restrictions]
 
-Limit API keys to specific email accounts:
+将 API 密钥限制为只能访问特定邮箱账户：
 
 ```json
 {
@@ -173,17 +173,17 @@ Limit API keys to specific email accounts:
 }
 ```
 
-A restricted key only reaches those mailboxes and their mail, and naming any other mailbox answers `403`:
+受限密钥只能访问这些邮箱及其中的邮件；指定其他邮箱会返回 `403`：
 
-- **Unibox reads.** `GET /unibox` lists only their conversations, `GET /unibox/thread` returns only their messages, `GET /unibox/count` and `GET /unibox/overview` count only them, and `GET /unibox/:id`, thread labels and agent drafts are refused or left out for mail in any other mailbox.
-- **Unibox writes.** Reply, compose (an automatic pick chooses among the listed mailboxes), drafts, agent-draft approval and discard, `PATCH /unibox/seen`, `PATCH /unibox/folder` and snoozes refuse a message or conversation with mail in another mailbox. Marking a whole folder read (`folder` on `PATCH /unibox/seen`) is refused, since it reaches every mailbox.
-- **Campaigns and analytics.** A sender pool (`senders` on `POST /campaigns`, `PUT /campaigns/:id/senders`) may only name listed mailboxes, `GET /analytics/accounts` lists only them, and `GET /analytics/accounts/:id` refuses any other. The key's campaigns use an explicit sender list (`sender_strategy` `explicit`): a pool resolved from mailbox tags, setting `email_tag_ids` or `email_tags`, or starting a campaign whose pool is not an explicit list of the key's mailboxes answers `403` with code `api_key_mailbox_limited`.
-- **Advisor.** Applying or undoing a fix is refused when the fix changes another mailbox.
-- **AI tools.** `/ai/tools` and `/mcp` act across the whole workspace, so a restricted key is refused there with code `api_key_mailbox_limited`. Use the REST endpoints, which apply the limit.
+- **统一收件箱读取。**`GET /unibox` 仅列出这些邮箱的会话，`GET /unibox/thread` 仅返回这些邮箱的邮件，`GET /unibox/count` 和 `GET /unibox/overview` 仅统计这些邮箱；对于其他邮箱中的邮件，`GET /unibox/:id`、会话标签和智能体草稿会被拒绝访问或从结果中省略。
+- **统一收件箱写入。** 回复、撰写邮件（自动选择时仅从允许列表中的邮箱选择）、草稿、批准和丢弃智能体草稿、`PATCH /unibox/seen`、`PATCH /unibox/folder` 及稍后提醒操作，均会拒绝处理涉及其他邮箱邮件的消息或会话。将整个文件夹标为已读（`PATCH /unibox/seen` 中的 `folder`）会被拒绝，因为该操作会涉及所有邮箱。
+- **营销活动与分析。** 发件邮箱池（`POST /campaigns`、`PUT /campaigns/:id/senders` 中的 `senders`）只能指定允许列表中的邮箱；`GET /analytics/accounts` 只列出这些邮箱，`GET /analytics/accounts/:id` 则拒绝访问其他邮箱。密钥操作的营销活动必须使用明确的发件邮箱列表（`sender_strategy` 为 `explicit`）：使用邮箱标签解析的邮箱池、设置 `email_tag_ids` 或 `email_tags`，或者启动其邮箱池并非明确列出密钥所允许邮箱的营销活动，都会返回 `403`，错误码为 `api_key_mailbox_limited`。
+- **优化顾问。** 如果修复会更改其他邮箱，则应用或撤销该修复的操作会被拒绝。
+- **AI 工具。**`/ai/tools` 和 `/mcp` 可操作整个工作区，因此受限密钥会被拒绝访问，错误码为 `api_key_mailbox_limited`。请使用会应用此限制的 REST 端点。
 
-## Key expiration
+## 密钥有效期 [#key-expiration]
 
-Set an expiration date for temporary access:
+为临时访问设置过期时间：
 
 ```json
 {
@@ -193,21 +193,21 @@ Set an expiration date for temporary access:
 }
 ```
 
-After expiration, the key returns `401 Unauthorized`.
+过期后，密钥会返回 `401 Unauthorized`。
 
-## Using a credential with MCP
+## 在 MCP 中使用凭据 [#using-a-credential-with-mcp]
 
-An [MCP client](/api/mcp/) (Claude Code, Claude Desktop, Cursor) authenticates to Warmbly with either an OAuth sign-in (the one-command path, no key to paste) or a static API key. For a key, send it as a bearer token to `https://api.warmbly.com/v1/mcp`; the client then sees exactly the tools the credential's scopes allow. See the [MCP server](/api/mcp/) page for both paths.
+[MCP 客户端](/api/mcp/)（Claude Code、Claude Desktop、Cursor）可通过 OAuth 登录（单命令方式，无需粘贴密钥）或静态 API 密钥向 Warmbly 进行身份验证。使用密钥时，将其作为 Bearer 令牌发送至 `https://api.warmbly.com/v1/mcp`；随后客户端只会看到凭据权限范围允许使用的工具。两种方式均见 [MCP 服务器](/api/mcp/) 页面。
 
-## Error responses
+## 错误响应 [#error-responses]
 
-### 401 Unauthorized
+### 401 Unauthorized（未通过身份验证） [#401-unauthorized]
 
-Returned when:
-- API key is missing
-- API key is invalid
-- API key has expired
-- API key has been revoked
+在以下情况下返回：
+- 缺少 API 密钥
+- API 密钥无效
+- API 密钥已过期
+- API 密钥已撤销
 
 ```json
 {
@@ -216,12 +216,12 @@ Returned when:
 }
 ```
 
-### 403 Forbidden
+### 403 Forbidden（禁止访问） [#403-forbidden]
 
-Returned when:
-- API key lacks required permissions
-- Request IP is not in allowlist
-- Email account is not in allowlist
+在以下情况下返回：
+- API 密钥缺少所需权限
+- 请求来源 IP 不在允许列表中
+- 邮箱账户不在允许列表中
 
 ```json
 {
@@ -230,29 +230,22 @@ Returned when:
 }
 ```
 
-## Platform admin device sessions
+## 平台管理员设备会话 [#platform-admin-device-sessions]
 
-This backend flow is separate from workspace API-key authorization. Platform
-admin access uses a normal bearer session, never an organization API key.
-Use [remote `warmblyctl` login](/development/warmblyctl/#remote-administrator-commands)
-and the administrator website's `/device` consent page. Deploy the backend
-before upgrading the admin UI and CLI. The CLI never listens on an HTTP port
-or receives a browser redirect.
+此后端流程独立于工作区 API 密钥授权。平台管理员访问使用普通 Bearer 会话，绝不使用组织 API 密钥。请使用[远程 `warmblyctl` 登录](/development/warmblyctl/#remote-administrator-commands)和管理员网站的 `/device` 同意授权页面。应先部署后端，再升级管理员界面和 CLI。CLI 不会监听 HTTP 端口，也不会接收浏览器重定向。
 
-### Endpoint contract
+### 端点接口约定 [#endpoint-contract]
 
-All bodies/responses are JSON; bodies are capped at 4 KiB. Successful responses
-are `Cache-Control: no-store`. Keep device and consent secrets in memory, not
-URLs, stdout, command arguments, diagnostics or browser localStorage.
+所有请求体和响应均为 JSON；请求体上限为 4 KiB。成功响应使用 `Cache-Control: no-store`。设备机密值和授权同意机密值应仅保存在内存中，不要放入 URL、标准输出、命令参数、诊断信息或浏览器 localStorage。
 
-| Endpoint | Request | Success | Authentication |
+| 端点 | 请求 | 成功响应 | 身份验证 |
 | --- | --- | --- | --- |
-| `POST /v1/auth/cli/admin/code` | `{"client_name":"My diagnostic laptop"}` | 201, start schema below | Public, IP limited |
-| `POST /v1/auth/cli/admin/poll` | `{"device_secret":"<CLI memory secret>"}` | 200, poll schema below | Device secret in body, IP limited |
-| `POST /admin/auth/device/describe` | `{"user_code":"ABCD-EFGH"}` | 200, describe schema below | Normal session, live nonzero admin permissions, session MFA |
-| `POST /admin/auth/device/decide` | `{"user_code":"ABCD-EFGH","consent_token":"<page memory secret>","decision":"approved"}` | 200 `{"status":"approved"}`; `denied` is the other valid decision/status | Same admin gates, plus existing fresh-auth gate |
+| `POST /v1/auth/cli/admin/code` | `{"client_name":"My diagnostic laptop"}` | 201，结构见下方启动响应 | 公开端点，按 IP 限流 |
+| `POST /v1/auth/cli/admin/poll` | `{"device_secret":"<CLI memory secret>"}` | 200，结构见下方轮询响应 | 请求体携带设备机密值，按 IP 限流 |
+| `POST /admin/auth/device/describe` | `{"user_code":"ABCD-EFGH"}` | 200，结构见下方描述响应 | 普通会话、当前有效且非零的管理员权限、会话 MFA |
+| `POST /admin/auth/device/decide` | `{"user_code":"ABCD-EFGH","consent_token":"<page memory secret>","decision":"approved"}` | 200 `{"status":"approved"}`；另一种有效的决定及状态为 `denied` | 相同的管理员权限检查，另加现有的近期身份验证检查 |
 
-Start response:
+启动响应：
 
 ```json
 {
@@ -265,16 +258,9 @@ Start response:
 }
 ```
 
-`client_name` uses existing plain workspace-display-name rules (required, max
-64 characters). It is requester-supplied, not verified device identity. The CLI
-must compare `instance_url` to its configured server. It is the existing
-`API_PUBLIC_URL`, or the local listener fallback; remote deployments must
-configure that public URL correctly. Show only the user code and the configured
-admin origin's `/device` page, never an untrusted origin from a requester.
-Instance URLs with credentials, query strings, fragments or non-HTTP schemes
-disable the device service rather than echoing sensitive/ambiguous identity.
+`client_name` 使用现有的普通工作区显示名称规则（必填，最长 64 个字符）。它由请求者提供，并非经过验证的设备身份。CLI 必须将 `instance_url` 与自身配置的服务器进行比较。其值为现有的 `API_PUBLIC_URL`，未设置时回退到本地监听地址；远程部署必须正确配置该公共 URL。仅显示用户代码及已配置管理员来源地址的 `/device` 页面，绝不显示请求者提供的不可信来源地址。如果实例 URL 含有凭据、查询字符串、片段，或采用非 HTTP 协议，会禁用设备服务，而不会回显敏感或有歧义的身份信息。
 
-Describe response:
+描述响应：
 
 ```json
 {
@@ -290,19 +276,9 @@ Describe response:
 }
 ```
 
-Show server, client name, expiry and full requested access before explicit
-consent. Warn against approving an unsolicited code. `admin_permissions` is
-the existing numeric platform bitmask, not workspace API scopes. Opening a
-link or describing a code never authorizes it. Sign in normally first: OAuth,
-passkeys and password+MFA retain all existing challenges, Turnstile and rate
-limits. A consent token is hashed and bound to the describing browser session
-and request. A different session cannot spend it. If decide returns
-`reauth_required`, finish existing `POST /v1/auth/reauth`, then explicitly decide
-again; never auto-approve when login/reauth returns.
+在用户明确同意前，应显示服务器、客户端名称、过期时间及完整的请求访问权限，并提醒用户不要批准非本人主动发起的代码。`admin_permissions` 是现有的数字形式平台权限位掩码，并非工作区 API 权限范围。打开链接或查询代码详情都不会完成授权。必须先正常登录：OAuth、通行密钥以及密码加 MFA 均保留现有的验证步骤、Turnstile 和速率限制。同意授权令牌以哈希形式存储，并绑定到查询详情的浏览器会话及该请求；其他会话无法使用它。如果决定操作返回 `reauth_required`，应完成现有的 `POST /v1/auth/reauth`，然后再次明确提交决定；登录或重新验证返回后绝不能自动批准。
 
-Poll no faster than every five seconds. Pending/denied responses contain
-`status: "pending"` or `"denied"`, with neither `token` nor `user_id`.
-An approving poll returns:
+轮询间隔不得短于五秒。待批准和已拒绝响应包含 `status: "pending"` 或 `"denied"`，均不包含 `token` 或 `user_id`。批准后的轮询返回：
 
 ```json
 {
@@ -317,52 +293,31 @@ An approving poll returns:
 }
 ```
 
-### Security and lifecycle
+### 安全与生命周期 [#security-and-lifecycle]
 
-- Five-minute Redis grants contain only the hashed 256-bit device secret and
-  approval metadata; the short user code has 40 bits of randomness and is only
-  a browser lookup. State is namespaced to instance identity/signing secret.
-- Redis decisions and poll claims are atomic and one-use. Approval/denial and
-  successful issuance use the existing admin audit log without secret material.
-  Issuance consumes the grant before creating the session. A lost response or
-  issuance error cannot replay it; start again and inspect/revoke any session
-  whose response was lost. Redis loss cancels handshakes, not issued sessions.
-- Approval requires session MFA and fresh auth. Issuance locks/rechecks the
-  source session and user in Postgres: active/unexpired, not login-banned, live
-  admin access, original proof within five minutes. Later browser reauth cannot
-  rejuvenate an already-approved old proof.
-- The separate CLI session gets new ID/nonces but preserves source
-  `auth_provider`, `mfa_verified` and the original approval-time `reauth_at`.
-  New session creation time is not fresh MFA. The existing model has no separate
-  factor-time column to invent. It starts without a selected workspace; any
-  workspace use requires existing selection and permissions.
-- Access/refresh lifetimes remain 12 hours/180 days, with existing purpose
-  checks, rotation, reuse detection, revocation and MFA lifecycle. Refresh never
-  stamps reauth. Sensitive actions still use existing fresh-auth gates. Revoke
-  the CLI through normal sessions management. Revoking the browser after
-  issuance does not revoke the independent CLI session; revoke-all and security
-  changes keep existing behavior. Store tokens only in a protected CLI store.
-- Additional fail-closed budgets: starts 20/IP/10 minutes; polls 360/IP/10
-  minutes; browser lookups/decisions 12/user/minute; poll interval five seconds.
-  The existing CLI IP limiter also applies (default 500/15 minutes). Redis
-  failure never bypasses these budgets or allows anonymous/single-factor admin.
+- 有效期五分钟的 Redis 授权记录只包含 256 位设备机密值的哈希和批准元数据；简短的用户代码具有 40 位随机性，仅用于浏览器查询。状态按实例身份和签名密钥划分命名空间。
+- Redis 中的决定与轮询领取操作均为原子操作，且只能执行一次。批准、拒绝和成功签发会写入现有管理员审计日志，不记录机密内容。签发会先消耗授权记录，再创建会话。响应丢失或签发出错后无法重放；需要重新开始，并检查或撤销响应丢失的会话。Redis 数据丢失会取消握手，但不会取消已签发的会话。
+- 批准需要会话 MFA 和近期身份验证。签发时会在 Postgres 中锁定并重新检查源会话和用户：会话必须有效且未过期，用户未被禁止登录，仍具有管理员访问权限，且原始验证凭据在五分钟以内。之后在浏览器重新验证，不能让已经批准的旧凭据重新变为近期凭据。
+- 独立的 CLI 会话会获得新的 ID 和随机数，但保留源会话的 `auth_provider`、`mfa_verified`，以及最初批准时的 `reauth_at`。新会话的创建时间不代表新的 MFA 验证时间。现有模型没有独立的验证因素时间列，不应虚构这样的字段。该会话初始未选择工作区；使用任何工作区都需遵循现有的选择流程和权限要求。
+- 访问令牌和刷新令牌的有效期仍为 12 小时和 180 天，继续使用现有的用途检查、轮换、重复使用检测、撤销及 MFA 生命周期。刷新不会更新重新验证时间。敏感操作仍需通过现有的近期身份验证检查。通过常规会话管理撤销 CLI 会话。签发后撤销浏览器会话不会撤销独立的 CLI 会话；撤销全部会话和安全设置变更保留现有行为。令牌只能保存在受保护的 CLI 存储中。
+- 额外的限制在故障时也不会放宽：启动请求每个 IP 每十分钟 20 次；轮询每个 IP 每十分钟 360 次；浏览器查询及决定每位用户每分钟 12 次；轮询间隔五秒。现有的 CLI IP 限流器也会生效，默认每十五分钟 500 次。Redis 故障绝不会绕过这些限制，也不会允许匿名或仅通过单因素验证的管理员访问。
 
-Errors use the existing `{error,message,code,request_id}` envelope:
+错误沿用现有的 `{error,message,code,request_id}` 响应封装：
 
-| Status | Code | Client action |
+| 状态 | 错误码 | 客户端处理方式 |
 | --- | --- | --- |
-| 400 | `bad_request`, `invalid_name` | Correct JSON/name/decision |
-| 401 | `unauthorized` | Sign in normally or restart if source invalid at issuance |
-| 403 | `admin_mfa_required`, `forbidden` | Require MFA/live platform admin access |
-| 403 | `reauth_required` | Reauthenticate browser, then explicitly decide |
-| 404 | `admin_device_expired` | Invalid/unknown/expired/consumed requests are indistinguishable; restart |
-| 409 | `admin_device_resolved` | Already decided or mismatched/replayed consent; do not auto-retry approval |
-| 429 | `admin_device_slow_down`, `rate_limit_exceeded` | Wait five seconds or the attempt window |
-| 503 | `service_unavailable` | Dependency unavailable; no fail-open issuance |
-| 500 | `internal_error` | Start again; approving poll cannot be replayed |
+| 400 | `bad_request`, `invalid_name` | 修正 JSON、名称或决定值 |
+| 401 | `unauthorized` | 正常登录；如果签发时源会话无效，则重新开始 |
+| 403 | `admin_mfa_required`, `forbidden` | 完成 MFA，并确保当前具有平台管理员权限 |
+| 403 | `reauth_required` | 在浏览器重新验证身份，然后明确提交决定 |
+| 404 | `admin_device_expired` | 无效、未知、过期和已消耗的请求无法区分；请重新开始 |
+| 409 | `admin_device_resolved` | 请求已作决定，或同意授权信息不匹配、被重放；不要自动重试批准操作 |
+| 429 | `admin_device_slow_down`, `rate_limit_exceeded` | 等待五秒，或等待尝试次数限制窗口结束 |
+| 503 | `service_unavailable` | 依赖服务不可用；不会在故障时绕过检查签发 |
+| 500 | `internal_error` | 重新开始；批准后的领取轮询无法重放 |
 
-## Next steps
+## 后续步骤 [#next-steps]
 
-- [Endpoints](/api/endpoints/)
-- [View all permissions](/api/permissions/)
-- [Handle errors](/api/error-codes/)
+- [端点](/api/endpoints/)
+- [查看全部权限](/api/permissions/)
+- [处理错误](/api/error-codes/)

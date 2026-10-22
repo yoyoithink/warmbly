@@ -1,185 +1,185 @@
 ---
-title: Segments
-description: Save reusable audiences built from contact fields, labels, campaign activity and email engagement, then add them to campaigns in one step.
+title: "联系人分群"
+description: "按联系人字段、标签、营销活动动态和邮件互动构建可复用的受众分群，保存后即可一步加入营销活动。"
 ---
 
-A segment is a saved audience: a set of conditions over your contacts, plus any contacts you pin in or out by hand. Membership is evaluated live, so a contact who starts matching is in the segment with no rebuild step.
+分群是保存下来的受众集合，由联系人匹配条件，以及你手动固定加入或排除的联系人共同组成。成员关系实时计算，因此联系人一旦符合条件，就会进入分群，无需重新构建。
 
-## Build a segment
+## 创建联系人分群 [#build-a-segment]
 
 <Steps>
 
 <Step>
 
-Open **Contacts > Segments** and choose **New segment**, or set filters on the contact list and press **Save as segment**.
+打开**联系人 > 分群**并选择**新建分群**，或先在联系人列表设置筛选，再点击**另存为分群**。
 
 </Step>
 
 <Step>
 
-Give the segment a name and a color.
+设置分群名称和颜色。
 
 </Step>
 
 <Step>
 
-Add conditions, and pick whether a contact must match **all** of them or **any**.
+添加条件，选择联系人必须匹配**全部**条件还是**任意**条件。
 
 </Step>
 
 <Step>
 
-Watch the live count of matching contacts, then save.
+查看实时匹配人数，然后保存。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Browsing needs **View contacts**; creating, editing or deleting needs **Manage contacts**.
-- **Add to campaign** copies today's members once; linking a segment to a campaign keeps enrolling new members.
-- A segment with no conditions is a manual list of the contacts you pin in.
-- A workspace can have up to 200 segments, each with up to 50 conditions.
-- A segment linked to a campaign cannot be deleted until you detach it.
+- 浏览需要**查看联系人**权限；创建、编辑或删除需要**管理联系人**权限。
+- **加入营销活动**只一次性加入当前成员；将分群关联到营销活动，则会持续加入新成员。
+- 没有条件的分群就是手动名单，仅包含固定加入的联系人。
+- 每个工作区最多 200 个分群，每个分群最多 50 个条件。
+- 已关联营销活动的分群，必须先解除关联才能删除。
 
 <Fold>
 
-## What a segment is and where it lives
+## 分群的定义与入口 [#what-a-segment-is-and-where-it-lives]
 
-Browsing filters, searches and view choices are [remembered in your browser tab](/guides/browsing/) across refreshes and navigation, separately for each user and workspace.
+浏览筛选、搜索和视图选择会[保存在浏览器标签页中](/guides/browsing/)，刷新或导航后可恢复，并按用户和工作区分别记录。
 
-A segment is a saved audience: a set of conditions over your contacts plus any contacts you pin in or out by hand. A segment says which contacts belong together; a campaign says what happens to them. Membership is evaluated live, so a contact that starts matching (a new label, a reply, a bounce) is in the segment the next time anyone looks, with no rebuild step.
+分群是保存的受众集合，由联系人条件，以及手动固定加入或排除的联系人组成。分群决定哪些联系人属于同一受众，营销活动决定对他们执行什么。成员关系实时计算，因此联系人因新标签、回复或退信等开始符合条件时，下次查看就会进入分群，无需重新构建。
 
-Segments live under **Contacts > Segments**, next to **All contacts** and **Labels**, and need the same permissions as contacts: **View contacts** to browse, **Manage contacts** to create, edit or delete.
+分群位于**联系人 > 分群**，与**所有联系人**和**标签**并列，权限与联系人一致：浏览需要**查看联系人**，创建、编辑和删除需要**管理联系人**。
 
 </Fold>
 
 <Fold>
 
-## Building a segment
+## 构建联系人分群 [#building-a-segment]
 
-The quickest start is from the contact list: set any filters in the bar above the list, then press **Save as segment** and the editor opens with those filters as conditions (free-text search and a campaign's lead status do not carry over; add a condition for them instead). Or start from scratch with **New segment** on the Segments tab.
+最快的方式是从联系人列表开始：在列表上方设置筛选，点击**另存为分群**，编辑器会将这些筛选带入为条件。自由文本搜索和营销活动潜在客户状态不会自动带入，需要另加条件。也可以在分群标签页点击**新建分群**从零开始。
 
-Give the segment a name and a color, then add conditions. Each condition is a field, an operator and a value. Pick whether a contact must match **all** conditions or **any** of them. The drawer shows a live count of matching contacts as you edit, so you can see the effect of every change before saving.
+设置名称和颜色，然后添加条件。每个条件由字段、运算符和值组成。选择联系人须匹配**全部**还是**任意**条件。编辑时，抽屉面板实时显示匹配人数，便于保存前评估每次更改的影响。
 
-| Group | Fields | Operators |
+| 分组 | 字段 | 运算符 |
 |-------|--------|-----------|
-| Contact | First name, last name, email, email domain, phone, and every custom field | is, is not, contains, does not contain, starts with, ends with, is empty, is not empty |
-| Contact | Subscribed, on the suppression list, catch-all domain | is yes, is no |
-| Contact | Source, verification status, email provider, email provider family | is any of, is none of |
-| Contact | Created, updated | in the last N days, not in the last N days, after, before |
-| Contact | Label | has any of, has none of, has none, has any |
-| Company | Company name | the text operators above |
-| Campaign activity | In campaign | is in any of, is in none of, is in no campaign, is in a campaign |
-| Campaign activity | Number of campaigns | is, is not, more than, at least, less than, at most |
-| Email engagement | Emails sent, emails opened, links clicked, replies, bounces | the number operators above |
-| Email engagement | Last email sent, last open, last click, last reply | in the last N days, not in the last N days, after, before, never, ever |
-| Segments | In segment | is in any of, is in none of |
+| 联系人 | 名、姓、邮箱、邮箱域名、电话及每个自定义字段 | 等于、不等于、包含、不包含、开头为、结尾为、为空、不为空 |
+| 联系人 | 已订阅、位于禁止发送名单、全收域名 | 是、否 |
+| 联系人 | 来源、验证状态、邮箱服务商、邮箱服务商系列 | 属于任意一项、不属于任何一项 |
+| 联系人 | 创建时间、更新时间 | 最近 N 天内、不在最近 N 天内、晚于、早于 |
+| 联系人 | 标签 | 具有任意指定标签、不具有任何指定标签、没有标签、具有标签 |
+| 公司 | 公司名称 | 使用上方文本运算符 |
+| 营销活动动态 | 所在营销活动 | 位于任一指定活动、不在任何指定活动、未加入活动、已加入活动 |
+| 营销活动动态 | 营销活动数量 | 等于、不等于、大于、至少、小于、至多 |
+| 邮件互动 | 已发送邮件、打开邮件、点击链接、回复、退信 | 使用上方数值运算符 |
+| 邮件互动 | 最近发送、最近打开、最近点击、最近回复 | 最近 N 天内、不在最近 N 天内、晚于、早于、从未、曾经 |
+| 分群 | 所在分群 | 位于任一指定分群、不在任何指定分群 |
 
-**Email provider** is who hosts the contact's inbox (Google Workspace, Microsoft 365, Yahoo Mail, and so on), read from the domain's mail records; **email provider family** groups those into Google, Microsoft and other, the grouping [ESP matching](/guides/campaigns/) uses. See [email provider](/guides/contacts-crm/#email-provider).
+**邮箱服务商**指托管联系人收件箱的服务，例如 Google Workspace、Microsoft 365 和 Yahoo Mail，根据域名邮件记录识别；**邮箱服务商系列**将其归为 Google、Microsoft 或其他，与 [ESP 匹配](/guides/campaigns/)使用的分组相同。参见[邮箱服务商](/guides/contacts-crm/#email-provider)。
 
-Engagement counts add up every campaign the contact has been in. Opens count human opens only; automated fetches are ignored, the same way the campaign analytics report them. Text comparisons ignore case.
+互动计数汇总联系人参与过的全部营销活动。打开次数只统计人为打开，忽略自动抓取，与活动分析的口径一致。文本比较不区分大小写。
 
-A segment can be built on other segments (**In segment**), up to five levels deep. A segment cannot reference itself or form a loop, and a segment that others depend on cannot be deleted until those references are removed.
+分群可通过**所在分群**条件依赖其他分群，最多嵌套五层。不能引用自身或形成循环。被其他分群依赖的分群，必须先移除引用才能删除。
 
-A segment with no conditions is a manual list: it holds only the contacts you add by hand.
-
-</Fold>
-
-<Fold>
-
-## Adding and removing contacts by hand
-
-Conditions decide membership, and two overrides sit on top of them:
-
-- **Add contacts** on a segment page (or **Segment** in the selection bar of any contact list) pins contacts in. They stay members whatever the conditions say.
-- **Remove from segment** in the selection bar of a segment's member list pins contacts out. They stay out even while the conditions still match them.
-
-The segment header shows how many contacts are pinned in or out, and a **Pinned contacts** panel below it lists them; **Back to automatic** clears an override so the conditions decide again. A contact's own drawer has a **Segments** section that shows every segment, whether the contact is in it, and the same pin in, pin out and back-to-automatic controls.
-
-**New contact** and **Import** on a segment page pin as well: a contact created or a file uploaded from inside a segment joins that segment, so it appears in the list you started from even when the conditions do not describe it yet. The import wizard names the segment in its header and confirms it on the result step, and rows it skipped as duplicates join too.
-
-Sequences can pin too: the **Add to segment** and **Remove from segment** action steps apply the override to a contact as it moves through a campaign flow, so a positive reply can drop someone into a "warm" segment automatically. So can an import: the file import wizard's **Add to segments** picker on its Options step pins every contact in the file into the segments you choose, so a fresh list can land straight in the audience it was collected for. A [Google Sheets sync source](/guides/contacts-crm/#importing) carries the same targets and re-applies them on every run, which is how a sheet you keep appending to keeps feeding one audience.
-
-A segment with no conditions at all is a plain list: it holds exactly the contacts you pin in, so creating one and importing into it is the shortest way to turn a file into an audience.
+没有条件的分群是手动名单，仅包含你手动添加的联系人。
 
 </Fold>
 
 <Fold>
 
-## Using a segment
+## 手动添加和移除联系人 [#adding-and-removing-contacts-by-hand]
 
-- **Browse**: a segment page lists its current members with the same table, filters, detail drawer and bulk actions as the contacts page, including [**Select all matching**](/guides/contacts-crm/#selecting-rows) so an action covers every member and not only the rows loaded so far, for selections up to `250,000` contacts.
-- **Add to campaign**: enrols every current member as a lead of the campaign you pick, from the segment page or with **From segment** on a campaign's Leads tab. Contacts already in that campaign are skipped, and a running campaign wakes up to schedule the new leads. This is a snapshot: contacts who join the segment later are not added until you run it again. To keep a campaign fed automatically, [link the segment](#linking-a-segment-to-a-campaign) instead.
-- **Link to campaign**: attaches the segment to a campaign as a live audience, so contacts who join the segment later become leads on their own. See [below](#linking-a-segment-to-a-campaign).
-- **New campaign**: pick the segment as a lead list on the first step of **Campaigns** > **New campaign**, which shows how many leads it holds and how long the mailbox pool needs to reach them. See [create a campaign](/guides/campaigns/#create-a-campaign).
-- **Filter**: the contact list's filter bar has a **Segment** pill, and the same scope carries into an export.
-- **Export**: **Export** on a segment page downloads its members as CSV, XLSX or JSON, either every member, the ones matching the page's filters, or the selected rows.
-- **Duplicate**: the segment menu copies a definition to start a variation from.
-- **Search and export**: the contact search and export accept `segment_ids`, so anything that takes a contact filter can be scoped to a segment.
+条件决定成员关系，其上还可叠加两种手动覆盖：
 
-</Fold>
+- 分群页面的**添加联系人**，或任意联系人列表选择栏中的**分群**，会固定加入联系人。无论条件如何，这些联系人始终属于该分群。
+- 分群成员列表选择栏中的**从分群移除**会固定排除联系人，即使其仍满足条件，也不会进入。
 
-<Fold>
+分群页眉显示固定加入和排除的人数，下方**固定联系人**面板列出这些成员。**恢复自动**会清除手动覆盖，重新由条件决定。联系人自己的抽屉中也有**分群**部分，展示全部分群、该联系人是否属于其中，并提供相同的固定加入、固定排除和恢复自动控件。
 
-## Linking a segment to a campaign
+分群页面的**新建联系人**和**导入**也会固定加入：在分群内创建联系人或上传文件，这些联系人就会进入该分群，即使尚不符合条件，也会出现在你起始操作的列表中。导入向导会在页眉注明分群，并在结果步骤确认；因重复而跳过的行也会加入。
 
-Where **Add to campaign** copies today's members once, a linked segment is a live audience: the campaign keeps enrolling whoever the segment says belongs. Manage the links from the **Segments** button on a campaign's Leads tab; a campaign can link up to 20 segments.
+邮件序列同样可以固定成员。联系人经过营销活动流程时，**加入分群**和**从分群移除**操作步骤会应用覆盖，例如正向回复后自动加入“有意向”分群。导入也支持：文件导入向导选项步骤中的**加入分群**选择器，会将文件中的每个联系人固定加入所选分群，使新名单直接进入对应受众。[Google Sheets 同步来源](/guides/contacts-crm/#importing)保存相同目标，并在每次运行时重新应用，因此不断追加的表格可以持续补充同一受众。
 
-Linking enrols every current member as a lead immediately and turns on the campaign's **Keep running for new leads** setting, so the campaign waits for members instead of finishing when it runs out (turn it off in the campaign's preferences if you want it to finish). From then on, any contact who enters the segment, a new contact, an import, a condition edit, a manual pin-in, or simply drifting into a date or engagement condition, is enrolled automatically; a background check picks up drift about every 2 minutes.
-
-The Leads tab shows every linked segment in a **Linked segments** strip: the segment's name, how many of its members are leads (`120/120`), a **no contacts** mark when it currently matches nobody, and a **held out** count when members were removed from the campaign by hand. Clicking a chip filters the list to that segment's leads; **Add back** re-enrols held-out members.
-
-Enrolment is additive while the link is there. A contact who later falls out of the segment keeps their lead row and their progress; the link itself only ever adds. Removing a lead from the campaign by hand is respected too: automatic enrolment will not re-add that contact, even while they still match a linked segment, until you add them back yourself.
-
-Detaching a segment is the exception, because the set of links is the audience: it takes the segment's leads back out of the campaign, so swapping one segment for another leaves the campaign with the new list rather than both. Three kinds of lead stay behind:
-
-- anyone the campaign has already emailed, because the conversation has started; ending it mid-sequence is the explicit **Remove from campaign** on the Leads tab, not a side effect of editing the audience
-- anyone who is still a member of a segment that stayed linked, so switching between overlapping segments never drops the overlap
-- anyone added by hand: a contact you put in the campaign yourself, an **Add to campaign** from a segment, an import that named the campaign, or an automation
-
-The dialog asks before a save that costs leads, and says afterwards how many were added, how many were removed, and how many stayed because they had already been emailed. Nothing is recorded as a hand-made removal, so re-linking the segment brings its members straight back.
-
-The campaign reacts to growth by status:
-
-- **Active**, including one **waiting for leads**: woken up to schedule the new leads straight away, or after the campaign's [delay before the first email](/guides/campaigns/#delay-before-the-first-email) when it sets one. That delay counts from the moment the contact is enrolled as a lead, which for a linked segment is when the background check picks them up, not from when they joined the segment or when the campaign started. So someone the segment adds months later still gets the full wait from their own enrolment.
-- **Finished**: restarted automatically, through the same launch checks as pressing play. A refused restart is noted in the campaign's activity log.
-- **Paused** (or draft): the leads accumulate and send when the campaign runs.
-
-A segment linked to a campaign cannot be deleted; detach it from the campaign first.
+完全没有条件的分群就是普通名单，只包含固定加入的人，因此新建此类分群再导入，是将文件转为受众的最短路径。
 
 </Fold>
 
 <Fold>
 
-## Segments in the API
+## 使用联系人分群 [#using-a-segment]
 
-Everything above can be driven from the [API](/api/reference/contacts/#segments): list, create, update and delete segments, pin contacts in or out, look up a contact's segments, enrol a segment into a campaign once, and [link segments to a campaign](/api/reference/campaigns/#list-linked-segments) as a live audience. Contact search and export take `segment_ids` to scope any contact query to a segment, so an external system (a signup form, a CRM sync) can keep a segment current and let campaigns pick it up from there.
+- **浏览**：分群页面列出当前成员，采用与联系人页面相同的表格、筛选、详情抽屉和批量操作，包括[**选择所有匹配项**](/guides/contacts-crm/#selecting-rows)，让操作覆盖全部成员而不仅是已加载行，最多可选择 `250,000` 个联系人。
+- **加入营销活动**：从分群页面，或活动潜在客户标签页的**从分群添加**，将当前所有成员加入选定活动。已在活动中的联系人会跳过，运行中的活动会被唤醒，为新成员排期。这是一次性快照，后来加入分群的人不会自动加入，除非再次操作。若要持续自动补充，请[关联分群](#linking-a-segment-to-a-campaign)。
+- **关联到营销活动**：将分群设为活动的实时受众，后来加入分群的联系人会自动成为活动潜在客户。参见[下文](#linking-a-segment-to-a-campaign)。
+- **新建营销活动**：在**营销活动** > **新建营销活动**的第一步选择分群作为潜在客户名单，页面会显示人数以及邮箱池触达他们所需时间。参见[创建营销活动](/guides/campaigns/#create-a-campaign)。
+- **筛选**：联系人列表筛选栏有**分群**选项，导出也沿用同样的范围。
+- **导出**：分群页面的**导出**可下载 CSV、XLSX 或 JSON，范围可为全部成员、符合页面筛选的成员或选中行。
+- **复制**：分群菜单可复制定义，以此创建变体。
+- **搜索与导出**：联系人搜索和导出接受 `segment_ids`，因此任何使用联系人筛选的操作都可以限定到分群。
 
-API calls address a segment by its ID. It is shown at the bottom of the segment page header (click it to copy), in the **Copy segment ID** entry of a segment's row menu on the Segments tab, and in every segment the API returns. Reads take the `READ_CONTACTS` key scope, writes `WRITE_CONTACTS`, and enrolling into a campaign `WRITE_CAMPAIGNS`.
+</Fold>
 
-<Callout type="info" title="Segments and labels">
-Labels are something you put on a contact. Segments are rules that read those labels (and everything else) to decide who belongs. Use a label to mark a fact about a contact, and a segment to describe an audience.
+<Fold>
+
+## 将分群关联到营销活动 [#linking-a-segment-to-a-campaign]
+
+**加入营销活动**只一次性复制当前成员，而关联分群提供实时受众：活动会持续加入分群认定的成员。可从活动潜在客户标签页的**分群**按钮管理关联，每个活动最多关联 20 个分群。
+
+关联时立即加入全部当前成员，并开启活动的**持续运行以接收新潜在客户**设置，使活动在没有待处理联系人时等待新成员，而不是完成。如果希望它结束，可在活动偏好中关闭。从此，无论联系人因新建、导入、条件修改、手动固定加入，还是随着日期或互动条件变化进入分群，都会自动加入活动。后台约每 2 分钟检查一次条件变化。
+
+潜在客户标签页以**已关联分群**条带展示各分群：名称、其中已成为活动潜在客户的人数（`120/120`）、当前无人匹配时的**无联系人**标记，以及被手动从活动移除的**排除人数**。点击分群标记可筛选其潜在客户；**重新加入**可将排除成员加回。
+
+关联存在时，自动加入仅做增量添加。联系人之后不再满足分群条件，仍保留其潜在客户记录和进度；关联本身只负责添加。手动从活动移除联系人也会被尊重：即使仍匹配已关联分群，自动加入也不会将其加回，直到你主动重新添加。
+
+解除分群关联是例外，因为关联集合定义了受众。解除时会将该分群带来的潜在客户从活动移除，因此用一个分群替换另一个后，活动保留新名单，而不是两份名单叠加。三类潜在客户会留下：
+
+- 活动已经向其发过邮件的人，因为会话已开始。若要中止其序列，应在潜在客户标签页明确执行**从营销活动移除**，而不是通过编辑受众间接终止。
+- 仍属于其他保留关联分群的人，确保在重叠分群之间切换不会丢失交集。
+- 通过手动方式加入的人，包括亲自添加、从分群执行**加入营销活动**、在导入时指定该活动，或通过自动化加入。
+
+如果保存会减少潜在客户，对话框会先请求确认；保存后说明新增、移除，以及因已经发信而保留的人数。该操作不会记作手动移除，因此再次关联分群会立即将其成员加回。
+
+活动按自身状态响应新增成员：
+
+- **活跃**，包括**等待潜在客户**：立即唤醒并安排新成员；如配置了[首封邮件发送前延迟](/guides/campaigns/#delay-before-the-first-email)，则等待相应时长。延迟从联系人实际加入活动时起算；对关联分群而言，是后台检查发现该成员的时刻，而非其进入分群或活动启动的时间。因此，即使数月后才加入的成员，也会从自己的加入时间开始等待完整时长。
+- **已完成**：自动重新启动，经过与手动点击播放相同的启动检查。若重新启动被拒绝，会记录在活动日志中。
+- **已暂停**或草稿：新成员持续累积，活动运行后再发送。
+
+关联到活动的分群不能直接删除，须先解除活动关联。
+
+</Fold>
+
+<Fold>
+
+## API 中的联系人分群 [#segments-in-the-api]
+
+上述全部操作都可通过 [API](/api/reference/contacts/#segments)完成：列出、创建、更新和删除分群，固定加入或排除联系人，查询联系人的分群，一次性将分群加入活动，以及[关联分群到活动](/api/reference/campaigns/#list-linked-segments)作为实时受众。联系人搜索和导出接受 `segment_ids`，可将任意联系人查询限定到分群，使注册表单、CRM 同步等外部系统维护分群，再由活动接续处理。
+
+API 使用分群 ID 定位。ID 显示在分群页眉底部，可点击复制；分群标签页各行菜单的**复制分群 ID**也可获取，API 返回的每个分群中同样包含。读取需要 `READ_CONTACTS` 密钥权限，写入需要 `WRITE_CONTACTS`，加入营销活动需要 `WRITE_CAMPAIGNS`。
+
+<Callout type="info" title="分群与标签">
+标签是附加在联系人上的标记。分群则读取这些标签及其他信息，通过规则决定成员。用标签标记联系人的事实，用分群描述受众。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Limits
+## 限制 [#limits]
 
-- 200 segments per workspace
-- 50 conditions per segment, 200 values per list condition
-- 10,000 ticked contacts, or `250,000` through **Select all matching**, per manual add or remove
+- 每个工作区最多 200 个分群。
+- 每个分群最多 50 个条件，每个列表型条件最多 200 个值。
+- 每次手动添加或移除最多勾选 10,000 个联系人，或通过**选择所有匹配项**处理 `250,000` 个。
 
 </Fold>
 
-## Where to go next
+## 后续操作 [#where-to-go-next]
 
 <Cards>
-  <Card title="Contacts and CRM" href="/guides/contacts-crm/" />
-  <Card title="Campaigns" href="/guides/campaigns/" />
-  <Card title="Analytics" href="/guides/analytics/" />
-  <Card title="Segments API reference" href="/api/reference/contacts/#segments" />
+  <Card title="联系人与 CRM" href="/guides/contacts-crm/" />
+  <Card title="营销活动" href="/guides/campaigns/" />
+  <Card title="数据分析" href="/guides/analytics/" />
+  <Card title="联系人分群 API 参考" href="/api/reference/contacts/#segments" />
 </Cards>

@@ -1,90 +1,90 @@
 ---
-title: "Meetings"
-description: "Calendly / Cal.com scheduling, booking links, and the meetings timeline."
+title: "会议"
+description: "Calendly / Cal.com 日程安排、预约链接与会议时间线。"
 ---
 
-Browsing filters, searches and view choices are [remembered in your browser tab](/guides/browsing/) across refreshes and navigation, separately for each user and workspace.
+浏览时的筛选、搜索和视图选择会[保存在浏览器标签页中](/guides/browsing/)，刷新页面或切换页面后仍可恢复，并按用户和工作区分别记录。
 
-Booked calls are a first-class part of your pipeline: they appear on the Meetings page and the contact's timeline live, and can trigger automations.
+已预约的通话是销售管道中的重要组成部分：它们会实时出现在会议页面和联系人的时间线上，也能触发自动化流程。
 
-Meetings arrive two ways. **Auto**, when a prospect self-books through a connected Calendly or Cal.com link, captured over that provider's webhook. **Manual**, when you log a call yourself with **New meeting**, created instantly with no external redirect.
+会议有两种来源。**自动**：潜在客户通过已连接的 Calendly 或 Cal.com 链接自行预约，由相应服务商的 Webhook 捕获。**手动**：通过**新建会议**自行记录通话，立即创建，无需跳转外部页面。
 
-## The Meetings page
+## 会议页面 [#the-meetings-page]
 
-Live-updating, in the CRM section. Four counts sit on top, computed across all meetings rather than loaded rows: **Upcoming**, **Today**, **Total booked**, and **Canceled**. Timeframe tabs narrow to Upcoming, Past, or All, and search matches contact name, email, or event name.
+会议页面位于 CRM 分类，实时更新。顶部显示四项计数：**即将开始**、**今天**、**预约总数**和**已取消**，基于全部会议计算，而非仅统计已加载的行。时间范围标签可切换为即将开始、过去或全部；搜索可匹配联系人姓名、邮箱或活动名称。
 
-Each row shows the time, who it is with, the meeting name and location, its source (`Manual`, `Calendly`, `Cal.com`), and a status:
+每行显示时间、会面对象、会议名称和地点、来源（`Manual`、`Calendly`、`Cal.com`），以及状态：
 
-| Status | Meaning |
+| 状态 | 含义 |
 | --- | --- |
-| Booked | Scheduled |
-| Rescheduled | The invitee moved it |
-| Canceled | Called off |
-| Completed | It happened |
-| No-show | The invitee did not attend |
+| 已预约 | 已安排日程 |
+| 已改期 | 受邀方调整了时间 |
+| 已取消 | 会议已取消 |
+| 已完成 | 会议已经进行 |
+| 未出席 | 受邀方未参加 |
 
-Row actions: **Add to your calendar** (a Google Calendar template or an `.ics` download, built locally with no calendar connection needed), **Join call**, **Reschedule** and **Cancel** for provider-booked calls, and **Delete** for manual ones.
+行操作包括：**添加到日历**（Google Calendar 模板或 `.ics` 下载，在本地生成，无需连接日历）、**加入通话**；通过服务商预约的会议还可**改期**或**取消**，手动会议则可以**删除**。
 
-<Callout type="info" title="Reschedule and cancel happen on the provider">
-For auto-booked calls those buttons hand off to Calendly or Cal.com. Warmbly does not move the call itself; it reflects the change when the webhook returns.
+<Callout type="info" title="改期和取消需在服务商处操作">
+对于自动预约的会议，这些按钮会跳转到 Calendly 或 Cal.com。Warmbly 不会自行更改会议时间，而是在收到 Webhook 后反映变化。
 </Callout>
 
-## Logging a call manually
+## 手动记录通话 [#logging-a-call-manually]
 
-**New meeting** asks for a **title** (defaults to "Call"), **contact name** and **email** (at least one required), **when** (defaults to the next hour), **duration** (`5` to `480` minutes, default `30`), and optional **location** and **meeting link**.
+**新建会议**需要填写**标题**（默认为“Call”）、**联系人姓名**和**邮箱**（至少填写一项）、**时间**（默认为下一整点）、**时长**（`5` 至 `480` 分钟，默认 `30`），以及可选的**地点**和**会议链接**。
 
-The meeting links to a contact by matching the email. Opened from somewhere a contact is already in view, it locks to that contact so attribution is exact.
+会议通过匹配邮箱地址关联联系人。如果从已经展示某个联系人的页面打开创建入口，则会固定关联该联系人，确保归属准确。
 
-## Connecting Calendly or Cal.com
+## 连接 Calendly 或 Cal.com [#connecting-calendly-or-calcom]
 
-Connection is webhook-based, not OAuth. From **Integrations**:
+连接基于 Webhook，而非 OAuth。从**集成**页面操作：
 
-1. Add the **Calendly** or **Cal.com** integration. Warmbly mints an inbound webhook URL.
-2. Paste it into the provider's webhook settings and subscribe to the events:
-   - **Calendly**: `invitee.created`, `invitee.canceled`
-   - **Cal.com**: `BOOKING_CREATED`, `BOOKING_RESCHEDULED`, `BOOKING_CANCELLED`
+1. 添加 **Calendly** 或 **Cal.com** 集成，Warmbly 会生成入站 Webhook URL。
+2. 将 URL 粘贴到服务商的 Webhook 设置，并订阅以下事件：
+   - **Calendly**：`invitee.created`、`invitee.canceled`
+   - **Cal.com**：`BOOKING_CREATED`、`BOOKING_RESCHEDULED`、`BOOKING_CANCELLED`
 
-The connection shows as connected as soon as the URL exists.
+URL 一旦创建，连接就会显示为已连接。
 
-<Callout type="info" title="The inbound URL is a shared secret">
-It contains a long random secret that authenticates incoming bookings, so treat it as a credential. If it is exposed, use **Rotate URL** in the connection's **Inbound URL** settings: the old URL stops working at once, and you paste the new one into the provider.
+<Callout type="info" title="入站 URL 是共享密钥">
+URL 包含一段较长的随机密钥，用于验证传入预约，因此应将其视为凭据。如果泄露，可在连接的**入站 URL** 设置中使用**轮换 URL**。旧 URL 会立即失效，再将新 URL 粘贴到服务商处。
 </Callout>
 
-### Signed deliveries
+### 带签名的事件投递 [#signed-deliveries]
 
-Both providers can sign each delivery, and Warmbly checks the signature once you give it the key. In the connection's **Inbound URL** settings, paste:
+两个服务商都可以对每次事件投递签名。提供密钥后，Warmbly 会检查签名。在连接的**入站 URL** 设置中粘贴：
 
-- **Calendly**: the webhook subscription's signing key (the `signing_key` you set when creating it, or the one Calendly returned)
-- **Cal.com**: the **Secret** set on the webhook
+- **Calendly**：Webhook 订阅的签名密钥，即创建时设置的 `signing_key`，或 Calendly 返回的密钥。
+- **Cal.com**：Webhook 上设置的 **Secret**（密钥）。
 
-From then on a delivery without a valid signature is refused, so a leaked URL on its own is not enough to post a booking. Calendly signatures older than five minutes are refused too, which stops a captured delivery from being replayed. **Remove** goes back to the URL alone.
+此后，没有有效签名的投递会被拒绝，因此仅泄露 URL 不足以伪造预约。超过五分钟的 Calendly 签名也会被拒绝，防止截获的投递被重放。点击**移除**会恢复为仅依赖 URL 验证。
 
-Bookings map to `booked`, `rescheduled`, and `canceled` states. Calendly models a reschedule as a cancel plus a new booking; Warmbly understands this and shows one **Rescheduled** event rather than a stray cancellation. Inbound bookings are idempotent, so a re-delivered event updates the existing meeting instead of duplicating it.
+预约映射为 `booked`、`rescheduled` 和 `canceled` 状态。Calendly 将改期表示为取消旧预约并创建新预约；Warmbly 能识别这种情况，显示一个**已改期**事件，而不会留下孤立的取消记录。入站预约处理具有幂等性，重复投递的事件会更新现有会议，不会创建重复记录。
 
-**Attribution** resolves in order: by the contact id carried in the booking link (confirmed to belong to your workspace), which survives the prospect booking under a different email; then by matching the invitee's email. If neither resolves, the meeting still appears, just untied to a contact.
+**归属判断**按以下顺序进行：优先使用预约链接携带的联系人 ID，并确认其属于当前工作区，即使潜在客户使用不同邮箱预约，也能保留关联；其次匹配受邀方的邮箱。如果两者均无法匹配，会议仍会显示，只是不关联联系人。
 
-## Booking links
+## 预约链接 [#booking-links]
 
-Save your public scheduling URL (`https://calendly.com/you/intro`) under the connection's **Booking link** settings, and contextual buttons appear wherever a contact is in view:
+在连接的**预约链接**设置中保存公开日程 URL（`https://calendly.com/you/intro`），即可在展示联系人的位置看到相关按钮：
 
-- **Book a call** on contact detail and Unibox threads opens your page in a new tab, prefilled with the contact's email and name, offering a picker if several links are connected.
-- **Booking link** in the [Unibox](/guides/unibox/) composer drops the prefilled link into your reply.
+- 联系人详情和统一收件箱会话中的**预约通话**会在新标签页打开预约页面，预填联系人的邮箱与姓名。若连接了多个链接，会先提供选择。
+- [统一收件箱](/guides/unibox/)编辑器中的**预约链接**会将预填好的链接插入回复。
 
-Booking from a contact-specific place embeds that contact's id as `utm_content`. Both providers echo it back in the webhook, which is what lets a self-booked call attribute correctly even under a different email.
+从特定联系人的入口预约时，会将其 ID 作为 `utm_content` 嵌入链接。两个服务商都会通过 Webhook 回传此值，因此即使自行预约时使用了不同邮箱，也能正确归属。
 
-<Callout type="info" title="No saved link, no button">
-These buttons only render with a connected provider and a saved link, so they never appear dead.
+<Callout type="info" title="未保存链接时不会显示按钮">
+只有服务商已连接且预约链接已保存时才会显示这些按钮，避免出现无法使用的入口。
 </Callout>
 
-## Automations
+## 自动化流程 [#automations]
 
-Meeting events drive [Automations](/guides/automations/): **booked**, **rescheduled**, and **canceled** are notification triggers (Slack, Discord, Zapier, Make, n8n), while **booked** and **canceled** are also CRM triggers (HubSpot, Salesforce, Pipedrive, Close). So one flow can post "Meeting booked" to Slack and upsert the contact into your CRM every time a prospect books. A workspace in [HubSpot mode](/guides/hubspot/) or [Pipedrive mode](/guides/pipedrive/) needs no automation for this: each booking is logged as a meeting on the contact and its open deals.
+会议事件可驱动[自动化流程](/guides/automations/)：**已预约**、**已改期**和**已取消**可触发通知（Slack、Discord、Zapier、Make、n8n），而**已预约**和**已取消**也可触发 CRM 操作（HubSpot、Salesforce、Pipedrive、Close）。因此，每次潜在客户预约时，同一流程可以向 Slack 发送“会议已预约”，并在 CRM 中创建或更新联系人。处于 [HubSpot 模式](/guides/hubspot/)或 [Pipedrive 模式](/guides/pipedrive/)的工作区无需为此配置自动化流程：每次预约都会作为会议记录到联系人及其未关闭的商机上。
 
-## Related
+## 相关内容 [#related]
 
 <Cards>
-  <Card title="Automations" href="/guides/automations/" />
-  <Card title="Contacts and CRM" href="/guides/contacts-crm/" />
-  <Card title="Unibox" href="/guides/unibox/" />
-  <Card title="Notifications" href="/guides/notifications/" />
+  <Card title="自动化流程" href="/guides/automations/" />
+  <Card title="联系人与 CRM" href="/guides/contacts-crm/" />
+  <Card title="统一收件箱（Unibox）" href="/guides/unibox/" />
+  <Card title="通知" href="/guides/notifications/" />
 </Cards>

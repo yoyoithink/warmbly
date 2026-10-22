@@ -1,61 +1,61 @@
 ---
-title: Whole-domain mailbox connects
-description: "Set up the Google service account and the Microsoft app that let a workspace connect every mailbox on a Google Workspace domain or Microsoft 365 organization with one administrator's approval."
+title: 整域邮箱连接
+description: 配置 Google 服务账户和 Microsoft 应用，使工作区只需一位管理员批准，即可连接 Google Workspace 域或 Microsoft 365 组织中的所有邮箱。
 ---
 
-A workspace can connect every mailbox on a Google Workspace domain or a Microsoft 365 organization through one administrator's approval, with no password and no sign-in per mailbox. In the dashboard these are **Add account > Google > Whole Workspace domain** and **Add account > Microsoft > Whole organization**, and both are the recommended way to connect those mailboxes. The customer side is in [connect a whole Google Workspace domain](/guides/mailbox-import/#connect-a-whole-google-workspace-domain) and [connect a whole Microsoft 365 organization](/guides/mailbox-import/#connect-a-whole-microsoft-365-organization).
+工作区只需一位管理员批准，就能连接 Google Workspace 域或 Microsoft 365 组织中的全部邮箱，无需密码，也无需逐个邮箱登录。控制台中的入口分别是**添加账户 > Google > 整个 Workspace 域**和**添加账户 > Microsoft > 整个组织**，两者都是连接这类邮箱的推荐方式。客户侧操作见[连接整个 Google Workspace 域](/guides/mailbox-import/#connect-a-whole-google-workspace-domain)和[连接整个 Microsoft 365 组织](/guides/mailbox-import/#connect-a-whole-microsoft-365-organization)。
 
-This page is the operator side: what the instance needs before either option works. Both are off until you set them up, and a self-hosted instance shows them switched off in the dashboard, naming the settings still unset. `GET /emails/grants/config` reports the same as `google_missing` and `microsoft_missing`.
+本页介绍运维侧准备：实例需要具备哪些条件，这两个选项才能工作。在完成配置前，两者都关闭；自托管实例的控制台会将它们显示为禁用，并列出尚未设置的配置项。`GET /emails/grants/config` 也通过 `google_missing` 和 `microsoft_missing` 报告相同信息。
 
-Everything here is read by the backend only. It mints every token for these mailboxes itself and hands a short-lived one to a worker each time it needs one, so workers and consumers need nothing from this page.
+本页所有配置仅由后端读取。后端自行签发这些邮箱需要的每个令牌，并在工作节点需要时提供短期令牌，因此工作节点和消费者都不需要本页中的任何配置。
 
-## Google Workspace
+## Google Workspace [#google-workspace]
 
-A Google Workspace domain is connected through domain-wide delegation to a Google Cloud service account that belongs to your instance. You create the service account once and load its key into the backend. Each customer's Workspace super admin then authorizes that service account in their own Admin console, and nothing on your side changes per customer.
+Google Workspace 域通过全域委派，授权给属于你实例的 Google Cloud 服务账户。你只需创建一次服务账户，并将密钥加载到后端。之后每个客户的 Workspace 超级管理员在自己的管理控制台授权该服务账户，你这边无需按客户调整配置。
 
-<Callout type="warn" title="Create it once, then keep it">
-Every customer's authorization names the service account's **Client ID**. A deleted and recreated service account gets a new Client ID, even with the same name, and every domain authorized against the old one stops working until its administrator authorizes the new one. The project ID and the service account ID can never be changed either. Pick them before the first customer authorizes, and from then on rotate keys, never the account.
+<Callout type="warn" title="创建一次，然后长期保留">
+每个客户的授权都指定服务账户的**客户端 ID**。删除后重新创建服务账户，即使名称相同，也会得到新的客户端 ID；所有基于旧 ID 的域授权都会停止工作，直到管理员授权新 ID。项目 ID 和服务账户 ID 也都不可更改。请在第一个客户授权前选定它们，之后只轮换密钥，不要替换账户。
 </Callout>
 
-### Set up the service account
+### 配置服务账户 [#set-up-the-service-account]
 
 <Steps>
 
 <Step>
-**Choose the project.** In the [Google Cloud console](https://console.cloud.google.com/), create a project for this or pick an existing one, such as the one holding your `BOX_GOOGLE_*` or `GOOGLE_CLIENT_ID` app. The project ID is permanent, so choose the project you intend to keep.
+**选择项目。** 在 [Google Cloud 控制台](https://console.cloud.google.com/)中为此创建项目，或选择已有项目，例如保存 `BOX_GOOGLE_*` 或 `GOOGLE_CLIENT_ID` 应用的项目。项目 ID 是永久的，因此应选择准备长期保留的项目。
 </Step>
 
 <Step>
-**Enable the APIs.** Under **APIs & Services > Library**, enable the **Gmail API** and the **Admin SDK API** on that project. Calls made with the service account's tokens are counted against this project, and Google refuses them while either API is off.
+**启用 API。** 在 **APIs & Services > Library（API 和服务 > 库）** 中，为该项目启用 **Gmail API** 和 **Admin SDK API**。使用服务账户令牌发起的调用计入该项目；任一 API 未启用，Google 都会拒绝相关调用。
 </Step>
 
 <Step>
-**Create the service account.** Under **IAM & Admin > Service accounts**, choose **Create service account**:
+**创建服务账户。** 在 **IAM & Admin > Service accounts（IAM 和管理 > 服务账户）** 中选择 **Create service account（创建服务账户）**：
 
-- **Service account name**: `Warmbly Workspace` is a good choice
-- **Service account ID**: `warmbly-workspace`, filled in from the name. It is permanent
-- **Description**: optional, and only you see it
+- **服务账户名称**：可以使用 `Warmbly Workspace`。
+- **服务账户 ID**：从名称自动填入 `warmbly-workspace`，此 ID 不可更改。
+- **说明**：可选，只有你能看到。
 
-On **Permissions**, grant no role and continue: the service account needs no access to your project, only the access each customer authorizes. Skip **Principals with access** (grant users access to this service account) as well, then choose **Done**.
+在 **Permissions（权限）** 步骤不授予任何角色，继续即可：服务账户不需要访问你的项目，只需要各客户授权的访问权限。同样跳过 **Principals with access（有权访问的主体）**，即向用户授予此服务账户访问权限，然后选择 **Done（完成）**。
 </Step>
 
 <Step>
-**Create a JSON key.** Open the service account, go to its **Keys** tab and choose **Add key > Create new key > JSON > Create**. The browser downloads the key file. Google keeps no copy, so store it as you would `CREDENTIALS_ENCRYPTION_KEY`.
+**创建 JSON 密钥。** 打开服务账户，进入 **Keys（密钥）** 选项卡，选择 **Add key > Create new key > JSON > Create（添加密钥 > 创建新密钥 > JSON > 创建）**。浏览器会下载密钥文件。Google 不保留副本，请像保护 `CREDENTIALS_ENCRYPTION_KEY` 一样保存它。
 
-If Google answers that service account key creation is disabled, an organization policy is blocking it. Google Cloud organizations created since May 2024 have **Disable service account key creation** (`iam.disableServiceAccountKeyCreation`, or its managed form `iam.managed.disableServiceAccountKeyCreation`) enforced by default. Someone with the Organization Policy Administrator role on the organization can override it for this one project under **IAM & Admin > Organization policies**: open the policy, choose **Manage policy**, override the parent's policy and set enforcement off. Create the key, then put the policy back if you want it enforced again; an existing key keeps working.
+如果 Google 提示已禁用服务账户密钥创建，说明组织策略阻止了该操作。自 2024 年 5 月起创建的 Google Cloud 组织，默认强制执行**禁止创建服务账户密钥**，对应 `iam.disableServiceAccountKeyCreation` 或其托管形式 `iam.managed.disableServiceAccountKeyCreation`。拥有组织政策管理员角色的人员，可在 **IAM & Admin > Organization policies（IAM 和管理 > 组织政策）** 中仅针对该项目覆盖此限制：打开策略，选择 **Manage policy（管理政策）**，覆盖父级政策并关闭强制执行。创建密钥后，如果需要继续执行限制，可以恢复策略；已创建的密钥仍能正常使用。
 </Step>
 
 <Step>
-**Find the Client ID.** It is the numeric `client_id` in the key file, and the same number the console shows as the service account's **Unique ID**. You do not need to copy it anywhere yourself: once the key is loaded, the dashboard shows it to customers in the **Whole Workspace domain** dialog, together with the scopes to authorize. It is not the `...apps.googleusercontent.com` ID of an OAuth client.
+**找到客户端 ID。** 它是密钥文件中的数字 `client_id`，也就是控制台显示的服务账户 **Unique ID（唯一 ID）**。你无需手动将其复制到其他地方：加载密钥后，控制台会在**整个 Workspace 域**对话框中，将它与需要授权的权限范围一起显示给客户。它不是 OAuth 客户端的 `...apps.googleusercontent.com` ID。
 </Step>
 
 <Step>
-**Load the key into the backend.** Either of these, on the backend only:
+**将密钥加载到后端。** 仅在后端设置以下任一项：
 
-- `GOOGLE_WORKSPACE_DELEGATION_KEY_FILE`: a path to the key file inside the backend's container. Recommended, since the key stays a file you can mount read only
-- `GOOGLE_WORKSPACE_DELEGATION_KEY`: the key's JSON itself. Wins over the file when both are set
+- `GOOGLE_WORKSPACE_DELEGATION_KEY_FILE`：后端容器内密钥文件的路径。推荐此方式，因为密钥保持为文件，可只读挂载。
+- `GOOGLE_WORKSPACE_DELEGATION_KEY`：密钥的 JSON 内容本身。两者同时设置时，此项优先。
 
-With the [one-command install](/development/install/), keep the file next to the install and mount it into the backend with a `docker-compose.override.yml`, which the installer never rewrites:
+使用[一条命令安装](/development/install/)时，将文件放在安装目录旁，通过安装器不会重写的 `docker-compose.override.yml` 挂载到后端：
 
 ```yaml
 services:
@@ -69,130 +69,130 @@ services:
 GOOGLE_WORKSPACE_DELEGATION_KEY_FILE=/run/secrets/google-workspace-delegation.json
 ```
 
-The backend runs as uid `1000`, so the file has to be readable by that user (`chown 1000 secrets/google-workspace-delegation.json && chmod 400 secrets/google-workspace-delegation.json`). To use the inline form in `.env` instead, put the JSON on one line (`jq -c . key.json`) and wrap it in single quotes.
+后端以 uid `1000` 运行，因此文件必须对该用户可读，可执行 `chown 1000 secrets/google-workspace-delegation.json && chmod 400 secrets/google-workspace-delegation.json`。如果改用 `.env` 中的内联形式，请将 JSON 压成一行（`jq -c . key.json`），并用单引号包住。
 </Step>
 
 <Step>
-**Restart the backend** and check the result. **Add account > Google > Whole Workspace domain** is now offered, and `GET /emails/grants/config` answers `google_enabled: true` with the service account's `google_client_id`. A value that is not a service account key logs one line at boot and leaves the option off. The admin panel shows both settings under **Instance > Configuration > Environment**, as set or unset with a short fingerprint, never the value.
+**重启后端**并检查结果。现在应能使用**添加账户 > Google > 整个 Workspace 域**，`GET /emails/grants/config` 返回 `google_enabled: true` 和服务账户的 `google_client_id`。如果提供的值不是服务账户密钥，启动时会记录一条日志，该选项保持关闭。管理面板在**实例 > 配置 > 环境**中展示这两个设置，显示已设置或未设置及简短指纹，绝不显示实际值。
 </Step>
 
 </Steps>
 
-### Proving the domain
+### 证明域名控制权 [#proving-the-domain]
 
-The Client ID belongs to your instance, not to any one workspace, so a customer's authorization says nothing about which workspace asked for it. A Google grant is therefore recorded only for the workspace that proves it controls the domain, and only when the domain's directory lists the administrator's address as a super administrator. The proof is one of:
+客户端 ID 属于你的实例，不属于某个工作区，因此客户授权本身并不能说明由哪个工作区发起。Google 授权只会记录到能够证明控制该域的工作区，并且域目录必须将管理员地址列为超级管理员。证明方式有两种：
 
-- **The administrator's Google sign-in.** It goes through the dashboard's own Google sign-in client (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) and returns to its existing redirect URI (`GOOGLE_REDIRECT_URI`, or `API_PUBLIC_URL` plus `/v1/auth/google/callback`), asking only for `openid` and `email`. The callback recognizes an administrator's proof and hands it back to the dashboard window that opened it; it signs nobody in. No redirect URI needs registering beyond the one sign-in already uses. When that client is not configured, the `BOX_GOOGLE_*` mailbox client is used the same way, through its own redirect URI (`/addresses/google/callback`) and again with `openid` and `email` only. The sign-in carries a PKCE challenge and an OpenID nonce, and the backend redeems the code with the matching verifier and accepts the ID token only when it echoes that nonce.
-- **A DNS record.** A `TXT` record at `_warmbly.<domain>` holding a `warmbly-verify=` value unique to the workspace and domain, keyed by `AUTH_SECRET`. Always offered, and the only proof on an instance with neither Google client.
+- **管理员通过 Google 登录。** 使用控制台自己的 Google 登录客户端（`GOOGLE_CLIENT_ID`、`GOOGLE_CLIENT_SECRET`），返回现有重定向 URI，即 `GOOGLE_REDIRECT_URI`，或 `API_PUBLIC_URL` 加 `/v1/auth/google/callback`，只请求 `openid` 和 `email`。回调识别管理员证明后，将其交回打开流程的控制台窗口，不会登录任何用户。除了现有登录所用 URI，无需再注册重定向地址。未配置该客户端时，邮箱客户端 `BOX_GOOGLE_*` 会以相同方式使用自己的重定向 URI `/addresses/google/callback`，同样只请求 `openid` 和 `email`。登录包含 PKCE 挑战和 OpenID nonce；后端用匹配的验证器兑换授权码，只有 ID 令牌回传相同 nonce 才接受。
+- **DNS 记录。** 设置一条 `TXT` 记录，位置为 `_warmbly.<domain>`，内容为对工作区和域唯一的 `warmbly-verify=` 值，以 `AUTH_SECRET` 为密钥生成。此方式始终提供；如果实例没有配置任何 Google 客户端，它就是唯一证明方式。
 
-Customer administrators sign in to that client from their own organizations, so its OAuth consent screen has to be **External**. An **Internal** consent screen admits only accounts in your own Google organization, and every other administrator is refused and has to use the DNS record.
+客户管理员会从自己的组织登录该客户端，因此 OAuth 同意屏幕必须为 **External（外部）**。 **Internal（内部）** 同意屏幕只允许你自己的 Google 组织账户，其他管理员会被拒绝，只能使用 DNS 记录。
 
-### Key custody and rotation
+### 密钥保管与轮换 [#key-custody-and-rotation]
 
-The key can mint a token for any address on any domain that has authorized its Client ID. It is the one credential behind every such mailbox on the instance, so it lives on the backend and nowhere else: workers receive a short-lived access token per use and never the key, and no token for these mailboxes is stored.
+该密钥可以为任何已授权其客户端 ID 的域中的任何地址签发令牌。它是实例上所有此类邮箱背后的统一凭据，因此只能保存在后端：工作节点每次使用时只接收短期访问令牌，绝不接触密钥；系统也不存储这些邮箱的令牌。
 
-To rotate the key:
+轮换密钥的步骤：
 
-1. On the service account's **Keys** tab, create a new JSON key.
-2. Replace the file (or the inline value) and restart the backend.
-3. Confirm the grants still pass, for example with **Check again** on one of them or `POST /emails/grants/:id/check`.
-4. Delete the old key on the **Keys** tab.
+1. 在服务账户的 **Keys（密钥）** 选项卡中创建新的 JSON 密钥。
+2. 替换文件或内联值，并重启后端。
+3. 确认授权仍能通过，例如对其中一项选择**重新检查**，或调用 `POST /emails/grants/:id/check`。
+4. 在 **Keys（密钥）** 选项卡删除旧密钥。
 
-Customers change nothing: the Client ID they authorized belongs to the service account, not the key.
+客户无需改动：他们授权的客户端 ID 属于服务账户，不属于密钥。
 
-### Google app verification
+### Google 应用验证 [#google-app-verification]
 
-Google treats domain-wide delegation as authorized by the customer's administrator, in their own Admin console. There is no OAuth consent screen for Google to review on that path, so the service account needs no Google app verification and no CASA security assessment for the Gmail scopes. Google's rules change, so confirm against Google's current help page on exceptions to verification requirements before relying on this. The sign-in client used for the domain proof asks only for `openid` and `email`, which are not sensitive scopes.
+Google 将全域委派视为客户管理员在自己管理控制台中批准的授权。这一路径没有需要 Google 审核的 OAuth 同意屏幕，因此服务账户无需针对 Gmail 权限范围进行 Google 应用验证，也不需要 CASA 安全评估。Google 规则可能变化，在依赖这一点之前，请根据 Google 当前关于验证要求例外的帮助页面确认。域证明使用的登录客户端只请求 `openid` 和 `email`，两者不是敏感权限范围。
 
-The per-mailbox **Sign in with Google** path is the one that needs Google's verification, and a security assessment, for its restricted Gmail scopes. It runs on the `BOX_GOOGLE_*` client, and it is being retired in favor of the whole-domain connect and app passwords. See [moving existing mailboxes](#moving-existing-mailboxes).
+逐邮箱的**使用 Google 登录**路径，因其受限 Gmail 权限范围而需要 Google 验证和安全评估。该路径使用 `BOX_GOOGLE_*` 客户端，目前正逐步由整域连接和应用专用密码替代。参见[迁移现有邮箱](#moving-existing-mailboxes)。
 
-### What the customer does
+### 客户需要执行的操作 [#what-the-customer-does]
 
-1. A **super admin** of the Workspace opens [admin.google.com](https://admin.google.com) and goes to **Security > Access and data control > API controls > Manage domain-wide delegation**.
-2. Chooses **Add new**, pastes the Client ID the dashboard shows, and enters exactly these three scopes, comma separated:
+1. Workspace 的**超级管理员**打开 [admin.google.com](https://admin.google.com)，进入 **Security > Access and data control > API controls > Manage domain-wide delegation（安全 > 访问和数据控制 > API 控制 > 管理全域委派）**。
+2. 选择 **Add new（新增）**，粘贴控制台显示的客户端 ID，并准确输入以下三个权限范围，以逗号分隔：
 
    ```text
    https://www.googleapis.com/auth/gmail.modify,https://www.googleapis.com/auth/gmail.settings.basic,https://www.googleapis.com/auth/admin.directory.user.readonly
    ```
 
-3. Chooses **Authorize**, and waits a few minutes: the Admin console takes a while to apply the change.
-4. In Warmbly, proves the domain (the administrator's sign-in or the DNS record), then picks the mailboxes to connect.
+3. 选择 **Authorize（授权）**，等待几分钟；管理控制台需要一些时间应用变更。
+4. 在 Warmbly 中通过管理员登录或 DNS 记录证明域所有权，再选择要连接的邮箱。
 
-The authorization comes before the proof, because Warmbly checks it straight away. The full walkthrough is in [connect a whole Google Workspace domain](/guides/mailbox-import/#connect-a-whole-google-workspace-domain).
+应先授权再证明，因为 Warmbly 会立即检查授权。完整流程见[连接整个 Google Workspace 域](/guides/mailbox-import/#connect-a-whole-google-workspace-domain)。
 
-### When Google refuses
+### Google 拒绝请求时 [#when-google-refuses]
 
-`google_delegation_unauthorized` means Google did not accept the delegation, or accepted it and refused a call. In the order they come up:
+`google_delegation_unauthorized` 表示 Google 未接受委派，或接受后拒绝了某次调用。按常见出现顺序检查：
 
-- **Not applied yet.** An Admin console change usually applies within minutes and occasionally takes longer. Wait, then try again or use **Check again**
-- **The wrong ID.** The entry holds an OAuth client ID (`...apps.googleusercontent.com`) instead of the service account's numeric Client ID
-- **The scopes differ.** The entry has to hold all three scopes above, exactly. A missing scope, a typo, or a different Gmail scope in its place is refused
-- **Not a super admin.** The address entered in Warmbly is not a super administrator of the domain, so the directory cannot be read with it
-- **APIs off.** The Gmail API or the Admin SDK API is not enabled on your service account's project (your side, not the customer's)
+- **尚未生效。** 管理控制台变更通常在几分钟内生效，偶尔更久。等待后重试，或使用**重新检查**。
+- **ID 错误。** 填入的是 OAuth 客户端 ID（`...apps.googleusercontent.com`），而不是服务账户的数字客户端 ID。
+- **权限范围不同。** 条目必须准确包含上面的全部三个权限范围。缺少一个、拼写错误，或用其他 Gmail 权限代替，都会被拒绝。
+- **不是超级管理员。** Warmbly 中输入的地址不是该域的超级管理员，因此无法使用它读取目录。
+- **API 未启用。** 你的服务账户所在项目未启用 Gmail API 或 Admin SDK API；这是你这边的配置，不是客户那边。
 
-A grant that worked and later fails its hourly check shows as invalid and its mailboxes stop; they restart on their own once a check passes again. See [`google_delegation_unauthorized`](/api/error-codes/#mailbox-source-refusals).
+曾经有效、后来每小时检查失败的授权会显示为无效，其邮箱会停止；检查再次通过后，邮箱自动恢复。参见 [`google_delegation_unauthorized`](/api/error-codes/#mailbox-source-refusals)。
 
-## Microsoft 365
+## Microsoft 365 [#microsoft-365]
 
-A Microsoft 365 organization is connected through admin consent to the Outlook app the instance already uses for single-mailbox Microsoft sign-in (`BOX_OUTLOOK_CLIENT_ID`, `BOX_OUTLOOK_CLIENT_SECRET`). There is no second app and no new setting: the option is on whenever those two are set. The app registration needs three additions.
+Microsoft 365 组织通过管理员同意，授权给实例现有的 Outlook 应用，即逐邮箱 Microsoft 登录使用的 `BOX_OUTLOOK_CLIENT_ID` 和 `BOX_OUTLOOK_CLIENT_SECRET`。无需第二个应用，也没有新设置；只要这两个值已设置，该选项就会启用。应用注册需要补充三项配置。
 
-### Set up the app registration
+### 配置应用注册 [#set-up-the-app-registration]
 
 <Steps>
 
 <Step>
-**Open the existing registration.** In the [Microsoft Entra admin center](https://entra.microsoft.com/), go to **App registrations** and open the app whose ID is in `BOX_OUTLOOK_CLIENT_ID`. If you have none yet, create it as in [Outlook and Microsoft 365](/development/deployment-guide/#outlook-and-microsoft-365) first.
+**打开现有注册。** 在 [Microsoft Entra 管理中心](https://entra.microsoft.com/)进入 **App registrations（应用注册）**，打开 ID 与 `BOX_OUTLOOK_CLIENT_ID` 对应的应用。如果尚未创建，请先按 [Outlook 和 Microsoft 365](/development/deployment-guide/#outlook-and-microsoft-365) 操作。
 </Step>
 
 <Step>
-**Make it multitenant.** Under **Authentication**, set **Supported account types** to accounts in any organizational directory (multitenant), so another organization can consent to it. The option that also includes personal Microsoft accounts is multitenant too, and is the one Outlook.com mailboxes need for single-mailbox sign-in.
+**设为多租户。** 在 **Authentication（身份验证）** 中，将 **Supported account types（支持的账户类型）** 设为“任何组织目录中的账户（多租户）”，让其他组织能够同意。还包含个人 Microsoft 账户的选项也是多租户；Outlook.com 邮箱进行逐邮箱登录时需要这一选项。
 </Step>
 
 <Step>
-**Keep the redirect URI.** The existing Web redirect URI, your API base plus `/addresses/outlook/callback`, is where admin consent returns as well. Nothing is added.
+**保留重定向 URI。** 现有 Web 重定向 URI，即 API 基础地址加 `/addresses/outlook/callback`，也用于管理员同意后的返回，无需新增。
 </Step>
 
 <Step>
-**Add the application permissions.** Under **API permissions**, choose **Add a permission > Microsoft Graph > Application permissions** and add `Mail.ReadWrite`, `Mail.Send` and `User.Read.All`. They sit next to the delegated permissions single-mailbox sign-in already uses (`User.Read`, `Mail.Send`, `Mail.ReadWrite`, `offline_access`); keep those. The list then shows `Mail.ReadWrite` and `Mail.Send` twice, once of type **Delegated** and once of type **Application**, which is correct.
+**添加应用程序权限。** 在 **API permissions（API 权限）** 中选择 **Add a permission > Microsoft Graph > Application permissions（添加权限 > Microsoft Graph > 应用程序权限）**，添加 `Mail.ReadWrite`、`Mail.Send` 和 `User.Read.All`。它们与逐邮箱登录现有的委派权限 `User.Read`、`Mail.Send`、`Mail.ReadWrite` 和 `offline_access` 并列，请保留原权限。之后列表中 `Mail.ReadWrite` 和 `Mail.Send` 各出现两次，一次类型为 **Delegated（委派）**，一次为 **Application（应用程序）**，这是正确的。
 </Step>
 
 <Step>
-**Do not grant admin consent for your own tenant**, unless you are testing with it. The **Grant admin consent** button on that page consents for your organization only. Each customer organization consents for itself, through the dashboard.
+**不要为自己的租户授予管理员同意**，除非正在用它测试。页面上的 **Grant admin consent（授予管理员同意）** 按钮只会代表你的组织同意。每个客户组织通过控制台为自己授权。
 </Step>
 
 <Step>
-**Verify the publisher if you can.** Admin consent works without it. It adds a verified badge to the consent screen, which some administrators look for, and it is what lets ordinary users of most organizations approve **Sign in one mailbox** themselves: Microsoft sends every user of a new, unverified multitenant app that asks for mail permissions to an administrator. See [publisher verification](https://learn.microsoft.com/entra/identity-platform/publisher-verification-overview).
+**条件允许时验证发布者。** 没有验证也能使用管理员同意。验证会在同意屏幕添加已验证徽章，有些管理员会检查它；同时，它也是多数组织的普通用户能够自行批准**登录单个邮箱**的条件：对于新建、未验证且请求邮件权限的多租户应用，Microsoft 会把所有用户都转交管理员处理。参见[发布者验证](https://learn.microsoft.com/entra/identity-platform/publisher-verification-overview)。
 </Step>
 
 </Steps>
 
-Nothing needs a restart when only the app registration changes. `GET /emails/grants/config` answers `microsoft_enabled: true` whenever both `BOX_OUTLOOK_*` values are set.
+仅修改应用注册无需重启。`GET /emails/grants/config` 返回 `microsoft_enabled: true` 的条件是两个 `BOX_OUTLOOK_*` 值都已设置。
 
-Application permissions reach every mailbox in a consenting organization. We recommend that each organization scope the app to the mailboxes Warmbly should use with an Exchange Online application access policy (or RBAC for Applications); a mailbox outside the policy is refused when it connects. The commands are in [connect a whole Microsoft 365 organization](/guides/mailbox-import/#connect-a-whole-microsoft-365-organization).
+应用程序权限可以访问同意组织中的全部邮箱。建议每个组织通过 Exchange Online 应用程序访问策略，或应用程序 RBAC，将应用限定到 Warmbly 应使用的邮箱；策略范围外的邮箱会在连接时被拒绝。命令见[连接整个 Microsoft 365 组织](/guides/mailbox-import/#connect-a-whole-microsoft-365-organization)。
 
-### What the customer does
+### 客户需要执行的操作 [#what-the-customer-does-1]
 
-A **Global Administrator** of the organization chooses **Add account > Microsoft > Whole organization** and chooses **Accept** on Microsoft's admin consent page once. The window then signs the administrator in, usually without asking again, so Warmbly learns who approved it. That sign-in carries a PKCE challenge and an OpenID nonce, checked the same way as the Google one. The organization recorded is the one that sign-in belongs to, as Microsoft reports it, never a value from the request, and the grant is recorded only when that sign-in holds the Global Administrator or Privileged Role Administrator role in it. The role is read from the sign-in's Microsoft Graph token, which lists directory roles by default, or from its ID token when the app registration emits them there. Then a member picks the mailboxes to connect.
+组织的**全局管理员**选择**添加账户 > Microsoft > 整个组织**，在 Microsoft 管理员同意页面选择一次 **Accept（接受）**。随后窗口会让管理员登录，通常无需再次询问，使 Warmbly 知道由谁批准。该登录携带 PKCE 挑战和 OpenID nonce，检查方式与 Google 相同。记录的组织始终采用 Microsoft 报告的登录所属组织，绝不采用请求中的值；只有该登录在组织中具有全局管理员或特权角色管理员角色，才会记录授权。角色从登录的 Microsoft Graph 令牌读取，该令牌默认列出目录角色；如果应用注册在 ID 令牌中发出角色，也可从那里读取。之后成员选择要连接的邮箱。
 
-### When Microsoft refuses
+### Microsoft 拒绝请求时 [#when-microsoft-refuses]
 
-`microsoft_consent_missing` means Microsoft did not issue a token for the organization, or issued one and refused the call:
+`microsoft_consent_missing` 表示 Microsoft 没有为组织签发令牌，或签发后拒绝了调用：
 
-- **Not consented.** The organization has not approved the app, or the consent screen was closed before **Accept**. A Global Administrator connects it again
-- **Not an administrator.** Admin consent for application permissions needs a Global Administrator. An ordinary user's sign-in cannot give it
-- **Permissions missing.** The app registration lacks one of the three application permissions, or they were added after the organization consented. A consent covers only the permissions the app had at the time, so the administrator has to consent again after a change
-- **Single tenant.** The app registration is not multitenant, so other organizations cannot find it
-- **Unknown organization.** Microsoft does not know the tenant the consent named
+- **尚未同意。** 组织未批准应用，或在选择**接受**之前关闭了同意页面。请让全局管理员重新连接。
+- **不是管理员。** 为应用程序权限授予管理员同意需要全局管理员，普通用户登录不能授予。
+- **权限缺失。** 应用注册缺少三个应用程序权限之一，或这些权限是在组织同意之后添加的。同意只覆盖当时应用已有权限，因此修改后管理员必须再次同意。
+- **单租户。** 应用注册不是多租户，其他组织无法找到它。
+- **未知组织。** Microsoft 不认识同意过程中指定的租户。
 
-`mailbox_grant_proof_missing` from the Microsoft consent means the person who signed in does not hold the Global Administrator or Privileged Role Administrator role in the organization. Sign in with an account that does.
+Microsoft 同意流程返回 `mailbox_grant_proof_missing`，表示登录者在该组织中没有全局管理员或特权角色管理员角色。请使用具有相应角色的账户登录。
 
-See [`microsoft_consent_missing`](/api/error-codes/#mailbox-source-refusals).
+参见 [`microsoft_consent_missing`](/api/error-codes/#mailbox-source-refusals)。
 
-## Moving existing mailboxes
+## 迁移现有邮箱 [#moving-existing-mailboxes]
 
-Per-mailbox **Sign in with Google** is being retired. Mailboxes connected that way keep working and there is no cutoff date, but the dashboard marks them and offers to move each one without losing its history, campaigns or warmup:
+逐邮箱的**使用 Google 登录**正在逐步退出。以此方式连接的邮箱仍会继续工作，目前没有停用日期；控制台会标记它们，并提供逐个迁移功能，不会丢失历史、营销活动或预热：
 
-- **A Google Workspace mailbox** moves onto the domain's administrator grant. Connecting its address through the grant converts the mailbox in place
-- **A personal Gmail mailbox** (or any Google mailbox) moves to an app password, checked against Gmail before anything is stored
+- **Google Workspace 邮箱**迁移到域管理员授权。通过该授权连接其地址，会原地转换现有邮箱。
+- **个人 Gmail 邮箱**或任何 Google 邮箱，可以改用应用专用密码；系统会先向 Gmail 验证，再存储任何信息。
 
-Per-mailbox Microsoft sign-in is not being retired, but a mailbox on it can move onto an organization's grant the same way. The customer's side is in [moving off per-mailbox Google sign-in](/guides/mailboxes/#moving-off-per-mailbox-google-sign-in). Keep the `BOX_GOOGLE_*` client configured while any mailbox still uses it: it is what refreshes their tokens.
+逐邮箱 Microsoft 登录不会退出，但也可以用相同方式迁移到组织授权。客户侧说明见[迁移离开逐邮箱 Google 登录](/guides/mailboxes/#moving-off-per-mailbox-google-sign-in)。只要还有邮箱使用旧方式，就应保留 `BOX_GOOGLE_*` 客户端配置，因为它负责刷新这些邮箱的令牌。

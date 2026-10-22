@@ -1,361 +1,361 @@
 ---
-title: HubSpot
-description: "Run your workspace's CRM on HubSpot: deals, tasks and notes written through, outreach logged on the timeline, and campaigns that stop when HubSpot says a contact has moved on."
+title: "HubSpot"
+description: "将 HubSpot 用作工作区的 CRM：直接写入商机、任务与备注，在时间线上记录外联活动，并在 HubSpot 显示联系人已进入后续阶段时停止相关营销活动。"
 ---
 
-HubSpot mode makes HubSpot your workspace's CRM. The deals, pipelines, tasks and notes you see in Warmbly are HubSpot's records, and your outreach is logged on each contact's HubSpot timeline.
+HubSpot 模式让 HubSpot 成为工作区的 CRM。你在 Warmbly 中看到的商机、销售管道、任务和备注，都是 HubSpot 的记录；客户触达活动也会记录到各联系人的 HubSpot 时间线上。
 
-## Switch to HubSpot
+## 切换到 HubSpot [#switch-to-hubspot]
 
 <Steps>
 
 <Step>
 
-Open **Integrations > HubSpot** and select **Connect**.
+打开**集成 > HubSpot**，选择**连接**。
 
 </Step>
 
 <Step>
 
-Sign in to HubSpot, pick the account, and approve the permissions.
+登录 HubSpot，选择账户并批准权限。
 
 </Step>
 
 <Step>
 
-Go through the setup wizard. Every question has a default that works, so you can finish without changing anything.
+完成设置向导。每个问题都有可用的默认值，因此可以不作修改直接完成。
 
 </Step>
 
 <Step>
 
-Finish the wizard. The dashboard fills in as the first pull runs, usually within a minute or two.
+结束向导。首次拉取运行时，控制台会逐渐填入数据，通常只需一两分钟。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Every change you make in Warmbly is written to HubSpot first. If HubSpot refuses it, nothing is saved.
-- A deal opened in HubSpot, a lifecycle stage you choose or an email opt-out holds the contact's campaigns.
-- Pipelines and stages are managed in HubSpot only.
-- It works with free HubSpot.
-- Switching back or disconnecting deletes nothing on either side.
+- 在 Warmbly 中进行的每次修改都会先写入 HubSpot。如果 HubSpot 拒绝，任何内容都不会保存。
+- 在 HubSpot 中创建商机、进入你选择的生命周期阶段，或选择不再接收邮件，都会暂停该联系人的营销活动。
+- 销售管道和阶段只能在 HubSpot 中管理。
+- 支持免费版 HubSpot。
+- 切回原模式或断开连接，都不会删除任一侧的数据。
 
 <Fold>
 
-## How HubSpot mode works
+## HubSpot 模式的工作方式 [#how-hubspot-mode-works]
 
-A workspace can use Warmbly's own CRM or HubSpot. In **HubSpot mode**, HubSpot is the system of record. The deals, pipelines, tasks and notes you see in Warmbly are HubSpot's records, mirrored into Warmbly so lists, search and the board stay fast, and every change you make in Warmbly goes to HubSpot first. Your outreach is logged on each contact's HubSpot timeline, and HubSpot can stop a campaign when a contact becomes a deal or a customer.
+工作区可以使用 Warmbly 自带的 CRM，也可以使用 HubSpot。在 **HubSpot 模式**中，HubSpot 是权威数据源。你在 Warmbly 中看到的商机、销售管道、任务和备注都是 HubSpot 的记录，镜像到 Warmbly 以确保列表、搜索和看板响应迅速；在 Warmbly 中执行的每次修改都会先写入 HubSpot。客户触达活动记录到各联系人的 HubSpot 时间线；当联系人转化为商机或客户时，HubSpot 可以停止营销活动。
 
-The basic HubSpot connection (a contact upsert from an [automation](/guides/automations/#actions) or **Push to CRM**) works without HubSpot mode. This page covers the full mode.
+基础 HubSpot 连接无需启用 HubSpot 模式即可使用，包括从[自动化流程](/guides/automations/#actions)创建或更新联系人，以及**推送到 CRM**。本页介绍完整的 HubSpot 模式。
 
 </Fold>
 
 <Fold>
 
-## What HubSpot mode does
+## HubSpot 模式的功能 [#what-hubspot-mode-does]
 
-- **Deals, pipelines, tasks and notes are HubSpot's.** A deal you create, move or edit in Warmbly is written to HubSpot before it is saved here. If HubSpot refuses it (a required property, a missing permission), you see HubSpot's reason and nothing is saved.
-- **Your outreach lands on the HubSpot timeline.** Sends and replies are logged as email activities, bounces and unsubscribes are recorded, and booked meetings become HubSpot meetings.
-- **A "Warmbly" property group** on HubSpot contacts carries each contact's outreach status, so HubSpot users can filter lists, build reports and trigger workflows on it.
-- **HubSpot can stop outreach.** A deal opened in HubSpot, a lifecycle stage you choose or an email opt-out holds the contact's campaigns.
-- **The contact panel shows HubSpot's side.** In the contact drawer and the inbox, a contact shows its HubSpot owner, lifecycle stage, lead status, company and any properties you choose, and you can edit the owner, lifecycle stage and lead status in place.
+- **商机、销售管道、任务和备注都属于 HubSpot。** 在 Warmbly 中创建、移动或编辑商机时，会先写入 HubSpot，再保存到这里。如果 HubSpot 拒绝，例如缺少必填属性或权限，界面会显示 HubSpot 给出的原因，且不保存任何修改。
+- **客户触达活动写入 HubSpot 时间线。** 发送和回复记录为电子邮件活动，退信和退订也会记录，已预约会议则成为 HubSpot 会议。
+- **HubSpot 联系人上的“Warmbly”属性组**保存每位联系人的触达状态，供 HubSpot 用户据此筛选列表、构建报表和触发工作流。
+- **HubSpot 可以停止触达。** 在 HubSpot 中创建商机、进入你指定的生命周期阶段，或选择不再接收邮件，都会暂停该联系人的营销活动。
+- **联系人面板展示 HubSpot 信息。** 在联系人抽屉和收件箱中，可查看 HubSpot 负责人、生命周期阶段、潜在客户状态、公司以及你选择的属性，并可直接修改负责人、生命周期阶段和潜在客户状态。
 
 </Fold>
 
 <Fold>
 
-## Connect and set up
+## 连接与设置 [#connect-and-set-up]
 
-1. Open **Integrations > HubSpot** and select **Connect**. Sign in to HubSpot, pick the account, and approve the permissions. Connecting takes someone who can install apps in that HubSpot account.
-2. The setup wizard opens. Every question has a default that works, so you can finish it without changing anything and adjust later. It asks which activity to log, whether Warmbly may create contacts and companies, what a positive reply does, which rules stop outreach, which deal pipelines to mirror, and how contact fields map.
-3. Finish the wizard. Warmbly creates the Warmbly property group in HubSpot and starts the first pull: owners, pipelines, then recent deals and tasks. The dashboard fills in as it runs, usually within a minute or two.
+1. 打开**集成 > HubSpot**并选择**连接**。登录 HubSpot，选择账户并批准权限。连接操作需要由有权在该 HubSpot 账户中安装应用的人完成。
+2. 设置向导随即打开。每个问题都有可用的默认值，可以不作修改直接完成，稍后再调整。向导会询问要记录哪些活动、是否允许 Warmbly 创建联系人和公司、积极回复触发什么操作、哪些规则停止触达、镜像哪些商机管道，以及联系人字段如何映射。
+3. 完成向导。Warmbly 会在 HubSpot 中创建 Warmbly 属性组，并开始首次拉取：先拉取负责人和销售管道，再拉取近期商机与任务。运行过程中，控制台逐渐填入数据，通常只需一两分钟。
 
-After setup the same page holds the settings and the [sync health](#sync-health-and-fixing-errors) panel. Changing them needs the `manage_settings` permission.
+设置完成后，同一页面提供配置选项和[同步健康度](#sync-health-and-fixing-errors)面板。修改设置需要 `manage_settings` 权限。
 
-<Callout type="info" title="A connection made before HubSpot mode existed needs a reconnect">
-Earlier HubSpot connections only asked for contact access. HubSpot mode also needs companies, deals, owners and the contact schema, so the page asks you to reconnect before you can switch, and the switch is refused with `crm_reauth_required` until you do.
+<Callout type="info" title="HubSpot 模式推出前建立的连接需要重新连接">
+早期 HubSpot 连接只申请了联系人权限。HubSpot 模式还需要公司、商机、负责人和联系人架构权限，因此页面会要求先重新连接再切换；完成之前，切换会以 `crm_reauth_required` 被拒绝。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## What syncs
+## 同步的内容 [#what-syncs]
 
-| Record | Direction | How |
+| 记录 | 方向 | 方式 |
 | --- | --- | --- |
-| Deals | Both ways | Warmbly writes through to HubSpot. Changes in HubSpot are pulled every minute |
-| Pipelines and stages | HubSpot to Warmbly | Managed in HubSpot only. Pulled every 30 minutes, and sooner when a deal arrives in a stage Warmbly has not seen |
-| Tasks | Both ways | Warmbly writes through. Tasks owned by matched members are pulled every minute |
-| Notes | Both ways | Warmbly writes through. A contact's HubSpot notes are pulled when you open the contact |
-| Task types | HubSpot to Warmbly | Fixed to HubSpot's: To-do, Call, Email, LinkedIn |
-| Owners | HubSpot to Warmbly | Pulled every 30 minutes and matched to members by email |
-| Contacts | Both ways, per field | Owner, lifecycle stage, lead status, company, opt-out and the fields you map. See [contacts and field mapping](#contacts-and-field-mapping) |
-| Outreach activity | Warmbly to HubSpot | See [activity logged to HubSpot](#activity-logged-to-hubspot) |
+| 商机 | 双向 | Warmbly 直接写入 HubSpot；每分钟拉取 HubSpot 中的变更 |
+| 销售管道和阶段 | HubSpot 到 Warmbly | 仅在 HubSpot 中管理；每 30 分钟拉取一次，若收到的商机位于尚未知晓的阶段，则提前拉取 |
+| 任务 | 双向 | Warmbly 直接写入；每分钟拉取由已匹配成员负责的任务 |
+| 备注 | 双向 | Warmbly 直接写入；打开联系人时拉取其 HubSpot 备注 |
+| 任务类型 | HubSpot 到 Warmbly | 固定使用 HubSpot 的类型：待办、电话、电子邮件、LinkedIn |
+| 负责人 | HubSpot 到 Warmbly | 每 30 分钟拉取一次，并按电子邮件地址匹配成员 |
+| 联系人 | 按字段双向同步 | 包括负责人、生命周期阶段、潜在客户状态、公司、退订及映射字段。参见[联系人与字段映射](#contacts-and-field-mapping) |
+| 触达活动 | Warmbly 到 HubSpot | 参见[记录到 HubSpot 的活动](#activity-logged-to-hubspot) |
 
-Warmbly pulls only what changed since the last pull, so the minute-by-minute pull stays light. Opening a contact in Warmbly also refreshes that contact's HubSpot record, deals, tasks and notes on the spot.
+Warmbly 只拉取上次之后发生变化的内容，因此每分钟拉取仍然保持轻量。打开 Warmbly 联系人时，也会立即刷新该联系人的 HubSpot 记录、商机、任务和备注。
 
-### Deals and pipelines
+### 商机与销售管道 [#deals-and-pipelines]
 
-The Pipelines page lists only your HubSpot pipelines, and creating, renaming or deleting a pipeline or stage is refused with `crm_managed_externally`: make the change in HubSpot and it appears in Warmbly within minutes. In the wizard you can limit the mirror to some pipelines; deals in the others are not mirrored.
+销售管道页面只列出 HubSpot 管道。创建、重命名或删除管道或阶段会以 `crm_managed_externally` 被拒绝：请在 HubSpot 中修改，几分钟内就会同步到 Warmbly。在向导中可以将镜像范围限制为部分管道；其他管道中的商机不会镜像。
 
-Deals in a pipeline that only exists in Warmbly are hidden from the deal table and board while HubSpot is your CRM. They are not deleted: [copy them into HubSpot](#copying-your-warmbly-crm-into-hubspot) or [switch back](#switching-back-and-disconnecting) to see them again.
+HubSpot 作为 CRM 期间，仅存在于 Warmbly 的管道中的商机会从商机表格和看板中隐藏。它们并未删除：[将其复制到 HubSpot](#copying-your-warmbly-crm-into-hubspot)或[切回原模式](#switching-back-and-disconnecting)后即可再次看到。
 
-In HubSpot, won and lost are stages rather than a status. Marking a deal won or lost in Warmbly moves it to the pipeline's first closed-won or closed-lost stage, and moving it to a closed stage sets its status. Stages carry HubSpot's closed flag, won flag and probability. A deal owned by someone in HubSpot who is not a workspace member shows that owner's name.
+HubSpot 将赢单和输单表示为阶段，而非独立状态。在 Warmbly 中将商机标记为赢单或输单时，会将其移到该管道的第一个“已成交”或“已丢单”阶段；将商机移入已关闭阶段也会设置其状态。阶段携带 HubSpot 的关闭标志、赢单标志和成交概率。如果商机的 HubSpot 负责人不是工作区成员，仍会显示该负责人的姓名。
 
-Deals created by an automation's **Create deal** or **Move deal stage** action reach HubSpot too, through the [sync queue](#sync-health-and-fixing-errors) rather than at once.
+自动化流程通过**创建商机**或**移动商机阶段**操作生成的商机也会写入 HubSpot，但通过[同步队列](#sync-health-and-fixing-errors)处理，而非立即执行。
 
-### Tasks
+### 任务 [#tasks]
 
-The Tasks page shows the HubSpot tasks owned by HubSpot users who are matched to workspace members. The first pull brings in tasks changed in the last 90 days. A contact's own tasks are pulled when you open the contact, whoever owns them.
+任务页面显示 HubSpot 用户负责、且该用户已匹配到工作区成员的 HubSpot 任务。首次拉取包含最近 90 天发生过变化的任务。打开联系人时，会拉取其自身的任务，无论由谁负责。
 
 | Warmbly | HubSpot |
 | --- | --- |
-| Priority `low`, `medium`, `high`, `urgent` | `Low`, `Medium`, `High` (`urgent` is written as `High`) |
-| Status `pending`, `in progress`, `completed`, `cancelled` | `Not started`, `In progress`, `Completed`, `Deferred` |
-| Assignee | Task owner. A member with no matched HubSpot owner cannot be assigned (`crm_owner_unmapped`) |
+| 优先级 `low`、`medium`、`high`、`urgent` | `Low`、`Medium`、`High`（`urgent` 写为 `High`） |
+| 状态 `pending`、`in progress`、`completed`、`cancelled` | `Not started`、`In progress`、`Completed`、`Deferred` |
+| 被分配成员 | 任务负责人。未匹配 HubSpot 负责人的成员不能被分配任务（`crm_owner_unmapped`） |
 
-Creating, editing or deleting a task type is refused with `crm_managed_externally`, because HubSpot's task types are fixed. Tasks Warmbly opens by itself, such as [follow-up tasks from replies](/guides/contacts-crm/#follow-up-tasks-from-replies) and an automation's **Create a task**, are written to HubSpot as well.
+创建、编辑或删除任务类型会以 `crm_managed_externally` 被拒绝，因为 HubSpot 的任务类型是固定的。Warmbly 自动创建的任务也会写入 HubSpot，例如[由回复产生的跟进任务](/guides/contacts-crm/#follow-up-tasks-from-replies)，以及自动化流程中的**创建任务**。
 
 </Fold>
 
 <Fold>
 
-## Contacts and field mapping
+## 联系人与字段映射 [#contacts-and-field-mapping]
 
-A Warmbly contact is linked to a HubSpot contact by email address. Linking happens when Warmbly emails the contact, when you open it, when HubSpot changes a contact whose address Warmbly has, and after an [import from a HubSpot list](#importing-from-hubspot-lists).
+Warmbly 联系人通过电子邮件地址与 HubSpot 联系人关联。以下情况会建立关联：Warmbly 向联系人发信、你打开联系人、HubSpot 修改了 Warmbly 已有该地址的联系人，以及[从 HubSpot 列表导入](#importing-from-hubspot-lists)之后。
 
-When Warmbly emails someone HubSpot does not have, it creates the HubSpot contact (on by default). With company creation on (also the default), the new contact is associated with the company on its email domain, and a company is created when HubSpot has none. Free mail domains such as `gmail.com` never become companies. With creating contacts off, a contact HubSpot does not have is simply not logged there.
+当 Warmbly 向 HubSpot 尚未收录的人发信时，会创建 HubSpot 联系人，默认开启。开启创建公司后（同样默认开启），新联系人会关联到与其电子邮件域名对应的公司；若 HubSpot 中没有该公司，则创建公司。`gmail.com` 等免费邮箱域名绝不会变成公司。如果关闭创建联系人，HubSpot 中不存在的联系人就不会在那里记录活动。
 
-Each mapped field has a direction:
+每个映射字段都有同步方向：
 
-| Direction | What happens |
+| 方向 | 行为 |
 | --- | --- |
-| Push | Warmbly writes the field to HubSpot when the contact is edited in Warmbly and each time it emails them |
-| Pull | A change in HubSpot is copied onto the Warmbly contact |
-| Both | The most recent change wins: an edit in HubSpot is copied onto the Warmbly contact, and an edit in Warmbly is written to HubSpot |
+| 推送 | 在 Warmbly 中编辑联系人时，以及每次向其发信时，将字段写入 HubSpot |
+| 拉取 | 将 HubSpot 中的变更复制到 Warmbly 联系人 |
+| 双向 | 最近的修改优先：HubSpot 中的编辑复制到 Warmbly，Warmbly 中的编辑写入 HubSpot |
 
-The defaults map first name, last name, company and phone to `firstname`, `lastname`, `company` and `phone`, all **Both**. A custom field maps as `custom:<key>`. A blank value in HubSpot never blanks a Warmbly field, and the email address is never overwritten from HubSpot.
+默认将名字、姓氏、公司和电话映射到 `firstname`、`lastname`、`company` 和 `phone`，方向均为**双向**。自定义字段使用 `custom:<key>` 映射。HubSpot 中的空值不会清空 Warmbly 字段，电子邮件地址也绝不会被 HubSpot 覆盖。
 
-You can also pick up to 40 extra HubSpot properties to show on the contact panel.
+还可以选择最多 40 个额外 HubSpot 属性，显示在联系人面板中。
 
 </Fold>
 
 <Fold>
 
-## Activity logged to HubSpot
+## 记录到 HubSpot 的活动 [#activity-logged-to-hubspot]
 
-| In Warmbly | In HubSpot | Default |
+| Warmbly 中的事件 | HubSpot 中的记录 | 默认 |
 | --- | --- | --- |
-| A campaign email is sent | An outgoing email activity with the subject and body | On |
-| The contact replies | An incoming email activity | On |
-| An email bounces | The logged email is marked `BOUNCED` | On |
-| The contact unsubscribes | A note on the contact, and `warmbly_unsubscribed` set | On |
-| A meeting is booked through Calendly or Cal.com | A HubSpot meeting | On |
-| An open | `warmbly_last_opened_at` updated, no timeline entry | Off |
-| A click | `warmbly_last_clicked_at` updated, no timeline entry | Off |
+| 发送营销活动邮件 | 包含主题和正文的出站电子邮件活动 | 开启 |
+| 联系人回复 | 入站电子邮件活动 | 开启 |
+| 邮件退信 | 已记录的邮件标记为 `BOUNCED` | 开启 |
+| 联系人退订 | 联系人备注，并设置 `warmbly_unsubscribed` | 开启 |
+| 通过 Calendly 或 Cal.com 预约会议 | HubSpot 会议 | 开启 |
+| 打开邮件 | 更新 `warmbly_last_opened_at`，不新增时间线记录 | 关闭 |
+| 点击链接 | 更新 `warmbly_last_clicked_at`，不新增时间线记录 | 关闭 |
 
-Each email activity is associated with the contact, its company and its open deals. Its owner is the member who owns the sending mailbox when that member is matched to a HubSpot owner, otherwise the contact's owner. Activity is logged within seconds and never depends on your [webhooks](/guides/webhooks/) or their per-minute limit, so a large send is logged in full.
+每项电子邮件活动都会关联到联系人、其公司和所有未关闭的商机。如果发件邮箱所属成员已匹配 HubSpot 负责人，则活动负责人为该成员；否则使用联系人的负责人。活动会在数秒内记录，且完全不依赖你的 [Webhook](/guides/webhooks/)及其每分钟限额，因此大批量发送也能完整记录。
 
-Opens and clicks are off by default because mail privacy proxies and security scanners open and click on their own, and HubSpot timelines fill with noise. Turned on, they only update the two properties, at most once an hour per contact, and never create a contact in HubSpot.
+打开和点击记录默认关闭，因为邮件隐私代理和安全扫描器会自动打开与点击，容易让 HubSpot 时间线充满噪声。开启后，它们也只更新这两个属性，每位联系人每小时最多更新一次，且绝不会因此在 HubSpot 中创建联系人。
 
 </Fold>
 
 <Fold>
 
-## The Warmbly property group
+## Warmbly 属性组 [#the-warmbly-property-group]
 
-Warmbly creates a **Warmbly** group of contact properties in HubSpot when you switch, and keeps it up to date (on by default; turning it off stops every property write, including opens and clicks). Properties you or your HubSpot admins already changed are left as they are.
+切换时，Warmbly 会在 HubSpot 中创建名为 **Warmbly** 的联系人属性组，并持续更新。此功能默认开启；关闭后会停止所有属性写入，包括打开和点击。你或 HubSpot 管理员已经修改过的属性会保持原样。
 
-| Property | Holds |
+| 属性 | 内容 |
 | --- | --- |
-| `warmbly_status` | `contacted`, `replied`, `interested`, `not_interested`, `meeting_booked`, `bounced` or `unsubscribed`. A later send never moves a contact back from a reply status to `contacted` |
-| `warmbly_last_campaign` | The name of the last campaign that emailed the contact |
-| `warmbly_last_contacted_at` | When Warmbly last emailed the contact |
-| `warmbly_last_replied_at` | When the contact last replied |
-| `warmbly_reply_intent` | How Warmbly classified the latest reply |
-| `warmbly_last_opened_at` | Last open, when open logging is on |
-| `warmbly_last_clicked_at` | Last click, when click logging is on |
-| `warmbly_unsubscribed` | Set when the contact unsubscribes from Warmbly outreach |
-| `warmbly_link` | A link that opens the contact in Warmbly |
+| `warmbly_status` | `contacted`、`replied`、`interested`、`not_interested`、`meeting_booked`、`bounced` 或 `unsubscribed`。后续发送绝不会将已回复的联系人退回 `contacted` 状态 |
+| `warmbly_last_campaign` | 最近一次向联系人发送邮件的营销活动名称 |
+| `warmbly_last_contacted_at` | Warmbly 最近一次向联系人发信的时间 |
+| `warmbly_last_replied_at` | 联系人最近回复时间 |
+| `warmbly_reply_intent` | Warmbly 对最新回复的分类 |
+| `warmbly_last_opened_at` | 开启打开记录时，最近一次打开时间 |
+| `warmbly_last_clicked_at` | 开启点击记录时，最近一次点击时间 |
+| `warmbly_unsubscribed` | 联系人退订 Warmbly 触达邮件时设置 |
+| `warmbly_link` | 在 Warmbly 中打开该联系人的链接 |
 
 </Fold>
 
 <Fold>
 
-## Owners
+## 负责人 [#owners]
 
-HubSpot's owners (its users) are matched to workspace members by email address. Where the addresses differ, pick the member by hand on the HubSpot page; a match you choose is kept and never replaced by the email match. Matching decides:
+HubSpot 负责人，即其用户，会按电子邮件地址匹配工作区成员。地址不一致时，可以在 HubSpot 页面手动选择成员；手动匹配会被保留，不会被邮箱匹配覆盖。匹配关系决定：
 
-- whose tasks appear on the Tasks page
-- who owns the email activity a mailbox logs
-- which HubSpot owner a deal or task gets when you assign it to a member in Warmbly
-- who the [Warmbly card](#working-from-inside-hubspot) acts as, and so what a HubSpot user can do from it
-
-</Fold>
-
-<Fold>
-
-## Positive replies
-
-When a reply is classified as interested, Warmbly can:
-
-- set the contact's **lead status** (default `In progress`)
-- set its **lifecycle stage** (off by default). HubSpot refuses to move a lifecycle stage backwards; the lead status is still set when it does
-- **create a deal** in a pipeline and stage you choose (off by default). It is skipped when the contact already has an open deal
-
-The follow-up task comes from your existing [reply follow-up setting](/guides/contacts-crm/#follow-up-tasks-from-replies) and is written to HubSpot like any other task.
+- 任务页面显示谁的任务
+- 邮箱记录的电子邮件活动归谁所有
+- 在 Warmbly 中将商机或任务分配给成员时，对应哪位 HubSpot 负责人
+- [Warmbly 卡片](#working-from-inside-hubspot)以谁的身份执行操作，从而决定 HubSpot 用户可以通过卡片做什么
 
 </Fold>
 
 <Fold>
 
-## Exit rules
+## 正向回复 [#positive-replies]
 
-Exit rules hold a contact in every campaign it is in when HubSpot says it has moved on, so nobody gets a follow-up after becoming a deal or a customer. A held lead stays held until someone resumes it; the hold shows the reason, such as "A deal was opened in HubSpot".
+回复被判定为感兴趣时，Warmbly 可以：
 
-| Rule | Default |
+- 设置联系人的**潜在客户状态**，默认为 `In progress`
+- 设置其**生命周期阶段**，默认关闭。HubSpot 不允许生命周期阶段倒退；即使拒绝该变更，潜在客户状态仍会设置
+- 在指定管道和阶段中**创建商机**，默认关闭。如果联系人已有未关闭的商机，则跳过
+
+跟进任务沿用现有的[回复跟进设置](/guides/contacts-crm/#follow-up-tasks-from-replies)，并与其他任务一样写入 HubSpot。
+
+</Fold>
+
+<Fold>
+
+## 退出规则 [#exit-rules]
+
+当 HubSpot 表明联系人已进入下一阶段时，退出规则会暂停该联系人参与的所有营销活动，避免其已经成为商机或客户后仍收到跟进邮件。被暂停的潜在客户会持续保持暂停，直到有人恢复；暂停状态会显示原因，例如“已在 HubSpot 中创建商机”。
+
+| 规则 | 默认 |
 | --- | --- |
-| A deal associated with the contact is opened in HubSpot | On. Only deals created in the last 48 hours count, so the first pull's existing deals stop nobody |
-| The contact's lifecycle stage changes to one you choose | On, for `Opportunity` and `Customer` |
-| The contact opts out of email in HubSpot | On. The address is added to the [suppression list](/guides/unsubscribe/) |
+| 在 HubSpot 中创建与联系人关联的商机 | 开启。仅计算最近 48 小时创建的商机，因此首次拉取已有商机不会暂停任何人 |
+| 联系人的生命周期阶段变为你指定的阶段 | 开启，针对 `Opportunity` 和 `Customer` |
+| 联系人在 HubSpot 中选择不再接收邮件 | 开启。地址会加入[禁止发送名单](/guides/unsubscribe/) |
 
-### Import guards
+### 导入保护措施 [#import-guards]
 
-Guards decide who an [import from a HubSpot list](#importing-from-hubspot-lists) leaves out:
+导入保护规则决定[从 HubSpot 列表导入](#importing-from-hubspot-lists)时排除哪些人：
 
-| Guard | Default |
+| 保护规则 | 默认 |
 | --- | --- |
-| Skip contacts opted out of email | On |
-| Skip contacts in these lifecycle stages | On, for `Customer` and `Evangelist` |
-| Skip contacts with an open deal | On |
-| Skip contacts owned by someone outside the workspace | Off |
+| 跳过已选择不再接收邮件的联系人 | 开启 |
+| 跳过处于这些生命周期阶段的联系人 | 开启，针对 `Customer` 和 `Evangelist` |
+| 跳过已有未关闭商机的联系人 | 开启 |
+| 跳过由工作区之外的人负责的联系人 | 关闭 |
 
 </Fold>
 
 <Fold>
 
-## Working from inside HubSpot
+## 在 HubSpot 内开展工作 [#working-from-inside-hubspot]
 
-Two things put Warmbly inside HubSpot itself, so a rep never has to switch tabs to act on a contact:
+以下两项功能将 Warmbly 带入 HubSpot，销售人员无需切换标签页即可处理联系人：
 
-- **The Warmbly card** on every contact record shows the contact's Warmbly status, each campaign they are in with its step, and why a lead is paused. From the card you can add the contact to a campaign, pause or resume all of their campaigns, and open them in Warmbly. A contact new to Warmbly is created from the HubSpot record when you add them.
-- **The "Add to Warmbly campaign" workflow action** enrolls a workflow's contacts in the campaign you pick, so a HubSpot list, form or lifecycle change can feed outreach on its own. Contacts who opted out of email in HubSpot are skipped, and the action reports what happened in its output for the next step of the workflow.
+- **每个联系人记录上的 Warmbly 卡片**显示联系人的 Warmbly 状态、所参与的各营销活动及当前步骤，以及潜在客户暂停的原因。可以从卡片将联系人加入活动、暂停或恢复其所有活动，并在 Warmbly 中打开联系人。如果联系人尚不存在于 Warmbly，加入时会根据 HubSpot 记录创建。
+- **“加入 Warmbly 营销活动”工作流操作**将工作流中的联系人加入指定活动，让 HubSpot 列表、表单或生命周期变更自动为触达流程提供联系人。已在 HubSpot 中选择不再接收邮件的联系人会被跳过；操作会在输出中报告结果，供工作流下一步使用。
 
-The card acts as the Warmbly member matched to the HubSpot user viewing it (see [owners](#owners)), with that member's role:
+卡片以查看它的 HubSpot 用户所匹配的 Warmbly 成员身份和角色运行，参见[负责人](#owners)：
 
-| On the card | The member needs |
+| 卡片中的操作 | 成员需要的权限 |
 | --- | --- |
-| See the contact's Warmbly status and campaigns | View campaigns and view contacts |
-| Add to campaign | Manage campaigns and manage contacts |
-| Pause or resume campaigns | Manage campaigns |
+| 查看联系人的 Warmbly 状态和营销活动 | 查看营销活动和查看联系人 |
+| 加入营销活动 | 管理营销活动和管理联系人 |
+| 暂停或恢复营销活动 | 管理营销活动 |
 
-A HubSpot user with no matched member, or whose member is still invited, is banned from signing in, or lacks the permission, sees why on the card and changes nothing. The workflow action has no viewer: it is set up by whoever can edit HubSpot workflows, and it acts as the workspace owner.
+如果 HubSpot 用户没有匹配成员，或对应成员仍处于受邀状态、被禁止登录、缺少权限，卡片会说明原因，且不会修改任何内容。工作流操作没有查看者：由有权编辑 HubSpot 工作流的人设置，并以工作区所有者身份执行。
 
-The card and the workflow action need the HubSpot account to be in HubSpot mode in exactly one Warmbly workspace. When more than one workspace has it connected in HubSpot mode, both refuse until only one does.
-
-</Fold>
-
-<Fold>
-
-## Importing from HubSpot lists
-
-On the HubSpot page, pick one of your HubSpot lists. The preview counts who would come in and who is skipped, by reason: opted out, lifecycle stage, open deal, owned by someone outside the workspace, no email address, and duplicate address. Continue, and the list becomes an ordinary contact import, finished in the usual [import review](/guides/contacts-crm/#importing) where you pick the campaign, labels and duplicate handling.
-
-One import takes up to 25,000 contacts; a larger list is cut off at that number and the preview says so. The imported contacts are linked to their HubSpot records a couple of minutes later, so their first sends log against the right person.
-
-List import needs HubSpot's list permission, which is optional. A connection without it is asked to reconnect and allow list access.
+卡片和工作流操作要求该 HubSpot 账户恰好在一个 Warmbly 工作区中启用 HubSpot 模式。如果多个工作区都以 HubSpot 模式连接该账户，两项功能都会拒绝执行，直到只剩一个工作区启用。
 
 </Fold>
 
 <Fold>
 
-## Copying your Warmbly CRM into HubSpot
+## 从 HubSpot 名单导入 [#importing-from-hubspot-lists]
 
-When a workspace that used Warmbly's CRM switches, its own deals, tasks and notes are not in HubSpot yet. The HubSpot page counts them and copies the kinds you pick, once:
+在 HubSpot 页面选择一个 HubSpot 列表。预览会统计将导入的人数，以及按原因划分的跳过人数：已退订、生命周期阶段、已有未关闭商机、由工作区之外的人负责、没有电子邮件地址，以及地址重复。继续后，列表会转为普通联系人导入，在常规[导入审阅](/guides/contacts-crm/#importing)中选择营销活动、标签和重复处理方式并完成。
 
-- **Deals** move onto your first HubSpot pipeline. Each keeps its stage when HubSpot has a stage with the same name, and otherwise goes to the first stage that matches its status (open, won or lost)
-- **Tasks** and **notes** are created in HubSpot with their contact and deal
+一次最多导入 25,000 位联系人；更大的列表会在该数量处截断，并在预览中说明。导入的联系人会在几分钟后与其 HubSpot 记录关联，确保首次发送记录到正确的人。
 
-A record already in HubSpot is never copied twice, so running it again only picks up what was missed. A Warmbly deal, task or note you edit after switching is also created in HubSpot at that moment.
+列表导入需要 HubSpot 的列表权限，该权限为可选项。没有该权限的连接会被要求重新连接并允许列表访问。
 
 </Fold>
 
 <Fold>
 
-## Sync health and fixing errors
+## 将 Warmbly CRM 数据复制到 HubSpot [#copying-your-warmbly-crm-into-hubspot]
 
-The HubSpot page shows what is waiting, what failed in the last runs, how many records are mirrored, and when each pull (owners, pipelines, deals, tasks, contacts) last ran with any error it hit. **Sync now** starts a full pull; a second one within 30 seconds is refused with `crm_sync_running`.
+原先使用 Warmbly CRM 的工作区切换后，其自有商机、任务和备注还不存在于 HubSpot。HubSpot 页面会统计这些记录，并一次性复制你选择的类型：
 
-Changes you make in the dashboard go to HubSpot while you wait. Activity logging, automation-written records and copies go through a queue that retries a failure with growing gaps (a minute, five minutes, half an hour, up to several hours) before marking it failed. Failed items stay listed for 30 days with a plain-language reason. **Retry** sends them again and **Discard** drops them.
+- **商机**移入第一个 HubSpot 管道。如果 HubSpot 存在同名阶段，就保留阶段；否则进入与商机状态匹配的第一个阶段，即进行中、赢单或输单
+- **任务**和**备注**会连同其联系人及商机关联一起在 HubSpot 中创建
 
-| You see | What to do |
+已存在于 HubSpot 的记录不会重复复制，因此再次运行只会补齐遗漏项。切换后，如果编辑某个 Warmbly 商机、任务或备注，也会在当时将其创建到 HubSpot。
+
+</Fold>
+
+<Fold>
+
+## 同步状态与错误修复 [#sync-health-and-fixing-errors]
+
+HubSpot 页面会显示等待处理的内容、最近运行中失败的内容、已镜像的记录数，以及各项拉取（负责人、管道、商机、任务、联系人）的最近运行时间和错误。**立即同步**启动一次完整拉取；30 秒内再次启动会以 `crm_sync_running` 被拒绝。
+
+在控制台中修改时，会同步等待 HubSpot 写入。活动记录、自动化流程写入的记录以及复制操作通过队列处理；失败时以逐渐增长的间隔重试，从一分钟、五分钟、半小时到数小时，之后才标记为失败。失败项会保留在列表中 30 天，并提供通俗的原因说明。**重试**再次发送，**丢弃**则移除该项。
+
+| 提示 | 处理方式 |
 | --- | --- |
-| Reconnect HubSpot | HubSpot revoked Warmbly's access or a permission is missing. Reconnect from **Integrations** and approve every permission |
-| HubSpot refused the change | HubSpot's own rule, shown in its words (for example a required deal property). Fix it in HubSpot or on the record, then retry |
-| This record no longer exists in HubSpot | It was deleted in HubSpot. Discard the item |
-| That member is not a HubSpot user yet | Match the member to a HubSpot owner in [owners](#owners) |
-| HubSpot did not answer | HubSpot was slow or down. It retries by itself |
+| 重新连接 HubSpot | HubSpot 已撤销 Warmbly 访问权限，或缺少某项权限。从**集成**重新连接，并批准全部权限 |
+| HubSpot 拒绝修改 | 触发了 HubSpot 自身规则，界面显示其原始说明，例如商机缺少必填属性。在 HubSpot 或该记录中修复，然后重试 |
+| 此记录已不存在于 HubSpot | 记录已在 HubSpot 中删除。丢弃该项 |
+| 该成员尚未对应 HubSpot 用户 | 在[负责人](#owners)中将成员匹配到 HubSpot 负责人 |
+| HubSpot 未响应 | HubSpot 响应缓慢或服务中断。系统会自动重试 |
 
-Warmbly keeps its calls under HubSpot's limit for each HubSpot account (about 90 requests every 10 seconds, shared across every Warmbly process), and waits and retries when HubSpot asks it to slow down.
-
-</Fold>
-
-<Fold>
-
-## Switching back and disconnecting
-
-Choosing **Warmbly** as the CRM again, or disconnecting HubSpot, stops the sync and the activity logging. Nothing is deleted on either side: the deals, pipelines, tasks and notes that were mirrored stay in Warmbly as ordinary records you can edit, the hidden Warmbly-only pipelines come back, and HubSpot keeps everything that was written there. Switching back to the same HubSpot account later picks up the same records rather than duplicating them.
+Warmbly 对每个 HubSpot 账户的调用量都保持在 HubSpot 限额以内，约每 10 秒 90 次请求，并在所有 Warmbly 进程间共享额度；HubSpot 要求降速时，会等待并重试。
 
 </Fold>
 
 <Fold>
 
-## Self-hosting
+## 切换回来与断开连接 [#switching-back-and-disconnecting]
 
-A self-hosted instance uses its own HubSpot app. Create one in a HubSpot developer account, then:
-
-1. Set the redirect URL to `BACKEND_PUBLIC_URL` plus `/integrations/oauth/callback`, or to the value of `INTEGRATIONS_OAUTH_REDIRECT_URL` when you set one.
-2. Add the required scopes: `oauth`, `crm.objects.contacts.read`, `crm.objects.contacts.write`, `crm.objects.companies.read`, `crm.objects.companies.write`, `crm.objects.deals.read`, `crm.objects.deals.write`, `crm.objects.owners.read`, `crm.schemas.contacts.read` and `crm.schemas.contacts.write`. Add `crm.lists.read` and `sales-email-read` as optional scopes.
-3. Set `HUBSPOT_OAUTH_CLIENT_ID` and `HUBSPOT_OAUTH_CLIENT_SECRET` on the backend and the consumer, and set `APP_URL` so the `warmbly_link` property points at your dashboard. See [configuration](/development/configuration/#integrations).
-
-The consumer runs the minute-by-minute pull and the sync queue, so HubSpot mode needs no inbound traffic from HubSpot. Webhooks are optional: subscribe the app to `contact.creation`, `contact.propertyChange`, `contact.deletion`, `deal.creation`, `deal.propertyChange` and `deal.deletion` with the target URL `<backend>/api/v1/integrations/hubspot/webhooks`, and a change is picked up within seconds instead of within the minute. Deliveries are verified with HubSpot's `X-HubSpot-Signature-v3` signature over `BACKEND_PUBLIC_URL` and only make the next read come sooner; Warmbly always reads the record from HubSpot itself, and removes a deal or task only when HubSpot answers that it is gone.
+再次选择 **Warmbly** 作为 CRM，或断开 HubSpot，会停止同步和活动记录。任一侧都不会删除数据：已镜像的商机、管道、任务和备注留在 Warmbly，成为可编辑的普通记录；之前隐藏、仅属于 Warmbly 的管道会重新出现；HubSpot 保留所有已写入的内容。以后重新切换到同一个 HubSpot 账户时，会继续使用原有记录，不会创建重复项。
 
 </Fold>
 
 <Fold>
 
-## Moving a workspace
+## 自托管 [#self-hosting]
 
-A [workspace export](/guides/workspace-export-import/) carries the CRM mode, its setup choices, the owner matches, which Warmbly record is which HubSpot record, and each contact's HubSpot details, so the destination keeps updating the same HubSpot records instead of creating duplicates. The sync queue and the pull checkpoints stay behind; the destination starts its own pull. Reconnect HubSpot on the destination unless it uses the same HubSpot app and the archive carried credentials.
+自托管实例使用自己的 HubSpot 应用。在 HubSpot 开发者账户中创建应用，然后：
+
+1. 将重定向 URL 设为 `BACKEND_PUBLIC_URL` 加 `/integrations/oauth/callback`；如果设置了 `INTEGRATIONS_OAUTH_REDIRECT_URL`，则使用该值。
+2. 添加必需权限范围：`oauth`、`crm.objects.contacts.read`、`crm.objects.contacts.write`、`crm.objects.companies.read`、`crm.objects.companies.write`、`crm.objects.deals.read`、`crm.objects.deals.write`、`crm.objects.owners.read`、`crm.schemas.contacts.read` 和 `crm.schemas.contacts.write`。将 `crm.lists.read` 和 `sales-email-read` 添加为可选权限范围。
+3. 在后端和消费者服务中设置 `HUBSPOT_OAUTH_CLIENT_ID` 与 `HUBSPOT_OAUTH_CLIENT_SECRET`，并设置 `APP_URL`，让 `warmbly_link` 属性指向你的控制台。参见[配置](/development/configuration/#integrations)。
+
+消费者服务负责每分钟拉取和同步队列，因此 HubSpot 模式无需来自 HubSpot 的入站流量。Webhook 为可选项：让应用订阅 `contact.creation`、`contact.propertyChange`、`contact.deletion`、`deal.creation`、`deal.propertyChange` 和 `deal.deletion`，目标 URL 为 `<backend>/api/v1/integrations/hubspot/webhooks`，即可在数秒内而非一分钟内获取变更。投递使用 HubSpot 的 `X-HubSpot-Signature-v3` 签名，基于 `BACKEND_PUBLIC_URL` 验证；它只会让下一次读取提前发生。Warmbly 始终从 HubSpot 自身读取记录，并且只有 HubSpot 明确回应记录已不存在时，才会移除商机或任务。
 
 </Fold>
 
 <Fold>
 
-## FAQ
+## 迁移工作区 [#moving-a-workspace]
 
-**Does it work with free HubSpot?** Yes. Contacts, companies, deals, tasks, notes, owners and custom contact properties are all part of HubSpot's free CRM. The list and email-reading permissions are optional, so an account that cannot grant them still connects; only list import is unavailable without the list permission.
-
-**Which permissions does Warmbly ask for?** Read and write on contacts, companies and deals, read on owners, and read and write on the contact schema (for the Warmbly property group). Lists and email reading are asked for as optional.
-
-**Why are opens off?** Mail privacy proxies and security scanners open and click automatically, so opens are a weak signal and would bury the timeline. Turned on, they only update `warmbly_last_opened_at` and `warmbly_last_clicked_at`.
-
-**What happens to my data when I disconnect?** Everything that was mirrored stays in Warmbly as ordinary records, and nothing is removed from HubSpot. See [switching back and disconnecting](#switching-back-and-disconnecting).
-
-**Can I edit pipelines in Warmbly?** No, while HubSpot is your CRM. Edit them in HubSpot and they update in Warmbly within minutes.
-
-**Does every member need a HubSpot seat?** No. Members without a matched owner still see deals, tasks and notes; they cannot be assigned HubSpot deals or tasks, and their mailboxes log email under the contact's owner.
+[工作区导出](/guides/workspace-export-import/)包含 CRM 模式、设置选项、负责人匹配关系、Warmbly 记录与 HubSpot 记录的对应关系，以及各联系人的 HubSpot 详情，因此目标实例会继续更新同一批 HubSpot 记录，不会重复创建。同步队列和拉取检查点不会迁移；目标实例会开始自己的拉取。除非目标使用同一个 HubSpot 应用，且归档包含凭据，否则需在目标实例重新连接 HubSpot。
 
 </Fold>
 
-## Next steps
+<Fold>
+
+## 常见问题 [#faq]
+
+**支持免费版 HubSpot 吗？** 支持。联系人、公司、商机、任务、备注、负责人和自定义联系人属性都属于 HubSpot 免费 CRM。列表和读取邮件权限是可选的，因此无法授予它们的账户也能连接；只有列表导入在没有列表权限时不可用。
+
+**Warmbly 会请求哪些权限？** 对联系人、公司和商机的读写权限；读取负责人；以及联系人架构的读写权限，用于创建 Warmbly 属性组。列表和邮件读取权限作为可选项请求。
+
+**为什么默认关闭打开记录？** 邮件隐私代理和安全扫描器会自动打开与点击，因此打开只是较弱的信号，还会淹没时间线。开启后，也只更新 `warmbly_last_opened_at` 和 `warmbly_last_clicked_at`。
+
+**断开连接后，数据会怎样？** 所有已镜像的内容都作为普通记录保留在 Warmbly 中，HubSpot 中也不会移除任何内容。参见[切回原模式与断开连接](#switching-back-and-disconnecting)。
+
+**可以在 Warmbly 中编辑销售管道吗？** HubSpot 作为 CRM 期间不可以。请在 HubSpot 中编辑，几分钟内就会更新到 Warmbly。
+
+**每位成员都需要 HubSpot 席位吗？** 不需要。没有匹配负责人的成员仍可查看商机、任务和备注，只是不能被分配 HubSpot 商机或任务；其邮箱产生的邮件活动会记录在联系人的负责人名下。
+
+</Fold>
+
+## 后续步骤 [#next-steps]
 
 <Cards>
-  <Card title="Contacts & CRM" href="/guides/contacts-crm/" />
-  <Card title="Integrations" href="/guides/integrations/" />
-  <Card title="Automations" href="/guides/automations/" />
+  <Card title="联系人与 CRM" href="/guides/contacts-crm/" />
+  <Card title="集成" href="/guides/integrations/" />
+  <Card title="自动化流程" href="/guides/automations/" />
 </Cards>

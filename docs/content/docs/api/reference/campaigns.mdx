@@ -1,31 +1,31 @@
 ---
-title: Campaigns
-description: Create campaigns and sequences, manage senders, A/B variants, attachments, ramp and tracking settings, preflight checks, and start or stop sends.
+title: "营销活动"
+description: "创建营销活动和邮件序列，管理发件人、A/B 测试版本、附件、发送量递增与跟踪设置，执行发送前检查，并开始或停止发送。"
 ---
 
-Campaigns are the cold outreach unit in Warmbly. A campaign holds sending rules, a schedule, a sender pool, and an ordered list of sequence steps (email or action nodes). These endpoints cover campaign CRUD, the advanced outreach overrides, per-step A/B variants, attachments, the explicit sender pool, preflight and test sends, start and stop, activity logs, campaign-scoped tracking-domain verification, the nested sequence editor, the template preview helper, and the AI writing assistant.
+营销活动是 Warmbly 中的冷邮件营销单元。每个营销活动包含发送规则、时间安排、发件邮箱池，以及按顺序排列的邮件序列步骤（邮件或操作节点）。这些端点涵盖营销活动的增删改查、高级营销设置覆盖、各步骤的 A/B 变体、附件、显式发件邮箱池、发送前检查和测试发送、启动和停止、活动日志、营销活动级跟踪域名验证、嵌套邮件序列编辑器、模板预览工具及 AI 写作助手。
 
-All errors follow the shared `{error, message, code, request_id}` envelope documented in [error codes](/api/error-codes/). Authentication and the scope model are covered in [authentication](/api/authentication/) and [permissions](/api/permissions/).
+所有错误均使用 [错误码](/api/error-codes/) 中说明的统一 `{error, message, code, request_id}` 响应结构。身份验证和权限范围模型分别见 [身份验证](/api/authentication/) 和 [权限](/api/permissions/)。
 
-`daily_limit` applies separately to each mailbox, not to the total sent by the campaign. Campaign send budgets use UTC calendar days; `timezone` controls the sending windows instead. Each mailbox is also constrained by its own cap, other campaigns sharing it, shared daily and rolling recipient limits, and scheduler safety clamps. Dispatch reservations count once, while campaign wake-ups that send no email do not consume the cap. See [campaign sending limits](/guides/campaigns/#sending-limits).
+`daily_limit` 分别作用于每个邮箱，而非营销活动的发送总量。营销活动的发送额度按 UTC 自然日计算；`timezone` 则用于控制发送时段。每个邮箱还受到自身上限、共用该邮箱的其他营销活动、共用的每日及滚动收件人数限制，以及调度器安全限制的约束。分发预留只计数一次；唤醒营销活动后未发送邮件，则不会消耗额度。详见 [营销活动发送限制](/guides/campaigns/#sending-limits)。
 
-## List campaigns
+## 列出营销活动 [#list-campaigns]
 
 `GET /campaigns`
 
-Search and page through the organization's campaigns. **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`.
+搜索组织的营销活动并分页浏览。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `q` | query | string | Free-text filter on campaign name. Optional. |
-| `folder` | query | string | Restrict to a single folder id. Optional. |
-| `status` | query | string | Status bucket filter: `draft`, `active`, `paused` (matches every paused variant), or `completed`. Any other value returns `400`. Optional. |
-| `cursor` | query | string | Opaque cursor from the previous page's `pagination.next_cursor`. Optional. |
-| `limit` | query | string | Page size. Optional. |
+| `q` | query | string | 按营销活动名称进行自由文本筛选。可选。 |
+| `folder` | query | string | 限定为单个文件夹 ID。可选。 |
+| `status` | query | string | 按状态类别筛选：`draft`、`active`、`paused`（匹配所有暂停状态变体）或 `completed`。其他值均返回 `400`。可选。 |
+| `cursor` | query | string | 上一页 `pagination.next_cursor` 中的不透明游标。可选。 |
+| `limit` | query | string | 每页条数。可选。 |
 
-### Response
+### 响应 [#response]
 
-A `data` plus `pagination` envelope. `next_cursor` is the campaign id to resume from (`null` on the last page), and `total` is the count matching the current `q`/`folder`/`status` filters.
+包含 `data` 和 `pagination` 的响应结构。`next_cursor` 是继续分页的起始营销活动 ID（最后一页为 `null`）；`total` 是符合当前 `q`/`folder`/`status` 筛选条件的数量。
 
 ```json
 {
@@ -89,13 +89,13 @@ A `data` plus `pagination` envelope. `next_cursor` is the campaign id to resume 
 }
 ```
 
-## Campaigns overview
+## 营销活动概览 [#campaigns-overview]
 
 `GET /campaigns-overview`
 
-Status-bucket counts plus per-folder totals for the organization, used to drive campaign browsing UIs. `paused` sums every paused variant (`paused`, `paused_no_accounts`, `paused_trial_expired`). The path has no campaign id, so it lives beside `/campaigns` rather than under it. **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`.
+返回组织各状态类别的计数及各文件夹的总数，供营销活动浏览界面使用。`paused` 汇总所有暂停状态变体（`paused`、`paused_no_accounts`、`paused_trial_expired`）。路径不包含营销活动 ID，因此与 `/campaigns` 同级，而不位于其下。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。
 
-### Response
+### 响应 [#response-1]
 
 ```json
 {
@@ -110,41 +110,41 @@ Status-bucket counts plus per-folder totals for the organization, used to drive 
 }
 ```
 
-## Estimate a send
+## 估算发送安排 [#estimate-a-send]
 
 `POST /campaigns-estimate`
 
-Project an audience against a sender pool before a campaign exists. The campaign is simulated day by day under the scheduler's own rules: each mailbox's cap and the campaign limit, the warmup graduation ceiling as it climbs, the workspace's risk band, health bands and holds, domain authentication, cold rotation, sending behaviour profiles, the plan's daily allowance, what other campaigns already send from the same mailboxes, and the sending window with its spacing. The warmup mail each warming mailbox keeps sending shares that spacing, so it is counted too. For a sequence, due follow-ups go out before new contacts start, and the totals assume nobody replies. Nothing is written, so it needs no `Idempotency-Key`. The dashboard's new-campaign flow shows this as its launch plan. **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`.
+在创建营销活动之前，基于发件邮箱池预测目标受众的发送计划。系统按调度器自身的规则逐日模拟营销活动：各邮箱上限及营销活动限制、预热达标后的递增发送上限、工作区风险等级、健康等级及暂停限制、域名身份验证、冷邮件轮换、发送行为配置、套餐每日额度、同一批邮箱中其他营销活动已有的发送量，以及发送时段和其中的发送间隔。仍在预热的邮箱所发送的预热邮件也共用这些间隔，因此同样计入。在邮件序列中，到期的跟进邮件先于新联系人的首封邮件发送，且总量预测假定没有人回复。本操作不写入任何内容，因此无需 `Idempotency-Key`。控制台的新建营销活动流程将此结果显示为启动计划。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。
 
-### Request body
+### 请求体 [#request-body]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `segment_ids` | string[] | yes | Segments making up the audience (at most 20). A contact in several of them is counted once. Send `[]` to project the pool alone: its mailboxes and capacity, with no finish date. |
-| `email_tag_ids` | string[] | no | Mailbox tags that resolve the pool. Omit or send `[]` for every active mailbox in the workspace. |
-| `daily_limit` | integer | no | Configurable campaign ceiling per mailbox, from `3` to `5000` (defaults to `50`), not a daily target. New mailboxes separately plan `28` to `32` per local working day by default; the lower limit wins. |
-| `days` | integer (0-127) | no | Weekday bitmask of sending days, bit 0 = Monday. Defaults to weekdays. |
-| `timezone` | string | no | IANA timezone the days and window are read in. Omit or send `""` to use the workspace timezone (UTC when none is set). |
-| `start_date` | string (RFC 3339) | no | When sending begins. Omit for now. |
-| `start_time` | string | no | Daily window start (`HH:MM`). Defaults to `08:00`, the window a new campaign gets. |
-| `end_time` | string | no | Daily window end (`HH:MM`). Defaults to `18:00`. An end at or before the start returns `400`. |
-| `step_waits` | integer[] | no | Each follow-up's `wait_after` in days (0 to 365), in order. Omit for a single email. At most 30. |
-| `campaign_id` | string | no | Project a saved campaign of this workspace. Its leads that no linked segment enrolled count toward `recipients` together with `segment_ids` (each contact once; leads a segment link enrolled count only while that segment is in `segment_ids`, since unlinking it withdraws them). Anything not sent (`daily_limit`, `days`, `timezone`, the window, including per-day windows) is taken from the campaign, and one that sends from mailboxes picked one by one uses those. A campaign from another workspace returns `404`. |
+| `segment_ids` | string[] | 是 | 构成目标受众的联系人分群（最多 20 个）。同一联系人出现在多个分群中时仅计数一次。发送 `[]` 可仅预测邮箱池本身：返回其中的邮箱及容量，不提供完成日期。 |
+| `email_tag_ids` | string[] | 否 | 用于确定邮箱池的邮箱标签。省略或发送 `[]` 时，使用工作区的所有活跃邮箱。 |
+| `daily_limit` | integer | 否 | 可配置的营销活动单邮箱发送上限，范围为 `3` 至 `5000`（默认为 `50`），并非每日目标量。新邮箱默认另按本地工作日规划每天 `28` 至 `32` 封；两项限制中较低者生效。 |
+| `days` | integer (0-127) | 否 | 发送日的星期位掩码，第 0 位代表星期一。默认为工作日。 |
+| `timezone` | string | 否 | 解释发送日和时段时使用的 IANA 时区。省略或发送 `""` 时，使用工作区时区（未设置时为 UTC）。 |
+| `start_date` | string (RFC 3339) | 否 | 开始发送的时间。省略表示现在。 |
+| `start_time` | string | 否 | 每日发送时段的起始时间（`HH:MM`）。默认为 `08:00`，即新营销活动采用的时段起点。 |
+| `end_time` | string | 否 | 每日发送时段的结束时间（`HH:MM`）。默认为 `18:00`。结束时间等于或早于开始时间时返回 `400`。 |
+| `step_waits` | integer[] | 否 | 按顺序提供各封跟进邮件的 `wait_after`，单位为天（0 至 365）。单封邮件时可省略。最多 30 项。 |
+| `campaign_id` | string | 否 | 预测此工作区内已保存的营销活动。活动中并非由关联分群加入的潜在客户，会与 `segment_ids` 一起计入 `recipients`（每位联系人只计数一次；由分群关联加入的潜在客户，仅在该分群仍位于 `segment_ids` 中时计入，因为取消关联会将其移出）。未提供的设置（`daily_limit`、`days`、`timezone`、发送时段，包括按天设置的时段）均取自营销活动；若活动使用逐个选定的邮箱发送，则采用这些邮箱。属于其他工作区的营销活动返回 `404`。 |
 
-### Response
+### 响应 [#response-2]
 
-`sending_days` and `estimated_finish_at` are `null` when the audience is empty, the pool has no capacity, or the send would take longer than two years. `daily_capacity` and `remaining_today` are the pool's ceiling today and what it has not already sent today. `steady_capacity` is a sending day's capacity once every mailbox has graduated from warmup, reached on `full_capacity_at` (`null` when it already has). Dates are midnight in the campaign's timezone.
+目标受众为空、邮箱池没有发送容量，或发送需要超过两年时，`sending_days` 和 `estimated_finish_at` 为 `null`。`daily_capacity` 和 `remaining_today` 分别为邮箱池今天的上限和今天尚未使用的发送量。`steady_capacity` 表示所有邮箱预热达标后每个发送日的容量，于 `full_capacity_at` 达到（若已达到，则为 `null`）。日期采用营销活动时区的午夜时间。
 
-| Field | Description |
+| 字段 | 说明 |
 | --- | --- |
-| `steps`, `total_sends` | Emails per contact, and `recipients` times `steps`. |
-| `first_touch_finish_at` | The day the last contact gets their first email. |
-| `ramping`, `held` | Mailboxes still climbing their graduation ceiling, and mailboxes that send nothing today. |
-| `warmup` | `{mailboxes, per_day}`: the warmup mail running alongside the campaign. |
-| `other_campaigns_per_day` | What the pool's mailboxes sent for other campaigns on an average day over the last week. |
-| `bottleneck` | The clamp that costs the most sends on the first full sending day: `campaign_limit`, `warmup_graduation`, `spacing`, `other_campaigns`, `health`, `held`, `workspace_risk`, `org_daily_limit` or `sending_behavior`. Empty when the mailboxes' own caps are the limit. |
-| `timeline` | Up to 120 days from the start: `date`, `sending_day`, `capacity`, `sends`, `first_emails`, `follow_ups`, `warmup`. |
-| `senders` | Up to 200 mailboxes: `id`, `email`, `provider`, `state` (`ready`, `ramping`, `throttled`, `health_hold`, `domain_auth`, `resting`, `no_worker`), `first_day_cap`, `steady_cap`, `warmup_per_day`, `full_cap_at`. |
+| `steps`, `total_sends` | 每位联系人的邮件数，以及 `recipients` 乘以 `steps`。 |
+| `first_touch_finish_at` | 最后一位联系人收到首封邮件的日期。 |
+| `ramping`, `held` | 预热达标后的发送上限仍在递增的邮箱数量，以及今天不发送邮件的邮箱数量。 |
+| `warmup` | `{mailboxes, per_day}`：与营销活动同时运行的预热邮件。 |
+| `other_campaigns_per_day` | 过去一周中，邮箱池内各邮箱为其他营销活动发送的日均邮件量。 |
+| `bottleneck` | 首个完整发送日中导致发送量损失最多的限制：`campaign_limit`、`warmup_graduation`、`spacing`、`other_campaigns`、`health`、`held`、`workspace_risk`、`org_daily_limit` 或 `sending_behavior`。若限制来自邮箱自身上限，则为空。 |
+| `timeline` | 从开始日期起最多 120 天：`date`、`sending_day`、`capacity`、`sends`、`first_emails`、`follow_ups`、`warmup`。 |
+| `senders` | 最多 200 个邮箱：`id`、`email`、`provider`、`state`（`ready`、`ramping`、`throttled`、`health_hold`、`domain_auth`、`resting`、`no_worker`）、`first_day_cap`、`steady_cap`、`warmup_per_day`、`full_cap_at`。 |
 
 ```json
 {
@@ -173,58 +173,58 @@ Project an audience against a sender pool before a campaign exists. The campaign
 }
 ```
 
-## Create a campaign
+## 创建营销活动 [#create-a-campaign]
 
 `POST /campaigns`
 
-Create a campaign. Only `name` is required, every other field is optional and applied only when sent (the wizard sends everything at once, a simple modal can send just `{name, description}` and get sane defaults). **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+创建营销活动。仅 `name` 必填，其他字段均可选，且只应用已提交的字段（向导会一次提交全部设置，简单弹窗则可以只提交 `{name, description}`，并采用合理的默认值）。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-### Request body
+### 请求体 [#request-body-1]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `name` | string | yes | Campaign name. |
-| `description` | string | no | Free-text description. |
-| `stop_on_reply` | boolean | no | Stop sending to a contact once they reply. |
-| `open_tracking` | boolean | no | Insert the open pixel. |
-| `link_tracking` | boolean | no | Rewrite links through the tracking ticket service. Each link gets its own ticket, so clicks are attributed per link. |
-| `utm_tracking` | boolean | no | Tag every link with `utm_source`, `utm_medium`, `utm_campaign` and a per-link `utm_content` at send time. Default `false`. Values already on a link are kept. |
-| `utm_source` | string | no | Overrides the default `warmbly`. Empty means the default. Up to 128 characters. |
-| `utm_medium` | string | no | Overrides the default `email`. Empty means the default. |
-| `utm_campaign` | string | no | Overrides the default, the campaign name as a slug. Empty means the default. |
-| `text_only` | boolean | no | Send plain text only: no HTML part, and open and click tracking are off regardless of their flags. |
-| `daily_limit` | integer | no | Daily campaign send cap per mailbox, from `3` to `5000`. |
-| `unsubscribe_header` | boolean | no | Add the RFC 8058 one-click unsubscribe header. |
-| `risky_emails` | boolean | no | Allow sending to risky/unverified addresses. |
-| `cc` | string[] | no | Static CC list, on every email to every lead. An address that is suppressed, is the lead's own, or has bounced on this campaign is left off that email. To copy someone on one lead only, see [set a lead's CC](#set-a-leads-cc). |
-| `bcc` | string[] | no | Static BCC list, filtered the same way. |
-| `start_date` | string (RFC 3339), nullable | no | Earliest send time. Today or later; omit or send `null` to start as soon as the campaign is active. |
-| `end_date` | string (RFC 3339), nullable | no | Latest send time. Must be in the future; omit or send `null` for an open-ended campaign. |
-| `timezone` | string | no | IANA timezone for the schedule. Omit or send `""` to follow the workspace timezone, resolved on every read (UTC when none is set). The response carries the zone in use as `effective_timezone`. |
-| `days` | integer (0-127) | no | Legacy weekday bitmask (superseded by `schedule_windows`). |
-| `start_time` | string | no | Legacy daily start (`HH:MM`). |
-| `end_time` | string | no | Legacy daily end (`HH:MM`). |
-| `schedule_windows` | array | no | Per-day sending windows, 7 arrays indexed by weekday (Sunday = 0) of `{start, end}` minute-of-day intervals. When non-empty it supersedes `days`, `start_time` and `end_time`. |
-| `email_tag_ids` | string[] | no | Mailbox tag ids that resolve the sender pool (tags strategy). |
-| `folder_ids` | string[] | no | Folder ids to file the campaign under. |
-| `sender_strategy` | string | no | `tags` (default) or `explicit`. `tags` resolves the pool from `email_tag_ids`, and falls back to every active mailbox in the workspace when no tag and no explicit sender is set. `explicit` sends from the mailboxes in `senders`, plus any `email_tag_ids` set alongside them. It never falls back to every active mailbox, so a pool that empties out parks the campaign at `paused_no_accounts` instead of widening to the whole workspace. |
-| `rotation_mode` | string | no | How volume spreads across the chosen mailboxes. |
-| `senders` | object[] | no | Explicit-strategy mailbox pool (see sender input below). |
-| `ramp_enabled` | boolean | no | Enable per-campaign daily ramp-up. |
-| `ramp_start` | integer | no | Ramp starting volume. |
-| `ramp_increment` | integer | no | Daily ramp increment. |
-| `ramp_ceiling` | integer | no | Ramp ceiling (never raises above the per-mailbox cap). |
-| `esp_match_mode` | string | no | `off`, `prefer`, or `strict`. |
-| `max_new_leads_per_day` | integer | no | New-lead throttle, `0` is unlimited. |
-| `prioritize_new_leads` | boolean | no | Prefer new leads in each send window. |
-| `entry_delay_minutes` | integer | no | Hold a contact's first email this long after they entered the campaign. `0` (the default) sends it as soon as the schedule and mailbox limits allow; the maximum is `129600` (90 days). Follow-up spacing is unaffected: that is each step's `wait_after`. |
-| `continuous` | boolean | no | Keep running for new leads: out of leads, the campaign stays `active` and waits instead of finishing. Linking a segment, a form or an automation that enrols leads turns it on, and so does starting a campaign whose every lead has finished. Default `false`. |
-| `tracking_domain` | string | no | Campaign-scoped tracking domain (honored only once verified). |
-| `steps` | object[] | no | Initial sequence steps in order (see create sequence input below). They are connected in order: each step routes unconditionally to the next, waiting that step's `wait_after` days. The first step's `wait_after` defaults to `0`, follow-ups to `3`. A step given no `subject`, or the same one as the conversation so far, defaults to `thread_reply: true` and is sent as a reply carrying that conversation's subject; a step with a subject of its own defaults to `false` and opens a new conversation. Set `thread_reply` explicitly to override either. |
-| `variants` | object[] | no | A/B variants for the first step (same shape as create A/B variant). |
-| `advanced_overrides` | object | no | Advanced outreach overrides, see [advanced settings](#get-advanced-settings). |
+| `name` | string | 是 | 营销活动名称。 |
+| `description` | string | 否 | 自由文本说明。 |
+| `stop_on_reply` | boolean | 否 | 联系人回复后停止向其发送。 |
+| `open_tracking` | boolean | 否 | 插入打开跟踪像素。 |
+| `link_tracking` | boolean | 否 | 通过跟踪票据服务重写链接。每个链接获得独立票据，因此点击可归因到具体链接。 |
+| `utm_tracking` | boolean | 否 | 发送时为每个链接添加 `utm_source`、`utm_medium`、`utm_campaign` 和各链接独立的 `utm_content`。默认为 `false`。保留链接中已有的值。 |
+| `utm_source` | string | 否 | 覆盖默认值 `warmbly`。为空时使用默认值。最多 128 个字符。 |
+| `utm_medium` | string | 否 | 覆盖默认值 `email`。为空时使用默认值。 |
+| `utm_campaign` | string | 否 | 覆盖默认值（由营销活动名称生成的 slug）。为空时使用默认值。 |
+| `text_only` | boolean | 否 | 仅发送纯文本：不包含 HTML 部分，并关闭打开和点击跟踪，无论相应开关如何设置。 |
+| `daily_limit` | integer | 否 | 营销活动中每个邮箱的每日发送上限，范围为 `3` 至 `5000`。 |
+| `unsubscribe_header` | boolean | 否 | 添加 RFC 8058 一键退订邮件头。 |
+| `risky_emails` | boolean | 否 | 允许向有风险或未经验证的地址发送。 |
+| `cc` | string[] | 否 | 静态抄送列表，应用于发给每位潜在客户的每封邮件。若地址被禁止发送、是该潜在客户本人的地址，或曾在此营销活动中退信，则不会出现在该封邮件的抄送列表中。仅为某一位潜在客户添加抄送时，参见 [设置潜在客户的抄送地址](#set-a-leads-cc)。 |
+| `bcc` | string[] | 否 | 静态密送列表，采用相同的筛选规则。 |
+| `start_date` | string (RFC 3339), nullable | 否 | 最早发送时间。必须是今天或之后；省略或发送 `null` 时，营销活动进入活跃状态后即可开始。 |
+| `end_date` | string (RFC 3339), nullable | 否 | 最晚发送时间。必须位于未来；省略或发送 `null` 表示营销活动不设结束时间。 |
+| `timezone` | string | 否 | 时间安排使用的 IANA 时区。省略或发送 `""` 时跟随工作区时区，每次读取时重新确定（未设置时为 UTC）。响应通过 `effective_timezone` 返回实际使用的时区。 |
+| `days` | integer (0-127) | 否 | 旧版星期位掩码（由 `schedule_windows` 替代）。 |
+| `start_time` | string | 否 | 旧版每日开始时间（`HH:MM`）。 |
+| `end_time` | string | 否 | 旧版每日结束时间（`HH:MM`）。 |
+| `schedule_windows` | array | 否 | 按天设置的发送时段：由 7 个数组组成，按星期索引（星期日为 0），每项为以当天分钟数表示的 `{start, end}` 区间。非空时优先于 `days`、`start_time` 和 `end_time`。 |
+| `email_tag_ids` | string[] | 否 | 用于确定发件邮箱池的邮箱标签 ID（标签策略）。 |
+| `folder_ids` | string[] | 否 | 营销活动所属的文件夹 ID。 |
+| `sender_strategy` | string | 否 | `tags`（默认）或 `explicit`。`tags` 根据 `email_tag_ids` 确定邮箱池；若未设置标签且未指定显式发件邮箱，则回退到工作区的所有活跃邮箱。`explicit` 使用 `senders` 中的邮箱，以及同时设置的 `email_tag_ids`。此策略绝不会回退到所有活跃邮箱，因此邮箱池变空时，营销活动会停留在 `paused_no_accounts`，而不会将范围扩大到整个工作区。 |
+| `rotation_mode` | string | 否 | 发送量在所选邮箱之间的分配方式。 |
+| `senders` | object[] | 否 | 显式策略的邮箱池（参见下方的发件邮箱输入）。 |
+| `ramp_enabled` | boolean | 否 | 启用营销活动级每日发送量递增。 |
+| `ramp_start` | integer | 否 | 发送量递增的起始量。 |
+| `ramp_increment` | integer | 否 | 每天递增的发送量。 |
+| `ramp_ceiling` | integer | 否 | 发送量递增上限（不会超过单邮箱上限）。 |
+| `esp_match_mode` | string | 否 | `off`、`prefer` 或 `strict`。 |
+| `max_new_leads_per_day` | integer | 否 | 新潜在客户限流值；`0` 表示不限制。 |
+| `prioritize_new_leads` | boolean | 否 | 在各发送时段中优先处理新潜在客户。 |
+| `entry_delay_minutes` | integer | 否 | 联系人加入营销活动后，其首封邮件等待的时长。`0`（默认值）表示时间安排和邮箱限制允许时立即发送；最大值为 `129600`（90 天）。跟进邮件间隔不受影响，仍由各步骤的 `wait_after` 决定。 |
+| `continuous` | boolean | 否 | 持续接收新潜在客户：潜在客户全部处理完毕时，营销活动保持 `active` 并等待，而不是结束。关联会加入潜在客户的分群、表单或自动化流程会启用此设置；启动一个所有潜在客户都已完成的营销活动也会启用它。默认为 `false`。 |
+| `tracking_domain` | string | 否 | 营销活动级跟踪域名（验证通过后才会使用）。 |
+| `steps` | object[] | 否 | 按顺序排列的初始邮件序列步骤（参见下方的创建邮件序列输入）。各步骤依次连接：每一步无条件进入下一步，并等待该步骤 `wait_after` 指定的天数。第一步的 `wait_after` 默认为 `0`，跟进步骤默认为 `3`。未提供 `subject`、或主题与当前会话相同的步骤，默认采用 `thread_reply: true`，作为回复发送并沿用会话主题；使用独立主题的步骤默认为 `false`，会开启新会话。显式设置 `thread_reply` 可覆盖上述任一默认行为。 |
+| `variants` | object[] | 否 | 第一步的 A/B 变体（结构与创建 A/B 变体相同）。 |
+| `advanced_overrides` | object | 否 | 高级营销设置覆盖，参见 [高级设置](#get-advanced-settings)。 |
 
-`schedule_windows` may also be supplied as a 7-element array (indexed by `time.Weekday`, Sunday = 0) of `{start, end}` minute intervals. When non-empty it supersedes `days`/`start_time`/`end_time`.
+`schedule_windows` 也可提供为包含 7 个元素的数组（按 `time.Weekday` 索引，星期日为 0），各元素为 `{start, end}` 分钟区间。非空时优先于 `days`/`start_time`/`end_time`。
 
 ```json
 {
@@ -250,41 +250,41 @@ Create a campaign. Only `name` is required, every other field is optional and ap
 }
 ```
 
-### Response
+### 响应 [#response-3]
 
-The created `Campaign` object (same shape as one element of the [list](#list-campaigns) `data` array).
+创建的 `Campaign` 对象（结构与 [列表](#list-campaigns) 的 `data` 数组中的单个元素相同）。
 
-## Get a campaign
+## 获取营销活动 [#get-a-campaign]
 
 `GET /campaigns/:id`
 
-Fetch a single campaign by id. **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`.
+按 ID 获取单个营销活动。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Response
+### 响应 [#response-4]
 
-A `Campaign` object (see the [list](#list-campaigns) shape).
+一个 `Campaign` 对象（参见 [列表](#list-campaigns) 的结构）。
 
-## Update a campaign
+## 更新营销活动 [#update-a-campaign]
 
 `PATCH /campaigns/:id`
 
-Patch any subset of campaign fields. Omitted fields are left unchanged. The explicit sender list is edited through [replace senders](#replace-senders), only the `sender_strategy`/`rotation_mode` toggles ride this PATCH. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+更新任意部分营销活动字段。省略的字段保持不变。显式发件邮箱列表通过 [替换发件邮箱](#replace-senders) 编辑；此 PATCH 仅包含 `sender_strategy`/`rotation_mode` 切换设置。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Request body
+### 请求体 [#request-body-2]
 
-Every field is optional. Scalar fields use nullable pointers, so any field you send is applied. `timezone` accepts `""` to make the campaign follow the workspace timezone. `start_date` and `end_date` additionally accept an explicit `null` to clear the stored date: a null `start_date` means "start now" and a null `end_date` means "run open-ended". Changing any schedule field (`start_date`, `end_date`, `timezone`, `days`, `start_time`, `end_time`, `schedule_windows`, `entry_delay_minutes`) on an active campaign reschedules its next send immediately, so clearing a future start date or shortening the entry delay takes effect right away. Notable fields: `name`, `description`, `status`, `stop_on_reply`, `open_tracking`, `link_tracking`, `text_only`, `daily_limit`, `unsubscribe_header`, `risky_emails`, `cc`, `bcc`, `start_date`, `end_date`, `timezone`, `days`, `start_time`, `end_time`, `schedule_windows`, `email_tags`, `folders`, `contact_order_by`, `contact_order_dir`, `contact_order_field`, `sender_strategy`, `rotation_mode`, `ramp_enabled`, `ramp_start`, `ramp_increment`, `ramp_ceiling`, `esp_match_mode`, `max_new_leads_per_day`, `prioritize_new_leads`, `entry_delay_minutes`, `continuous`, `tracking_domain`, `utm_tracking`, `utm_source`, `utm_medium`, `utm_campaign`.
+所有字段均可选。标量字段使用可空指针，因此提交的任何字段都会应用。`timezone` 接受 `""`，使营销活动跟随工作区时区。`start_date` 和 `end_date` 还接受显式 `null` 以清除已保存的日期：`start_date` 为空表示“立即开始”，`end_date` 为空表示“不设结束时间”。对活跃营销活动更改任一时间安排字段（`start_date`、`end_date`、`timezone`、`days`、`start_time`、`end_time`、`schedule_windows`、`entry_delay_minutes`）时，会立即重新安排下一次发送，因此清除未来的开始日期或缩短加入后的等待时间会立即生效。主要字段：`name`、`description`、`status`、`stop_on_reply`、`open_tracking`、`link_tracking`、`text_only`、`daily_limit`、`unsubscribe_header`、`risky_emails`、`cc`、`bcc`、`start_date`、`end_date`、`timezone`、`days`、`start_time`、`end_time`、`schedule_windows`、`email_tags`、`folders`、`contact_order_by`、`contact_order_dir`、`contact_order_field`、`sender_strategy`、`rotation_mode`、`ramp_enabled`、`ramp_start`、`ramp_increment`、`ramp_ceiling`、`esp_match_mode`、`max_new_leads_per_day`、`prioritize_new_leads`、`entry_delay_minutes`、`continuous`、`tracking_domain`、`utm_tracking`、`utm_source`、`utm_medium`、`utm_campaign`。
 
-`entry_delay_minutes` is anchored on when each contact entered the campaign, not on when the campaign started, so a contact enrolled by a linked segment next week waits the same amount from their own arrival. Leads that were in the campaign before the field existed count from the campaign's `created_at`, so turning a delay on never re-delays leads that have been enrolled for weeks.
+`entry_delay_minutes` 以每位联系人加入营销活动的时间为起点，而非活动开始时间，因此下周通过关联分群加入的联系人，也会从自己加入时起等待相同的时长。在此字段引入之前就已加入活动的潜在客户，以活动的 `created_at` 为起点，因此启用延迟不会让已加入数周的潜在客户重新等待。
 
-A campaign with `continuous` set stays `active` when it runs out of leads and carries `idle_since` while it waits; the timestamp clears once it has something to send. A continuous campaign can be started with no leads at all; starting one that is not continuous and has never had a lead answers `400` `no_leads`. Starting a campaign that has at least one lead and nothing left to send, because every lead has finished the sequence, turns `continuous` on and waits for leads (see [start a campaign](#start-a-campaign)). Adding a lead to a `completed` campaign by any path (this API, a linked segment, an automation) restarts it through the same launch checks as starting it by hand; a refused restart is written to the campaign's activity log.
+设置了 `continuous` 的营销活动在潜在客户全部处理完毕后保持 `active`，并在等待期间携带 `idle_since`；有内容可发送时该时间戳便会清除。持续运行的营销活动可以在没有任何潜在客户时启动；非持续运行且从未有过潜在客户的活动启动时返回 `400` `no_leads`。若活动至少有一位潜在客户，但所有人都已完成邮件序列而无内容可发，启动时会启用 `continuous` 并等待新潜在客户（参见 [启动营销活动](#start-a-campaign)）。通过任何途径（此 API、关联分群或自动化流程）向 `completed` 营销活动添加潜在客户，都会经过与手动启动相同的启动检查来重新启动活动；重启遭拒会记录到活动日志中。
 
 ```json
 {
@@ -295,71 +295,71 @@ A campaign with `continuous` set stays `active` when it runs out of leads and ca
 }
 ```
 
-### Response
+### 响应 [#response-5]
 
-The updated `Campaign` object.
+更新后的 `Campaign` 对象。
 
-## Delete a campaign
+## 删除营销活动 [#delete-a-campaign]
 
 `DELETE /campaigns/:id`
 
-Permanently delete a campaign. Any member of the workspace with the permission can delete any of its campaigns, not only the ones they created. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+永久删除营销活动。拥有相应权限的任何工作区成员都可以删除其中任一营销活动，不限于自己创建的活动。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-A running campaign does not need to be paused first: its pending tasks (the parked wakeup and any send not yet handed to a worker) are cancelled in the same transaction that removes the campaign, so nothing keeps sending for it. A send already in a worker's hands finishes, and its result is discarded.
+运行中的营销活动无需先暂停：删除活动的同一事务会取消其待处理任务（等待中的唤醒任务，以及尚未交给工作节点的发送任务），因此不会继续为其发送。已经交给工作节点的发送会完成，但其结果会被丢弃。
 
-What is removed with the campaign: steps, leads and their progress, the activity log, senders, A/B variants, advanced settings, daily counters, preflight reports and attachment files. What stays: contacts, emails already sent (still in the inbox and in reply threads), suppression entries, deals and bookings (their campaign link is cleared), and tracked links, so a recipient who clicks a link in an email sent earlier is still redirected.
+随营销活动删除的内容包括：步骤、潜在客户及其进度、活动日志、发件邮箱、A/B 变体、高级设置、每日计数器、发送前检查报告和附件文件。保留的内容包括：联系人、已发送的邮件（仍显示在收件箱及回复会话中）、禁止发送记录、商机和预约（清除其营销活动关联），以及跟踪链接，因此收件人点击先前邮件中的链接时仍可正常跳转。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Response
+### 响应 [#response-6]
 
-`204 No Content` with an empty body.
+`204 No Content`，响应体为空。
 
-## Duplicate a campaign
+## 复制营销活动 [#duplicate-a-campaign]
 
 `POST /campaigns/:id/duplicate`
 
-Create a new draft campaign from an existing campaign's configuration. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`. Counts against the same daily new-campaign throttle as [create](#create-a-campaign).
+根据现有营销活动的配置创建新的草稿营销活动。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。与 [创建](#create-a-campaign) 共用同一每日新建营销活动限流额度。
 
-Copied: name (suffixed with ` (copy)` unless you pass one), description, every sending, tracking, schedule, rotation, ramp, ESP-matching and auto-pause setting, the steps with their subjects, bodies, waits, canvas positions and branch graph (rewired onto the new step ids), email tags, folders, the explicit sender list, A/B variants, advanced settings and attachments.
+复制的内容包括：名称（除非另行提供，否则追加 ` (copy)`）、描述、所有发送、跟踪、时间安排、轮换、发送量递增、ESP 匹配及自动暂停设置，以及各步骤的主题、正文、等待时间、画布位置和分支图（重新连接到新步骤 ID）、邮箱标签、文件夹、显式发件邮箱列表、A/B 变体、高级设置和附件。
 
-Not copied: leads, progress, sent/open/click/reply statistics, the activity log, daily counters, tasks, the ramp level, an auto-pause trip, and any start or end date already in the past (a past end date would finish the copy the moment it starts). Sender rotation cursors start from zero. The copy is owned by the caller and starts as `draft`; it never sends until it is started.
+不复制的内容包括：潜在客户、进度、发送/打开/点击/回复统计、活动日志、每日计数器、任务、发送量递增级别、自动暂停触发状态，以及任何已经过去的开始或结束日期（过去的结束日期会让副本一启动就结束）。发件邮箱轮换游标从零开始。副本归调用者所有，初始状态为 `draft`；在启动之前不会发送任何邮件。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign to copy. |
+| `id` | path | uuid | 要复制的营销活动。 |
 
-### Request body
+### 请求体 [#request-body-3]
 
-Optional.
+可选。
 
-| Field | Type | Description |
+| 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `name` | string | Name for the copy, 3 to 50 characters. Defaults to the source name with ` (copy)` appended. |
+| `name` | string | 副本名称，3 至 50 个字符。默认为原名称后追加 ` (copy)`。 |
 
 ```json
 { "name": "Q3 outbound, subject B" }
 ```
 
-### Response
+### 响应 [#response-7]
 
-`201 Created` with the new `Campaign` object (see the [list](#list-campaigns) shape), including `senders`.
+`201 Created`，包含新的 `Campaign` 对象（参见 [列表](#list-campaigns) 的结构），其中含有 `senders`。
 
-## Get advanced settings
+## 获取高级设置 [#get-advanced-settings]
 
 `GET /campaigns/:id/advanced`
 
-Return the campaign's advanced outreach overrides (bounce pipeline, task reliability, A/B testing, reply intent, send-time optimization, preflight, dashboard). **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`.
+返回营销活动的高级营销设置覆盖（退信处理流程、任务可靠性、A/B 测试、回复意图、发送时间优化、发送前检查、控制台）。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Response
+### 响应 [#response-8]
 
-A `CampaignAdvancedSettings` object: the campaign id, the `overrides` block, and `updated_at`.
+一个 `CampaignAdvancedSettings` 对象：包含营销活动 ID、`overrides` 配置块和 `updated_at`。
 
 ```json
 {
@@ -412,21 +412,21 @@ A `CampaignAdvancedSettings` object: the campaign id, the `overrides` block, and
 }
 ```
 
-## Update advanced settings
+## 更新高级设置 [#update-advanced-settings]
 
 `PATCH /campaigns/:id/advanced`
 
-Replace the campaign's advanced overrides. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_settings`.
+替换营销活动的高级设置覆盖。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Request body
+### 请求体 [#request-body-4]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `settings` | object | yes | A full `AdvancedOutreachSettings` block (same shape as `overrides` above). |
+| `settings` | object | 是 | 完整的 `AdvancedOutreachSettings` 配置块（结构与上方的 `overrides` 相同）。 |
 
 ```json
 {
@@ -442,27 +442,27 @@ Replace the campaign's advanced overrides. **Scope** `WRITE_CAMPAIGNS` · **Org 
 }
 ```
 
-### Response
+### 响应 [#response-9]
 
-`204 No Content` with an empty body.
+`204 No Content`，响应体为空。
 
-## List A/B variants
+## 列出 A/B 测试版本 [#list-ab-variants]
 
 `GET /campaigns/:id/ab-variants`
 
-List the campaign's A/B variants. A variant scoped to a `step_id` applies to one step, a `null` sequence id is campaign-level. **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`.
+列出营销活动的 A/B 变体。指定 `step_id` 的变体仅作用于一个步骤；序列 ID 为 `null` 时，变体作用于整个营销活动。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。
 
-<Callout type="info" title="The Original is a weighted arm">
-For a step-scoped test the step's own email is the Original (control) arm. By default it carries an even share, but you can give it an explicit share by creating one `is_control: true` variant on that `step_id` whose `weight` is the Original's share. That row's `subject`/`body` are ignored; when the control wins, the step's own content is sent. Control rows are excluded from the A/B analysis variant list.
+<Callout type="info" title="原始版本（Original）也是按权重分配流量的实验组">
+在步骤级测试中，步骤本身的邮件是原版（对照组）。默认情况下它占有均等份额；也可以在该 `step_id` 上创建一个 `is_control: true` 变体，以其 `weight` 显式指定原版的份额。该行的 `subject`/`body` 会被忽略；选中对照组时，发送步骤自身的内容。A/B 分析的变体列表不包含对照组行。
 </Callout>
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Response
+### 响应 [#response-10]
 
-A `data` array of `CampaignABVariant` objects (no pagination wrapper).
+包含 `CampaignABVariant` 对象的 `data` 数组（无分页封装）。
 
 ```json
 {
@@ -485,29 +485,29 @@ A `data` array of `CampaignABVariant` objects (no pagination wrapper).
 }
 ```
 
-## Create an A/B variant
+## 创建 A/B 测试版本 [#create-an-ab-variant]
 
 `POST /campaigns/:id/ab-variants`
 
-Add a variant to the campaign (or to one step via `step_id`). **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_settings`.
+向营销活动添加变体（或通过 `step_id` 向单个步骤添加）。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Request body
+### 请求体 [#request-body-5]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `name` | string | yes | Variant label. |
-| `step_id` | uuid | no | Step to scope the variant to, omit for campaign-level. Must be a step of this campaign, or the request answers `400`. |
-| `weight` | integer | no | Relative selection weight (1-100). Shares are these weights normalized across the active arms, so two arms at equal weight split evenly. |
-| `subject` | string | no | Variant subject template. Blank reuses the step's. Ignored when the step replies in the contact's thread (`thread_reply`), which carries the conversation's subject. When the step opens a conversation, the follow-ups threading on it reply under the subject of whichever arm each contact was sent. |
-| `body_html` | string | no | Variant HTML body. |
-| `body_plain` | string | no | Variant plain-text body. |
-| `is_control` | boolean | no | Mark this as the step's control arm. For a step-scoped test, create one `is_control` row to set the Original's share; its `weight` is the Original's share and its content is ignored (the step's own email is sent when the control wins). |
-| `is_active` | boolean | no | Whether the variant participates in the split. |
-| `metadata` | object | no | Free-form metadata. |
+| `name` | string | 是 | 变体标签。 |
+| `step_id` | uuid | 否 | 变体适用的步骤，省略则为营销活动级。必须是此营销活动中的步骤，否则请求返回 `400`。 |
+| `weight` | integer | 否 | 相对选取权重（1–100）。各份额由参与测试的各组权重归一化后得到，因此两组权重相同时平分流量。 |
+| `subject` | string | 否 | 变体主题模板。为空时复用步骤的主题。步骤在联系人的现有会话中回复（`thread_reply`）时，此字段会被忽略并沿用会话主题。若步骤开启新会话，在该会话中继续回复的跟进邮件会沿用该联系人实际收到的测试组主题。 |
+| `body_html` | string | 否 | 变体的 HTML 正文。 |
+| `body_plain` | string | 否 | 变体的纯文本正文。 |
+| `is_control` | boolean | 否 | 将此变体标记为步骤的对照组。对于步骤级测试，创建一行 `is_control` 可设置原版份额；其 `weight` 为原版份额，内容则被忽略（选中对照组时发送步骤自身的邮件）。 |
+| `is_active` | boolean | 否 | 变体是否参与流量分配。 |
+| `metadata` | object | 否 | 自由格式的元数据。 |
 
 ```json
 {
@@ -521,61 +521,61 @@ Add a variant to the campaign (or to one step via `step_id`). **Scope** `WRITE_C
 }
 ```
 
-### Response
+### 响应 [#response-11]
 
-`201 Created` with the created `CampaignABVariant` object (see the [list variants](#list-ab-variants) shape).
+`201 Created`，包含创建的 `CampaignABVariant` 对象（参见 [变体列表](#list-ab-variants) 的结构）。
 
-## Update an A/B variant
+## 更新 A/B 测试版本 [#update-an-ab-variant]
 
 `PATCH /campaigns/:id/ab-variants/:variantId`
 
-Patch a variant. Omitted fields are unchanged. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_settings`.
+更新变体。省略的字段保持不变。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
-| `variantId` | path | uuid | Variant id. |
+| `id` | path | uuid | 营销活动 ID。 |
+| `variantId` | path | uuid | 变体 ID。 |
 
-### Request body
+### 请求体 [#request-body-6]
 
-All fields optional: `name`, `weight`, `subject`, `body_html`, `body_plain`, `is_control`, `is_active`, `metadata`.
+所有字段均可选：`name`、`weight`、`subject`、`body_html`、`body_plain`、`is_control`、`is_active`、`metadata`。
 
 ```json
 { "weight": 70, "is_active": true }
 ```
 
-### Response
+### 响应 [#response-12]
 
-The updated `CampaignABVariant` object.
+更新后的 `CampaignABVariant` 对象。
 
-## Delete an A/B variant
+## 删除 A/B 测试版本 [#delete-an-ab-variant]
 
 `DELETE /campaigns/:id/ab-variants/:variantId`
 
-Remove a variant. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_settings`.
+删除变体。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
-| `variantId` | path | uuid | Variant id. |
+| `id` | path | uuid | 营销活动 ID。 |
+| `variantId` | path | uuid | 变体 ID。 |
 
-### Response
+### 响应 [#response-13]
 
-`204 No Content` with an empty body.
+`204 No Content`，响应体为空。
 
-## Get A/B analysis
+## 获取 A/B 测试分析 [#get-ab-analysis]
 
 `GET /campaigns/:id/ab-analysis`
 
-Return per-variant engagement stats plus the computed winner for the campaign. **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`.
+返回各变体的互动统计，以及为营销活动计算出的胜出变体。**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Response
+### 响应 [#response-14]
 
-An `ABWinnerAnalysis` object.
+一个 `ABWinnerAnalysis` 对象。
 
 ```json
 {
@@ -602,19 +602,19 @@ An `ABWinnerAnalysis` object.
 }
 ```
 
-## List attachments
+## 列出附件 [#list-attachments]
 
 `GET /campaigns/:id/attachments`
 
-List every attachment of the campaign. Each entry carries a short-lived presigned download `url` and its `step_id`: a file scoped to a step is sent by that step alone, and a `null` `step_id` means every step of the campaign sends it. **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`.
+列出营销活动的所有附件。每项均包含短期有效的预签名下载 `url` 及其 `step_id`：限定在某个步骤的文件仅由该步骤发送；`step_id` 为 `null` 时，营销活动的每个步骤都会发送该文件。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Response
+### 响应 [#response-15]
 
-A `data` array of attachment objects (no pagination wrapper).
+包含附件对象的 `data` 数组（无分页封装）。
 
 ```json
 {
@@ -633,50 +633,50 @@ A `data` array of attachment objects (no pagination wrapper).
 }
 ```
 
-## Upload an attachment
+## 上传附件 [#upload-an-attachment]
 
 `POST /campaigns/:id/attachments`
 
-Upload a file to attach to the campaign, or to one of its steps. Sent as `multipart/form-data`, not JSON. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+上传文件，作为营销活动或其中某个步骤的附件。使用 `multipart/form-data` 发送，而非 JSON。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
-| `file` | form (multipart) | file | Required. The file to upload (max 15 MB). Executable and script types are rejected. |
-| `step_id` | form (multipart) | uuid | Optional. Scope the attachment to one sequence step of this campaign, which is then the only step that sends it. Omit it to attach the file to every step. A step of another campaign returns `404`. |
+| `id` | path | uuid | 营销活动 ID。 |
+| `file` | form (multipart) | file | 必填。要上传的文件（最大 15 MB）。不接受可执行文件和脚本类型。 |
+| `step_id` | form (multipart) | uuid | 可选。将附件限定到此营销活动的某个邮件序列步骤，此后只有该步骤发送该附件。省略时，每个步骤都会附加该文件。指定其他营销活动的步骤时返回 `404`。 |
 
-### Response
+### 响应 [#response-16]
 
-`201 Created` with the created attachment object (same shape as one element of [list attachments](#list-attachments)).
+`201 Created`，包含创建的附件对象（结构与 [附件列表](#list-attachments) 的单个元素相同）。
 
-## Delete an attachment
+## 删除附件 [#delete-an-attachment]
 
 `DELETE /campaigns/:id/attachments/:attachmentId`
 
-Delete a campaign attachment and its stored object. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+删除营销活动附件及其存储对象。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
-| `attachmentId` | path | uuid | Attachment id. |
+| `id` | path | uuid | 营销活动 ID。 |
+| `attachmentId` | path | uuid | 附件 ID。 |
 
-### Response
+### 响应 [#response-17]
 
-`204 No Content` with an empty body.
+`204 No Content`，响应体为空。
 
-## Run preflight
+## 执行发送前检查 [#run-preflight]
 
 `POST /campaigns/:id/preflight`
 
-Run the campaign's preflight validation checks (tracking domain, unsubscribe header, daily limit, schedule window, A/B configuration, and more) and return a scored report. No mail is sent. **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`.
+运行营销活动的发送前验证检查（跟踪域名、退订邮件头、每日上限、发送时段、A/B 配置等），并返回带评分的报告。不发送邮件。**权限范围** `SEND_CAMPAIGNS` · **组织权限** `send_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Response
+### 响应 [#response-18]
 
-A `PreflightReport` object.
+一个 `PreflightReport` 对象。
 
 ```json
 {
@@ -699,26 +699,26 @@ A `PreflightReport` object.
 }
 ```
 
-## Send a test email
+## 发送测试邮件 [#send-a-test-email]
 
 `POST /campaigns/:id/test-email`
 
-Send a one-off test of a sequence step to a chosen recipient through a chosen mailbox. The message is assembled the way a real send is: merge fields and spintax resolve for the contact, the files that step sends are attached (the campaign's unscoped attachments plus that step's own), the mailbox signature and the campaign's opt-out footer are appended, and a plain-text campaign ships without an HTML part. The subject is prefixed with `[TEST]`. Opens and clicks on a test are never tracked, and its opt-out link names no contact, so clicking it suppresses nobody. Defaults to the first step when `step_id` is omitted. **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`.
+通过指定邮箱，将某个邮件序列步骤的一次性测试邮件发送给指定收件人。邮件的组装方式与真实发送相同：根据联系人解析合并字段和随机文本语法，附加该步骤应发送的文件（营销活动中未限定步骤的附件，加上该步骤自己的附件），追加邮箱签名和营销活动的退订页脚；纯文本营销活动不包含 HTML 部分。主题前添加 `[TEST]`。测试邮件的打开和点击不会被跟踪，其退订链接不指向任何联系人，因此点击链接不会禁止向任何人发送。省略 `step_id` 时，默认使用第一步。**权限范围** `SEND_CAMPAIGNS` · **组织权限** `send_campaigns`。
 
-The mailbox may be any mailbox of the organization, not only one the caller connected, and it does not have to be in the campaign's sender pool. An API key with an `allowed_email_accounts` list can only test from those mailboxes. Passing `contact_id` additionally requires `READ_CONTACTS` (org permission `view_contacts`), since the rendered copy reads that contact's fields.
+可使用组织中的任意邮箱，不限于调用者连接的邮箱，也不要求位于营销活动的发件邮箱池中。带有 `allowed_email_accounts` 列表的 API 密钥只能通过列表内的邮箱进行测试。提供 `contact_id` 还要求 `READ_CONTACTS`（组织权限 `view_contacts`），因为渲染邮件内容需要读取该联系人的字段。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Request body
+### 请求体 [#request-body-7]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `account_id` | uuid | yes | Sending mailbox id. |
-| `recipient` | string (email) | yes | Where to send the test. |
-| `step_id` | uuid | no | Step to render and send, defaults to the first step. |
-| `contact_id` | uuid | no | Contact of the organization to render the copy for, including its custom fields. Omitted renders for a placeholder contact (`Test Recipient` at `Test Company`, with the recipient's address and no custom fields). |
+| `account_id` | uuid | 是 | 发件邮箱 ID。 |
+| `recipient` | string (email) | 是 | 测试邮件的收件地址。 |
+| `step_id` | uuid | 否 | 要渲染并发送的步骤，默认为第一步。 |
+| `contact_id` | uuid | 否 | 用于渲染邮件内容的组织联系人，包含其自定义字段。省略时使用占位联系人进行渲染（`Test Company` 的 `Test Recipient`，使用收件人地址，无自定义字段）。 |
 
 ```json
 {
@@ -729,9 +729,9 @@ The mailbox may be any mailbox of the organization, not only one the caller conn
 }
 ```
 
-### Response
+### 响应 [#response-19]
 
-`contact_id` is present only when one was given.
+仅在提供了 `contact_id` 时，响应中才会包含此字段。
 
 ```json
 {
@@ -744,65 +744,65 @@ The mailbox may be any mailbox of the organization, not only one the caller conn
 }
 ```
 
-### Errors
+### 错误 [#errors]
 
-| Status | Code | When |
+| 状态 | 错误码 | 发生条件 |
 | --- | --- | --- |
-| `404` | `not_found` | The campaign, step, mailbox or contact does not belong to the caller's organization. |
-| `403` | `forbidden` | `contact_id` given without contact read permission, or `account_id` outside the API key's allowed mailboxes. |
-| `400` | `bad_request` | The campaign has no steps. |
+| `404` | `not_found` | 营销活动、步骤、邮箱或联系人不属于调用者的组织。 |
+| `403` | `forbidden` | 提供了 `contact_id`，但没有联系人读取权限；或 `account_id` 不在 API 密钥允许使用的邮箱中。 |
+| `400` | `bad_request` | 营销活动没有步骤。 |
 
-## Start a campaign
+## 启动营销活动 [#start-a-campaign]
 
 `POST /campaigns/:id/start`
 
-Start (activate) the campaign so it begins sending real mail. Works from `draft`, any paused status, or `completed` (a campaign closed by a passed end date resumes once the date is extended or cleared). A campaign with nothing left to send does not finish again: the start turns `continuous` on if it was off, and the campaign goes `active` and waits for leads with `idle_since` set; the switch is written to its activity log. **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`.
+启动（激活）营销活动，开始实际发送邮件。可从 `draft`、任意暂停状态或 `completed` 启动（因结束日期已过而关闭的活动，可在延长或清除该日期后恢复）。无内容可发送的活动不会再次结束：若 `continuous` 尚未启用，此次启动会将其开启，活动进入 `active` 并设置 `idle_since` 以等待潜在客户；此切换会写入活动日志。**权限范围** `SEND_CAMPAIGNS` · **组织权限** `send_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
-| `acknowledge_list_risk` | body | boolean | Optional. Launch even though the list's projected bounce rate would be refused (`list_bounce_risk`), for a list verified elsewhere. |
+| `id` | path | uuid | 营销活动 ID。 |
+| `acknowledge_list_risk` | body | boolean | 可选。即使名单的预估退信率原本会导致拒绝（`list_bounce_risk`），仍然启动；适用于已通过其他渠道验证的名单。 |
 
-A start refused because every remaining lead was refused by address verification answers `leads_undeliverable` and parks the campaign at `paused_undeliverable`; re-verify the leads or mark them deliverable with [`POST /contacts/verification`](/api/reference/contacts/#verify-or-override-contacts), which resumes it.
+若剩余潜在客户全部未通过地址验证而导致启动遭拒，返回 `leads_undeliverable`，并使营销活动停留在 `paused_undeliverable`。重新验证潜在客户，或通过 [`POST /contacts/verification`](/api/reference/contacts/#verify-or-override-contacts) 将其标记为可投递，即可恢复活动。
 
-A campaign whose email step has nothing in either body is refused with `empty_step_body` rather than started, because it would send a blank message to every lead it reached.
+若营销活动的某个邮件步骤在两种正文中均无内容，则以 `empty_step_body` 拒绝启动，以免向触达的每位潜在客户发送空白邮件。
 
-### Response
+### 响应 [#response-20]
 
 ```json
 { "status": "started", "waiting_for_leads": false }
 ```
 
-`waiting_for_leads` is `true` when the campaign started with nothing left to send and is now `active` with `idle_since` set.
+若启动时无内容可发送，且营销活动现已处于 `active` 并设置了 `idle_since`，则 `waiting_for_leads` 为 `true`。
 
-## Stop a campaign
+## 停止营销活动 [#stop-a-campaign]
 
 `POST /campaigns/:id/stop`
 
-Stop (pause) an active campaign. **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`.
+停止（暂停）活跃的营销活动。**权限范围** `SEND_CAMPAIGNS` · **组织权限** `send_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Response
+### 响应 [#response-21]
 
 ```json
 { "status": "stopped" }
 ```
 
-## Get a lead's hold
+## 获取潜在客户的暂停状态 [#get-a-leads-hold]
 
 `GET /campaigns/:id/leads/:contact_id/hold`
 
-Read whether one contact's flow inside this campaign is currently held. A hold parks the lead's next step without unsubscribing the contact and without removing them from the campaign; the two things that write one are an out-of-office auto-reply and a member pausing the lead by hand. **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`.
+读取某个联系人在此营销活动中的流程当前是否暂停。暂停会让该潜在客户的下一步等待，不会让联系人退订，也不会将其移出活动；外出自动回复和成员手动暂停潜在客户这两种情况会写入暂停记录。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
-| `contact_id` | path | uuid | Contact id. Must already be a lead of the campaign. |
+| `id` | path | uuid | 营销活动 ID。 |
+| `contact_id` | path | uuid | 联系人 ID。必须已是此营销活动的潜在客户。 |
 
-### Response
+### 响应 [#response-22]
 
 ```json
 {
@@ -817,62 +817,62 @@ Read whether one contact's flow inside this campaign is currently held. A hold p
 }
 ```
 
-`hold` is absent when the lead is not held, including for a dated hold that has since expired. `until` is absent when the hold has no end, in which case only a resume lifts it. `source` is `out_of_office`, `inbox_tagging`, `manual`, or `cc` while the contact is [copied on another lead's emails](#set-a-leads-cc) in this campaign; a `cc` hold's `reason` is that lead's address.
+潜在客户未暂停时不包含 `hold`，包括已到期的定时暂停。暂停没有结束时间时不包含 `until`，此时只能通过恢复操作解除。`source` 为 `out_of_office`、`inbox_tagging`、`manual`，或在联系人于此营销活动中 [被抄送另一位潜在客户的邮件](#set-a-leads-cc) 时为 `cc`；`cc` 暂停的 `reason` 是另一位潜在客户的地址。
 
-### Errors
+### 错误 [#errors-1]
 
-| Status | Code | When |
+| 状态 | 错误码 | 发生条件 |
 | --- | --- | --- |
-| `404` | `not_found` | The campaign is not the caller's organization's, or the contact is not a lead of it. |
+| `404` | `not_found` | 营销活动不属于调用者的组织，或联系人不是该活动的潜在客户。 |
 
-## Pause a lead
+## 暂停向潜在客户发送 [#pause-a-lead]
 
 `POST /campaigns/:id/leads/:contact_id/pause`
 
-Hold one contact's flow inside one campaign. The contact stays subscribed and stays a lead; the sequence picks up where it stopped when the hold lifts. This is the per-contact lever between leaving a lead alone and the two permanent ones, unsubscribing the contact and adding the address to the suppression list. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+暂停某个联系人在单个营销活动中的流程。联系人保持订阅状态，仍然是潜在客户；解除暂停时，邮件序列从停止的位置继续。相较于保持潜在客户原状，以及让联系人退订或将地址加入禁止发送名单这两项永久操作，这提供了针对单个联系人的临时控制。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-The request states an absolute hold rather than applying a delta, and replacing a hold that is still live keeps its original start, so a retry lands on exactly the same row and no `Idempotency-Key` is needed.
+请求声明完整的暂停状态，而非增量更改；替换仍有效的暂停时会保留原始开始时间，因此重试会作用于完全相同的记录，无需 `Idempotency-Key`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
-| `contact_id` | path | uuid | Contact id. Must already be a lead of the campaign. |
-| `until` | body | string | RFC 3339 timestamp the hold lifts at. Must be in the future and within a year. Omit or send `null` for a hold with no end, which only a resume lifts. |
-| `reason` | body | string | Optional note shown next to the hold in the dashboard. Trimmed and capped at 200 characters. |
+| `id` | path | uuid | 营销活动 ID。 |
+| `contact_id` | path | uuid | 联系人 ID。必须已是此营销活动的潜在客户。 |
+| `until` | body | string | 解除暂停的 RFC 3339 时间戳。必须是未来且在一年以内。省略或发送 `null` 时表示无限期暂停，只能通过恢复操作解除。 |
+| `reason` | body | string | 可选备注，在控制台中显示于暂停状态旁。会去除首尾空白，最多 200 个字符。 |
 
-A manual pause always wins: it replaces a hold an out-of-office auto-reply wrote, and a later auto-reply never shortens it or takes it over.
+手动暂停始终优先：它会替换外出自动回复写入的暂停，后续自动回复既不会缩短它，也不会将其覆盖。
 
-### Request body
+### 请求体 [#request-body-8]
 
 ```json
 { "until": "2026-09-21T17:00:00Z", "reason": "On holiday, asked to follow up later" }
 ```
 
-### Response
+### 响应 [#response-23]
 
-Same shape as [get a lead's hold](#get-a-leads-hold).
+结构与 [获取潜在客户的暂停状态](#get-a-leads-hold) 相同。
 
-### Errors
+### 错误 [#errors-2]
 
-| Status | Code | When |
+| 状态 | 错误码 | 发生条件 |
 | --- | --- | --- |
-| `400` | `bad_request` | `until` is in the past, or more than a year away. |
-| `404` | `not_found` | The campaign is not the caller's organization's, or the contact is not a lead of it. |
+| `400` | `bad_request` | `until` 已过去，或距离现在超过一年。 |
+| `404` | `not_found` | 营销活动不属于调用者的组织，或联系人不是该活动的潜在客户。 |
 
-## Resume a lead
+## 恢复向潜在客户发送 [#resume-a-lead]
 
 `POST /campaigns/:id/leads/:contact_id/resume`
 
-Lift the hold now. The held time is dropped rather than carried, so the step returns to the schedule it would have had without the hold: the campaign's next pass when that moment has already passed, otherwise when the step's own wait elapses. The campaign's own wakeup is pulled forward with it, and a campaign that had finished while the lead was held is restarted through the usual launch checks. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+立即解除暂停。暂停持续的时间会被丢弃，而不会累加到原计划中，因此步骤恢复到未暂停时本应采用的时间安排：若该时间已过，则在营销活动下一次处理时执行；否则在步骤自身的等待时间结束时执行。营销活动自身的唤醒时间也会相应提前；若活动在潜在客户暂停期间已经结束，则通过常规启动检查重新启动。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-Resuming a lead that is not held succeeds and changes nothing, so a retry is safe.
+恢复未暂停的潜在客户也会成功，且不作任何更改，因此可以安全重试。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
-| `contact_id` | path | uuid | Contact id. |
+| `id` | path | uuid | 营销活动 ID。 |
+| `contact_id` | path | uuid | 联系人 ID。 |
 
-### Response
+### 响应 [#response-24]
 
 ```json
 {
@@ -881,24 +881,24 @@ Resuming a lead that is not held succeeds and changes nothing, so a retry is saf
 }
 ```
 
-### Errors
+### 错误 [#errors-3]
 
-| Status | Code | When |
+| 状态 | 错误码 | 发生条件 |
 | --- | --- | --- |
-| `404` | `not_found` | The campaign is not the caller's organization's, or the contact is not a lead of it. |
+| `404` | `not_found` | 营销活动不属于调用者的组织，或联系人不是该活动的潜在客户。 |
 
-## Get a lead's CC
+## 获取潜在客户的抄送设置 [#get-a-leads-cc]
 
 `GET /campaigns/:id/leads/:contact_id/cc`
 
-List the contacts copied on every email this campaign sends one lead. See [copying colleagues on one lead](/guides/campaigns/#copying-colleagues-on-one-lead). **Scope** `READ_CAMPAIGNS` and `READ_CONTACTS` · **Org permission** `view_campaigns` and `view_contacts`.
+列出营销活动向某位潜在客户发送的每封邮件中都会抄送的联系人。参见 [为某位潜在客户抄送同事](/guides/campaigns/#copying-colleagues-on-one-lead)。**权限范围** `READ_CAMPAIGNS` 和 `READ_CONTACTS` · **组织权限** `view_campaigns` 和 `view_contacts`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
-| `contact_id` | path | uuid | Contact id. Must already be a lead of the campaign. |
+| `id` | path | uuid | 营销活动 ID。 |
+| `contact_id` | path | uuid | 联系人 ID。必须已是此营销活动的潜在客户。 |
 
-### Response
+### 响应 [#response-25]
 
 ```json
 {
@@ -917,59 +917,59 @@ List the contacts copied on every email this campaign sends one lead. See [copyi
 }
 ```
 
-`status` says whether the next email copies them: `active` does; `unsubscribed` (opted out or suppressed), `bounced` (bounced on this thread or on a campaign email of their own) and `undeliverable` (failed verification under the campaign's rules) are left off until that changes. `bounced_at` is set when a bounce was attributed to this copy on this lead's thread. The list is in the order it was set.
+`status` 表示下一封邮件是否会抄送给他们：`active` 会；`unsubscribed`（已退订或被禁止发送）、`bounced`（在此会话或发给他们自己的营销活动邮件中发生退信）和 `undeliverable`（未通过营销活动规则要求的验证）则会被排除，直到状态改变。若此潜在客户会话中的退信被归因到该抄送联系人，则设置 `bounced_at`。列表保留设置时的顺序。
 
-### Errors
+### 错误 [#errors-4]
 
-| Status | Code | When |
+| 状态 | 错误码 | 发生条件 |
 | --- | --- | --- |
-| `404` | `not_found` | The campaign is not the caller's organization's, or the contact is not a lead of it. |
+| `404` | `not_found` | 营销活动不属于调用者的组织，或联系人不是该活动的潜在客户。 |
 
-## Set a lead's CC
+## 设置潜在客户的抄送对象 [#set-a-leads-cc]
 
 `PUT /campaigns/:id/leads/:contact_id/cc`
 
-Replace the contacts copied on every email this campaign sends one lead, follow-ups included. An empty list removes them all. **Scope** `WRITE_CAMPAIGNS` and `READ_CONTACTS` · **Org permission** `manage_campaigns` and `view_contacts`.
+替换营销活动向某位潜在客户发送的每封邮件中都会抄送的联系人，包括跟进邮件。空列表将移除所有抄送联系人。**权限范围** `WRITE_CAMPAIGNS` 和 `READ_CONTACTS` · **组织权限** `manage_campaigns` 和 `view_contacts`。
 
-The body is the whole list, so a retry lands on the same state and no `Idempotency-Key` is needed.
+请求体包含完整列表，因此重试会得到相同状态，无需 `Idempotency-Key`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
-| `contact_id` | path | uuid | Contact id. Must already be a lead of the campaign. |
-| `contact_ids` | body | array of uuid | Contacts of the workspace to copy, at most `2`. Duplicates are ignored. |
+| `id` | path | uuid | 营销活动 ID。 |
+| `contact_id` | path | uuid | 联系人 ID。必须已是此营销活动的潜在客户。 |
+| `contact_ids` | body | array of uuid | 要抄送的工作区联系人，最多 `2` 位。忽略重复项。 |
 
-A copied contact who is also a lead of this campaign has their own sequence held with `source` `cc` for as long as any lead copies them, so they never get two threads from one campaign. Removing the copy releases the hold.
+若抄送联系人本身也是此营销活动的潜在客户，只要仍有任何潜在客户将其列为抄送对象，其自己的邮件序列就会以 `source` 为 `cc` 的方式暂停，因此不会从同一营销活动收到两个会话的邮件。移除抄送会解除暂停。
 
-### Request body
+### 请求体 [#request-body-9]
 
 ```json
 { "contact_ids": ["b61c0e84-2d9f-4a57-8e3b-6f0a1c2d4e59"] }
 ```
 
-### Response
+### 响应 [#response-26]
 
-Same shape as [get a lead's CC](#get-a-leads-cc).
+结构与 [获取潜在客户的抄送联系人](#get-a-leads-cc) 相同。
 
-### Errors
+### 错误 [#errors-5]
 
-| Status | Code | When |
+| 状态 | 错误码 | 发生条件 |
 | --- | --- | --- |
-| `400` | `bad_request` | A `contact_ids` entry is not a uuid. |
-| `400` | `lead_cc_limit` | More than `2` contacts. |
-| `400` | `lead_cc_self` | The lead is in its own list. |
-| `404` | `not_found` | The campaign is not the caller's organization's, or the contact is not a lead of it. |
-| `404` | `lead_cc_contact_not_found` | A contact to copy is not a contact of the workspace. |
-| `409` | `lead_cc_lead_is_copied` | The lead is copied on another lead in this campaign, so it sends nothing of its own to copy anyone on. |
-| `409` | `lead_cc_has_copies` | A contact to copy has copies of their own in this campaign. |
+| `400` | `bad_request` | `contact_ids` 中的某项不是 uuid。 |
+| `400` | `lead_cc_limit` | 联系人超过 `2` 位。 |
+| `400` | `lead_cc_self` | 潜在客户被列入了自己的抄送列表。 |
+| `404` | `not_found` | 营销活动不属于调用者的组织，或联系人不是该活动的潜在客户。 |
+| `404` | `lead_cc_contact_not_found` | 要抄送的联系人不属于此工作区。 |
+| `409` | `lead_cc_lead_is_copied` | 该潜在客户已是此营销活动中另一位潜在客户的抄送对象，因此不会收到自己独立的邮件，也就无法再为其抄送他人。 |
+| `409` | `lead_cc_has_copies` | 要抄送的联系人在此营销活动中已有自己的抄送对象。 |
 
-## Suggest colleagues to CC
+## 推荐可抄送的同事 [#suggest-colleagues-to-cc]
 
 `GET /campaigns/:id/leads/:contact_id/cc/suggestions`
 
-Up to eight contacts who look like the lead's colleagues: the same company name, or the same email domain when that domain belongs to a company rather than a personal mail service. Unsubscribed contacts and ones already copied are left out. **Scope** `READ_CAMPAIGNS` and `READ_CONTACTS` · **Org permission** `view_campaigns` and `view_contacts`.
+返回最多八位可能是该潜在客户同事的联系人：公司名称相同，或邮箱域名相同且该域名属于公司而非个人邮件服务。排除已退订和已经被抄送的联系人。**权限范围** `READ_CAMPAIGNS` 和 `READ_CONTACTS` · **组织权限** `view_campaigns` 和 `view_contacts`。
 
-### Response
+### 响应 [#response-27]
 
 ```json
 {
@@ -986,23 +986,23 @@ Up to eight contacts who look like the lead's colleagues: the same company name,
 }
 ```
 
-`reason` is `company` when the company names match and `domain` when only the email domain does. Company matches come first.
+公司名称匹配时，`reason` 为 `company`；仅邮箱域名匹配时，为 `domain`。公司匹配项排在前面。
 
-## Get campaign logs
+## 获取营销活动日志 [#get-campaign-logs]
 
 `GET /campaigns/:id/logs`
 
-Page through the campaign's activity log (status changes, send events, errors). **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`.
+分页浏览营销活动日志（状态变更、发送事件、错误）。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
-| `cursor` | query | string | Opaque cursor from the previous page. Optional. |
-| `limit` | query | integer | Page size, 1 to 100 (default 50). Optional. |
+| `id` | path | uuid | 营销活动 ID。 |
+| `cursor` | query | string | 上一页的不透明游标。可选。 |
+| `limit` | query | integer | 每页条数，1 至 100（默认为 50）。可选。 |
 
-### Response
+### 响应 [#response-28]
 
-A `data` plus `pagination` envelope. Here `pagination` carries only `next_cursor` (a string, `null` on the last page) and `has_more`.
+包含 `data` 和 `pagination` 的响应结构。这里的 `pagination` 仅包含 `next_cursor`（字符串，最后一页为 `null`）和 `has_more`。
 
 ```json
 {
@@ -1023,19 +1023,19 @@ A `data` plus `pagination` envelope. Here `pagination` carries only `next_cursor
 }
 ```
 
-## Today's sending plan
+## 今日发送计划 [#todays-sending-plan]
 
 `GET /campaigns/:id/send-plan`
 
-What the campaign sends today and every limit that decided it, worked out on the spot through the scheduler's own gates. Nothing is stored and nothing is written. **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`.
+通过调度器自身的各项限制即时计算营销活动今天的发送量，以及决定该发送量的每项限制。不存储或写入任何内容。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Response
+### 响应 [#response-29]
 
-The arithmetic adds up: `configured_ceiling` minus every `limits[].emails` minus `sent_today` is `expected_remaining`, and `projected_today` is `sent_today` plus `expected_remaining`. `limits` lists only the clamps that removed something, in the order the scheduler applies them; `bottleneck` names the one that decides the number (`""` when nothing binds, `budget_spent` when every mailbox has used its day). `day` is the budget day in UTC (every daily counter resets at midnight UTC, whatever the campaign's timezone); the window's times are in the campaign's timezone. `leads.waiting_on_sender` counts due steps whose own mailbox has nothing left today, since each contact keeps the address they first heard from. `organization` is present only when the workspace's plan has a daily allowance.
+计算关系如下：`configured_ceiling` 减去每项 `limits[].emails` 再减去 `sent_today`，得到 `expected_remaining`；`projected_today` 等于 `sent_today` 加 `expected_remaining`。`limits` 仅列出实际减少了发送量的限制，并按调度器应用的顺序排列；`bottleneck` 标明最终决定发送量的限制（没有限制生效时为 `""`，所有邮箱均已用完当日额度时为 `budget_spent`）。`day` 是按 UTC 计算的额度日期（无论营销活动使用何种时区，所有每日计数器均在 UTC 午夜重置）；发送时段的时间则使用营销活动时区。`leads.waiting_on_sender` 统计其专属邮箱今天已无剩余额度的到期步骤，因为每位联系人始终使用最初联系他们的发件地址。`organization` 仅在工作区套餐有每日额度时出现。
 
 ```json
 {
@@ -1089,21 +1089,21 @@ The arithmetic adds up: `configured_ceiling` minus every `limits[].emails` minus
 }
 ```
 
-`limits[].kind` is one of `campaign_daily_limit`, `campaign_ramp`, `warmup_graduation`, `workspace_risk`, `domain_auth`, `resting`, `warmup_health_hold`, `cloud_status_hold`, `send_recovery`, `send_cooldown`, `other_campaigns`, `warmup_health_pace`, `mailbox_hours`, `sending_behavior`, `spacing`, `sending_window`, `not_running`, `org_daily_limit`, `new_lead_cap` or `leads`. `mailboxes[].state` is one of `sending`, `budget_spent`, `hours_closed`, `no_working_day`, `domain_auth`, `resting`, `health_hold`, `cloud_status_hold` (Warmbly Cloud has not reported a current status, so cold sends from the mailbox wait for one; it is not a Cloud quarantine or block), `send_recovery`, `send_cooldown`, `send_authority`, `no_worker` (no running sending worker holds the mailbox right now; its day is still counted, since it is placed on one again within minutes) or `window_closed`; `mailboxes[].limited_by` names the clamp that set `cap_today`. See the [campaigns guide](/guides/campaigns/#todays-sending-plan) for what each limit means.
+`limits[].kind` 为以下值之一：`campaign_daily_limit`、`campaign_ramp`、`warmup_graduation`、`workspace_risk`、`domain_auth`、`resting`、`warmup_health_hold`、`cloud_status_hold`、`send_recovery`、`send_cooldown`、`other_campaigns`、`warmup_health_pace`、`mailbox_hours`、`sending_behavior`、`spacing`、`sending_window`、`not_running`、`org_daily_limit`、`new_lead_cap` 或 `leads`。`mailboxes[].state` 为以下值之一：`sending`、`budget_spent`、`hours_closed`、`no_working_day`、`domain_auth`、`resting`、`health_hold`、`cloud_status_hold`（Warmbly Cloud 尚未报告当前状态，因此邮箱的冷邮件发送会等待状态报告；这不是 Cloud 隔离或封禁）、`send_recovery`、`send_cooldown`、`send_authority`、`no_worker`（目前没有运行中的发送工作节点持有此邮箱；其当日额度仍会计入，因为几分钟内就会重新分配给工作节点）或 `window_closed`；`mailboxes[].limited_by` 标明决定 `cap_today` 的限制。各项限制的含义参见 [营销活动指南](/guides/campaigns/#todays-sending-plan)。
 
-## List campaign senders
+## 列出营销活动发件人 [#list-campaign-senders]
 
 `GET /campaigns/:id/senders`
 
-Return the campaign's explicit sender pool (used when `sender_strategy` is `explicit`). **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`.
+返回营销活动的显式发件邮箱池（`sender_strategy` 为 `explicit` 时使用）。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Response
+### 响应 [#response-30]
 
-A `data` array of sender objects (no pagination wrapper).
+包含发件邮箱对象的 `data` 数组（无分页封装）。
 
 ```json
 {
@@ -1118,21 +1118,21 @@ A `data` array of sender objects (no pagination wrapper).
 }
 ```
 
-## Replace senders
+## 替换发件人列表 [#replace-senders]
 
 `PUT /campaigns/:id/senders`
 
-Atomically replace the campaign's explicit sender pool with the supplied list. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+以提供的列表原子替换营销活动的显式发件邮箱池。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Request body
+### 请求体 [#request-body-10]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `senders` | object[] | yes | The full new sender pool. Each item: `email_account_id` (uuid, required), `weight` (integer, optional), `enabled` (boolean, optional). An empty array clears the pool. What that means depends on the campaign's `sender_strategy`: a `tags` campaign falls back to its tags or to every active mailbox, while an `explicit` one falls back to its tags only, and with none it is left with no mailbox to send from and parks itself at `paused_no_accounts`. |
+| `senders` | object[] | 是 | 完整的新发件邮箱池。每项包含：`email_account_id`（uuid，必填）、`weight`（integer，可选）、`enabled`（boolean，可选）。空数组会清空邮箱池。其影响取决于营销活动的 `sender_strategy`：`tags` 活动回退到标签匹配的邮箱或所有活跃邮箱；`explicit` 活动只回退到标签匹配的邮箱，若没有标签匹配项，则没有可用发件邮箱，活动停留在 `paused_no_accounts`。 |
 
 ```json
 {
@@ -1143,23 +1143,23 @@ Atomically replace the campaign's explicit sender pool with the supplied list. *
 }
 ```
 
-### Response
+### 响应 [#response-31]
 
-A `data` array of the resulting sender objects (same shape as [list senders](#list-campaign-senders)).
+包含最终发件邮箱对象的 `data` 数组（结构与 [发件邮箱列表](#list-campaign-senders) 相同）。
 
-## List linked segments
+## 列出已关联的联系人分群 [#list-linked-segments]
 
 `GET /campaigns/:id/segments`
 
-Return the segments linked to the campaign as live audience sources. **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`.
+返回关联到营销活动、作为实时受众来源的分群。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Response
+### 响应 [#response-32]
 
-A `data` array of link objects (no pagination wrapper). The counts are evaluated when you ask: `contact_count` is how many contacts the segment matches now, `lead_count` how many of them are leads of this campaign, and `held_out_count` how many are not leads because they were removed from the campaign by hand (see [replace linked segments](#replace-linked-segments)).
+包含关联对象的 `data` 数组（无分页封装）。计数在请求时计算：`contact_count` 是分群当前匹配的联系人数，`lead_count` 是其中已成为此营销活动潜在客户的人数，`held_out_count` 是因手动从营销活动移除而未成为潜在客户的人数（参见 [替换关联分群](#replace-linked-segments)）。
 
 ```json
 {
@@ -1178,23 +1178,23 @@ A `data` array of link objects (no pagination wrapper). The counts are evaluated
 }
 ```
 
-## Replace linked segments
+## 替换已关联的联系人分群 [#replace-linked-segments]
 
 `PUT /campaigns/:id/segments`
 
-Atomically replace the campaign's linked segments with the supplied set (up to 20). Every current member of a newly linked segment is enrolled as a lead immediately, and contacts who enter a linked segment later are enrolled automatically, within about 2 minutes.
+以提供的集合原子替换营销活动的关联分群（最多 20 个）。新关联分群的所有现有成员会立即作为潜在客户加入；之后进入关联分群的联系人也会自动加入，通常在约 2 分钟内完成。
 
-Removing a segment from the set withdraws the leads it enrolled, so replacing one segment with another leaves the campaign holding the new audience rather than both. A lead is only withdrawn when all three hold: a linked segment enrolled it (a lead added through any other path counts as chosen by hand and is never withdrawn), it is still a current member of a segment being removed and of none that stayed, and the campaign has not written to it yet (no step dispatched or sent). Nothing is recorded as a hand-made removal, so re-linking the segment enrols those members again. A contact who merely leaves a still-linked segment keeps their lead row; within a link, enrolment stays additive. A lead removed from the campaign by hand is never re-added automatically; a manual add (or the one-shot enrol below) clears that removal record. Omitting `segment_ids` returns `400`; send an explicit empty array to detach every segment. An active campaign is woken to send to the new leads; a completed campaign is restarted through the full launch checks when a linked segment grows. A linked segment cannot be deleted (`DELETE /segments/:id` returns `409`) until it is removed here. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+从集合中移除分群，会撤回由它加入的潜在客户，因此用一个分群替换另一个后，营销活动保留的是新受众，而非两者的合集。仅在以下三个条件同时满足时才撤回潜在客户：该潜在客户由关联分群加入（通过其他途径加入的潜在客户视为手动选定，永不撤回）；该联系人当前仍属于被移除的某个分群，且不属于任何保留的分群；营销活动尚未向其发信（没有已分发或已发送的步骤）。此次撤回不会记录为手动移除，因此重新关联分群时会再次加入这些成员。仅仅离开仍有关联的分群的联系人，会保留其潜在客户记录；关联期间的加入行为始终只增不减。手动从营销活动移除的潜在客户不会自动重新加入；手动添加（或下方的一次性加入操作）会清除移除记录。省略 `segment_ids` 返回 `400`；应显式发送空数组以解除所有分群关联。活跃营销活动会被唤醒，向新潜在客户发送；关联分群新增成员时，已完成的营销活动会经过完整启动检查后重新启动。关联中的分群必须先在此处移除，才能删除（否则 `DELETE /segments/:id` 返回 `409`）。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Request body
+### 请求体 [#request-body-11]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `segment_ids` | uuid[] | yes | The full new set of linked segments, max 20. An empty array detaches them all. |
+| `segment_ids` | uuid[] | 是 | 完整的新关联分群集合，最多 20 个。空数组会解除所有关联。 |
 
 ```json
 {
@@ -1202,9 +1202,9 @@ Removing a segment from the set withdraws the leads it enrolled, so replacing on
 }
 ```
 
-### Response
+### 响应 [#response-33]
 
-The resulting links plus what the call did to the campaign's leads. `added` is how many leads it enrolled, and is `0` when every member was already a lead, when the segments match no contacts yet, or when the only members are held out; the per-link counts tell these apart. `withdrawn` is how many leads a removed segment took back out, and `contacted` how many of that audience stayed because the campaign had already emailed them. The links, the withdrawal and the enrolment are written in one transaction, so a failure returns an error and changes nothing rather than `200` with `added: 0`.
+返回最终关联列表，以及本次调用对营销活动潜在客户的影响。`added` 是新增潜在客户数；若所有成员已是潜在客户、分群尚未匹配到联系人，或成员都被排除，则为 `0`；各关联的计数可用于区分这些情况。`withdrawn` 是被移除分群撤回的潜在客户数，`contacted` 是其中因活动已向其发过邮件而保留的人数。关联、撤回和加入在同一个事务中写入，因此失败时返回错误且不作任何更改，而不是返回 `200` 和 `added: 0`。
 
 ```json
 {
@@ -1226,21 +1226,21 @@ The resulting links plus what the call did to the campaign's leads. `added` is h
 }
 ```
 
-For a one-time snapshot enrolment instead of a live link, see [add a segment to a campaign](/api/reference/contacts/#add-to-a-campaign).
+如果需要按当前快照一次性加入，而非建立实时关联，参见 [将分群添加到营销活动](/api/reference/contacts/#add-to-a-campaign)。
 
-## Verify campaign tracking domain
+## 验证营销活动跟踪域名 [#verify-campaign-tracking-domain]
 
 `POST /campaigns/:id/tracking-domain/verify`
 
-Resolve the campaign-scoped tracking domain against this install's tracking host and flip `tracking_domain_verified` to `true` on success. A record that does not resolve stays unverified with a reason rather than erroring, and the campaign falls back to the mailbox's domain (or the shared host). **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+检查营销活动级跟踪域名是否解析到本实例的跟踪主机，成功后将 `tracking_domain_verified` 设为 `true`。无法正确解析的记录会保持未验证状态并提供原因，而不是抛出错误；营销活动会回退到邮箱的域名（或共用主机）。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Response
+### 响应 [#response-34]
 
-A `TrackingDomainStatus` object, the same shape the [mailbox tracking-domain endpoints](/api/reference/mailboxes/#update-the-tracking-domain) return.
+一个 `TrackingDomainStatus` 对象，结构与 [邮箱跟踪域名端点](/api/reference/mailboxes/#update-the-tracking-domain) 的返回值相同。
 
 ```json
 {
@@ -1255,19 +1255,19 @@ A `TrackingDomainStatus` object, the same shape the [mailbox tracking-domain end
 }
 ```
 
-## List sequences
+## 列出邮件序列 [#list-sequences]
 
 `GET /campaigns/:id/steps`
 
-Return the campaign's sequence steps in order. **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`.
+按顺序返回营销活动的邮件序列步骤。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Response
+### 响应 [#response-35]
 
-A bare array of `Sequence` objects (no envelope).
+直接返回 `Sequence` 对象数组（无封装）。
 
 ```json
 [
@@ -1289,19 +1289,19 @@ A bare array of `Sequence` objects (no envelope).
 ]
 ```
 
-## Create a sequence
+## 创建邮件序列 [#create-a-sequence]
 
 `POST /campaigns/:id/steps`
 
-Append a new sequence step to the campaign. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+向营销活动追加新的邮件序列步骤。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
+| `id` | path | uuid | 营销活动 ID。 |
 
-### Request body
+### 请求体 [#request-body-12]
 
-Optional. It takes the same fields as [update a sequence](#update-a-sequence), applied to the new step, so a step can be created with its copy in one request. Without a body, or with `{}`, the step is created with defaults. A body the update refuses creates nothing and answers the update's error.
+可选。接受与 [更新邮件序列](#update-a-sequence) 相同的字段，并应用于新步骤，因此可以在一次请求中创建步骤及其邮件内容。不提供请求体或提供 `{}` 时，使用默认值创建步骤。若请求体不符合更新操作的要求，则不会创建任何内容，并返回该更新错误。
 
 ```json
 {
@@ -1311,38 +1311,38 @@ Optional. It takes the same fields as [update a sequence](#update-a-sequence), a
 }
 ```
 
-### Response
+### 响应 [#response-36]
 
-The created `Sequence` object (see the [list sequences](#list-sequences) shape).
+创建的 `Sequence` 对象（参见 [邮件序列列表](#list-sequences) 的结构）。
 
-## Update a sequence
+## 更新邮件序列 [#update-a-sequence]
 
 `PATCH /campaigns/:id/steps/:sid`
 
-Patch a sequence step: its copy, spacing, node kind, branching tree, or action config. Omitted fields are unchanged. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+更新邮件序列步骤：邮件内容、间隔、节点类型、分支树或操作配置。省略的字段保持不变。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
-| `sid` | path | uuid | Sequence (step) id. |
+| `id` | path | uuid | 营销活动 ID。 |
+| `sid` | path | uuid | 邮件序列（步骤）ID。 |
 
-### Request body
+### 请求体 [#request-body-13]
 
-All fields optional.
+所有字段均可选。
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `name` | string | no | Step label. |
-| `subject` | string | no | Subject template. |
-| `body_plain` | string | no | Plain-text body template. Leave it empty and the send path renders one from `body_html`, keeping list bullets, table rows and link destinations, and leaving out the stylesheet. |
-| `body_html` | string | no | HTML body template. Sent as written, including a whole document with its own `<head>`. Any `<style>` block is inlined onto the elements it matches at send time; see [the sequences guide](/guides/sequences/). Send `body_plain` on its own and the HTML part is rendered from it, because a step with a plain body and an empty HTML one would otherwise arrive blank: every modern client prefers the HTML alternative. A step that already has an HTML body is never overwritten. |
-| `body_sync` | boolean | no | Keep plain and HTML bodies in sync. |
-| `body_code` | boolean | no | The body is authored as raw HTML. The dashboard editor opens it as markup instead of parsing it into the visual editor, which keeps only what its schema can represent. It does not change what is sent. |
-| `wait_after` | integer | no | Days to wait before this step, counted from the contact's previous step (`0` to `60`). Spacing belongs to the target step, so there is no standalone wait node for email steps. |
-| `thread_reply` | boolean | no | Send this step as a reply on the conversation the contact is already in, rather than as a new email. Default `true`. A threading step carries the conversation's subject, so its own `subject` is only used once it is turned off. It has no effect on a contact's first email, which has nothing to reply to. |
-| `conditions` | object | no | The connections out of this step (`{branches: [...]}`), evaluated in order; a branch with no `conditions` is a plain "go there next" link. Routing follows connections only: a step with `{}` or no branches has no outgoing path and ends the flow for the contact. |
-| `kind` | string | no | `email` (default), `action`, or `wait`. |
-| `action` | object | no | Typed config for non-email nodes. `type` is the switch (`wait`, `add_tag`, `remove_tag`, `add_to_segment`, `remove_from_segment` (each with a `segment_id`), `unsubscribe`, `notify`, `create_task`, `create_deal`, `move_deal_stage`, `run_automation`, `end`), the remaining fields are type-scoped. |
+| `name` | string | 否 | 步骤标签。 |
+| `subject` | string | 否 | 主题模板。 |
+| `body_plain` | string | 否 | 纯文本正文模板。留空时，发送流程会根据 `body_html` 生成纯文本，保留列表项目符号、表格行和链接目标，并去除样式表。 |
+| `body_html` | string | 否 | HTML 正文模板。按原样发送，包括含有自身 `<head>` 的完整文档。发送时，任何 `<style>` 块都会内联到其匹配的元素上；参见 [邮件序列指南](/guides/sequences/)。若仅发送 `body_plain`，则会据此生成 HTML 部分，因为只有纯文本正文而 HTML 为空的步骤原本会显示为空白：所有现代客户端都会优先选择 HTML 版本。已具有 HTML 正文的步骤不会被覆盖。 |
+| `body_sync` | boolean | 否 | 使纯文本和 HTML 正文保持同步。 |
+| `body_code` | boolean | 否 | 正文以原始 HTML 编写。控制台编辑器会将其作为标记源码打开，而不是解析到只能保留其模式所能表示内容的可视化编辑器中。这不会改变实际发送的内容。 |
+| `wait_after` | integer | 否 | 此步骤之前等待的天数，从联系人完成上一步时起算（`0` 至 `60`）。间隔属于目标步骤，因此邮件步骤没有独立的等待节点。 |
+| `thread_reply` | boolean | 否 | 将此步骤作为联系人现有会话中的回复发送，而非新邮件。默认为 `true`。会话内回复步骤沿用会话主题，因此只有关闭此设置后，才使用其自身的 `subject`。此设置对联系人的首封邮件无效，因为没有可回复的邮件。 |
+| `conditions` | object | 否 | 从此步骤出发的连接（`{branches: [...]}`），按顺序求值；没有 `conditions` 的分支是普通的“接下来前往此处”连接。路由只沿连接进行：`{}` 或没有分支的步骤没有出站路径，会结束此联系人的流程。 |
+| `kind` | string | 否 | `email`（默认）、`action` 或 `wait`。 |
+| `action` | object | 否 | 非邮件节点的类型化配置。`type` 是类型选择字段（`wait`、`add_tag`、`remove_tag`、`add_to_segment`、`remove_from_segment`（这两个分群操作均带有 `segment_id`）、`unsubscribe`、`notify`、`create_task`、`create_deal`、`move_deal_stage`、`run_automation`、`end`），其余字段取决于所选类型。 |
 
 ```json
 {
@@ -1362,43 +1362,43 @@ All fields optional.
 }
 ```
 
-### Response
+### 响应 [#response-37]
 
-The updated `Sequence` object.
+更新后的 `Sequence` 对象。
 
-## Delete a sequence
+## 删除邮件序列 [#delete-a-sequence]
 
 `DELETE /campaigns/:id/steps/:sid`
 
-Delete a sequence step. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+删除邮件序列步骤。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Campaign id. |
-| `sid` | path | uuid | Sequence (step) id. |
+| `id` | path | uuid | 营销活动 ID。 |
+| `sid` | path | uuid | 邮件序列（步骤）ID。 |
 
-### Response
+### 响应 [#response-38]
 
-`200 OK` with an empty body.
+`200 OK`，响应体为空。
 
-## Preview a template
+## 预览模板 [#preview-a-template]
 
 `POST /campaign-template-preview`
 
-Render subject and body templates for a contact exactly as the send path would, and report parse errors plus any unresolved `{{...}}` tokens. With `campaign_id` and `account_id` the preview also goes through the rest of the send assembly: the plain-text rule, the mailbox signature and the campaign's opt-out footer are applied in send order, and the response names the sender and lists the attachments the send carries. Tracking pixels and link rewriting are left out. No side effects. **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`. Passing `contact_id` additionally requires `READ_CONTACTS` (org permission `view_contacts`), and an API key with an `allowed_email_accounts` list can only name those mailboxes in `account_id`.
+完全按照发送流程为联系人渲染主题和正文模板，并报告解析错误以及任何未解析的 `{{...}}` 占位符。提供 `campaign_id` 和 `account_id` 时，预览还会执行其余邮件组装步骤：按发送顺序应用纯文本规则、邮箱签名及营销活动的退订页脚，并在响应中给出发件人及该邮件携带的附件列表。不插入跟踪像素，也不重写链接。无副作用。**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`。提供 `contact_id` 还要求 `READ_CONTACTS`（组织权限 `view_contacts`）；带有 `allowed_email_accounts` 列表的 API 密钥只能在 `account_id` 中指定这些邮箱。
 
-### Request body
+### 请求体 [#request-body-14]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `subject` | string | no | Subject template. |
-| `body_html` | string | no | HTML body template. |
-| `body_plain` | string | no | Plain-text body template. |
-| `contact_id` | uuid | no | A contact of the organization to render for, with its custom fields. Omitted uses the built-in sample contact. |
-| `contact` | object | no | Override fields on the contact being rendered for (the sample or the one from `contact_id`): `first_name`, `last_name`, `email`, `company`, `phone`, and a `custom_fields` map of string to string. |
-| `campaign_id` | uuid | no | Campaign of the organization whose opt-out footer, plain-text setting and attachments apply. The opt-out link in the preview names no contact. |
-| `step_id` | uuid | no | The step being previewed, so `attachments` lists what that step sends. Without it only the campaign-wide files are listed. |
-| `account_id` | uuid | no | Mailbox of the organization whose signature is appended (when signature sync is on) and which is reported as `from`. |
+| `subject` | string | 否 | 主题模板。 |
+| `body_html` | string | 否 | HTML 正文模板。 |
+| `body_plain` | string | 否 | 纯文本正文模板。 |
+| `contact_id` | uuid | 否 | 用于渲染的组织联系人，包含其自定义字段。省略时使用内置示例联系人。 |
+| `contact` | object | 否 | 覆盖用于渲染的联系人（示例联系人或 `contact_id` 指定的联系人）的字段：`first_name`、`last_name`、`email`、`company`、`phone`，以及字符串到字符串的 `custom_fields` 映射。 |
+| `campaign_id` | uuid | 否 | 组织中的营销活动，应用其退订页脚、纯文本设置和附件。预览中的退订链接不指向任何联系人。 |
+| `step_id` | uuid | 否 | 正在预览的步骤，使 `attachments` 列出该步骤发送的文件。不提供时，仅列出营销活动全局附件。 |
+| `account_id` | uuid | 否 | 组织中的邮箱；启用签名同步时追加其签名，并将其作为 `from` 返回。 |
 
 ```json
 {
@@ -1410,9 +1410,9 @@ Render subject and body templates for a contact exactly as the send path would, 
 }
 ```
 
-### Response
+### 响应 [#response-39]
 
-A `TemplatePreview` object. `errors` lists template parse errors that would block sending, `unresolved` lists literal tokens left after render. `from` is present when `account_id` was given, `attachments` when `campaign_id` was given and there are files on the send (the campaign-wide ones plus `step_id`'s own). All four are omitted when empty.
+一个 `TemplatePreview` 对象。`errors` 列出会阻止发送的模板解析错误；`unresolved` 列出渲染后仍原样保留的占位符。提供了 `account_id` 时包含 `from`；提供了 `campaign_id` 且发送内容包含文件（营销活动全局附件，加上 `step_id` 自己的附件）时，包含 `attachments`。这四个字段为空时均省略。
 
 ```json
 {
@@ -1427,31 +1427,31 @@ A `TemplatePreview` object. `errors` lists template parse errors that would bloc
 }
 ```
 
-### Errors
+### 错误 [#errors-6]
 
-| Status | Code | When |
+| 状态 | 错误码 | 发生条件 |
 | --- | --- | --- |
-| `404` | `not_found` | `contact_id`, `campaign_id` or `account_id` does not belong to the caller's organization. |
-| `403` | `forbidden` | `contact_id` given without contact read permission, or `account_id` outside the API key's allowed mailboxes. |
+| `404` | `not_found` | `contact_id`、`campaign_id` 或 `account_id` 不属于调用者的组织。 |
+| `403` | `forbidden` | 提供了 `contact_id`，但没有联系人读取权限；或 `account_id` 不在 API 密钥允许使用的邮箱中。 |
 
-## Generate copy with the writing assistant
+## 使用写作助手生成文案 [#generate-copy-with-the-writing-assistant]
 
 `POST /generation/write`
 
-Generate outreach copy with the AI writing assistant. Gated to paid and free-trial organizations, and each call consumes one AI credit (refunded if the provider call fails). Supports `Idempotency-Key` so a retried request is not double-charged. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`.
+使用 AI 写作助手生成营销内容。仅对付费和免费试用组织开放，每次调用消耗一个 AI 积分（服务商调用失败时退还）。支持 `Idempotency-Key`，避免重试请求被重复扣费。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`。
 
-### Request body
+### 请求体 [#request-body-15]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `prompt` | string | yes | The instruction to generate from (max 8000 characters). |
-| `tone` | string | no | Desired tone (for example `friendly`, `direct`). |
+| `prompt` | string | 是 | 用于生成内容的指令（最多 8000 个字符）。 |
+| `tone` | string | 否 | 期望的语气（例如 `friendly`、`direct`）。 |
 
 ```json
 { "prompt": "Write a 3-line cold intro to a fintech founder about our deliverability tooling.", "tone": "direct" }
 ```
 
-### Response
+### 响应 [#response-40]
 
 ```json
 {
@@ -1461,31 +1461,31 @@ Generate outreach copy with the AI writing assistant. Gated to paid and free-tri
 }
 ```
 
-When the organization is out of credits the endpoint returns `402` with `code: "insufficient_credits"` and the standard envelope. A depleted balance is checked before any provider call, so no completion is ever burned on a `402`.
+组织积分耗尽时，端点返回 `402`、`code: "insufficient_credits"` 及标准响应结构。在调用任何服务商之前会先检查余额是否耗尽，因此返回 `402` 时绝不会消耗一次生成调用。
 
-## Preview an AI variable
+## 预览 AI 变量 [#preview-an-ai-variable]
 
 `POST /generation/ai-variable`
 
-Generate the recipient-specific snippet a per-recipient AI variable block would produce, for the campaign editor's preview. The prompt is rendered against a supplied contact (must belong to the organization) or a sample contact, then generated with the same framing the send path uses, including the surrounding email so the fragment fits. The charge is metered by usage (the model and tokens the snippet uses, plus any web lookup), refunded if the provider call fails, and `Idempotency-Key` is honored so a retried request is not double-charged. See the [AI variables](/guides/ai-variables/) guide. **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns` and `use_ai`. Passing `contact_id` additionally requires `READ_CONTACTS` (org permission `view_contacts`), since the prompt reads that contact's fields.
+生成按收件人定制的 AI 变量块所产生的专属片段，用于营销活动编辑器预览。提示词会基于指定联系人（必须属于此组织）或示例联系人渲染，然后采用与发送流程相同的上下文进行生成，其中包括邮件前后文，以使片段自然融入。按实际用量计费（片段使用的模型和 token，以及任何网页查询），服务商调用失败时退还，并支持 `Idempotency-Key` 以防止重试请求被重复扣费。参见 [AI 变量](/guides/ai-variables/) 指南。**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns` 和 `use_ai`。提供 `contact_id` 还要求 `READ_CONTACTS`（组织权限 `view_contacts`），因为提示词会读取该联系人的字段。
 
-### Request body
+### 请求体 [#request-body-16]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `mode` | string | no | `instant` (default) for a single fast completion, or `research` for the deeper, higher-cost path. |
-| `prompt` | string | yes | The block instruction, itself a template rendered against the contact (max 8000 characters). |
-| `tone` | string | no | Desired tone. |
-| `web_search` | boolean | no | Allow one bounded web lookup about the contact's company to enrich context. Implied by `research`. |
-| `contact_id` | string | no | A contact in the organization to render the prompt against. Omit to use a sample contact. |
-| `context_before` | string | no | The email text immediately before the block, so the fragment fits the sentence it lands in. |
-| `context_after` | string | no | The email text immediately after the block. |
+| `mode` | string | 否 | `instant`（默认）执行一次快速生成；`research` 则采用更深入、成本更高的处理流程。 |
+| `prompt` | string | 是 | 变量块指令，本身也是基于联系人渲染的模板（最多 8000 个字符）。 |
+| `tone` | string | 否 | 期望的语气。 |
+| `web_search` | boolean | 否 | 允许针对联系人的公司执行一次有范围限制的网页查询，以丰富上下文。`research` 隐含启用此功能。 |
+| `contact_id` | string | 否 | 用于渲染提示词的组织联系人。省略时使用示例联系人。 |
+| `context_before` | string | 否 | 变量块紧前方的邮件文本，以使片段自然融入所在句子。 |
+| `context_after` | string | 否 | 变量块紧后方的邮件文本。 |
 
 ```json
 { "mode": "instant", "prompt": "One line noting something specific about {{company}}.", "contact_id": "4f6c..." }
 ```
 
-### Response
+### 响应 [#response-41]
 
 ```json
 {
@@ -1497,4 +1497,4 @@ Generate the recipient-specific snippet a per-recipient AI variable block would 
 }
 ```
 
-A `contact_id` that is not in the organization returns `404`. When the organization is out of credits the endpoint returns `402` with `code: "insufficient_credits"`, checked before any provider call.
+`contact_id` 不属于此组织时返回 `404`。组织积分耗尽时，端点返回 `402` 和 `code: "insufficient_credits"`；此检查在调用任何服务商之前进行。

@@ -1,82 +1,82 @@
 ---
-title: Inbox placement
-description: Delivery is a 200 OK from an SMTP server. Placement is whether the recipient actually sees the message.
+title: 收件箱到达率
+description: 投递表示 SMTP 服务器返回 200 OK；投递位置则决定收件人是否真正看到邮件。
 ---
 
 <ShortVersion>
 
-- Delivery means the server accepted the message. Placement means it reached the inbox.
-- 99% delivery and 30% placement is not unusual on a poorly authenticated cold mailbox.
-- Aim for above 90% inbox placement.
+- 投递表示服务器已接收邮件；进入收件箱才算到达。
+- 身份验证配置不完善的冷邮件邮箱，投递成功率为 99%、收件箱到达率却只有 30%，并不罕见。
+- 应以超过 90% 的收件箱到达率为目标。
 
 </ShortVersion>
 
-## Delivery vs placement
+## 投递与收件箱到达的区别 [#delivery-vs-placement]
 
-Most cold-email tools report "delivery rate": the percentage of messages that the receiving SMTP server accepted. That number is almost always close to 100% and tells you almost nothing.
+大多数冷邮件工具报告的是“投递成功率”，即收件方 SMTP 服务器接收的邮件比例。这个数字几乎总是接近 100%，却几乎无法提供有效判断。
 
-A receiving server can accept a message (delivery) and then immediately filter it into Spam, Promotions, or out of the inbox entirely. Placement is the share of accepted messages that land in the recipient's primary inbox.
+接收服务器可以先接收邮件（完成投递），再立即将其过滤到垃圾邮件、推广邮件，或其他不属于收件箱的位置。收件箱到达率指已被接收的邮件中，最终进入收件人主收件箱的比例。
 
-The two numbers can be wildly different. 99% delivery and 30% placement is not unusual on a poorly authenticated cold mailbox.
+这两个数字可能相差很大。对于身份验证配置不完善的冷邮件邮箱，99% 的投递成功率与 30% 的收件箱到达率同时出现，并不罕见。
 
 <DeliveryVsPlacement />
 
-## How placement is measured
+## 如何测量投递位置 [#how-placement-is-measured]
 
-### Warmup probes
+### 预热探测 [#warmup-probes]
 
-Warmbly's [warmup pool](/learn/warmup-pools/) is also a placement probe. Pool members report where each warmup message arrived: inbox, spam, or promotions. We aggregate per sending mailbox over a rolling sample window.
+Warmbly 的[预热池](/learn/warmup-pools/)也用于探测投递位置。池中成员会报告每封预热邮件进入了哪里：收件箱、垃圾邮件或推广邮件。我们按发件邮箱，在滚动样本窗口内汇总这些数据。
 
-Probe accuracy depends on pool diversity. A pool that only contains Gmail addresses can't tell you anything about Outlook placement. Our premium pool spans Gmail, Outlook, Yahoo, iCloud and self-hosted IMAP servers in proportion to the broader receiver landscape.
+探测准确性取决于预热池的多样性。只包含 Gmail 地址的池，无法反映 Outlook 上的投递位置。我们的高级预热池覆盖 Gmail、Outlook、Yahoo、iCloud 和自托管 IMAP 服务器，其比例参照更广泛的收件方分布。
 
-### Seed lists
+### 种子名单 [#seed-lists]
 
-Some teams maintain a "seed list": a fixed set of mailboxes across providers that always receive a copy of every campaign send. The placement on the seed list approximates placement for the full campaign.
+一些团队会维护“种子名单”：一组分布在不同服务商上的固定邮箱，每次发送营销活动邮件时，都会向这些邮箱发送副本。种子名单中的投递位置可以近似反映整个营销活动的投递位置。
 
-Seed lists are useful but not free of bias. They tend to be older, more engaged inboxes than your real cold recipients. Treat them as a directional signal.
+种子名单有用，但并非没有偏差。这些邮箱往往比真实的冷邮件收件邮箱使用时间更长、互动更活跃，应将其视为方向性信号。
 
-Warmbly's [inbox placement tests](/guides/placement-tests/) work this way: a campaign step or a draft goes from one of your mailboxes to seed inboxes across providers, and each copy is found again by its Message-ID and classified as inbox, a Gmail tab, spam, or never arrived.
+Warmbly 的[收件箱到达测试](/guides/placement-tests/)就是这样运行的：从你的某个邮箱，将营销活动中的一个步骤或一份草稿发送到各服务商的种子测试邮箱，再根据 Message-ID 查找每份副本，将其分类为收件箱、Gmail 某个分类标签页、垃圾邮件，或始终未收到。
 
-### Recipient feedback
+### 收件人反馈 [#recipient-feedback]
 
-If a recipient moves a message from Spam to Inbox, replies, or adds you to their address book, the provider sometimes tells you (through FBL feeds or workspace integrations). These are the strongest individual signals.
+如果收件人将邮件从垃圾邮件移回收件箱、回复邮件，或将你加入通讯录，服务商有时会通过 FBL 数据流或工作区集成告知你。这些是最强的单次互动信号。
 
-## What hurts placement
+## 哪些因素会降低收件箱到达率 [#what-hurts-placement]
 
-- Unauthenticated mail (missing or misaligned [SPF, DKIM, DMARC](/learn/spf-dkim-dmarc/)).
-- Sudden volume spikes from an otherwise quiet mailbox.
-- Cold mail with heavy HTML, unsolicited attachments, or tracking-pixel-only bodies.
-- Word-for-word identical content across thousands of sends: content fingerprinting catches it.
-- Long URLs to suspicious TLDs, or URL shorteners that have been abused.
-- Recipients consistently deleting without opening.
-- Recipients marking as spam (the worst signal of all).
+- 未通过身份验证的邮件（[SPF、DKIM、DMARC](/learn/spf-dkim-dmarc/) 缺失或未对齐）。
+- 原本发送量较低的邮箱突然大量发信。
+- 冷邮件使用大量 HTML、附带未经请求的附件，或正文只有跟踪像素。
+- 数千封邮件的内容逐字相同，容易被内容特征识别捕捉。
+- 指向可疑顶级域名的冗长 URL，或被滥用的 URL 缩短服务。
+- 收件人持续不打开就删除邮件。
+- 收件人将邮件标记为垃圾邮件，这是最差的信号。
 
-## What helps placement
+## 哪些因素有助于进入收件箱 [#what-helps-placement]
 
-- Plain text bodies for cold sequences.
-- Sensible volume relative to historical baseline for the mailbox.
-- Real replies from real recipients. This is the strongest positive signal.
-- Variation in subject and opening line across recipients.
-- Tight, well-targeted contact lists. Sending to obviously-bad addresses (parsed from web pages, role accounts, etc.) inflates bounces and complaint risk.
-- A consistent sending pattern: same business hours every day, with weekends off.
+- 冷邮件序列使用纯文本正文。
+- 发送量与该邮箱的历史基线相称。
+- 真实收件人的真实回复，这是最强的正向信号。
+- 针对不同收件人调整主题和开场句。
+- 精简且目标明确的联系人名单。向明显不合适的地址（从网页解析得到的地址、职能邮箱等）发送，会提高退信和投诉风险。
+- 稳定的发送模式：每天在相同的工作时段发送，周末暂停。
 
-## Targets to aim for
+## 建议目标 [#targets-to-aim-for]
 
 <PlacementScale />
 
-| Inbox placement | What it means |
+| 收件箱到达率 | 含义 |
 | --- | --- |
-| Above 90% | Healthy mailbox. |
-| 80-90% | Acceptable, but watch for drift. |
-| 60-80% | Something is wrong. Audit auth, content, volume. |
-| Below 60% | Stop campaigns from this mailbox. Investigate immediately. |
+| 高于 90% | 邮箱健康。 |
+| 80–90% | 可以接受，但要注意下滑趋势。 |
+| 60–80% | 存在问题，应检查身份验证、内容和发送量。 |
+| 低于 60% | 停止使用该邮箱发送营销活动邮件，并立即排查。 |
 
-## Why we don't lead with open rate
+## 为什么我们不以打开率为核心指标 [#why-we-dont-lead-with-open-rate]
 
-Apple's Mail Privacy Protection pre-fetches images on the recipient's behalf, generating a "fake" open for every message regardless of whether the human actually looked. Gmail caches images aggressively, producing repeated "opens" or none at all depending on cache state.
+Apple 的邮件隐私保护会代收件人预先获取图片，无论真人是否查看邮件，都会为每封邮件生成一次“虚假”打开。Gmail 会积极缓存图片，根据缓存状态，可能产生重复“打开”记录，也可能完全不记录。
 
-The result: open-rate dashboards report numbers that bear no consistent relationship to actual reads. Warmbly surfaces opens for situational use, but we don't use them in deliverability decisions.
+结果是：打开率仪表盘上的数字，与实际阅读之间并无稳定的对应关系。Warmbly 会展示打开情况供特定场景参考，但不会据此作出邮件送达能力方面的决策。
 
-<Callout type="info" title="Placement is a leading indicator">
-  Reply rate is a trailing one. If your placement starts to slip and you only watch replies, you'll notice the problem about three weeks too late.
+<Callout type="info" title="投递位置是领先指标">
+  回复率则是滞后指标。如果收件箱到达率开始下滑，而你只观察回复，往往会晚约三周才发现问题。
 </Callout>

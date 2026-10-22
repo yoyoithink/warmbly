@@ -1,6 +1,6 @@
 {
-  "title": "Learn",
-  "description": "Cold email and deliverability fundamentals",
+  "title": "知识学习",
+  "description": "冷邮件与邮件送达能力基础知识",
   "root": true,
   "pages": [
     "email-warmup",

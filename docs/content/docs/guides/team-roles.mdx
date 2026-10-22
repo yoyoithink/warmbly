@@ -1,208 +1,208 @@
 ---
-title: "Team & roles"
-description: "Invite members and control access with roles, permissions, and resource scopes."
+title: "团队与角色"
+description: "邀请成员，通过角色、权限与资源范围控制访问。"
 ---
 
-Share a workspace with your team: invite people by email and give each one a role that decides what they can see and change.
+与团队共用工作区：通过电子邮件邀请成员，并为每个人分配角色，以决定其可以查看和修改的内容。
 
-## Invite a teammate
+## 邀请团队成员 [#invite-a-teammate]
 
 <Steps>
 
 <Step>
 
-Open **Settings > Members**.
+打开**设置 > 成员**。
 
 </Step>
 
 <Step>
 
-Type addresses into **Emails** in the **Invite teammates** box.
+在**邀请团队成员**框中的**电子邮件**字段输入地址。
 
 </Step>
 
 <Step>
 
-Pick one or more **Roles**, and optionally narrow their **Access**.
+选择一个或多个**角色**，也可以进一步限制其**访问范围**。
 
 </Step>
 
 <Step>
 
-Press **Send invitations**.
+点击**发送邀请**。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Every workspace starts with **Admin**, **Manager** and **Viewer** roles, which you can edit, delete or add to.
-- **Owner** is a membership status, not a role, and there is exactly one per workspace.
-- A member with several roles gets the union of all of them.
-- A member limited to **Selected resources** has read-only access.
-- Inviting, re-roling and removing members needs the **Manage team** permission.
+- 每个工作区最初都有**管理员**、**运营者**和**查看者**角色，你可以编辑、删除这些角色，或添加新角色。
+- **所有者**是一种成员身份，而非角色；每个工作区恰好有一位所有者。
+- 拥有多个角色的成员获得这些角色权限的并集。
+- 访问范围限制为**所选资源**的成员仅具有只读访问权限。
+- 邀请成员、调整成员角色和移除成员均需要**管理团队**权限。
 
 <Fold>
 
-## Where team settings live and who manages them
+## 团队设置入口与管理权限 [#where-team-settings-live-and-who-manages-them]
 
-Share a workspace with your team: invite by email, give each person a role, and the role decides what they can see and change. An optional access scope narrows which campaigns and mailboxes the role applies to, so a client or contractor can work inside your workspace without seeing the rest of it. The roster and invitations live under **Settings > Members**; roles and the permission matrix under **Settings > Roles & access**.
+与团队共用工作区：通过电子邮件邀请成员，为每个人分配角色，由角色决定其可以查看和修改的内容。还可以设置访问范围，进一步限制角色适用的营销活动和邮箱，让客户或承包商在你的工作区内协作，同时只能看到指定内容。成员列表和邀请位于**设置 > 成员**；角色和权限矩阵位于**设置 > 角色与访问权限**。
 
-<Callout type="info" title="Who can manage the team">
-Inviting, re-roling, removing, and managing roles all need the **Manage team** permission (the owner and the seeded Admin role have it; any custom role can carry it). Without it the roster is read-only.
+<Callout type="info" title="谁可以管理团队">
+邀请成员、调整角色、移除成员和管理角色均需要**管理团队**权限。所有者和预设的管理员角色具有此权限，自定义角色也可以包含此权限。没有此权限时，成员列表只能查看。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Inviting members
+## 邀请成员 [#inviting-members]
 
-In the **Invite teammates** box, paste or type addresses into **Emails**, separated by comma, semicolon, space, or Enter. Each becomes a chip: valid ones grey, malformed ones red so you can remove them first. Pick one or more **Roles** for the batch (a description on the right says what you are granting), optionally narrow the batch's **Access** (see [access scope](#access-scope)), then **Send invitations**. A restricted invitee is restricted from the moment they join; there is no window in which they see the whole workspace.
+在**邀请团队成员**框内，将地址粘贴或输入到**电子邮件**字段，以逗号、分号、空格或回车分隔。每个地址会变成一个标签：有效地址为灰色，格式有误的地址为红色，便于先将其移除。为这批成员选择一个或多个**角色**，右侧说明会显示将授予的权限；也可以缩小这批成员的**访问范围**（参见[访问范围](#access-scope)），然后点击**发送邀请**。受限的受邀者从加入的那一刻起就受到限制，不会出现可以短暂查看整个工作区的情况。
 
-Warmbly sends one invitation per address and reports results as "Invited 2 · 1 failed". Invalid addresses are skipped and called out. The chips clear when the batch finishes.
+Warmbly 向每个地址发送一封邀请，并以“已邀请 2 人 · 1 人失败”的形式报告结果。无效地址会被跳过并单独提示。批量邀请完成后，地址标签会清空。
 
-When several trusted dashboards share one backend, invitation emails link back to the dashboard that sent the invitation. Copying an invitation link also keeps that dashboard's hostname. See [multi-dashboard configuration](/development/configuration/#google-sign-in-per-dashboard-deployment).
+多个受信任的控制台共用同一个后端时，邀请邮件中的链接会指向发出邀请的控制台。复制邀请链接时，也会保留该控制台的主机名。参见[多控制台配置](/development/configuration/#google-sign-in-per-dashboard-deployment)。
 
-**Pending invitations** shows the email, role, access, and expiry for each unaccepted invite, with two actions on the right of the row: copy the invite link (to share directly instead of waiting on email) and cancel the invitation. There is no resend button. To give somebody a fresh link, invite the same address again: that replaces the invitation in place with a new token and a reset expiry, and the previously emailed and copied links stop working. Copying the link again also issues a new link, so only the most recently copied link works; the emailed link is unaffected.
+**待接受的邀请**显示每份尚未接受的邀请对应的电子邮件地址、角色、访问范围和到期时间。每行右侧有两个操作：复制邀请链接，以便直接分享，无需等待邮件；以及取消邀请。这里没有重新发送按钮。要向某人提供新链接，请再次邀请同一地址：现有邀请会被替换，生成新令牌并重置到期时间，之前通过邮件发送和复制的链接都会失效。再次复制链接也会签发新链接，因此只有最近一次复制的链接有效；邮件中的链接不受此次复制操作影响。
 
-<Callout type="info" title="Roles are not permanent">
-The invite-time role can be changed inline from the roster later, so it is fine to start people narrow and widen access afterward.
+<Callout type="info" title="角色可以随时调整">
+邀请时分配的角色以后可以直接在成员列表中修改。因此，可以先授予较少的权限，再根据需要扩大访问范围。
 </Callout>
 
-### On a self-hosted instance
+### 在自托管实例中 [#on-a-self-hosted-instance]
 
-Two things work differently when you run Warmbly yourself.
+自行托管 Warmbly 时，有两点不同。
 
-**An invited person creates their account from the invitation link.** A self-hosted instance ships with signups closed to the public (`DISABLE_REGISTRATION=invite_only`), so visiting the sign-up form directly is refused. The invitation link carries the token that permits the signup, which is why the flow works: the invitee opens the link, clicks **Create an account**, and lands inside your workspace rather than in a new one.
+**受邀者通过邀请链接创建账户。** 自托管实例默认不开放公众注册（`DISABLE_REGISTRATION=invite_only`），因此直接访问注册表单会遭到拒绝。邀请链接携带允许注册的令牌，所以受邀者可以完成注册：打开链接，点击**创建账户**，随后进入你的工作区，而不是新建的工作区。
 
-**Invitations may not arrive by email.** Platform mail defaults to a transport that writes messages to the backend log instead of delivering them, so copying the invite link is the path rather than the fallback. The members page shows an amber notice above the **Emails** field when the server reports that mail is not delivered, telling you to invite the person and then copy the link from their row under **Pending invitations**.
+**邀请可能不会通过邮件送达。** 平台邮件默认使用将消息写入后端日志的传输方式，不会真正投递。因此，复制邀请链接是常规邀请方式，而非备用方案。当服务器报告不投递邮件时，成员页面会在**电子邮件**字段上方显示琥珀色提示，说明应先邀请此人，再从**待接受的邀请**中对应的行复制链接。
 
-Both are covered in [accounts and access](/development/accounts-and-access/#without-a-mail-relay), along with how to point the instance at a real relay.
-
-</Fold>
-
-<Fold>
-
-## The roster
-
-Each row shows email, role, access, and join date, with your own row tagged "you". Open the role picker on a row to tick the roles that member holds; a member can hold several, and their effective access is the union. The owner's row is a fixed Owner badge, and your own row is not editable.
-
-To remove someone, hover (or tap) their row and click the remove icon. **You cannot remove the owner or yourself.** To leave a workspace you own, transfer ownership first.
-
-Removal applies to someone who is signed in right now. Their open dashboard loses the workspace on its next request and its live updates stop, and they are asked to pick another workspace they belong to. Apps they authorized in the workspace are disconnected. Nothing they created is removed with them: mailboxes, contacts, campaigns and API keys belong to the workspace, so revoke their keys under **API keys** if those should go too. Realtime channels refresh access at least every 30 seconds and before delivering with an expired authorization check, even if a change event is missed. A changed role or a new owner reaches open dashboards' live updates without a reload.
+[账户与访问](/development/accounts-and-access/#without-a-mail-relay)介绍了这两种情况，以及如何将实例连接到实际的邮件中继服务。
 
 </Fold>
 
 <Fold>
 
-## Access scope
+## 成员名单 [#the-roster]
 
-A role says what a member may do. Their access scope says which resources it applies to:
+每行显示电子邮件地址、角色、访问范围和加入日期，你自己的行会标记“你”。打开某行的角色选择器，可以勾选该成员拥有的角色；成员可以拥有多个角色，实际权限是这些角色权限的并集。所有者所在行显示固定的“所有者”标记；你不能编辑自己的行。
 
-- **Entire workspace**, the default and what every member had before scopes existed.
-- **Selected resources**, which reaches only the campaign folders, campaigns and mailboxes you choose.
+要移除成员，请将鼠标悬停在其所在行，或点按该行，然后点击移除图标。**不能移除所有者或你自己。** 如果要离开你拥有的工作区，请先转移所有权。
 
-Click the **Access** cell on a member's row to change it. In the dialog, choose **Selected resources**, then pick from three lists:
+移除操作也会对当前已登录的成员生效。其已打开的控制台会在下一次请求时失去对该工作区的访问权限，实时更新随之停止，并提示其选择自己所属的其他工作区。该成员在工作区内授权的应用会断开连接。该成员创建的内容不会随其移除：邮箱、联系人、营销活动和 API 密钥都属于工作区；如果也需要撤销其密钥，请到 **API 密钥**中操作。实时通道至少每 30 秒刷新一次访问权限，而且在授权检查已过期时会先重新检查，再投递数据，即使错过了权限变更事件也不例外。角色或所有者变更会直接影响已打开控制台的实时更新，无需重新加载页面。
 
-| Grant | Gives access to |
+</Fold>
+
+<Fold>
+
+## 访问范围 [#access-scope]
+
+角色决定成员可以执行哪些操作，访问范围决定这些权限适用于哪些资源：
+
+- **整个工作区**：默认选项，也是引入访问范围功能之前所有成员的访问方式。
+- **所选资源**：只能访问你选择的营销活动文件夹、营销活动和邮箱。
+
+点击成员所在行的**访问范围**单元格即可修改。在对话框中选择**所选资源**，再从以下三个列表中选择：
+
+| 授权对象 | 授予的访问权限 |
 | --- | --- |
-| **Campaign folders** | Every campaign the folder holds at the time of each request. Moving a campaign into the folder grants it, moving it out takes it away. |
-| **Campaigns** | One campaign, for workspaces that do not organize by folder. |
-| **Mailboxes** | The conversations in that mailbox in the unified inbox. |
+| **营销活动文件夹** | 每次请求时，该文件夹内的所有营销活动。将营销活动移入文件夹即授予访问权限，移出则收回权限。 |
+| **营销活动** | 单个营销活动，适合不按文件夹组织营销活动的工作区。 |
+| **邮箱** | 统一收件箱中属于该邮箱的会话。 |
 
-A campaign is reachable when it sits in at least one granted folder or is granted on its own. Campaign access never includes a mailbox, even the ones the campaign sends from: inbox access is always granted mailbox by mailbox. Under the mailbox picker, **Senders of the selected campaigns** lists the mailboxes the chosen campaigns and folders send from, to review and add with one click. A restricted member with nothing selected reaches nothing.
+只要营销活动位于至少一个已授权的文件夹中，或被单独授权，成员就可以访问它。营销活动的访问权限不会包含任何邮箱，甚至不包含该活动用于发送邮件的邮箱：收件箱访问始终需要逐个邮箱授权。邮箱选择器下方的**所选营销活动的发件邮箱**列出所选营销活动和文件夹使用的发件邮箱，便于检查并一键添加。受限成员如果没有选中任何资源，就无法访问任何资源。
 
-<Callout type="warn" title="A shared mailbox exposes its conversations">
-Inbox access is by mailbox, not campaign. Granting a mailbox shared with other campaigns also exposes those campaigns' conversations in that mailbox, even when the campaigns themselves are not granted. Review the mailbox's use before granting it.
+<Callout type="warn" title="共享邮箱会开放其中会话的访问权限">
+收件箱访问权限按邮箱授予。若授权的邮箱也供其他营销活动使用，该邮箱中属于那些活动的会话同样会向成员开放，即使没有授权这些营销活动本身。授权邮箱前，请先确认它的使用情况。
 </Callout>
 
-<Callout type="warn" title="Restricted access is read-only">
-A restricted member's roles still apply, but only their read permissions do: **View campaigns**, **View analytics** and **Use unified inbox** (reading only). Everything else is set aside while the scope is restricted, so they cannot edit, start, send, reply, label, move, or mark anything read or unread. Opening a conversation does not mark it read for the rest of the team.
+<Callout type="warn" title="受限访问为只读">
+受限成员的角色仍然适用，但只有读取权限生效：**查看营销活动**、**查看分析数据**和**使用统一收件箱**（仅限读取）。在访问范围受限期间，其余权限均暂停生效，因此成员不能编辑、启动、发送、回复、添加标签、移动内容，或将任何内容标记为已读或未读。打开会话也不会将其标记为对团队其他成员而言的已读状态。
 </Callout>
 
-What a restricted member sees:
+受限成员可以看到的内容：
 
-- **Campaigns**: the list, folder counts, each granted campaign's settings, steps and activity feed, and its analytics. The activity feed uses safe messages and selected metadata; mailbox identities and details outside their mailbox grants, raw provider errors and unknown metadata are not returned. Any other campaign answers as not found, including by direct link.
-- **Analytics**: the dashboard and campaign reports, computed only over their campaigns and mailboxes. Filtered campaign counts are recalculated after intersecting the filter with their grants.
-- **Workspace summary**: campaign counts cover their campaigns, contact counts cover distinct contacts in those campaigns, and mailbox counts cover their mailboxes. Today's confirmed campaign sends must belong to both a granted campaign and a granted mailbox. Member counts and AI voice fields are omitted.
-- **Inbox**: the conversations of their mailboxes, with counts and filters to match. Category lists include only categories applied to conversations with messages in accessible mailboxes. Thread labels require an accessible message; unknown and inaccessible threads both answer as not found.
-- **Live updates** for those resources only. They do not appear in the team's presence and do not see who else is online.
+- **营销活动**：列表、文件夹中的活动数量、每个已授权营销活动的设置、步骤、活动记录及其分析数据。活动记录使用经过安全处理的消息和指定的元数据；不会返回未授权邮箱的身份信息和详情、邮件服务商的原始错误信息或未知元数据。其他营销活动均返回“未找到”，通过直接链接访问也一样。
+- **分析数据**：控制台和营销活动报表，计算范围仅限其获授权的营销活动与邮箱。筛选条件与授权范围取交集后，重新计算营销活动数量。
+- **工作区概览**：营销活动数量只统计其获授权的活动；联系人数统计这些活动中的去重联系人；邮箱数量只统计其获授权的邮箱。今日已确认的营销活动发送量必须同时属于获授权的营销活动和获授权的邮箱。成员数量和 AI 语气相关字段不予显示。
+- **收件箱**：其获授权邮箱中的会话，以及相应的数量统计和筛选选项。分类列表只包含已应用到含有可访问邮箱邮件的会话上的分类。访问会话标签要求该会话中至少有一封可访问的邮件；未知会话与无权访问的会话都返回“未找到”。
+- **实时更新**：仅接收这些资源的更新。受限成员不会出现在团队在线状态中，也看不到其他人的在线情况。
 
-Everything that cannot yet be narrowed to a scope is unavailable to them, and shows as locked in their sidebar with the reason: contacts, CRM, templates, forms, automations, deliverability, placement tests, settings other than their own profile and security, the AI assistant, and the Slack app. Resource ownership does not bypass access checks for live events or notifications. They are not sent workspace notifications, including queued email or push notifications, and stored workspace notifications are hidden while their membership is restricted or removed. Personal sign-in security notices remain available. An API key a restricted member already holds, and an app they authorized, are held to the same scope and the same read-only routes; they cannot create new keys.
+尚无法按访问范围缩小权限的功能对这些成员不可用，侧边栏会显示锁定状态及原因：联系人、CRM、模板、表单、自动化流程、邮件送达能力、投递位置测试、个人资料和个人安全之外的设置、AI 助手以及 Slack 应用。资源所有权不能绕过实时事件或通知的访问检查。他们不会收到工作区通知，包括已经排队的邮件或推送通知；在成员身份受限或被移除期间，已存储的工作区通知也会隐藏。个人登录安全通知仍然可用。受限成员已有的 API 密钥以及其授权的应用，同样受该访问范围和只读路由限制；他们不能创建新密钥。
 
-An account whose workspace memberships are all restricted cannot create another workspace, regardless of which workspace is selected. Accounts with no memberships or at least one unrestricted membership can still create workspaces subject to the existing limits. Instance administrators are exempt from this restriction. Submitting, listing or cancelling a workspace limit request requires an unrestricted membership in the request's target workspace, not just the currently selected one. These rules apply to hosted and self-hosted instances.
+如果账户在所有工作区中的成员身份都受到访问范围限制，则无论当前选中哪个工作区，都不能创建其他工作区。没有任何成员身份，或至少在一个工作区中拥有不受限成员身份的账户，仍可在现有限额内创建工作区。实例管理员不受此限制。提交、查看列表或取消工作区限额申请，都要求用户在该申请所针对的工作区中拥有不受限的成员身份，仅在当前选中的工作区中不受限并不足够。这些规则同时适用于托管和自托管实例。
 
-Changing a member's access needs **Manage team** and a recent sign-in, takes effect on their next request, and applies to their open dashboard and live updates without a reload. Realtime authorization is cached for at most 30 seconds; campaign and mailbox channels close when a refreshed check refuses access or fails. Organization channels refresh grants on relevant change events and on the same bounded timer. You must hold every permission the member's roles grant, the owner always reaches the entire workspace, and you cannot change your own access. Grants on a deleted folder, campaign or mailbox disappear with it.
+修改成员的访问范围需要**管理团队**权限，并且操作者近期完成过登录验证。变更会在成员下一次请求时生效，直接应用到其已打开的控制台和实时更新，无需重新加载。实时授权缓存最多保留 30 秒；重新检查拒绝访问或检查失败时，营销活动与邮箱通道会关闭。组织通道在收到相关变更事件时刷新授权，并使用同样具有时间上限的定时刷新机制。你必须拥有该成员角色授予的每一项权限；所有者始终可以访问整个工作区；你不能修改自己的访问范围。文件夹、营销活动或邮箱被删除后，其对应的授权也会一并消失。
 
-Existing unrestricted memberships retain workspace-wide access. These protections use the existing member grants and require no new configuration or data migration. Self-hosted operators should update both the backend/consumer and realtime services so API, notification and channel checks all run the updated code.
+现有不受限成员继续保有整个工作区的访问权限。这些保护措施使用现有成员授权，不需要新的配置或数据迁移。自托管运维人员应同时更新后端/消费者服务和实时服务，确保 API、通知和通道检查都运行更新后的代码。
 
 </Fold>
 
 <Fold>
 
-## Roles
+## 角色 [#roles]
 
-Roles are workspace data. Every workspace starts with three seeded roles that are ordinary roles in every respect: rename, recolor, re-permission, or delete them, and add your own. **Owner is a membership status, not a role**, and there is exactly one per workspace.
+角色属于工作区数据。每个工作区最初都有三个预设角色，它们与普通角色完全相同：你可以重命名、更改颜色、修改权限或删除，也可以添加自己的角色。**所有者是一种成员身份，而非角色**，每个工作区恰好有一位所有者。
 
-| Role | Starts with |
+| 角色 | 初始权限 |
 | --- | --- |
-| **Owner** (status) | Full control, including ownership transfer |
-| **Admin** | Everything except transferring ownership |
-| **Manager** | Day-to-day operator: campaigns, contacts, mailboxes, integrations. No team, billing, settings, or API keys |
-| **Viewer** | Read-only |
+| **所有者**（身份） | 完全控制，包括转移所有权 |
+| **管理员** | 除转移所有权之外的所有权限 |
+| **运营者** | 日常运营权限：营销活动、联系人、邮箱、集成。没有团队、账单、设置或 API 密钥权限 |
+| **查看者** | 只读 |
 
-### Permissions
+### 权限 [#permissions]
 
-| Area | Capability | Allows |
+| 领域 | 权限 | 允许执行的操作 |
 | --- | --- | --- |
-| **Data** | View / manage campaigns | Read settings, sequences, analytics / create, edit, archive |
-| | View / manage contacts | Read contacts, segments, labels / create, edit, delete |
-| | Manage sequences | Edit step content and spacing |
-| | View analytics | Deliverability and engagement reports |
-| | Use integrations | Push contacts and deals to connected tools, view and test automations |
-| | Use AI | Remie and AI drafting, spending shared credits |
-| **People** | Manage team | Invite, remove, re-role members |
-| | Transfer ownership | Hand ownership to another member |
-| **Sending** | Manage mailboxes | Connect, disconnect, configure senders |
-| | Send campaigns | Start, pause, resume |
-| | Use unified inbox | Read and reply from the shared inbox |
-| **Workspace** | Manage settings | Workspace-wide settings, connecting integrations, building automations |
-| | Manage billing | Checkout, invoices, plan changes and cancellation |
-| | Manage API keys | Create and revoke workspace keys |
+| **数据** | 查看 / 管理营销活动 | 读取设置、邮件序列、分析数据 / 创建、编辑、归档 |
+| | 查看 / 管理联系人 | 读取联系人、分群、标签 / 创建、编辑、删除 |
+| | 管理邮件序列 | 编辑步骤内容和间隔 |
+| | 查看分析数据 | 查看邮件送达能力和互动报表 |
+| | 使用集成 | 将联系人和商机推送到已连接的工具，查看和测试自动化流程 |
+| | 使用 AI | 使用 Remie 和 AI 撰写功能，消耗共享积分 |
+| **人员** | 管理团队 | 邀请、移除成员，调整成员角色 |
+| | 转移所有权 | 将所有权移交给另一位成员 |
+| **发送** | 管理邮箱 | 连接、断开和配置发件邮箱 |
+| | 发送营销活动 | 启动、暂停、恢复 |
+| | 使用统一收件箱 | 从共享收件箱读取和回复邮件 |
+| **工作区** | 管理设置 | 修改工作区级设置、连接集成、构建自动化流程 |
+| | 管理账单 | 结账、查看发票、变更和取消套餐 |
+| | 管理 API 密钥 | 创建和撤销工作区密钥 |
 
-How the seeded roles map: **Viewer** holds only the two view permissions plus analytics. **Manager** adds everything operational (manage campaigns, contacts, sequences, mailboxes, send, unibox, integrations, AI). **Admin** adds team, settings, billing, and API keys. **Owner** is Admin plus ownership transfer.
+预设角色的权限分配如下：**查看者**只有两项查看权限以及分析数据权限。**运营者**在此基础上增加所有日常运营权限，包括管理营销活动、联系人、邮件序列和邮箱，以及发送、统一收件箱、集成和 AI。**管理员**再增加团队、设置、账单和 API 密钥权限。**所有者**拥有管理员的所有权限，并可转移所有权。
 
-A role also bounds what its members hand to software. An API key a member creates, and an app a member authorizes over OAuth, only gets the [API permissions their role covers](/api/permissions/#what-a-role-can-delegate), and an app's access shrinks with the member's role if it changes later. Members with **Manage API keys** or **Manage settings** can see every member's authorized apps under **Settings > OAuth apps > Authorized apps** and revoke any of them.
+角色还限制成员可以向软件授予哪些权限。成员创建的 API 密钥以及通过 OAuth 授权的应用，只能获得[该成员角色涵盖的 API 权限](/api/permissions/#what-a-role-can-delegate)。如果之后修改成员的角色，应用的访问权限也会随之缩小。具有**管理 API 密钥**或**管理设置**权限的成员，可在**设置 > OAuth 应用 > 已授权的应用**中查看所有成员授权的应用，并撤销其中任何一个。
 
 </Fold>
 
 <Fold>
 
-## Custom roles
+## 自定义角色 [#custom-roles]
 
-On **Roles & access**, click **New role**: a name (up to 50 characters, and only "owner" is reserved), a color, and an optional description. Pick a template under **Start from** to copy a permission bundle, then toggle individual permissions. Assign it from the roster or the invite flow.
+在**角色与访问权限**页面点击**新建角色**：填写名称（最多 50 个字符，只有“owner”是保留名称）、颜色和可选的说明。在**以此为基础**中选择模板以复制一组权限，再逐项开启或关闭权限。创建后，可以从成员列表或邀请流程中进行分配。
 
-Five rules keep this safe:
+以下五项规则确保权限管理的安全：
 
-- **Editing a role updates everyone assigned to it immediately.** The editor shows how many members are affected before you save.
-- **You can only grant or take away permissions you hold**, so nobody can mint a role stronger than their own. Changing a role's permissions, deleting a role, re-roling a member and removing a member all need every permission involved, old and new; the owner holds them all.
-- **Ownership transfer can never be part of a custom role.**
-- **Members can hold several roles**, and their effective access is the union of all of them. A member left with no roles keeps membership but has no permissions.
-- Up to 25 roles per workspace, including the seeded ones.
+- **编辑角色会立即更新分配了该角色的所有成员。** 保存之前，编辑器会显示受影响的成员数量。
+- **你只能授予或收回自己拥有的权限**，因此任何人都不能创建权限高于自身的角色。修改角色权限、删除角色、调整成员角色和移除成员，都要求操作者拥有变更前后涉及的全部权限；所有者拥有所有权限。
+- **自定义角色绝不能包含转移所有权权限。**
+- **成员可以拥有多个角色**，实际权限为这些角色权限的并集。如果成员不再拥有任何角色，其成员身份仍然保留，但没有任何权限。
+- 每个工作区最多可以有 25 个角色，包括预设角色。
 
-Custom roles apply everywhere permissions do: API access checks, dashboard visibility, and which realtime events a member receives. For a member with a restricted [access scope](#access-scope), only a role's read permissions take effect.
+自定义角色适用于所有进行权限判断的地方：API 访问检查、控制台内容可见性，以及成员能够接收哪些实时事件。对于[访问范围](#access-scope)受限的成员，只有角色的读取权限生效。
 
 </Fold>
 
-## Related guides
+## 相关指南 [#related-guides]
 
 <Cards>
-  <Card title="Campaigns" href="/guides/campaigns/" />
-  <Card title="Unified inbox" href="/guides/unibox/" />
-  <Card title="Deliverability" href="/guides/deliverability/" />
-  <Card title="Permissions reference (API keys)" href="/api/permissions/" />
+  <Card title="营销活动" href="/guides/campaigns/" />
+  <Card title="统一收件箱" href="/guides/unibox/" />
+  <Card title="邮件送达能力" href="/guides/deliverability/" />
+  <Card title="权限参考（API 密钥）" href="/api/permissions/" />
 </Cards>
 
-These roles control what teammates can do in the dashboard. **API key** permissions are separate and control what programmatic integrations can do; see the [Permissions reference](/api/permissions/).
+这些角色控制团队成员可以在控制台中执行的操作。**API 密钥**权限单独管理，控制程序化集成可以执行的操作；参见[权限参考](/api/permissions/)。

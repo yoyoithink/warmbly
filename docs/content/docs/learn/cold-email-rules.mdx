@@ -1,92 +1,92 @@
 ---
-title: Cold email rules
-description: What CAN-SPAM, GDPR, PECR, CASL and the Spam Act actually say, and how to send cold mail compliantly.
+title: 冷邮件规则
+description: 了解 CAN-SPAM、GDPR、PECR、CASL 和《垃圾邮件法》的具体规定，以及如何合规发送冷邮件。
 ---
 
 <ShortVersion>
 
-- Cold email is not illegal in most places, but the rules differ by country.
-- Everywhere: a real sender, a clear opt-out, and opt-outs honoured.
-- Canada, and consumer mail in the EU and UK, need consent first.
+- 冷邮件在大多数地区并不违法，但各国规则不同。
+- 各地都要求：发件人身份真实、拒收方式明确，并尊重收件人的拒收选择。
+- 向加拿大收件人发送邮件，以及在欧盟和英国向消费者发送邮件，都需要先取得同意。
 
 </ShortVersion>
 
-## Why this matters
+## 为什么这很重要 [#why-this-matters]
 
-Cold email is not illegal in most jurisdictions, but the rules around it vary. Getting them wrong invites both fines and the worse outcome: spam complaints that damage your sender reputation across the entire contact list.
+在大多数司法管辖区，冷邮件本身并不违法，但相关规则各不相同。违反规则既可能招致罚款，也可能造成更糟糕的后果：垃圾邮件投诉损害发件信誉，进而影响你向整个联系人名单发送邮件。
 
-<Callout type="info" title="Not legal advice">
-This guide is general information, not legal advice. If you're sending at scale to regulated jurisdictions, run your specific approach past counsel.
+<Callout type="info" title="不构成法律意见">
+本指南提供一般性信息，不构成法律意见。如果你要向受相关法规约束的地区大规模发送邮件，请让法律顾问审核你的具体做法。
 </Callout>
 
 <ComplianceMap />
 
-## United States: CAN-SPAM (2003)
+## 美国：CAN-SPAM（2003 年） [#united-states-can-spam-2003]
 
-CAN-SPAM applies to "commercial electronic mail messages". It does *not* require prior consent for cold B2B email. It does require:
+CAN-SPAM 适用于“商业电子邮件”。它*不要求* B2B 冷邮件事先取得同意，但要求满足以下条件：
 
-- Truthful "From" and routing information.
-- Subject lines that aren't misleading.
-- Identification as an advertisement (interpreted loosely for B2B context).
-- A valid physical postal address.
-- A clear unsubscribe mechanism honoured within 10 business days.
+- “From” 发件人信息和路由信息真实。
+- 主题行不得误导收件人。
+- 明确标识邮件属于广告（在 B2B 场景中的解释相对宽松）。
+- 提供有效的实际邮政地址。
+- 提供明确的退订机制，并在 10 个工作日内处理退订。
 
-For Warmbly's defaults, this means: include a physical address in your sender profile, never spoof a name or domain, and ensure unsubscribe replies are auto-suppressed.
+结合 Warmbly 的默认行为，你需要在发件人资料中填写实际地址，不得冒用姓名或域名，并确保要求退订的回复会自动将对应收件人列入禁止发送名单。
 
-## European Union and UK: GDPR + PECR
+## 欧盟和英国：GDPR + PECR [#european-union-and-uk-gdpr--pecr]
 
-GDPR applies to personal data of EU/UK residents. PECR (in the UK) and ePrivacy directives in EU member states specifically cover electronic marketing.
+GDPR 适用于欧盟和英国居民的个人数据。英国的 PECR 和欧盟成员国的电子隐私指令则专门涵盖电子营销。
 
-### B2B cold mail
+### B2B 冷邮件 [#b2b-cold-mail]
 
-Cold mail to **corporate** recipients (a named role at a company) is generally permitted under "legitimate interest" if:
+如果满足以下条件，向**企业**收件人（公司中承担明确职务的人员）发送冷邮件通常可以基于“合法利益”进行：
 
-- The recipient has a clear business reason to receive the message (relevance test).
-- You can demonstrate you've considered their rights and interests (balancing test).
-- You provide a clear opt-out mechanism.
-- You honour opt-outs immediately.
-- You can tell them, on request, where you obtained their contact details.
+- 收件人有明确的业务理由接收该邮件（相关性测试）。
+- 你能够证明已经考虑其权利和利益（利益平衡测试）。
+- 提供明确的拒收机制。
+- 立即执行收件人的拒收选择。
+- 收件人提出要求时，能够告知其联系方式的获取来源。
 
-### B2C marketing mail
+### B2C 营销邮件 [#b2c-marketing-mail]
 
-Generally requires prior consent. Cold marketing to consumer addresses in the EU/UK is risky without it.
+通常需要事先取得同意。在欧盟或英国，未经同意向消费者地址发送冷营销邮件存在风险。
 
-### Data processing record
+### 数据处理记录 [#data-processing-record]
 
-Keep a record of where you sourced each contact and the legitimate interest you relied on. Warmbly's contact import wizard captures source and import notes for exactly this.
+记录每位联系人的来源，以及你据以联系对方的合法利益。Warmbly 的联系人导入向导会记录来源和导入备注，正是为了满足这一需求。
 
-## Canada: CASL (2014)
+## 加拿大：CASL（2014 年） [#canada-casl-2014]
 
-CASL is the strictest of the major regimes. It requires *express or implied consent* before sending commercial electronic messages to Canadian recipients.
+CASL 是主要监管制度中最严格的一种。向加拿大收件人发送商业电子信息前，必须取得*明确同意或默示同意*。
 
-Implied consent exists where the recipient has a relevant existing business relationship, conspicuously published their business email without an explicit "no marketing" statement, or asked for information from your business in the last 6 months.
+以下情形可能构成默示同意：收件人与你存在相关的既有业务关系；显著公开了其工作邮箱且未明确声明“拒绝营销”；或在过去 6 个月内向你的企业索取过信息。
 
-Every message must include sender identification, contact info, and a working unsubscribe. Penalties for non-compliance can reach CAD $10M per violation for organisations.
+每封邮件都必须包含发件人身份、联系方式和有效的退订方式。组织违规时，每次违法行为的处罚最高可达 1,000 万加元。
 
-## Australia: Spam Act 2003
+## 澳大利亚：《2003 年垃圾邮件法》 [#australia-spam-act-2003]
 
-Requires consent (express, inferred or implied), accurate sender identification and a functional unsubscribe. Inferred consent is generous for B2B but not consumer marketing.
+要求取得同意（明确、推定或默示）、准确标识发件人身份，并提供有效的退订方式。对 B2B 场景，推定同意的适用较宽松；对消费者营销则不然。
 
-## Practical cold-mail compliance checklist
+## 冷邮件合规实用清单 [#practical-cold-mail-compliance-checklist]
 
-1. Use a real From: name and a domain you actually own.
-2. Include a physical mailing address in your sender profile or footer.
-3. Provide a clear opt-out, such as "Reply STOP to opt out" or a one-click link.
-4. Auto-suppress recipients who opt out, across all future sequences and campaigns.
-5. Record where each contact was sourced and your basis for contacting them.
-6. Only contact role accounts and named business addresses for B2B; avoid personal addresses unless you have explicit consent.
-7. Customise the message for relevance: boilerplate to thousands of strangers is the loudest possible compliance and reputation risk.
-8. Skip Canadian and EU consumer-mail recipients unless you have documented consent.
-9. Honour opt-outs within 24 hours, not the legal maximum.
-10. If you operate a privacy policy, link to it from your footer.
+1. 使用真实的 From: 发件人姓名，以及你实际拥有的域名。
+2. 在发件人资料或邮件页脚中加入实际邮寄地址。
+3. 提供明确的拒收方式，例如“回复 STOP 即可拒收”，或一键退订链接。
+4. 自动将拒收的收件人列入禁止发送名单，使其不再收到后续任何邮件序列或营销活动的邮件。
+5. 记录每位联系人的来源，以及联系对方的依据。
+6. B2B 外联仅联系职能邮箱和具名工作邮箱；没有明确同意时，避免联系个人邮箱。
+7. 根据收件人的情况调整内容，使邮件具有相关性。向数千名陌生人发送千篇一律的模板邮件，会带来极高的合规和信誉风险。
+8. 没有可证明的同意记录时，不要向加拿大收件人和欧盟消费者发送此类邮件。
+9. 在 24 小时内处理拒收请求，不要等到法律允许的最长期限。
+10. 如果你制定了隐私政策，请在邮件页脚加入链接。
 
-## How Warmbly helps
+## Warmbly 如何提供帮助 [#how-warmbly-helps]
 
-- Sender profiles include physical address fields that render in every send.
-- Every campaign email carries an opt-out: a reply-to-opt-out line by default, or an unsubscribe link, plus optional RFC 8058 headers. See [unsubscribe and suppression](/guides/unsubscribe/).
-- Opt-out detection on incoming replies (unsubscribe, "remove me", "stop emailing me").
-- Workspace-wide suppression list shared across [sequences](/guides/sequences/), with addresses and whole domains added by hand.
-- Contact source captured at [import](/guides/contacts-crm/); preserved through merges.
-- Region-aware sending windows so you don't accidentally blast at 3am local time.
+- 发件人资料包含实际地址字段，每次发送都会将其呈现在邮件中。
+- 每封营销活动邮件都有拒收方式：默认提供通过回复拒收的说明，也可以使用退订链接，并可选用 RFC 8058 邮件头。参见[退订与禁止发送](/guides/unsubscribe/)。
+- 检测收到的回复中的拒收意图（unsubscribe、“remove me”、“stop emailing me”）。
+- 工作区级别的禁止发送名单在各个[邮件序列](/guides/sequences/)之间共享，可手动加入单个地址或整个域名。
+- 在[导入](/guides/contacts-crm/)时记录联系人来源，合并联系人后也会保留。
+- 发送时间窗口可适配地区，避免意外在收件人当地凌晨 3 点集中发送邮件。
 
-> Compliance and reputation are the same conversation. Senders who skip the basics burn through contact lists and end up in spam filters whether or not the regulator ever shows up.
+> 合规与信誉密不可分。忽视基本要求的发件人会不断消耗联系人名单，最终被垃圾邮件过滤器拦截，无论监管机构是否介入。

@@ -1,333 +1,333 @@
 ---
-title: "Sequences & steps"
-description: "Multi-step sequences, follow-ups, A/B variants, and reply branching."
+title: "邮件序列与步骤"
+description: "多步骤邮件序列、跟进邮件、A/B 版本与回复分支。"
 ---
 
-A sequence is the series of emails a campaign sends each contact: the first email, then follow-ups spaced over days. You build it on a visual canvas where each step is a card, and the lines between cards decide who goes where next.
+邮件序列是营销活动依次发送给每位联系人的一组邮件：先发送首封邮件，再按天间隔跟进。你可以在可视化画布上构建序列，每个步骤是一张卡片，卡片之间的连线决定联系人下一步走向哪里。
 
-![The Steps canvas: the first email, then follow-ups that reply in the same thread, each with its wait on the line](/guides/campaign-steps.webp)
+![步骤画布：首封邮件之后是在同一会话中回复的跟进邮件，每条连线上显示等待时间](/guides/campaign-steps.webp)
 
-## Build a sequence
+## 创建邮件序列 [#build-a-sequence]
 
 <Steps>
 
 <Step>
 
-Open the campaign's **Steps** tab. The first email sits below the **Start** card.
+打开营销活动的**步骤**标签页。首封邮件位于**开始**卡片下方。
 
 </Step>
 
 <Step>
 
-Click a card to write that step's subject and body in the side panel.
+点击卡片，在侧面板中撰写该步骤的主题和正文。
 
 </Step>
 
 <Step>
 
-Press the **+** at the end of a path to add a follow-up after it.
+点击路径末尾的 **+**，在其后添加跟进步骤。
 
 </Step>
 
 <Step>
 
-Click the line into a step to set how many days it waits.
+点击进入某个步骤的连线，设置等待天数。
 
 </Step>
 
 <Step>
 
-Turn on **Stop on reply** in the flow toolbar, so a reply ends the cold follow-ups.
+在流程工具栏中开启**收到回复后停止**，让回复结束后续冷邮件跟进。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Follow-ups reply in the same conversation by default. Turn off **Reply in thread** on a step to start a fresh one.
-- A wait is 0 to 60 days and is counted per contact, so one contact waiting holds up no one else.
-- A sequence holds up to 50 steps, and a step can be A/B tested with up to 5 variants on top of the Original.
-- Auto-replies and out-of-office messages are not human replies and do not stop the sequence.
-- **Send test** mails the saved step, not unsaved edits, so save first.
+- 跟进默认在同一邮件会话中回复。关闭某个步骤的**在会话中回复**，即可开启新会话。
+- 等待时间为 0 至 60 天，按联系人分别计算，因此一位联系人等待不会阻塞其他人。
+- 每个序列最多 50 个步骤；每个步骤可在原始版本之外增加最多 5 个 A/B 变体。
+- 自动回复和休假通知不是人工回复，不会停止序列。
+- **发送测试**发送的是已保存的步骤，而非尚未保存的编辑，因此请先保存。
 
 <Fold>
 
-## What a sequence is
+## 什么是邮件序列 [#what-a-sequence-is]
 
-A campaign sends a sequence of steps to each contact: the first email, then follow-ups spaced over days. You build it on a visual canvas where each step is a card and the lines between cards decide who goes where next.
+营销活动为每位联系人执行一组步骤：先发送首封邮件，再按天间隔跟进。你在可视化画布上构建流程，每个步骤是一张卡片，卡片之间的连线决定联系人下一步走向哪里。
 
 </Fold>
 
 <Fold>
 
-## The flow canvas
+## 流程画布 [#the-flow-canvas]
 
-The canvas lays itself out from where a contact enters, top to bottom, and fills the window. Scroll with two fingers or drag empty space to move around; pinch, or hold `Ctrl`/`Cmd` and scroll, to zoom. `Shift+1` fits the whole flow. The **Start** card, `Contact enters the campaign`, sits at the top and carries how long their first email waits after they entered (the same setting as the campaign's **Settings** > **First email**; see [the campaign guide](/guides/campaigns/#delay-before-the-first-email)). Below it comes the first email, then whatever follows it. You never draw lines or arrange cards.
+画布从联系人进入的位置开始，自上而下自动布局，并填满窗口。双指滚动或拖动空白处可以平移；双指捏合，或按住 `Ctrl`/`Cmd` 滚动，可以缩放。`Shift+1` 让整个流程适配视图。顶部的**开始**卡片显示 `Contact enters the campaign`，表示联系人进入营销活动，并带有加入后等待多久才发送首封邮件的设置。它与营销活动**设置** > **首封邮件**中的设置相同，参见[营销活动指南](/guides/campaigns/#delay-before-the-first-email)。下方依次是首封邮件和后续步骤。你无需手动画线或排列卡片。
 
-- Hover a line and press its **+** to insert a step there, or press the **+** at the end of a path to add one after it. The picker is searchable and works from the keyboard. The first email is the first step created, so nothing can be inserted above it.
-- The line into each step shows its wait (`3 days`) when it has one. Click it to change it, or set it in the step's path panel.
-- A step with conditions splits into one column per condition plus **Otherwise**. A Switch splits into one column per case. Click a column's label to edit that path.
-- **Go to a step** (at the end of a path) continues the path at a step already in the flow, shown as a chip. A path that ends with nothing under it ends the sequence; a conditional path routed nowhere shows `End`.
-- Click a card to edit the step in the side panel. Edits save as you make them; the email and action editors have their own **Save**, and closing the panel with unsaved changes asks first.
-- Deleting a step reconnects whatever led to it to the step it led to, when there is exactly one. Otherwise the steps after it are left unconnected rather than deleted. A card nothing leads to is faded with a dashed border and never sends; connect it with **Go to a step**.
-- A card that still needs something (a subject, a label to add) has an amber dot by its name; hover the card for what is missing. Up to 50 steps per sequence.
-- The canvas is collaborative: you see teammates' cursors and their selected steps, outlined in their color. Press `/` to chat from your cursor. See [Collaboration](/guides/collaboration/).
+- 将鼠标悬停在连线上，点击其 **+** 可在该位置插入步骤；点击路径末尾的 **+** 可在之后添加步骤。选择器支持搜索和键盘操作。首封邮件是最先创建的步骤，不能在它之前插入任何内容。
+- 进入每个步骤的连线会在有等待时间时显示，例如 `3 days`。点击连线或在步骤的路径面板中修改。
+- 带条件的步骤会为每个条件拆出一列，并增加**否则**列。Switch 步骤为每个分支值拆出一列。点击列标签可编辑该路径。
+- 路径末尾的**转到步骤**会将路径接到流程中已有的步骤，以标签形式显示。下方没有后续内容的路径会结束序列；未指向任何步骤的条件路径显示 `End`。
+- 点击卡片，在侧面板编辑步骤。多数修改即时保存；邮件和操作编辑器有各自的**保存**按钮，存在未保存修改时，关闭面板前会要求确认。
+- 删除步骤时，如果它恰好只有一个后续步骤，会将原先指向它的连接接到该后续步骤。否则，后续步骤保留但不再连接，不会一并删除。没有任何路径通向的卡片会变淡并显示虚线边框，绝不发送；可通过**转到步骤**连接它。
+- 仍缺少必要信息的卡片，例如主题或要添加的标签，会在名称旁显示琥珀色圆点；悬停可查看缺少的内容。每个序列最多 50 个步骤。
+- 画布支持协作：你可以看到队友的光标和所选步骤，外框使用各自颜色。按 `/` 可从光标处聊天。参见[协作](/guides/collaboration/)。
 
-The campaign wizard connects the follow-ups written there in order, with their waits set.
+营销活动向导会将其中撰写的跟进邮件按顺序连接，并设置等待时间。
 
 </Fold>
 
 <Fold>
 
-## Email steps
+## 邮件步骤 [#email-steps]
 
-A step has an internal **name** (never seen by recipients), a **subject** with a variable menu for merge fields like `{{.FirstName}}`, and a rich-text **body**.
+步骤包含内部**名称**（收件人不可见）、**主题**和富文本**正文**。主题提供变量菜单，可插入 `{{.FirstName}}` 等合并字段。
 
-### The body editor
+### 正文编辑器 [#the-body-editor]
 
-The toolbar carries undo and redo (`Ctrl+Z` and `Ctrl+Shift+Z`, or `Cmd` on a Mac), bold, italic, underline and strikethrough, a heading, bullet and numbered lists, links, images, buttons, the font menu, text and highlight colour, alignment, tables, the personalization menu, an AI block, a condition, spintax, and a form link. `Shift+Enter` puts a line break inside a paragraph rather than starting a new one.
+工具栏包含撤销和重做，快捷键为 `Ctrl+Z` 和 `Ctrl+Shift+Z`，Mac 上使用 `Cmd`；还提供粗体、斜体、下划线、删除线、标题、项目列表和编号列表、链接、图片、按钮、字体菜单、文字和高亮颜色、对齐、表格、个性化菜单、AI 内容块、条件、随机文本语法和表单链接。`Shift+Enter` 在段落内换行，不新建段落。
 
-**Alignment** is left, centre, right and justify, applied to whichever blocks the selection covers. Pressing the alignment a block already has clears it again, so a body can go back to inheriting rather than pinning one on every paragraph.
+**对齐**支持左对齐、居中、右对齐和两端对齐，作用于选区覆盖的内容块。再次点击内容块已有的对齐方式会清除它，让正文恢复继承对齐，而不是给每段固定一种方式。
 
-**The font menu** sets the typeface and the size. Sizes come as presets from 12 to 36 px and as a box for any value between 8 and 96. Only the typefaces every mail client can resolve are offered, and each one is a full stack rather than a single name: a web font is never loaded by Gmail or by Outlook on Windows, so choosing one would only decide which fallback the reader gets, and it is better to choose the fallback yourself. Both are written onto the text as inline styles, which is the only place a mail client reads them from.
+**字体菜单**设置字体和字号。字号提供 12 至 36 px 的预设，也可在输入框中填入 8 至 96 之间的任意值。只提供各邮件客户端都能解析的字体，每项都是完整的字体回退列表，而非单一字体名：Gmail 和 Windows 上的 Outlook 不会加载网络字体，选择网络字体实际上只会决定读者看到哪个回退字体，因此不如直接选择合适的回退字体。字体和字号都写成文字上的行内样式，因为邮件客户端只可靠地从这里读取。
 
-<Callout type="info" title="Sizes are in pixels">
-Every client honours `px`. Anything under 13px is hard to read on a phone, which is where most cold email is opened.
+<Callout type="info" title="尺寸以像素为单位">
+所有客户端都支持 `px`。小于 13px 的文字在手机上难以阅读，而大多数冷邮件正是在手机上打开的。
 </Callout>
 
-Pasting copy from Gmail, Outlook, Word or another email tool keeps its paragraphs, lists, links and emphasis, along with its tables, inline styles, colours, fonts and alignment. The blank-line scaffolding those tools ship (an empty `div` per gap, Word's spacer paragraphs) is dropped on the way in, because the editor already spaces paragraphs itself and keeping both renders every gap twice.
+从 Gmail、Outlook、Word 或其他邮件工具粘贴文案时，会保留段落、列表、链接、强调，以及表格、行内样式、颜色、字体和对齐。那些工具附带的空行结构会在导入时移除，例如每个间隔一个空 `div`、Word 的间隔段落，因为编辑器本身已经设置段落间距，保留两套会让每个间隔翻倍。
 
-Tables are worth knowing about: they are the only layout Outlook on Windows renders reliably, because it lays messages out with Word rather than a browser engine. Anything built with `position`, `flex` or `grid` collapses there. The table menu inserts a two by two grid and, once the cursor is inside one, adds and removes rows and columns, merges cells and deletes the table. The dashed cell borders you see while editing are the editing surface only; the sent email carries whatever borders the markup asks for.
+表格尤其值得了解：它是 Windows 上 Outlook 唯一可靠支持的布局方式，因为该客户端使用 Word 而非浏览器引擎排版。依赖 `position`、`flex` 或 `grid` 的布局在那里会失效。表格菜单可插入两行两列的表格；光标位于表格内时，可以增删行列、合并单元格和删除表格。编辑时看到的虚线单元格边框仅用于编辑界面；实际邮件使用标记中指定的边框。
 
-#### Writing and editing with AI
+#### 使用 AI 编写与编辑 [#writing-and-editing-with-ai]
 
-Two AI surfaces live in the body itself. With the cursor somewhere in the copy, a sparkle appears in the right gutter: click it, or press **⌘J**, to ask for text at the cursor or to continue the draft. Select some text instead and a floating **Edit with AI** pill appears over it, with quick actions (improve, shorten, expand, fix grammar, friendlier, more formal) or a free instruction. Both cost [AI credits](/guides/ai-credits/) and both offer **Undo** and **Again** before you move on.
+正文中有两种 AI 入口。光标位于文案中时，右侧边栏会出现闪光图标；点击它或按 **⌘J**，可以要求在光标处生成文字或续写草稿。选择一段文字时，上方会出现浮动的**使用 AI 编辑**按钮，提供改进、缩短、扩写、修正语法、更友好、更正式等快捷操作，也可输入自由指令。两种方式都消耗 [AI 积分](/guides/ai-credits/)，并在继续之前提供**撤销**和**再试一次**。
 
-An edit changes what you asked for and leaves the rest of the passage as you wrote it. Merge fields, conditions, spintax, AI blocks, form links and links travel through the model as themselves and come back as themselves, so a rewrite never quietly drops a `{{.FirstName}}`, empties an AI block or unlinks your booking or opt-out link. Bold, italic and headings inside the selection are the exception: they are not preserved, so select around them when the styling matters. A rewrite that lands inside a sentence stays inside it rather than breaking the paragraph in two, and when the model concludes the copy already satisfies the instruction the review row says **No change** instead of reporting a rewrite that is not there.
+编辑只修改你要求的内容，其余段落保持原样。合并字段、条件、随机文本语法、AI 内容块、表单链接和普通链接都以原有形式传入模型并返回，因此改写不会默默删除 `{{.FirstName}}`、清空 AI 内容块，或断开预约及退订链接。选区内的粗体、斜体和标题是例外：这些样式不会保留，因此重视样式时，应避免把它们包含在选区中。发生在句子内部的改写仍留在句内，不会把段落一分为二；模型判断文案已符合要求时，审阅行会显示**没有修改**，不会声称进行了不存在的改写。
 
-#### Images
+#### 图片 [#images]
 
-The image button offers three ways in: upload a file, paste an address, or pick something already in the workspace library. You can also drag an image straight onto the body, or paste a screenshot from the clipboard.
+图片按钮提供三种方式：上传文件、粘贴地址，或从工作区素材库选择已有图片。也可以直接将图片拖到正文中，或从剪贴板粘贴截图。
 
-Uploads go to a library shared by the whole workspace, so a logo uploaded once is one click away in every campaign. PNG, JPG, GIF and WebP are accepted, up to 5 MB each, and they count against the same storage limit as attachments, shown under **Settings > Billing**.
+上传内容进入整个工作区共享的素材库，因此徽标只需上传一次，就能在每个营销活动中一键使用。支持 PNG、JPG、GIF 和 WebP，每个文件最大 5 MB，与附件共用存储限额，可在**设置 > 账单**查看。
 
-Select a placed image and a small bar appears over it: quarter, half or full column width (or the image's own size), left, center or right alignment, and the alt text. Alt text is worth filling in. Most clients block remote images until the reader allows them, so alt text is what the first look actually shows, and it is what the plain-text version of the email carries in the image's place.
+选中已插入的图片，上方会出现小工具栏：设为栏宽的四分之一、一半或全部，或图片原始尺寸；选择左、中、右对齐；填写替代文本。建议填写替代文本。大多数客户端在读者允许前会屏蔽远程图片，因此首次看到的通常就是替代文本；邮件纯文本版本也会用它替代图片。
 
-The same bar is where an image becomes a link. Put an address in the link field and the image ships wrapped in an anchor, so the picture itself is clickable, and the unlink button next to the field takes it off again. An address typed without `https://` gets it added when you leave the field, because a mail client reads one without a scheme as a path inside itself and it goes nowhere. A linked image is tracked and counted like any other link in the body, the click report names it by its alt text, and the plain-text half carries the alt text with the destination after it.
+同一工具栏还可将图片变成链接。在链接字段输入地址后，图片会被包在锚点中发送，整张图片均可点击；字段旁的取消链接按钮可移除该链接。如果输入时没有 `https://`，离开字段时会自动补上，因为没有协议的地址会被邮件客户端当作内部路径，无法到达目标。链接图片与正文中的其他链接一样被跟踪和计数，点击报表使用其替代文本作为名称；纯文本版本也会保留替代文本，并在后面附上目标地址。
 
-Deleting an image from the library also deletes the file, so it stops loading in mail already sent. The dashboard asks before it does.
+从素材库删除图片会同时删除文件，因此已经发送的邮件也将无法加载该图片。控制台会在删除之前要求确认。
 
-<Callout type="warn" title="Images cost you deliverability">
-Cold email from a real person rarely has images. An image-heavy body reads as a marketing blast to filters that cannot read the picture, and the content check flags it. One signature logo or one product shot is usually the most a first touch should carry.
+<Callout type="warn" title="图片会影响邮件送达能力">
+真实个人发送的冷邮件很少包含图片。图片过多的正文，在无法理解图片内容的过滤器看来像批量营销邮件，内容检查也会提示。首次触达通常最多只宜包含一个签名徽标或一张产品图片。
 </Callout>
 
-#### Buttons
+#### 按钮 [#buttons]
 
-The button beside the image button drops a call to action into the body and opens its bar: the text, the address it opens, a colour, three sizes, square, rounded or pill corners, left, centre or right, and a switch that stretches it to the full width of the column. The text colour follows the colour you pick, so a light button gets dark type rather than white on yellow. The label takes merge fields and spintax like any other copy, so `Book a call, {{.FirstName}}` works there too.
+图片按钮旁的按钮工具会向正文插入行动号召按钮，并打开设置栏：可修改文字、打开的地址、颜色，选择三种尺寸、方角/圆角/胶囊形状、左/中/右对齐，以及是否铺满整栏。文字颜色随按钮颜色自动调整，浅色按钮会使用深色文字，避免黄色背景配白字。按钮标签与其他文案一样支持合并字段和随机文本语法，因此 `Book a call, {{.FirstName}}` 也可使用。
 
-What it writes is a one-cell table, not a styled link. Outlook on Windows lays out with Word, which ignores `display: inline-block`, so a padded anchor arrives there as a coloured word with no box around it. Putting the colour and the padding on a table cell instead is the shape that holds everywhere, which is also why a button shows up as a small table in the HTML view.
+它生成的是单个单元格的表格，而非仅带样式的链接。Windows 上的 Outlook 使用 Word 排版，忽略 `display: inline-block`，因此带内边距的锚点在那里只会显示成彩色文字，没有周围的按钮方框。将颜色和内边距放在表格单元格上，才能在各种客户端保持外形；这也解释了为什么按钮在 HTML 视图中显示为小表格。
 
-A button with no address ships as the box it looks like and nothing else, rather than as a link to nowhere. Its link field stays amber until you fill it in, and fills in `https://` for you the same way the image's does.
+没有地址的按钮只会按外形显示，不会成为指向无效目标的链接。链接字段会保持琥珀色，直到填入地址；它也会像图片链接一样自动补上 `https://`。
 
-<Callout type="warn" title="A button is a marketing signal">
-A first touch that looks like a newsletter gets read like one. In cold outreach a plain sentence with a link in it usually beats a button, and filters read heavy markup as a blast. Save the button for a later step, an event invitation, or a reply to someone already in a conversation.
+<Callout type="warn" title="按钮会呈现营销邮件特征">
+首次触达如果看起来像新闻简报，读者就会按简报对待。在冷邮件触达中，一句普通文字加链接通常比按钮更有效，过滤器也会把繁重标记视为群发特征。建议将按钮留给后续步骤、活动邀请，或已经展开对话的回复。
 </Callout>
 
-#### Writing the HTML yourself
+#### 自行编写 HTML [#writing-the-html-yourself]
 
-The `</>` button on the right of the toolbar swaps the body for its HTML. What you type there is stored exactly as you wrote it, merge fields and conditions included, so a template built elsewhere keeps its markup. The only thing that changes on the way out is what the send path adds or resolves: merge fields fill in, a `<style>` block is inlined onto the elements it matches, and the signature, opt-out footer and tracking are appended.
+工具栏右侧的 `</>` 按钮会将正文切换为 HTML。你输入的内容会原样保存，包括合并字段和条件，因此在其他工具中制作的模板可以保留标记。发送时唯一的变化来自发送流程的解析或添加：填充合并字段，将 `<style>` 块内的样式内联到匹配元素，并附加签名、退订页脚和跟踪内容。
 
-HTML is a property of the step, not of the tab you happen to be on. A step written as markup opens as markup the next time anyone edits it, so a design cannot be quietly flattened by being reopened. Paste a whole HTML email into the visual editor and the step switches to HTML on its own and keeps the markup verbatim, because a document with its own `<head>` and `<style>` block is not something any visual editor can hold faithfully. The same happens if you copy the source of an email out of a file and paste it as text.
+HTML 模式是步骤自身的属性，不取决于当前打开哪个标签页。以标记编写的步骤，任何人下次编辑时仍以标记打开，避免设计因重新打开而悄悄被简化。将整封 HTML 邮件粘贴到可视化编辑器时，步骤会自动切换为 HTML 并原样保留标记，因为带有独立 `<head>` 和 `<style>` 块的文档，无法由普通可视化编辑器完整忠实地表示。从文件中复制邮件源码并作为文本粘贴，也会触发相同行为。
 
-Switching back to the visual editor hands the markup to the editor's own structure, which keeps paragraphs, breaks, headings, lists, links, emphasis, images, tables, `div` containers, colours, fonts and alignment. Anything outside that is named in a confirmation before it is dropped, and staying in HTML keeps it.
+切回可视化编辑器时，标记会转换为编辑器自身结构，保留段落、换行、标题、列表、链接、强调、图片、表格、`div` 容器、颜色、字体和对齐。除此之外的内容，会在删除前的确认提示中逐项说明；继续留在 HTML 模式即可保留。
 
-#### CSS is inlined when the email sends
+#### 邮件发送时会将 CSS 转为内联样式 [#css-is-inlined-when-the-email-sends]
 
-Write your CSS in a `<style>` block as you normally would. When the email sends, every rule that matches something is copied onto the elements it matches, as a `style` attribute. Outlook.com, Yahoo and Gmail's mobile apps drop embedded stylesheets outright, so a design written with classes arrives unstyled without this.
+像平常一样，将 CSS 写在 `<style>` 块中。邮件发送时，每条有匹配目标的规则都会复制到对应元素的 `style` 属性。Outlook.com、Yahoo 和 Gmail 移动应用会直接丢弃内嵌样式表，因此不做内联处理时，依靠类名的设计到达后会失去样式。
 
-What that means in practice:
+实际行为如下：
 
-- rules stay in the `<style>` block when they cannot be inlined: media queries, `@font-face`, `@keyframes`, and anything keyed on `:hover` or another reader state
-- a media query overriding a rule that has become an inline style needs `!important` on its declarations, or the inline style wins. This is true of every email tool that inlines CSS
-- your own `style` attribute still beats a stylesheet rule, and `!important` still beats that, exactly as in a browser
-- the rules that were inlined are removed from the `<style>` block, so the email does not carry its stylesheet twice
-- nothing happens to a body with no `<style>` block. Existing campaigns send byte for byte as before
-- `<style data-warmbly-inline="false">` is left exactly as written, if you want the cascade you wrote and know your readers
+- 无法内联的规则继续保留在 `<style>` 块中，包括媒体查询、`@font-face`、`@keyframes`，以及依赖 `:hover` 或其他读者交互状态的规则
+- 媒体查询如果要覆盖已经成为行内样式的规则，需要在声明中加 `!important`，否则行内样式优先。所有会内联 CSS 的邮件工具都遵循这一点
+- 你自己写的 `style` 属性仍优先于样式表规则，而 `!important` 仍可覆盖它，与浏览器一致
+- 已内联的规则会从 `<style>` 块移除，避免邮件重复携带同一套样式
+- 没有 `<style>` 块的正文不会被处理，现有营销活动发送的内容逐字节保持原样
+- 如果希望保留自己编写的层叠规则，并且了解收件客户端，可使用 `<style data-warmbly-inline="false">`，它会完全原样保留
 
-#### What mail clients will do to it
+#### 邮件客户端对内容的处理 [#what-mail-clients-will-do-to-it]
 
-Under the body, and under the Preview tab, a panel names what your markup will run into: `<script>`, `<form>` and `<iframe>` being stripped, an external stylesheet that no client will ever fetch, CSS that Outlook on Windows ignores, images with no alt text, a web font that will fall back, and whether the message is long enough for Gmail to clip it. Gmail truncates anything over 102 KB behind a "View entire message" link, which also hides your unsubscribe footer and stops opens being recorded for readers who do not expand it.
+正文下方和预览标签页下方的面板会说明标记可能遇到的问题：`<script>`、`<form>` 和 `<iframe>` 被移除，外部样式表不会被客户端加载，某些 CSS 被 Windows 上的 Outlook 忽略，图片没有替代文本，网络字体将回退，以及邮件是否长到会被 Gmail 截断。Gmail 会将超过 102 KB 的内容折叠到“查看完整邮件”链接后，这也会隐藏退订页脚，并导致没有展开邮件的读者不被记录为打开。
 
-None of it blocks a send. It is there because writing email HTML means writing for renderers that disagree, and it is better to find out in the editor than from a reply.
+这些提示都不会阻止发送。它们存在的原因是邮件 HTML 面对的渲染器行为各不相同，在编辑器中提前发现，总比从收件人回复中才得知更好。
 
-#### The plain-text half
+#### 纯文本版本 [#the-plain-text-half]
 
-Every HTML email ships with a plain-text alternative beside it, and inbox providers read it.
+每封 HTML 邮件都会同时携带纯文本版本，收件服务商也会读取它。
 
-For a step written in HTML in the dashboard, Warmbly stores no plain-text half and renders one when the email sends: headings and paragraphs keep their line breaks, list items are bulleted, table rows become lines, each link keeps its destination in brackets after its text, and the stylesheet and any hidden preheader are left out. The mailbox's plain-text signature and the opt-out line follow it. The Preview tab shows the result, so you can read what a text-only client gets.
+对于在控制台中以 HTML 编写的步骤，Warmbly 不存储纯文本版本，而是在发送时生成：标题和段落保留换行，列表项添加项目符号，表格行变为文本行，每个链接的文字后用括号保留目标地址，样式表和隐藏的预览文字则省略。之后附加邮箱的纯文本签名和退订行。预览标签页会显示结果，让你看到纯文本客户端收到什么。
 
-A step written in the visual editor gets its plain-text half as you type, and it keeps the same things: an image stands in as its alt text in brackets, and a link, a linked image and a button all keep their destination in brackets after the label. Without that a text-only reader gets a button with nowhere to go.
+使用可视化编辑器编写的步骤，会在输入时同步生成纯文本版本，并保留相同信息：图片用括号中的替代文本表示，普通链接、链接图片和按钮都在标签后用括号保留目标地址。否则，纯文本读者只能看到按钮文字，却无处可点。
 
-This only applies when there is no plain-text body to send. Set `body_plain` through the API and that text is sent as written; leave it empty and the send path renders one from the HTML.
+这只适用于没有现成纯文本正文的情况。通过 API 设置 `body_plain` 后，文本会原样发送；留空则由发送流程从 HTML 生成。
 
-The reverse holds too. A step written through the API or an agent tool usually carries `body_plain` and nothing else, and the HTML half is rendered from that text: the lines are kept and bare URLs become links, so click tracking has something to wrap. The step is stored with the composer's empty HTML document until then, and that empty document, not the absence of one, is what used to arrive as a blank email: clients prefer the HTML alternative and would show an empty one in place of the text. A step that already has an HTML body is never overwritten.
+反向转换也适用。通过 API 或代理工具编写的步骤通常只有 `body_plain`，HTML 版本会从该文本生成：保留行，并将裸 URL 转为链接，供点击跟踪改写。在此之前，步骤存储的是编辑器的空 HTML 文档；过去导致空白邮件的正是这个空文档，而非没有 HTML，因为客户端优先选择 HTML 版本，会显示空 HTML 而不是文本。已经具有 HTML 正文的步骤绝不会被覆盖。
 
-A step with nothing in either body is refused at start rather than sent: a blank email to every lead is not a campaign anyone meant to launch.
+两个正文都为空的步骤会在启动时被拒绝，不会发送：没有人会有意启动一个向所有潜在客户发送空白邮件的活动。
 
-### Preview and test
+### 预览与测试 [#preview-and-test]
 
-The Preview tab renders through the real send engine, so merge fields, conditionals, and spintax resolve exactly as they will at send time. It draws the body the way a mail client would, in its own frame, rather than the way the editor does. **Preview as** picks who it renders for: a built-in sample contact, one of the campaign's leads, or any contact you search for, so a custom field your list does not actually have shows up as an unresolved token instead of looking fine. The mailbox picker next to it adds that sender's signature and shows the From name recipients will see. When the campaign is known the preview also appends the opt-out footer and lists the files attached to the campaign. Malformed templates (an `{{if}}` with no `{{end}}`) are flagged before you start the campaign. See [Personalization](/guides/expressions/) for everything you can put in copy.
+预览标签页通过真实发送引擎渲染，因此合并字段、条件和随机文本语法的解析方式与实际发送完全相同。正文在独立框架中按邮件客户端方式展示，而非按编辑器方式。**预览身份**决定为谁渲染：内置示例联系人、活动中的某位潜在客户，或搜索到的任意联系人。这样，名单中实际不存在的自定义字段会显示为未解析的令牌，不会造成一切正常的假象。旁边的邮箱选择器会添加相应发件人的签名，并显示收件人看到的发件人名称。已知营销活动时，预览还会附加退订页脚，并列出活动附件。格式错误的模板，例如有 `{{if}}` 却没有 `{{end}}`，会在活动启动前被标记。可在文案中使用的全部内容，参见[个性化](/guides/expressions/)。
 
-**Send test** in the preview mails the saved step to an address of your choice through the chosen mailbox, rendered for the chosen contact and carrying the attachments, signature and opt-out footer. Save the step first: the test sends what is stored, not unsaved edits. Opens and clicks on a test are not tracked, and its opt-out link names nobody, so clicking it suppresses no one.
+预览中的**发送测试**会通过所选邮箱，将已保存步骤发送到指定地址，按所选联系人渲染，并携带附件、签名和退订页脚。请先保存步骤：测试发送的是已存储内容，而非未保存的修改。测试邮件的打开和点击不跟踪，退订链接也不指向任何人，因此点击不会将任何联系人加入禁止发送名单。
 
-<Callout type="info" title="Templates">
-Apply a saved template to a step, or save a step as a reusable one from the composer. Templates carry their subject and body and live in your shared library.
+<Callout type="info" title="模板">
+可以将已保存模板应用到步骤，也可以从编辑器将步骤保存为可复用模板。模板包含主题和正文，存放在共享素材库中。
 </Callout>
 
-### Attachments
+### 附件 [#attachments]
 
-Upload attachments for a step below its composer by dragging and dropping files or clicking the upload area. A file uploaded there is sent with every email from that step and from no other step, and can be removed in the same place. Files attached to the campaign itself rather than to a step, which can only be added through the API, ride every step: they are listed under **Sent with every step** so each step shows everything it carries. Attachments count against your workspace storage limit, shown under **Settings > Billing**; an upload that would pass it is refused with `storage_limit_reached`, and two uploads racing for the last of the quota cannot both get in. Removing a step deletes the files scoped to it.
+在步骤编辑器下方拖放文件，或点击上传区域，即可添加步骤附件。在这里上传的文件只随该步骤的每封邮件发送，不会出现在其他步骤中，也可在同一位置移除。直接附加到营销活动、而非单个步骤的文件，只能通过 API 添加，会随每个步骤发送；它们列在**随每个步骤发送**下，让各步骤都展示自己携带的全部文件。附件计入工作区存储限额，可在**设置 > 账单**查看；会超额的上传以 `storage_limit_reached` 被拒绝，即使两个上传同时争用最后的余量，也不能都成功。删除步骤会同时删除专属于它的文件。
 
-### Action steps
+### 操作步骤 [#action-steps]
 
-A step can perform an action instead of sending: add or remove a label, label the conversation, create a task, create a deal or move its stage, unsubscribe the contact, notify (fires your webhooks and integrations), run an automation, or switch. They sit in the flow like email steps and work best at the end of a reply branch, for example creating a deal and notifying your team on a positive reply.
+步骤也可以执行操作而非发送邮件：添加或移除标签、为会话添加标签、创建任务、创建商机或移动其阶段、让联系人退订、发送通知（触发 Webhook 和集成）、运行自动化流程，或执行 Switch 分支。它们像邮件步骤一样位于流程中，尤其适合放在回复分支末尾，例如收到积极回复后创建商机并通知团队。
 
 <Callout type="info">
-**Label conversation** is reply-only. It labels the conversation the contact replied on, so place it on a reply branch; anywhere else it is a no-op because there is no thread to label.
+**为会话添加标签**仅适用于回复。它标记联系人实际回复的会话，因此应放在回复分支上；放在其他位置时，由于没有可标记的会话，不会执行任何操作。
 </Callout>
 
-### Switch steps
+### 条件选择步骤 [#switch-steps]
 
-A Switch step routes each contact down one of several named cases (`interested`, `not_now`, `wrong_person`). Every case is its own column under the step; add the steps that case leads to under it. **Otherwise** is the fallback for contacts no case matched. Renaming a case keeps the steps under it. Side effects stay as ordinary action steps on a path, so the decision and its consequences remain separately visible.
+Switch 步骤将每位联系人路由到多个命名分支之一，例如 `interested`、`not_now`、`wrong_person`。每个分支值在步骤下方占一列，可以在列下添加该分支要执行的步骤。**否则**是没有匹配任何分支的联系人使用的后备路径。重命名分支值会保留其下方步骤。产生实际修改的操作仍以路径上的普通操作步骤表示，因此决策及其后果分别可见。
 
-| Decider | How it picks | Cost |
+| 决策方式 | 如何选择 | 费用 |
 |---------|--------------|------|
-| **AI prompt** | A plain-language instruction (supports the same variables as your copy). One model call per contact reads their data and picks exactly one case. | 1 credit per contact, refunded on failure. With no credits the step is skipped and the contact takes the fallback path. |
-| **Value** | A template value (`{{.Industry}}`, any custom field) rendered per contact and matched to case names. Casing and whitespace are ignored; wrap a case in slashes for a case-insensitive regex (`/^(vip\|enterprise)/`). Plain cases match first, then regex in order. | None, fully deterministic |
+| **AI 提示词** | 自然语言指令，支持与邮件文案相同的变量。每位联系人调用模型一次，读取其数据并恰好选择一个分支值。 | 每位联系人 1 积分，失败退款。没有积分时跳过此步骤，联系人进入后备路径。 |
+| **值** | 为每位联系人渲染模板值，例如 `{{.Industry}}` 或任意自定义字段，再与分支名匹配。忽略大小写和首尾空白；将分支值包在斜杠中，可使用不区分大小写的正则表达式，例如 `/^(vip\|enterprise)/`。先匹配普通分支，再按顺序匹配正则。 | 免费，完全确定性 |
 
-The AI decider adds two optional toggles: **web search** looks up the contact's company (query built from company, name, or corporate domain, never email content) for 1 extra credit when it finds results, and **extended thinking** routes to the stronger model tier for hard decisions, metered through [AI credits](/guides/ai-credits/).
+AI 决策方式还提供两个可选开关：**网络搜索**根据公司、姓名或企业域名构造查询，查找联系人公司信息，绝不使用邮件内容构造查询；找到结果时额外消耗 1 积分。**深度思考**将困难决策路由到更强的模型档位，按 [AI 积分](/guides/ai-credits/)计量。
 
-Under **What AI can see**, each step controls whether the model also receives the contact's campaign history and newest email on top of their fields. Both default on. Email and profile fields are treated strictly as content: instructions inside an email ("ignore your rules") are ignored, and the model can only answer with a case you named.
+在 **AI 可见内容**下，每个步骤都可以决定，除联系人字段外，是否还向模型提供其营销活动历史和最新邮件。两项默认开启。邮件和个人资料字段严格视为内容：邮件中的指令，例如“忽略你的规则”，会被忽略，模型只能返回你命名的分支之一。
 
-Switch steps always run on the normal schedule, so an instant reply branch leading into one pauses until the next boundary.
+Switch 步骤始终按常规调度运行，因此即时回复分支如果进入 Switch，会等待到下一个调度边界。
 
 </Fold>
 
 <Fold>
 
-## Wait and spacing
+## 等待时间与发送间隔 [#wait-and-spacing]
 
-Spacing belongs to the **target** step, not a separate node, so there is no wait block on the canvas. The line into a step shows its wait (`3 days`); click it to set the days before that step (0 to 60). A step with no wait shows nothing on its line. The one delay that is not a step's own is the wait before the *first* email, on the line under the Start card.
+间隔属于**目标**步骤，不是独立节点，因此画布没有单独的等待块。进入步骤的连线显示其等待时间，例如 `3 days`；点击可以设置该步骤之前等待 0 至 60 天。没有等待的步骤，连线上不显示时间。唯一不属于步骤自身的延迟，是*首封*邮件之前的等待，位于开始卡片下方的连线上。
 
-Because the wait belongs to the target, every path into that step uses the same wait. Spacing follow-ups out keeps your sending pattern natural; see [Deliverability](/guides/deliverability/).
+等待属于目标步骤，因此所有进入该步骤的路径都使用同一个等待时间。适当拉开跟进间隔，可使发送模式更自然；参见[邮件送达能力](/guides/deliverability/)。
 
-Waits are per contact. A contact waiting three days for a follow-up does not hold up anyone else: other contacts' first emails and due follow-ups keep sending in the meantime, and the campaign only pauses when nothing is due for anyone.
+等待按联系人分别计算。一位联系人等待三天才收到跟进，不会阻塞其他人：期间其他联系人的首封邮件和已到期跟进仍会继续发送。只有所有联系人都没有到期任务时，活动才会等待。
 
-<Callout type="info" title="Instant branches skip the wait">
-A path that runs instantly fires the moment the event happens, so the target's wait does not apply and the control is hidden. Action steps run right away. An email step is due immediately and goes out on the campaign's next scheduling pass, usually within 15 minutes, still inside your sending hours and the mailbox's spacing between sends. A path that is not instant, including one you toggled off, keeps the target's wait.
+<Callout type="info" title="即时分支会跳过等待">
+即时路径在事件发生时触发，因此不应用目标步骤的等待时间，相应控件也会隐藏。操作步骤立即执行；邮件步骤立即变为待发送，并在活动下一次调度时发送，通常在 15 分钟内，仍遵循发送时间窗口和邮箱的发送间隔。非即时路径，包括你主动关闭即时性的路径，继续使用目标步骤的等待时间。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Follow-ups and threading
+## 跟进邮件与会话串联 [#follow-ups-and-threading]
 
-A follow-up is the next email step, sent as a **reply on the conversation the contact is already in** rather than as a second email out of nowhere. It carries `In-Reply-To` and `References` pointing at the last message they received from the campaign, and on Gmail it is posted into that same thread, so it sits under the first email in their inbox and in your Sent folder.
+跟进是下一个邮件步骤，作为**联系人已经参与的会话中的回复**发送，而不是突然出现的另一封独立邮件。它携带 `In-Reply-To` 和 `References`，指向该联系人最近收到的营销活动邮件；在 Gmail 中也会写入同一会话，因此在对方收件箱和你的已发送文件夹中，都排列在首封邮件下方。
 
-Each email step has a **Reply in thread** switch, on by default. Turn it off for a step that should deliberately start a fresh conversation.
+每个邮件步骤都有**在会话中回复**开关，默认开启。如果某个步骤需要明确开启新会话，请关闭。
 
-- A step that replies in the thread has no subject of its own: a reply carries the conversation's subject, which is the one the email that opened the thread was sent with. The composer shows that subject instead of a subject box.
-- The conversation follows what each contact actually received. When the step that opened the thread is A/B tested, a contact who got Variant B is replied to under Variant B's subject and a contact who got the Original under the Original's, on every follow-up. The composer lists each version's subject. A follow-up repeats the subject the opening email was actually sent with, word for word, so editing the opening step or the contact later does not change the subject of a conversation it already started.
-- A step with **Reply in thread** off writes its own subject and opens a new conversation. Every threading step after it then replies on *that* conversation.
-- The switch does nothing on a contact's first email. There is nothing to reply to, so it opens the thread.
-- A/B variants on a threading step vary the body only, for the same reason.
+- 在会话中回复的步骤没有独立主题：回复沿用会话主题，即开启该会话的邮件发送时使用的主题。编辑器显示该主题，不提供主题输入框。
+- 会话跟随每位联系人实际收到的内容。如果开启会话的步骤进行了 A/B 测试，收到变体 B 的联系人后续都在变体 B 的主题下获得回复，收到原始版本的人则沿用原始主题。编辑器会列出各版本主题。跟进逐字沿用首封邮件实际发送时的主题，因此之后编辑开场步骤或联系人，不会改变已经建立的会话主题。
+- 关闭**在会话中回复**的步骤使用自己的主题，并开启新会话。之后所有启用会话回复的步骤都接续*这个*新会话。
+- 对联系人的首封邮件，此开关不起作用。没有可回复的邮件，因此它会开启会话。
+- 同样因为主题属于会话，会话回复步骤上的 A/B 变体只能改变正文。
 
-<Callout type="info" title="The reply headers need the first email to have been confirmed sent">
-They point at the message id the sending provider put on the wire, which Warmbly learns when the worker reports the send. If that confirmation never arrives the follow-up still sends, carrying the conversation's subject, but as its own conversation.
+<Callout type="info" title="首封邮件须确认发送成功后才能设置回复邮件头">
+回复邮件头指向邮件服务商实际发送时使用的消息 ID，Warmbly 在工作节点报告发送结果时获知它。如果确认始终没有到达，跟进仍会发送并沿用会话主题，但会作为独立会话。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## A/B variants
+## A/B 版本 [#ab-variants]
 
-Open a step's editor and click **A/B test this step**.
+打开步骤编辑器，点击**对此步骤进行 A/B 测试**。
 
-- The step's own subject and body are the **Original** control arm; adding a variant makes it one weighted arm among several.
-- Up to 5 variants (B through F) on top of the Original.
-- The **traffic-split bar** shows one segment per arm. Drag a divider or type an exact percent; shares always total 100%, and **Even split** balances every active arm.
-- Select an arm to edit its name, subject, and body. Leave a variant's subject or body blank to reuse the step's own. On a step that replies in the thread, a variant's subject is ignored: the conversation owns it. On a step that opens a conversation, the variant's subject becomes the conversation's for every contact it is sent to, so the follow-ups threading on it reply under that subject.
-- A first variant starts at 50/50. Marking one **inactive** drops it from the split without deleting it; deleting the last one returns the step to a single send.
+- 步骤自身的主题和正文是**原始版本**对照组；添加变体后，它成为多个具有权重的实验组之一。
+- 在原始版本之外，最多添加 5 个变体，即 B 至 F。
+- **流量分配条**为每个实验组显示一段。拖动分隔线或输入精确百分比，份额总和始终为 100%；**平均分配**将流量均分给所有启用的实验组。
+- 选中实验组可编辑名称、主题和正文。变体主题或正文留空时，复用步骤自身内容。对于在会话中回复的步骤，变体主题会被忽略，因为主题属于会话。对于开启新会话的步骤，变体主题会成为收到它的每位联系人的会话主题，后续接续该会话的跟进也沿用此主题。
+- 首个变体默认按 50/50 分配。将某个变体标记为**停用**会将其移出分配，但不删除；删除最后一个变体后，步骤恢复为单一版本发送。
 
-Once variants have sent, each card shows Sent, Open rate, Reply rate, and Bounce rate. When Warmbly finds a **winner**, a banner names it with the rule and confidence used, and the winning card gets a trophy.
+变体开始发送后，每张卡片会显示已发送、打开率、回复率和退信率。Warmbly 识别出**胜出版本**时，会以横幅显示名称、采用的规则和置信等级，并在胜出卡片上添加奖杯标记。
 
 </Fold>
 
 <Fold>
 
-## Branching
+## 分支 [#branching]
 
-A branch routes contacts by condition. Press **+** under a step and pick **If / else**, or choose **Add a condition** from the step's **⋯** menu, then pick the condition in the side panel and press **Save**; nothing changes for contacts until you do. Each condition is a column under the step, checked left to right like `if` / `else if` / `else`, and the first match wins; **Check earlier** and **Check later** in the path panel change the order. Anyone matching nothing goes on under **Otherwise**, or stops if nothing is there.
+分支根据条件路由联系人。在步骤下方点击 **+** 并选择 **If / else**（条件分支），或在步骤 **⋯** 菜单中选择**添加条件**，再在侧面板选择条件并点击**保存**；保存之前，联系人流程不会改变。每个条件在步骤下方占一列，从左到右按 `if` / `else if` / `else` 检查，首个匹配项优先；路径面板中的**提前检查**和**延后检查**可以改变顺序。没有匹配任何条件的人进入**否则**，若该路径没有后续步骤则停止。
 
-| Condition | Meaning |
+| 条件 | 含义 |
 | --- | --- |
-| `always` | Right after the wait, unconditionally |
-| `if opened` / `if clicked` | Did it within an N-day window (1 to 60) |
-| `if replied` | Replied |
-| `if didn't open` / `didn't click` / `didn't reply` | Warmbly waits the full window, then takes the path only if it still hasn't happened |
-| `if replied: positive` / `negative` / `neutral` | Reply intent, checked once, no day window |
-| `if auto-reply / out of office` | Reply was automated, not human |
-| `if reply intent is…` | The intent [automatic inbox tagging](/guides/inbox-tagging/) read from the human reply: agreed, wants info, wants pricing, not now, not interested, wrong person, opt out, scheduling, in progress, question answered, or unclear. Set only when inbox tagging is on and the classifier was at least 70% sure; an untagged reply takes the otherwise path. Checked once, no day window |
-| `random split` | A random share of contacts (1 to 99%) |
-| Switch case paths | Each case's own column under the Switch, not chosen here. Uses the stored case, so routing spends no credits |
+| `always` | 等待结束后无条件执行 |
+| `if opened` / `if clicked` | 在 N 天窗口内发生打开或点击，窗口为 1 至 60 天 |
+| `if replied` | 已回复 |
+| `if didn't open` / `didn't click` / `didn't reply` | Warmbly 等待完整窗口结束，仅在相应事件仍未发生时进入该路径 |
+| `if replied: positive` / `negative` / `neutral` | 按回复意图判断，只检查一次，没有天数窗口 |
+| `if auto-reply / out of office` | 回复为自动消息，而非人工回复 |
+| `if reply intent is…` | [自动收件箱标签](/guides/inbox-tagging/)从人工回复中识别的意图：同意、想了解信息、想了解价格、暂时不需要、不感兴趣、找错人、退订、安排时间、进行中、问题已解答或不明确。只有开启收件箱自动标签且分类器置信度至少 70% 时才设置；没有标签的回复走“否则”路径。只检查一次，没有天数窗口 |
+| `random split` | 随机分配一定比例的联系人，范围 1 至 99% |
+| Switch 分支路径 | 由 Switch 下各分支值对应的列决定，不在这里选择。使用已保存的分支值，因此路由本身不消耗积分 |
 
-### Instant vs at-the-next-step
+### 立即分支与下一步骤分支 [#instant-vs-at-the-next-step]
 
-Reply intent, `opened`, and `clicked` can fire **instantly**, the moment the event lands rather than at the next scheduled step. A `reply intent is` path fires the moment the tagged reply lands, with no model call at routing time. These show a violet `instant` badge, and you can toggle it off per path to check at the next boundary instead. Instant still respects the window: it runs when they open or click within the N days, and never runs if they don't.
-
-</Fold>
-
-<Fold>
-
-## Reply branches
-
-**If they reply** in the step picker opens a new path that fires the instant the contact replies (a positive reply; change it in the path panel). Press **Save** to add it, then add the steps it should run under it.
-
-- A reply triggers the path of the **specific email it answers**, matched by threading headers. That is the email they actually replied to, not necessarily your latest step, and never both.
-- Unmatched replies fall back to the latest step.
-- Auto-replies and out-of-office messages are not human replies: they trigger no human-reply path and do not stop the sequence. Use the `auto-reply / out of office` condition to react to them.
-- An out-of-office message does, on its own, hold the contact's next step until they are back, in every campaign they are a lead of, so no follow-up is sent to an empty desk. See [out of office and pausing one lead](/guides/campaigns/#out-of-office-and-pausing-one-lead).
+回复意图、`opened` 和 `clicked` 可以**即时**触发，在事件到达时执行，而不是等到下一个计划步骤。`reply intent is` 路径在已分类回复到达时立即触发，路由时无需调用模型。这些路径显示紫色 `instant` 标记，可以逐路径关闭，改为在下一个边界检查。即时路径仍遵循时间窗口：只有在 N 天内打开或点击才运行，未发生则不会运行。
 
 </Fold>
 
 <Fold>
 
-## Stop on reply
+## 回复分支 [#reply-branches]
 
-A campaign-level toggle in the flow toolbar. When on and a contact replies, the rest of the cold sequence stops for them while the reply branch on the email they answered still runs instantly.
+步骤选择器中的**如果对方回复**会打开一条新路径，在联系人回复时立即触发，默认针对积极回复，可在路径面板修改。点击**保存**添加，再在其下加入要执行的步骤。
 
-Only inbound mail from that campaign contact to the sending mailbox counts. A threaded follow-up synchronized from Sent or Drafts stays outbound even though its `In-Reply-To` header points at an earlier campaign step.
+- 回复通过会话邮件头匹配，触发其**实际回答的那封邮件**的路径。它不一定是最新步骤，也不会同时触发两封邮件的路径。
+- 无法匹配的回复回退到最新步骤。
+- 自动回复和休假通知不是人工回复，不触发人工回复路径，也不会停止序列。可以使用 `auto-reply / out of office` 条件处理它们。
+- 休假通知本身会暂停该联系人作为潜在客户参与的所有活动中的下一步，直到其返回，避免跟进发到无人值守的邮箱。参见[休假与暂停单个潜在客户](/guides/campaigns/#out-of-office-and-pausing-one-lead)。
 
-When a campaign rotates between sender accounts, a real inbound reply still links to the campaign if the mail client references an earlier step from another mailbox in the same workspace.
+</Fold>
 
-A new email from a contact that answers no thread of yours counts toward the last campaign email you sent them before it arrived. Mail that arrived before any of your emails to them counts toward none, so importing older mail never stops a sequence.
+<Fold>
 
-A reply that lands in the mailbox a send's reply-to named counts the same way, although that mailbox never wrote to the contact. That is what a [shared reply inbox](/guides/mailboxes/#a-shared-reply-inbox) relies on: the reply stops the sequence, runs the reply branch, and is credited to the mailbox that sent the email.
+## 收到回复后停止 [#stop-on-reply]
 
-When an upgrade repairs a reply marker that was provably created by a synchronized Sent message, the contact resumes at the next due step and the campaign reply totals update with it. An upgrade also restores provable human replies that were received by one campaign mailbox but referenced a thread started by another mailbox in the workspace. Warmbly recalculates address verification from the corrected delivery, open, click, reply, and bounce evidence. It leaves ambiguous historical replies untouched.
+这是流程工具栏中的营销活动级开关。开启后，联系人回复会停止其余冷邮件序列，但被回复邮件上的回复分支仍会即时运行。
 
-<Callout type="warn" title="Turn on stop on reply">
-With it off and more than one step, Warmbly warns you on the canvas: replies that don't match a reply branch would otherwise keep receiving cold follow-ups. Turning it on still runs your reply branches, so it is strictly safer.
+只有从该营销活动联系人进入发件邮箱的入站邮件才计为回复。从已发送或草稿文件夹同步的串联跟进，即使 `In-Reply-To` 指向更早的营销活动步骤，也仍然属于出站邮件。
+
+营销活动轮换发件账户时，如果邮件客户端引用了同一工作区另一邮箱发出的更早步骤，真实入站回复仍会关联到该营销活动。
+
+联系人新发来一封不回复你任何既有会话的邮件时，会归到你在收到它之前最近发给对方的营销活动邮件。早于你向对方发送任何邮件就已到达的邮件，不归属于任何活动，因此导入旧邮件不会停止序列。
+
+回复到达发送时 reply-to 指定的邮箱时，也按相同方式统计，即使该邮箱从未向联系人发信。这正是[共享回复收件箱](/guides/mailboxes/#a-shared-reply-inbox)的基础：回复会停止序列、运行回复分支，并归功于原始发件邮箱。
+
+如果升级修复了一个经证实由同步的已发送邮件错误生成的回复标记，该联系人会从下一个到期步骤继续，活动回复总数也随之更新。升级还会恢复能够证实的人工回复：它们被某个营销活动邮箱接收，但引用了同一工作区另一邮箱建立的会话。Warmbly 会根据修正后的投递、打开、点击、回复和退信证据重新计算地址验证状态。无法明确判断的历史回复保持不变。
+
+<Callout type="warn" title="开启收到回复后停止">
+关闭此开关且序列多于一个步骤时，Warmbly 会在画布上警告：未匹配回复分支的人否则仍会继续收到冷邮件跟进。开启后，你设置的回复分支仍会运行，因此更稳妥。
 </Callout>
 
 </Fold>
 
-## Related
+## 相关内容 [#related]
 
 <Cards>
-<Card title="Personalization & expressions" href="/guides/expressions/" />
-<Card title="Deliverability" href="/guides/deliverability/" />
+<Card title="个性化与表达式" href="/guides/expressions/" />
+<Card title="邮件送达能力" href="/guides/deliverability/" />
 </Cards>

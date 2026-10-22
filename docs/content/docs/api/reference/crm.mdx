@@ -1,23 +1,23 @@
 ---
-title: CRM
-description: Manage pipelines, stages, deals, task types, and CRM tasks for your organization, and run the CRM on HubSpot or Pipedrive.
+title: "CRM"
+description: "管理组织的销售管道、阶段、商机、任务类型和 CRM 任务，并通过 HubSpot 或 Pipedrive 使用 CRM。"
 ---
 
-The CRM endpoints model your sales pipeline: deals move through stages of a pipeline, and CRM tasks track the follow-up work attached to contacts and deals. Every route is organization-scoped and requires an active organization on the session or API key. Read access uses the **CRM** read scope (`READ_CRM` / org permission `view_contacts`), and mutations use the **CRM** write scope (`WRITE_CRM` / org permission `manage_contacts`), except team membership operations which gate on `manage_team`. See [authentication](/api/authentication/) and [permissions](/api/permissions/) for how scopes map to API keys and member roles.
+CRM 端点描述你的销售流程：商机在销售管道的各阶段间流转，CRM 任务记录关联联系人和商机的跟进工作。每条路由都限定在组织范围内，会话或 API 密钥必须具有当前组织。读取使用 **CRM** 读取权限范围（`READ_CRM` / 组织权限 `view_contacts`），修改使用 **CRM** 写入权限范围（`WRITE_CRM` / 组织权限 `manage_contacts`），但团队成员操作例外，需要 `manage_team`。权限范围与 API 密钥及成员角色的映射见[身份验证](/api/authentication/)和[权限](/api/permissions/)。
 
-Every list endpoint returns a `data` array plus the standard `pagination` envelope with an opaque `next_cursor`. The simple `GET` list endpoints use a keyset cursor; the faceted `POST .../search` endpoints paginate by offset under the hood (their nullable sort columns rule out a keyset cursor) but expose the same opaque `next_cursor`, and add an exact `total`.
+每个列表端点都返回 `data` 数组和标准 `pagination` 封装，其中包含不透明的 `next_cursor`。简单的 `GET` 列表端点使用键集游标；多条件 `POST .../search` 端点由于排序列可为空，无法使用键集游标，内部按偏移量分页，但仍提供相同的不透明 `next_cursor`，并额外返回准确的 `total`。
 
-## List pipelines
+## 列出销售管道 [#list-pipelines]
 
 `GET /crm/pipelines`
 
-Return every pipeline in the organization, each with its ordered stages.
+返回组织的所有销售管道，每个包含按顺序排列的阶段。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-### Response
+### 响应 [#response]
 
-Returns a bare array of pipeline objects (not wrapped in an envelope).
+直接返回销售管道对象数组，不额外封装。
 
 ```json
 [
@@ -44,22 +44,22 @@ Returns a bare array of pipeline objects (not wrapped in an envelope).
 ]
 ```
 
-## Create pipeline
+## 创建销售管道 [#create-pipeline]
 
 `POST /crm/pipelines`
 
-Create a pipeline, optionally seeding it with an ordered set of stages.
+创建销售管道，可同时初始化一组有序阶段。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-### Request body
+### 请求体 [#request-body]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `name` | string | yes | Pipeline name (1 to 255 characters). |
-| `stages` | array | no | Stages to create with the pipeline, in order. |
-| `stages[].name` | string | yes | Stage name (1 to 255 characters). |
-| `stages[].color` | string | yes | Stage color (hex). |
+| `name` | string | 是 | 销售管道名称，1 至 255 个字符。 |
+| `stages` | array | 否 | 随销售管道一同创建的阶段，按顺序排列。 |
+| `stages[].name` | string | 是 | 阶段名称，1 至 255 个字符。 |
+| `stages[].color` | string | 是 | 阶段颜色，十六进制。 |
 
 ```json
 {
@@ -72,9 +72,9 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-1]
 
-`201 Created` with the created pipeline object (same shape as in the list response, including its `stages`).
+`201 Created`，包含创建的销售管道对象，结构与列表响应一致，包含其 `stages`。
 
 ```json
 {
@@ -98,21 +98,21 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-## Get pipeline
+## 获取销售管道 [#get-pipeline]
 
 `GET /crm/pipelines/:id`
 
-Fetch a single pipeline with its stages.
+获取单个销售管道及其阶段。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Pipeline ID. |
+| `id` | path | uuid | 销售管道 ID。 |
 
-### Response
+### 响应 [#response-2]
 
-Returns the pipeline object (same shape as a list item).
+返回销售管道对象，结构与列表项相同。
 
 ```json
 {
@@ -126,23 +126,23 @@ Returns the pipeline object (same shape as a list item).
 }
 ```
 
-## Update pipeline
+## 更新销售管道 [#update-pipeline]
 
 `PATCH /crm/pipelines/:id`
 
-Rename a pipeline. Only the name can be changed here; stages have their own endpoints.
+重命名销售管道。此处只能修改名称，阶段有各自的端点。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Pipeline ID. |
+| `id` | path | uuid | 销售管道 ID。 |
 
-### Request body
+### 请求体 [#request-body-1]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `name` | string | no | New pipeline name. |
+| `name` | string | 否 | 新的销售管道名称。 |
 
 ```json
 {
@@ -150,44 +150,44 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-3]
 
-Returns the updated pipeline object.
+返回更新后的销售管道对象。
 
-## Delete pipeline
+## 删除销售管道 [#delete-pipeline]
 
 `DELETE /crm/pipelines/:id`
 
-Delete a pipeline and its stages.
+删除销售管道及其阶段。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Pipeline ID. |
+| `id` | path | uuid | 销售管道 ID。 |
 
-### Response
+### 响应 [#response-4]
 
 `204 No Content`.
 
-## Create stage
+## 创建阶段 [#create-stage]
 
 `POST /crm/pipelines/:id/stages`
 
-Append a stage to a pipeline.
+向销售管道追加阶段。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Pipeline ID. |
+| `id` | path | uuid | 销售管道 ID。 |
 
-### Request body
+### 请求体 [#request-body-2]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `name` | string | yes | Stage name (1 to 255 characters). |
-| `color` | string | yes | Stage color (hex). |
+| `name` | string | 是 | 阶段名称，1 至 255 个字符。 |
+| `color` | string | 是 | 阶段颜色，十六进制。 |
 
 ```json
 {
@@ -196,9 +196,9 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-5]
 
-`201 Created` with the created stage object.
+`201 Created`，包含创建的阶段对象。
 
 ```json
 {
@@ -212,25 +212,25 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-## Update stage
+## 更新阶段 [#update-stage]
 
 `PATCH /crm/pipelines/:id/stages/:stageId`
 
-Rename or recolor a stage.
+修改阶段名称或颜色。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Pipeline ID. |
-| `stageId` | path | uuid | Stage ID. |
+| `id` | path | uuid | 销售管道 ID。 |
+| `stageId` | path | uuid | 阶段 ID。 |
 
-### Request body
+### 请求体 [#request-body-3]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `name` | string | no | New stage name. |
-| `color` | string | no | New stage color (hex). |
+| `name` | string | 否 | 新的阶段名称。 |
+| `color` | string | 否 | 新的阶段颜色，十六进制。 |
 
 ```json
 {
@@ -239,46 +239,46 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-6]
 
-Returns the updated stage object.
+返回更新后的阶段对象。
 
-## Delete stage
+## 删除阶段 [#delete-stage]
 
 `DELETE /crm/pipelines/:id/stages/:stageId`
 
-Remove a stage from a pipeline.
+从销售管道移除阶段。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Pipeline ID. |
-| `stageId` | path | uuid | Stage ID. |
+| `id` | path | uuid | 销售管道 ID。 |
+| `stageId` | path | uuid | 阶段 ID。 |
 
-### Response
+### 响应 [#response-7]
 
 `204 No Content`.
 
-## List deals
+## 列出商机 [#list-deals]
 
 `GET /crm/deals`
 
-List deals with optional pipeline, stage, and status filters, keyset-paginated.
+列出商机，可按销售管道、阶段和状态筛选，采用键集分页。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `pipeline_id` | query | uuid | Restrict to deals in this pipeline. |
-| `stage_id` | query | uuid | Restrict to deals in this stage. |
-| `status` | query | string | Restrict to `open`, `won`, or `lost`. |
-| `cursor` | query | string | Opaque cursor from a previous page's `pagination.next_cursor`. |
-| `limit` | query | int | Page size, 1 to 100 (default 50). |
+| `pipeline_id` | query | uuid | 限定为此销售管道中的商机。 |
+| `stage_id` | query | uuid | 限定为此阶段中的商机。 |
+| `status` | query | string | 限定为 `open`、`won` 或 `lost`。 |
+| `cursor` | query | string | 上一页 `pagination.next_cursor` 中的不透明游标。 |
+| `limit` | query | int | 每页数量，范围 1 至 100，默认 50。 |
 
-### Response
+### 响应 [#response-8]
 
-A `data` array of deal objects plus a keyset `pagination` envelope. List rows may include joined `contact` and `stage` objects and a `campaign_name`.
+包含商机对象的 `data` 数组，加上键集分页 `pagination` 封装。列表行可能包含关联查询得到的 `contact`、`stage` 对象及 `campaign_name`。
 
 ```json
 {
@@ -310,28 +310,28 @@ A `data` array of deal objects plus a keyset `pagination` envelope. List rows ma
 }
 ```
 
-## Create deal
+## 创建商机 [#create-deal]
 
 `POST /crm/deals`
 
-Create a deal in a pipeline stage, optionally linked to a contact and attributed to a campaign and source mailbox.
+在销售管道阶段中创建商机，可关联联系人，并归因于某个营销活动和来源邮箱。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-### Request body
+### 请求体 [#request-body-4]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `pipeline_id` | uuid | yes | Pipeline the deal belongs to. |
-| `stage_id` | uuid | yes | Initial stage. |
-| `contact_id` | uuid | no | Linked contact. |
-| `name` | string | yes | Deal name (1 to 255 characters). |
-| `value` | number | no | Monetary value. |
-| `currency` | string | no | ISO currency code. |
-| `expected_close_date` | string (date-time) | no | Expected close date. |
-| `assigned_to` | uuid | no | Owner (org member user ID). |
-| `campaign_id` | uuid | no | Attributed campaign. |
-| `source_mailbox_id` | uuid | no | Sending mailbox that produced the originating reply. |
+| `pipeline_id` | uuid | 是 | 商机所属销售管道。 |
+| `stage_id` | uuid | 是 | 初始阶段。 |
+| `contact_id` | uuid | 否 | 关联联系人。 |
+| `name` | string | 是 | 商机名称，1 至 255 个字符。 |
+| `value` | number | 否 | 金额。 |
+| `currency` | string | 否 | ISO 货币代码。 |
+| `expected_close_date` | string (date-time) | 否 | 预计成交日期。 |
+| `assigned_to` | uuid | 否 | 负责人，组织成员的用户 ID。 |
+| `campaign_id` | uuid | 否 | 归因的营销活动。 |
+| `source_mailbox_id` | uuid | 否 | 产生原始回复的发件邮箱。 |
 
 ```json
 {
@@ -346,9 +346,9 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-9]
 
-`201 Created` with the created deal object. New deals default to `status: "open"`.
+`201 Created`，包含创建的商机对象。新商机默认为 `status: "open"`。
 
 ```json
 {
@@ -367,37 +367,37 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-## Search deals
+## 搜索商机 [#search-deals]
 
 `POST /crm/deals/search`
 
-Faceted, server-paginated deal search. Every filter is optional; an empty body matches every deal in the organization. Filters are sent in the JSON body, while `limit` and `cursor` are query params.
+支持多条件筛选和服务端分页的商机搜索。所有筛选均可选，空请求体匹配组织的全部商机。筛选条件放在 JSON 请求体中，`limit` 和 `cursor` 则为查询参数。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `limit` | query | int | Page size, 1 to 200 (default 50). |
-| `cursor` | query | string | Opaque cursor from a previous page's `pagination.next_cursor`. Omit for the first page. |
+| `limit` | query | int | 每页数量，范围 1 至 200，默认 50。 |
+| `cursor` | query | string | 上一页 `pagination.next_cursor` 中的不透明游标。第一页省略。 |
 
-### Request body
+### 请求体 [#request-body-5]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `query` | string | no | Case-insensitive match on deal name. |
-| `statuses` | string[] | no | Any of `open`, `won`, `lost`. |
-| `pipeline_ids` | string[] | no | Restrict to any of these pipelines. |
-| `stage_ids` | string[] | no | Restrict to any of these stages. |
-| `assigned_to` | string[] | no | Owner is any of these user IDs. |
-| `campaign_ids` | string[] | no | Attributed campaign is any of these. |
-| `min_value` | number | no | Value greater than or equal to. |
-| `max_value` | number | no | Value less than or equal to. |
-| `close_after` | string (date-time) | no | Expected close date on or after. |
-| `close_before` | string (date-time) | no | Expected close date on or before. |
-| `created_after` | string (date-time) | no | Created on or after. |
-| `created_before` | string (date-time) | no | Created on or before. |
-| `sort_by` | string | no | One of `created_at`, `updated_at`, `value`, `expected_close_date`, `name`. |
-| `reverse` | boolean | no | `true` sorts ascending, `false` (default) descending. |
+| `query` | string | 否 | 不区分大小写地匹配商机名称。 |
+| `statuses` | string[] | 否 | `open`、`won`、`lost` 中的任意项。 |
+| `pipeline_ids` | string[] | 否 | 限定为这些销售管道中的商机。 |
+| `stage_ids` | string[] | 否 | 限定为这些阶段中的商机。 |
+| `assigned_to` | string[] | 否 | 负责人为这些用户 ID 之一。 |
+| `campaign_ids` | string[] | 否 | 归因营销活动为这些活动之一。 |
+| `min_value` | number | 否 | 金额大于或等于此值。 |
+| `max_value` | number | 否 | 金额小于或等于此值。 |
+| `close_after` | string (date-time) | 否 | 预计成交日期不早于此日期。 |
+| `close_before` | string (date-time) | 否 | 预计成交日期不晚于此日期。 |
+| `created_after` | string (date-time) | 否 | 创建时间不早于此时间。 |
+| `created_before` | string (date-time) | 否 | 创建时间不晚于此时间。 |
+| `sort_by` | string | 否 | 取值为 `created_at`、`updated_at`、`value`、`expected_close_date`、`name` 之一。 |
+| `reverse` | boolean | 否 | `true` 为升序，`false` 为降序，默认降序。 |
 
 ```json
 {
@@ -410,9 +410,9 @@ Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-10]
 
-A `data` array of deal objects (with joined `contact`, `stage`, and `campaign_name`) plus the standard `pagination` envelope (opaque `next_cursor`) with an exact `total`.
+包含商机对象的 `data` 数组，附有关联的 `contact`、`stage` 和 `campaign_name`，加上标准 `pagination` 封装，包含不透明的 `next_cursor` 和准确的 `total`。
 
 ```json
 {
@@ -438,17 +438,17 @@ A `data` array of deal objects (with joined `contact`, `stage`, and `campaign_na
 }
 ```
 
-## Deals summary
+## 商机摘要 [#deals-summary]
 
 `POST /crm/deals/summary`
 
-Aggregate counts and value sums over the same filter body as deal search, so header totals and per-stage board column totals reflect the whole matching set rather than a single page.
+使用与商机搜索相同的筛选请求体，汇总数量和金额，使顶部总计和各阶段看板列总计反映完整匹配集合，而非单页。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-### Request body
+### 请求体 [#request-body-6]
 
-Identical to [search deals](#search-deals). All facets are optional; an empty body summarizes every deal in the organization.
+与[搜索商机](#search-deals)相同。所有筛选维度均可选，空请求体汇总组织全部商机。
 
 ```json
 {
@@ -457,9 +457,9 @@ Identical to [search deals](#search-deals). All facets are optional; an empty bo
 }
 ```
 
-### Response
+### 响应 [#response-11]
 
-Returns the aggregate object. `stages` holds a per-stage count and open-deal value. `mixed_currency` is `true` when matching deals span more than one currency, in which case the top-level value sums should be treated as approximate.
+返回汇总对象。`stages` 包含各阶段数量及未结商机金额。匹配商机涉及多种货币时，`mixed_currency` 为 `true`，此时顶层金额总和应视为近似值。
 
 ```json
 {
@@ -482,21 +482,21 @@ Returns the aggregate object. `stages` holds a per-stage count and open-deal val
 }
 ```
 
-## Get deal
+## 获取商机 [#get-deal]
 
 `GET /crm/deals/:id`
 
-Fetch a single deal.
+获取单个商机。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Deal ID. |
+| `id` | path | uuid | 商机 ID。 |
 
-### Response
+### 响应 [#response-12]
 
-Returns the deal object. Joined `contact`, `stage`, and `campaign_name` are populated by the list and search queries, not by this single-row read.
+返回商机对象。关联的 `contact`、`stage` 和 `campaign_name` 由列表及搜索查询填充，此单条读取不会填充。
 
 ```json
 {
@@ -515,31 +515,31 @@ Returns the deal object. Joined `contact`, `stage`, and `campaign_name` are popu
 }
 ```
 
-## Update deal
+## 更新商机 [#update-deal]
 
 `PATCH /crm/deals/:id`
 
-Update a deal. Moving it to a different `stage_id` records a stage-change activity, and setting `status` to `won` or `lost` stamps the corresponding close timestamp.
+更新商机。移到不同的 `stage_id` 会记录阶段变更活动；将 `status` 设为 `won` 或 `lost` 会写入对应的结束时间戳。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Deal ID. |
+| `id` | path | uuid | 商机 ID。 |
 
-### Request body
+### 请求体 [#request-body-7]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `stage_id` | uuid | no | Move the deal to this stage. |
-| `contact_id` | uuid | no | Linked contact. |
-| `name` | string | no | Deal name. |
-| `value` | number | no | Monetary value. |
-| `currency` | string | no | ISO currency code. |
-| `status` | string | no | One of `open`, `won`, `lost`. |
-| `expected_close_date` | string (date-time) | no | Expected close date. |
-| `lost_reason` | string | no | Reason recorded when marking lost. |
-| `assigned_to` | uuid | no | Owner (org member user ID). |
+| `stage_id` | uuid | 否 | 将商机移至此阶段。 |
+| `contact_id` | uuid | 否 | 关联联系人。 |
+| `name` | string | 否 | 商机名称。 |
+| `value` | number | 否 | 金额。 |
+| `currency` | string | 否 | ISO 货币代码。 |
+| `status` | string | 否 | 取值为 `open`、`won`、`lost` 之一。 |
+| `expected_close_date` | string (date-time) | 否 | 预计成交日期。 |
+| `lost_reason` | string | 否 | 标记为丢单时记录的原因。 |
+| `assigned_to` | uuid | 否 | 负责人，组织成员的用户 ID。 |
 
 ```json
 {
@@ -548,37 +548,37 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-13]
 
-Returns the updated deal object.
+返回更新后的商机对象。
 
-## Delete deal
+## 删除商机 [#delete-deal]
 
 `DELETE /crm/deals/:id`
 
-Delete a deal.
+删除商机。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Deal ID. |
+| `id` | path | uuid | 商机 ID。 |
 
-### Response
+### 响应 [#response-14]
 
 `204 No Content`.
 
-## List task types
+## 列出任务类型 [#list-task-types]
 
 `GET /crm/task-types`
 
-List the organization's CRM task types (the kinds of work a task represents, such as Call, Email, or Meeting). A default set is seeded the first time an org lists its types.
+列出组织的 CRM 任务类型，即任务代表的工作种类，例如通话、邮件或会议。组织首次列出类型时，会初始化默认类型集合。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-### Response
+### 响应 [#response-15]
 
-Returns a `data` array of task type objects (no pagination envelope).
+返回任务类型对象的 `data` 数组，不带分页封装。
 
 ```json
 {
@@ -596,20 +596,20 @@ Returns a `data` array of task type objects (no pagination envelope).
 }
 ```
 
-## Create task type
+## 创建任务类型 [#create-task-type]
 
 `POST /crm/task-types`
 
-Create a CRM task type.
+创建 CRM 任务类型。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-### Request body
+### 请求体 [#request-body-8]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `name` | string | yes | Type name (1 to 60 characters). |
-| `color` | string | no | Type color (hex). |
+| `name` | string | 是 | 类型名称，1 至 60 个字符。 |
+| `color` | string | 否 | 类型颜色，十六进制。 |
 
 ```json
 {
@@ -618,9 +618,9 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-16]
 
-`201 Created` with the created task type object.
+`201 Created`，包含创建的任务类型对象。
 
 ```json
 {
@@ -634,25 +634,25 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-## Update task type
+## 更新任务类型 [#update-task-type]
 
 `PATCH /crm/task-types/:id`
 
-Rename, recolor, or reorder a task type.
+修改任务类型的名称、颜色或顺序。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Task type ID. |
+| `id` | path | uuid | 任务类型 ID。 |
 
-### Request body
+### 请求体 [#request-body-9]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `name` | string | no | New type name. |
-| `color` | string | no | New type color (hex). |
-| `position` | int | no | New ordering position. |
+| `name` | string | 否 | 新的类型名称。 |
+| `color` | string | 否 | 新的类型颜色，十六进制。 |
+| `position` | int | 否 | 新的排序位置。 |
 
 ```json
 {
@@ -661,46 +661,46 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-17]
 
-Returns the updated task type object.
+返回更新后的任务类型对象。
 
-## Delete task type
+## 删除任务类型 [#delete-task-type]
 
 `DELETE /crm/task-types/:id`
 
-Delete a task type. Tasks reference their type by name, so existing tasks keep their label and fall back to a neutral color rather than being orphaned.
+删除任务类型。任务按名称引用类型，因此已有任务会保留标签，并回退为中性颜色，不会成为失去类型信息的孤立任务。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Task type ID. |
+| `id` | path | uuid | 任务类型 ID。 |
 
-### Response
+### 响应 [#response-18]
 
 `204 No Content`.
 
-## List tasks
+## 列出任务 [#list-tasks]
 
 `GET /crm/tasks`
 
-List CRM tasks with optional contact, deal, assignee, and status filters, keyset-paginated.
+列出 CRM 任务，可按联系人、商机、负责人和状态筛选，采用键集分页。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `contact_id` | query | uuid | Restrict to tasks linked to this contact. |
-| `deal_id` | query | uuid | Restrict to tasks linked to this deal. |
-| `assigned_to` | query | uuid | Restrict to tasks assigned to this user. |
-| `status` | query | string | One of `pending`, `in_progress`, `completed`, `cancelled`. |
-| `cursor` | query | string | Opaque cursor from a previous page's `pagination.next_cursor`. |
-| `limit` | query | int | Page size, 1 to 100 (default 50). |
+| `contact_id` | query | uuid | 限定为关联此联系人的任务。 |
+| `deal_id` | query | uuid | 限定为关联此商机的任务。 |
+| `assigned_to` | query | uuid | 限定为分配给此用户的任务。 |
+| `status` | query | string | 取值为 `pending`、`in_progress`、`completed`、`cancelled` 之一。 |
+| `cursor` | query | string | 上一页 `pagination.next_cursor` 中的不透明游标。 |
+| `limit` | query | int | 每页数量，范围 1 至 100，默认 50。 |
 
-### Response
+### 响应 [#response-19]
 
-A `data` array of task objects plus a keyset `pagination` envelope.
+任务对象的 `data` 数组，加上键集分页 `pagination` 封装。
 
 ```json
 {
@@ -730,27 +730,27 @@ A `data` array of task objects plus a keyset `pagination` envelope.
 }
 ```
 
-## Create task
+## 创建任务 [#create-task]
 
 `POST /crm/tasks`
 
-Create a CRM task, optionally linked to a contact and deal and assigned to a user or team.
+创建 CRM 任务，可关联联系人和商机，并分配给用户或团队。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-### Request body
+### 请求体 [#request-body-10]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `title` | string | yes | Task title (1 to 255 characters). |
-| `contact_id` | uuid | no | Linked contact. |
-| `deal_id` | uuid | no | Linked deal. |
-| `assigned_to` | uuid | no | Assignee user ID. |
-| `assigned_team_id` | uuid | no | Assignee team ID. |
-| `description` | string | no | Free-text description. |
-| `due_date` | string (date-time) | no | Due date. |
-| `priority` | string | no | One of `low`, `medium`, `high`, `urgent`. |
-| `type` | string | no | Task type name (matches a configured task type). |
+| `title` | string | 是 | 任务标题，1 至 255 个字符。 |
+| `contact_id` | uuid | 否 | 关联联系人。 |
+| `deal_id` | uuid | 否 | 关联商机。 |
+| `assigned_to` | uuid | 否 | 负责人用户 ID。 |
+| `assigned_team_id` | uuid | 否 | 负责团队 ID。 |
+| `description` | string | 否 | 自由文本说明。 |
+| `due_date` | string (date-time) | 否 | 截止日期。 |
+| `priority` | string | 否 | 取值为 `low`、`medium`、`high`、`urgent` 之一。 |
+| `type` | string | 否 | 任务类型名称，与已配置的任务类型匹配。 |
 
 ```json
 {
@@ -764,9 +764,9 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-20]
 
-`201 Created` with the created task object. `created_by` is set to the authenticated user.
+`201 Created`，包含创建的任务对象。`created_by` 设为当前通过身份验证的用户。
 
 ```json
 {
@@ -786,36 +786,36 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-## Search tasks
+## 搜索任务 [#search-tasks]
 
 `POST /crm/tasks/search`
 
-Faceted, server-paginated task search. Every filter is optional; an empty body matches every task in the organization. Filters are sent in the JSON body, while `limit` and `cursor` are query params.
+支持多条件筛选和服务端分页的任务搜索。所有筛选均可选，空请求体匹配组织的全部任务。筛选条件放在 JSON 请求体中，`limit` 和 `cursor` 则为查询参数。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `limit` | query | int | Page size, 1 to 200 (default 50). |
-| `cursor` | query | string | Opaque cursor from a previous page's `pagination.next_cursor`. Omit for the first page. |
+| `limit` | query | int | 每页数量，范围 1 至 200，默认 50。 |
+| `cursor` | query | string | 上一页 `pagination.next_cursor` 中的不透明游标。第一页省略。 |
 
-### Request body
+### 请求体 [#request-body-11]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `query` | string | no | Case-insensitive match on task title. |
-| `statuses` | string[] | no | Any of `pending`, `in_progress`, `completed`, `cancelled`. |
-| `priorities` | string[] | no | Any of `low`, `medium`, `high`, `urgent`. |
-| `types` | string[] | no | Task type name is any of these. |
-| `assigned_to` | string[] | no | Assignee user ID is any of these. |
-| `team_ids` | uuid[] | no | Task team is any of these, or the assignee belongs to one. |
-| `contact_id` | string | no | Linked contact. |
-| `deal_id` | string | no | Linked deal. |
-| `due_after` | string (date-time) | no | Due on or after. |
-| `due_before` | string (date-time) | no | Due on or before. |
-| `overdue` | boolean | no | Only tasks past due and not completed or cancelled. |
-| `sort_by` | string | no | One of `created_at`, `due_date`, `priority`, `title`, `updated_at`. |
-| `reverse` | boolean | no | `true` sorts ascending, `false` (default) descending. |
+| `query` | string | 否 | 不区分大小写地匹配任务标题。 |
+| `statuses` | string[] | 否 | `pending`、`in_progress`、`completed`、`cancelled` 中的任意项。 |
+| `priorities` | string[] | 否 | `low`、`medium`、`high`、`urgent` 中的任意项。 |
+| `types` | string[] | 否 | 任务类型名称为这些名称之一。 |
+| `assigned_to` | string[] | 否 | 负责人用户 ID 为这些 ID 之一。 |
+| `team_ids` | uuid[] | 否 | 任务所属团队为这些团队之一，或负责人属于其中某个团队。 |
+| `contact_id` | string | 否 | 关联联系人。 |
+| `deal_id` | string | 否 | 关联商机。 |
+| `due_after` | string (date-time) | 否 | 截止日期不早于此日期。 |
+| `due_before` | string (date-time) | 否 | 截止日期不晚于此日期。 |
+| `overdue` | boolean | 否 | 仅返回已逾期且未完成、未取消的任务。 |
+| `sort_by` | string | 否 | 取值为 `created_at`、`due_date`、`priority`、`title`、`updated_at` 之一。 |
+| `reverse` | boolean | 否 | `true` 为升序，`false` 为降序，默认降序。 |
 
 ```json
 {
@@ -827,9 +827,9 @@ Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-21]
 
-A `data` array of task objects plus the standard `pagination` envelope (opaque `next_cursor`) with an exact `total`.
+任务对象的 `data` 数组，加上标准 `pagination` 封装，包含不透明的 `next_cursor` 和准确的 `total`。
 
 ```json
 {
@@ -855,17 +855,17 @@ A `data` array of task objects plus the standard `pagination` envelope (opaque `
 }
 ```
 
-## Tasks summary
+## 任务摘要 [#tasks-summary]
 
 `POST /crm/tasks/summary`
 
-Aggregate counts over the same filter body as task search, so header totals (by status, overdue, high priority) reflect the whole matching set rather than a single page.
+使用与任务搜索相同的筛选请求体汇总数量，使顶部统计，包括各状态、逾期和高优先级数量，反映完整匹配集合，而非单页。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-### Request body
+### 请求体 [#request-body-12]
 
-Identical to [search tasks](#search-tasks). All facets are optional; an empty body summarizes every task in the organization.
+与[搜索任务](#search-tasks)相同。所有筛选维度均可选，空请求体汇总组织的全部任务。
 
 ```json
 {
@@ -873,9 +873,9 @@ Identical to [search tasks](#search-tasks). All facets are optional; an empty bo
 }
 ```
 
-### Response
+### 响应 [#response-22]
 
-Returns the aggregate counts.
+返回汇总计数。
 
 ```json
 {
@@ -889,21 +889,21 @@ Returns the aggregate counts.
 }
 ```
 
-## Get task
+## 获取任务 [#get-task]
 
 `GET /crm/tasks/:id`
 
-Fetch a single CRM task.
+获取单个 CRM 任务。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Task ID. |
+| `id` | path | uuid | 任务 ID。 |
 
-### Response
+### 响应 [#response-23]
 
-Returns the task object (same shape as a list item).
+返回任务对象，结构与列表项相同。
 
 ```json
 {
@@ -920,30 +920,30 @@ Returns the task object (same shape as a list item).
 }
 ```
 
-## Update task
+## 更新任务 [#update-task]
 
 `PATCH /crm/tasks/:id`
 
-Update a CRM task. Setting `status` to `completed` stamps the completion timestamp, and any other status clears it.
+更新 CRM 任务。将 `status` 设为 `completed` 会写入完成时间戳；其他状态会清除该时间戳。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Task ID. |
+| `id` | path | uuid | 任务 ID。 |
 
-### Request body
+### 请求体 [#request-body-13]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `title` | string | no | Task title. |
-| `assigned_to` | uuid | no | Assignee user ID. |
-| `assigned_team_id` | uuid | no | Assignee team ID. |
-| `description` | string | no | Free-text description. |
-| `due_date` | string (date-time) | no | Due date. |
-| `priority` | string | no | One of `low`, `medium`, `high`, `urgent`. |
-| `type` | string | no | Task type name. |
-| `status` | string | no | One of `pending`, `in_progress`, `completed`, `cancelled`. |
+| `title` | string | 否 | 任务标题。 |
+| `assigned_to` | uuid | 否 | 负责人用户 ID。 |
+| `assigned_team_id` | uuid | 否 | 负责团队 ID。 |
+| `description` | string | 否 | 自由文本说明。 |
+| `due_date` | string (date-time) | 否 | 截止日期。 |
+| `priority` | string | 否 | 取值为 `low`、`medium`、`high`、`urgent` 之一。 |
+| `type` | string | 否 | 任务类型名称。 |
+| `status` | string | 否 | 取值为 `pending`、`in_progress`、`completed`、`cancelled` 之一。 |
 
 ```json
 {
@@ -951,35 +951,35 @@ Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-24]
 
-Returns the updated task object.
+返回更新后的任务对象。
 
-## Delete task
+## 删除任务 [#delete-task]
 
 `DELETE /crm/tasks/:id`
 
-Delete a CRM task.
+删除 CRM 任务。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Task ID. |
+| `id` | path | uuid | 任务 ID。 |
 
-### Response
+### 响应 [#response-25]
 
 `204 No Content`.
 
-## Selecting many tasks
+## 选择多个任务 [#selecting-many-tasks]
 
-The two bulk endpoints below take the same **selection**, in one of two forms. Either an explicit list of ids:
+以下两个批量端点接受相同的**选择范围**，有两种形式。可以明确列出 ID：
 
 ```json
 { "tasks": ["3b4c5d6e-7f80-4912-a3b4-c5d6e7f80912"] }
 ```
 
-Or every task a search matches, minus the ones taken back out:
+也可以选择搜索匹配的全部任务，再排除取消选择的任务：
 
 ```json
 {
@@ -989,35 +989,35 @@ Or every task a search matches, minus the ones taken back out:
 }
 ```
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `tasks` | string[] | with `all` unset | Task ids. At most `1000` per request. |
-| `all` | boolean | no | Switches the selection from `tasks` to `filters`. |
-| `filters` | object | with `all` | The same body [search tasks](#search-tasks) takes, so the set acted on is exactly the set the search returns. |
-| `exclude` | string[] | no | Ids to drop from the resolved set. Ignored unless `all` is set. |
+| `tasks` | string[] | 未设置 `all` 时 | 任务 ID。每次请求最多 `1000` 个。 |
+| `all` | boolean | 否 | 将选择方式从 `tasks` 切换为 `filters`。 |
+| `filters` | object | 设置 `all` 时 | 与[搜索任务](#search-tasks)使用相同请求体，因此实际操作集合与搜索返回的集合完全一致。 |
+| `exclude` | string[] | 否 | 从解析后的集合中移除的 ID。仅在设置 `all` 时生效。 |
 
-A selection resolving to more than `50,000` tasks is refused with `selection_too_large` rather than half applied; narrow the filter and run it in parts. A `filters` block naming something that is not an id in `assigned_to`, `contact_id` or `deal_id` is refused with `invalid_filter`.
+选择范围解析后超过 `50,000` 个任务时，会返回 `selection_too_large` 并拒绝，而不会只应用一部分；应缩小筛选范围，分批执行。`filters` 中的 `assigned_to`、`contact_id` 或 `deal_id` 如果不是有效 ID，会返回 `invalid_filter` 并拒绝。
 
-A bulk update raises one `crm.task_updated` [webhook](/api/reference/webhooks/) for the whole call rather than one per task, carrying `metadata.bulk` and `metadata.count` and no `entity_id`. A bulk delete raises none, because deleting a task raises none either way.
+批量更新针对整次调用只触发一个 `crm.task_updated` [Webhook](/api/reference/webhooks/)，而不是每个任务各触发一个；事件携带 `metadata.bulk` 和 `metadata.count`，不含 `entity_id`。批量删除不会触发事件，因为单个任务删除也不会触发。
 
-Neither endpoint takes an `Idempotency-Key`: both write an end state rather than a delta, so repeating one converges on the same result. They differ in what the repeat reports. A repeated delete finds fewer rows and `affected` falls to `0`. A repeated update still touches every row in the selection, because it stamps `updated_at`, so `affected` does not fall; the status and priority simply do not change, and a repeated completion adds no second entry to the contact timeline and does not move `completed_at`.
+两个端点都不接受 `Idempotency-Key`：它们写入最终状态而非增量，因此重复调用会收敛到相同结果，但重复调用的返回计数不同。重复删除会找到更少记录，`affected` 最终降至 `0`。重复更新仍会触及选择范围中的每一行，因为会写入 `updated_at`，所以 `affected` 不会下降；状态和优先级只是保持不变。重复完成操作不会向联系人时间线添加第二条记录，也不会改变 `completed_at`。
 
-## Bulk update tasks
+## 批量更新任务 [#bulk-update-tasks]
 
 `PATCH /crm/tasks`
 
-Write a status, a priority, or both onto every task in a selection. At least one of the two fields is required; setting `status` to `completed` stamps the completion timestamp and records the completion on each linked contact's timeline, exactly as the single-task update does. Any other status clears `completed_at`, so a task moved back to `pending` does not keep the time it was finished, again matching the single-task update.
+为选择范围内每个任务写入状态、优先级，或两者。至少提供其中一个字段。将 `status` 设为 `completed` 会写入完成时间戳，并在每个关联联系人的时间线记录完成事件，与单任务更新一致。其他状态会清除 `completed_at`，因此移回 `pending` 的任务不会保留之前的完成时间，同样与单任务更新一致。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-### Request body
+### 请求体 [#request-body-14]
 
-The selection above, plus:
+上述选择对象，另加：
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `status` | string | no | One of `pending`, `in_progress`, `completed`, `cancelled`. |
-| `priority` | string | no | One of `low`, `medium`, `high`, `urgent`. |
+| `status` | string | 否 | 取值为 `pending`、`in_progress`、`completed`、`cancelled` 之一。 |
+| `priority` | string | 否 | 取值为 `low`、`medium`、`high`、`urgent` 之一。 |
 
 ```json
 {
@@ -1027,59 +1027,59 @@ The selection above, plus:
 }
 ```
 
-### Response
+### 响应 [#response-26]
 
-The number of tasks written, rather than the rows: a select-all can cover tens of thousands.
+返回写入的任务数量，而非具体记录，因为全选可能涵盖数万个任务。
 
 ```json
 { "affected": 128 }
 ```
 
-## Bulk delete tasks
+## 批量删除任务 [#bulk-delete-tasks]
 
 `DELETE /crm/tasks`
 
-Delete every task in a selection. The body is the selection object, or a bare array of ids.
+删除选择范围内的每个任务。请求体可为选择对象，或直接使用 ID 数组。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
 ```json
 { "all": true, "filters": { "query": "out_of_office" } }
 ```
 
-### Response
+### 响应 [#response-27]
 
 ```json
 { "affected": 128 }
 ```
 
-## CRM provider mode
+## CRM 服务商模式 [#crm-provider-mode]
 
-A workspace can run its CRM on [HubSpot](/guides/hubspot/) or [Pipedrive](/guides/pipedrive/) instead of Warmbly's own. In provider mode the endpoints above keep their shapes, and the records they return are the provider's, mirrored into Warmbly. In HubSpot mode:
+工作区可使用 [HubSpot](/guides/hubspot/) 或 [Pipedrive](/guides/pipedrive/) 运行 CRM，替代 Warmbly 内置 CRM。在外部 CRM 模式下，上述端点保持相同结构，返回的记录来自服务商并镜像到 Warmbly。HubSpot 模式下：
 
-- a create, update or delete of a deal, task or note is written to HubSpot before it is saved. A refusal from HubSpot comes back as an error and nothing is saved; see [CRM provider refusals](/api/error-codes/#crm-provider-refusals)
-- creating, updating or deleting a pipeline, stage or task type answers `409 crm_managed_externally`. `GET /crm/pipelines` lists only HubSpot pipelines, and `GET /crm/task-types` returns HubSpot's four types (To-do, Call, Email, LinkedIn)
-- `POST /crm/deals/search` and `POST /crm/deals/summary` cover only HubSpot pipelines when no `pipeline_ids` filter is given, so deals in Warmbly-only pipelines are left out
-- setting a deal's `status` to `won` or `lost` moves it to the pipeline's first closed stage of that kind, and moving it to a closed stage sets its `status`. `assigned_to` must be a member matched to a HubSpot owner (`400 crm_owner_unmapped`)
+- 创建、更新或删除商机、任务和备注时，先写入 HubSpot，再在本地保存。HubSpot 拒绝时会返回错误，不保存任何内容；参阅[CRM 服务商操作被拒绝的情况](/api/error-codes/#crm-provider-refusals)；
+- 创建、更新或删除销售管道、阶段和任务类型时，返回 `409 crm_managed_externally`。`GET /crm/pipelines` 只列出 HubSpot 销售管道，`GET /crm/task-types` 返回 HubSpot 的四种类型（To-do、Call、Email、LinkedIn）；
+- 未提供 `pipeline_ids` 筛选时，`POST /crm/deals/search` 和 `POST /crm/deals/summary` 只涵盖 HubSpot 销售管道，排除仅存在于 Warmbly 管道中的商机；
+- 将商机 `status` 设为 `won` 或 `lost`，会将其移到管道中该类型的第一个结束阶段；将商机移到结束阶段，也会设置其 `status`。`assigned_to` 必须是已匹配 HubSpot 负责人的成员，否则返回 `400 crm_owner_unmapped`。
 
-In Pipedrive mode the same holds, with Pipedrive's model:
+Pipedrive 模式遵循相同原则，但采用 Pipedrive 的数据模型：
 
-- tasks are Pipedrive activities. `GET /crm/task-types` returns the company's activity types; a task's `status` is written as done (`completed`, `cancelled`) or not done, and its `priority` stays in Warmbly
-- a deal's `status` is Pipedrive's own deal status, so `won` and `lost` keep the deal's stage. `lost_reason` is written with a `lost` status. `assigned_to` must be a member matched to a Pipedrive user (`400 crm_owner_unmapped`)
-- Pipedrive has no lifecycle stage or lead status. A contact's `lifecycle_stage` is its first person label (an id, as in `GET /crm/metadata`), and `lead_status` is always empty
+- 任务对应 Pipedrive 活动。`GET /crm/task-types` 返回公司的活动类型；任务的 `status` 会写为已完成（`completed`、`cancelled`）或未完成，`priority` 则保留在 Warmbly；
+- 商机 `status` 对应 Pipedrive 自身的商机状态，因此 `won` 和 `lost` 不改变商机阶段。`lost_reason` 随 `lost` 状态写入。`assigned_to` 必须是已匹配 Pipedrive 用户的成员，否则返回 `400 crm_owner_unmapped`；
+- Pipedrive 没有生命周期阶段或潜在客户状态。联系人的 `lifecycle_stage` 是其第一个人员标签，使用 `GET /crm/metadata` 中的 ID；`lead_status` 始终为空。
 
-Deals, tasks, notes and pipelines that live in the provider carry an `external` object, and the stages of a mirrored pipeline carry its stage metadata. Both are absent outside provider mode.
+存在于外部 CRM 的商机、任务、备注和销售管道带有 `external` 对象；镜像管道中的阶段带有该服务商的阶段元数据。非外部 CRM 模式下，两者均省略。
 
-| Field | Type | Description |
+| 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `external.provider` | string | `hubspot` or `pipedrive`. |
-| `external.external_id` | string | The provider's record id. |
-| `external.url` | string | Where the record opens in the provider: the deal, the tasks view (in Pipedrive the activity's deal, else the activities list), the note's contact, or the pipeline. Omitted when unknown. |
-| `external.synced_at` | string (date-time) | When the record was last written to or read from the provider. |
-| `external.owner_name` | string | The provider's owner, on a deal or task whose owner is not a workspace member (so `assigned_to` is empty). |
-| `stages[].closed` | boolean | The stage is a closed stage in HubSpot. Omitted when false, and always in Pipedrive. |
-| `stages[].won` | boolean | The stage is closed won in HubSpot. Omitted when false, and always in Pipedrive. |
-| `stages[].probability` | number | The provider's deal probability for the stage, from `0` to `1`. |
+| `external.provider` | string | `hubspot` 或 `pipedrive`。 |
+| `external.external_id` | string | 外部 CRM 的记录 ID。 |
+| `external.url` | string | 在外部 CRM 中打开记录的位置：商机、任务视图（Pipedrive 中为活动关联的商机，否则为活动列表）、备注关联的联系人，或销售管道。未知时省略。 |
+| `external.synced_at` | string (date-time) | 上次向外部 CRM 写入或从其读取该记录的时间。 |
+| `external.owner_name` | string | 商机或任务的负责人不是工作区成员时，返回外部 CRM 的负责人，此时 `assigned_to` 为空。 |
+| `stages[].closed` | boolean | 该阶段是 HubSpot 的结束阶段。为 false 时省略；Pipedrive 中始终省略。 |
+| `stages[].won` | boolean | 该阶段是 HubSpot 的赢单结束阶段。为 false 时省略；Pipedrive 中始终省略。 |
+| `stages[].probability` | number | 外部 CRM 对该阶段设置的商机成交概率，范围 `0` 至 `1`。 |
 
 ```json
 {
@@ -1096,17 +1096,17 @@ Deals, tasks, notes and pipelines that live in the provider carry an `external` 
 }
 ```
 
-The routes below configure provider mode and read the provider's side of a contact; each one acts on the CRM the workspace runs on. Except for `GET /crm/settings`, `GET /crm/owners`, `GET /crm/sync` and `GET /crm/backfill`, each answers `409 crm_not_connected` while the workspace is not in provider mode, and `501` on an instance where CRM providers are not available.
+以下路由用于配置外部 CRM 模式，并读取联系人的外部 CRM 数据；每条路由均操作工作区当前使用的 CRM。除 `GET /crm/settings`、`GET /crm/owners`、`GET /crm/sync` 和 `GET /crm/backfill` 外，工作区未启用外部 CRM 模式时均返回 `409 crm_not_connected`；实例不支持外部 CRM 服务商时返回 `501`。
 
-## Get CRM settings
+## 获取 CRM 设置 [#get-crm-settings]
 
 `GET /crm/settings`
 
-Return the workspace's CRM mode, its setup choices and the connected account. A workspace that never chose returns `provider: "native"` with the default choices.
+返回工作区 CRM 模式、设置选项和已连接账户。从未选择过的工作区返回 `provider: "native"` 及默认选项。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-### Response
+### 响应 [#response-28]
 
 ```json
 {
@@ -1138,26 +1138,26 @@ Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
 }
 ```
 
-`account.missing_scopes` lists the permissions the connection lacks for provider mode, when there are any. `config.for` names the provider the choices were made for. In Pipedrive mode `account.external_id` is the Pipedrive company id, and `config.positive_reply.create_lead` adds the person to Pipedrive's Leads Inbox on an interested reply.
+连接缺少外部 CRM 模式所需权限时，`account.missing_scopes` 会列出缺失权限。`config.for` 标明这些选项适用于哪个服务商。Pipedrive 模式下，`account.external_id` 为 Pipedrive 公司 ID，`config.positive_reply.create_lead` 会在收到有兴趣的回复时，将该人员添加到 Pipedrive 的 Leads Inbox。
 
-## Update CRM settings
+## 更新 CRM 设置 [#update-crm-settings]
 
 `PUT /crm/settings`
 
-Choose the CRM and store the setup choices. Switching to HubSpot creates the Warmbly contact property group in HubSpot (when `write_properties` is on) and starts the first pull in the background. Switching to Pipedrive fills the label rules from the company's own labels when no `config` is sent, then adds the Warmbly person fields, registers the change notifications and starts the first pull. Switching from one provider to the other replaces it, and stored choices made for the other provider are reset to the new one's defaults. Naturally safe to retry: it writes an end state.
+选择 CRM 并保存设置选项。切换到 HubSpot 时，若开启 `write_properties`，会在 HubSpot 创建 Warmbly 联系人属性组，并在后台启动首次拉取。切换到 Pipedrive 时，未发送 `config` 则根据公司自身标签填充标签规则，然后添加 Warmbly 人员字段、注册变更通知并启动首次拉取。从一个服务商切换到另一个时，会替换原连接，原服务商保存的选项会重置为新服务商默认值。此操作写入最终状态，因此可安全重试。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`
 
-### Request body
+### 请求体 [#request-body-15]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `provider` | string | no | `native`, `hubspot` or `pipedrive`. |
-| `connection_id` | uuid | no | The workspace's HubSpot or Pipedrive [integration connection](/api/reference/integrations/). Required once, to use the provider. |
-| `config` | object | no | The whole set of choices, replacing the stored one. Shape as in the response above. |
-| `complete_setup` | boolean | no | Mark the setup wizard as finished. |
+| `provider` | string | 否 | `native`、`hubspot` 或 `pipedrive`。 |
+| `connection_id` | uuid | 否 | 工作区的 HubSpot 或 Pipedrive [集成连接](/api/reference/integrations/)。首次使用该服务商时必须提供。 |
+| `config` | object | 否 | 完整选项集合，替换已存集合。结构见上方响应。 |
+| `complete_setup` | boolean | 否 | 将设置向导标为已完成。 |
 
-`config` is validated before it is stored: `field_map` keys are `first_name`, `last_name`, `email`, `company`, `phone` or `custom:<key>`; each `field_direction` entry is `push`, `pull` or `both` and names a mapped field; `deal_pipelines` (provider pipeline ids, empty for all) holds at most 50 entries, `display_properties` at most 40, `field_map` at most 100, and each lifecycle stage list at most 20. `positive_reply.create_deal` needs `deal_pipeline_id` and `deal_stage_id`, which are Warmbly's ids for a mirrored pipeline and stage.
+`config` 保存前会验证：`field_map` 的键可为 `first_name`、`last_name`、`email`、`company`、`phone` 或 `custom:<key>`；每个 `field_direction` 条目必须为 `push`、`pull` 或 `both`，并指定已映射字段；`deal_pipelines` 为外部 CRM 管道 ID，空表示全部，最多 50 项；`display_properties` 最多 40 项，`field_map` 最多 100 项，各生命周期阶段列表最多 20 项。`positive_reply.create_deal` 需要 `deal_pipeline_id` 和 `deal_stage_id`，它们是镜像管道及阶段在 Warmbly 中的 ID。
 
 ```json
 {
@@ -1167,19 +1167,19 @@ Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`
 }
 ```
 
-### Response
+### 响应 [#response-29]
 
-The settings object, as returned by `GET /crm/settings`. A connection without the permissions provider mode needs answers `409 crm_reauth_required`; a `connection_id` that is not one of the workspace's connections to that provider answers `400`.
+设置对象，与 `GET /crm/settings` 返回相同。连接缺少外部 CRM 模式所需权限时，返回 `409 crm_reauth_required`；`connection_id` 不是工作区连接到该服务商的连接时，返回 `400`。
 
-## Get CRM metadata
+## 获取 CRM 元数据 [#get-crm-metadata]
 
 `GET /crm/metadata`
 
-Return the provider's vocabulary for the setup pickers: lifecycle stages, lead statuses, task types, contact properties (hidden and calculated ones left out) and deal pipelines. Pipelines here carry the provider's ids, as `deal_pipelines` expects. For Pipedrive, `lifecycle_stages` are the person labels, `lead_statuses` is empty, `task_types` are the activity types, and `properties` are the standard person keys (`first_name`, `last_name`, `name`, `phone`, `org_name`) followed by the custom fields by code.
+返回设置选择器所需的服务商选项：生命周期阶段、潜在客户状态、任务类型、联系人属性（排除隐藏和计算属性）及销售管道。这里的管道使用服务商 ID，与 `deal_pipelines` 要求一致。对于 Pipedrive，`lifecycle_stages` 为人员标签，`lead_statuses` 为空，`task_types` 为活动类型；`properties` 先列出标准人员键（`first_name`、`last_name`、`name`、`phone`、`org_name`），再按代码列出自定义字段。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-### Response
+### 响应 [#response-30]
 
 ```json
 {
@@ -1191,15 +1191,15 @@ Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
 }
 ```
 
-## List CRM owners
+## 列出 CRM 负责人 [#list-crm-owners]
 
 `GET /crm/owners`
 
-List the provider's owners (Pipedrive's users) and the member each one is matched to. Owners are matched by email address unless a match was chosen by hand (`user_pinned`).
+列出外部 CRM 负责人，即 Pipedrive 用户，以及每人匹配到的成员。默认按邮件地址匹配；手动选择的匹配（`user_pinned`）优先。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-### Response
+### 响应 [#response-31]
 
 ```json
 {
@@ -1217,37 +1217,37 @@ Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
 }
 ```
 
-## Match a CRM owner
+## 匹配 CRM 负责人 [#match-a-crm-owner]
 
 `PUT /crm/owners/:externalId`
 
-Match a provider owner to a member, or clear the match with `null`. A match set here is kept when email matching runs again. Naturally safe to retry.
+将外部 CRM 负责人匹配到成员，或用 `null` 清除匹配。此处设置的匹配会在再次按邮件地址匹配时保留。可安全重试。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `externalId` | path | string | The provider's owner (Pipedrive user) id. |
+| `externalId` | path | string | 外部 CRM 负责人，即 Pipedrive 用户的 ID。 |
 
-### Request body
+### 请求体 [#request-body-16]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `user_id` | uuid or null | yes | The member, or `null` to clear. |
+| `user_id` | uuid or null | 是 | 成员 ID，或用 `null` 清除。 |
 
-### Response
+### 响应 [#response-32]
 
-`204 No Content`. `404` when the owner or the member is not in the workspace.
+`204 No Content`。负责人或成员不在工作区时返回 `404`。
 
-## Get sync health
+## 获取同步健康状态 [#get-sync-health]
 
 `GET /crm/sync`
 
-Report the sync queue (pending, failed, and finished in the last 24 hours), the latest 50 failures, each pull's last run, and how many records are mirrored.
+报告同步队列，包括待处理、失败和最近 24 小时已完成项，最近 50 次失败、各类拉取的上次运行情况，以及镜像记录数量。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-### Response
+### 响应 [#response-33]
 
 ```json
 {
@@ -1278,75 +1278,75 @@ Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
 }
 ```
 
-`cursors[].object_type` is `owners`, `pipelines`, `deals`, `tasks` or `contacts`, with `last_error` set when its last run failed.
+`cursors[].object_type` 为 `owners`、`pipelines`、`deals`、`tasks` 或 `contacts`；上次运行失败时设置 `last_error`。
 
-## Sync now
+## 立即同步 [#sync-now]
 
 `POST /crm/sync`
 
-Start a full pull from the provider in the background.
+在后台启动从外部 CRM 完整拉取。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`
 
-### Response
+### 响应 [#response-34]
 
-`202 Accepted`. A second call within 30 seconds answers `429 crm_sync_running`.
+`202 Accepted`。30 秒内再次调用返回 `429 crm_sync_running`。
 
-## Retry or discard failed syncs
+## 重试或丢弃失败的同步任务 [#retry-or-discard-failed-syncs]
 
 `POST /crm/sync/retry` · `POST /crm/sync/discard`
 
-Requeue failed sync items, or drop them. Without a body (or with an empty `ids`) every failed item is affected. Naturally safe to retry: an item already requeued or dropped is not failed any more.
+将失败同步项重新入队，或丢弃它们。不提供请求体，或 `ids` 为空时，影响全部失败项。可安全重试：已经重新入队或丢弃的条目不再处于失败状态。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`
 
-### Request body
+### 请求体 [#request-body-17]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `ids` | array of uuid | no | Failed items to act on, at most 500. |
+| `ids` | array of uuid | 否 | 要处理的失败项，最多 500 个。 |
 
-### Response
+### 响应 [#response-35]
 
 ```json
 { "affected": 3 }
 ```
 
-## Copy Warmbly CRM data into the provider
+## 将 Warmbly CRM 数据复制到服务商 [#copy-warmbly-crm-data-into-the-provider]
 
 `GET /crm/backfill` · `POST /crm/backfill`
 
-`GET` counts the deals, tasks and notes that live only in Warmbly, in no connected CRM (records mirrored from a CRM the workspace used before are left out). `POST` copies the kinds you pick, once, in the background: deals move onto the first mirrored pipeline, keeping a stage of the same name or else taking the first stage that matches their status (in Pipedrive, the first stage, with the deal's status kept). A copied record is never copied twice, and a second `POST` while one runs is folded into it.
+`GET` 统计仅存在于 Warmbly、尚未存在于任何已连接 CRM 的商机、任务和备注；从工作区以前使用的 CRM 镜像而来的记录不计入。`POST` 在后台一次性复制所选类型：商机移到第一个镜像销售管道，优先保留同名阶段，否则使用第一个与其状态匹配的阶段；在 Pipedrive 中则使用第一个阶段，并保留商机状态。已复制的记录不会重复复制，已有运行时再次 `POST` 会合并到当前运行。
 
-Auth: **Scope** `INTEGRATIONS` · **Org permission** `manage_settings`
+身份验证：**权限范围** `INTEGRATIONS` · **组织权限** `manage_settings`
 
-### Request body
+### 请求体 [#request-body-18]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `deals` | boolean | no | Copy deals. |
-| `tasks` | boolean | no | Copy tasks. |
-| `notes` | boolean | no | Copy notes. |
+| `deals` | boolean | 否 | 复制商机。 |
+| `tasks` | boolean | 否 | 复制任务。 |
+| `notes` | boolean | 否 | 复制备注。 |
 
-At least one must be `true`.
+至少一项必须为 `true`。
 
-### Response
+### 响应 [#response-36]
 
-`GET` returns `{ "deals": 12, "tasks": 40, "notes": 7 }`. `POST` returns `202 Accepted`; progress shows in [sync health](#get-sync-health).
+`GET` 返回 `{ "deals": 12, "tasks": 40, "notes": 7 }`。`POST` 返回 `202 Accepted`；进度显示在[同步健康状况](#get-sync-health)中。
 
-## Get a contact's CRM record
+## 获取联系人的 CRM 记录 [#get-a-contacts-crm-record]
 
 `GET /crm/contacts/:id`
 
-Return the provider's side of a Warmbly contact as last mirrored: owner, lifecycle stage (a label in Pipedrive), lead status, company (organization in Pipedrive), opt-out and the properties chosen in `display_properties`. A contact not linked to the provider returns `linked: false` and nothing else.
+返回最近一次镜像的 Warmbly 联系人在外部 CRM 中的数据：负责人、生命周期阶段（Pipedrive 中为标签）、潜在客户状态、公司（Pipedrive 中为组织）、退订状态，以及 `display_properties` 选定的属性。未关联到服务商的联系人只返回 `linked: false`。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | uuid | Warmbly contact ID. |
+| `id` | path | uuid | Warmbly 联系人 ID。 |
 
-### Response
+### 响应 [#response-37]
 
 ```json
 {
@@ -1364,67 +1364,67 @@ Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
 }
 ```
 
-## Refresh a contact's CRM record
+## 刷新联系人的 CRM 记录 [#refresh-a-contacts-crm-record]
 
 `POST /crm/contacts/:id/refresh`
 
-Pull the contact's provider record, deals, tasks and notes now. An unlinked contact is looked up by email and linked when the provider has it; nothing is created. Debounced per contact, so it is safe to call whenever a contact is opened: in HubSpot one pull a minute and one lookup every five minutes; in Pipedrive, which meters API use per company per day, the person is re-read at most every two minutes, their deals, activities and notes every six hours, and an unlinked contact is looked up every fifteen minutes.
+立即拉取联系人的外部 CRM 记录、商机、任务和备注。未关联的联系人会按邮件地址查找，服务商中存在时建立关联，不会创建任何记录。每个联系人均有防抖限制，因此打开联系人时可安全调用：HubSpot 每分钟最多一次拉取、每五分钟一次查找；Pipedrive 按公司每日计量 API 用量，因此人员记录最多每两分钟重读一次，其商机、活动和备注每六小时一次，未关联联系人每十五分钟查找一次。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-### Response
+### 响应 [#response-38]
 
-The contact's CRM record, as in `GET /crm/contacts/:id`.
+联系人的 CRM 记录，结构与 `GET /crm/contacts/:id` 相同。
 
-## Link a contact to the CRM
+## 将联系人关联到 CRM [#link-a-contact-to-the-crm]
 
 `POST /crm/contacts/:id/link`
 
-Find the contact in the provider by email, or create it there when the workspace allows creating contacts, then pull its deals, tasks and notes. Naturally safe to retry: a linked contact stays linked to the same record.
+按邮件地址在外部 CRM 中查找联系人；工作区允许创建联系人时，未找到则在外部创建，然后拉取其商机、任务和备注。可安全重试：已关联联系人保持关联到同一记录。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-### Response
+### 响应 [#response-39]
 
-The contact's CRM record, as in `GET /crm/contacts/:id`. `404 crm_contact_missing` when the provider does not have the contact and creating contacts is off.
+联系人的 CRM 记录，结构与 `GET /crm/contacts/:id` 相同。外部 CRM 中不存在联系人且未允许创建时，返回 `404 crm_contact_missing`。
 
-## Update a contact's CRM record
+## 更新联系人的 CRM 记录 [#update-a-contacts-crm-record]
 
 `PATCH /crm/contacts/:id`
 
-Write the contact's owner, lifecycle stage or lead status to the provider, then to the mirror. In Pipedrive, `lifecycle_stage` sets the person's label (an id from `GET /crm/metadata`, or empty to clear it) and `lead_status` is ignored.
+先向外部 CRM 写入联系人的负责人、生命周期阶段或潜在客户状态，再更新镜像。在 Pipedrive 中，`lifecycle_stage` 设置人员标签，使用 `GET /crm/metadata` 中的 ID，留空可清除；`lead_status` 会被忽略。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_contacts`
 
-### Request body
+### 请求体 [#request-body-19]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `owner_external_id` | string | no | The provider's owner (Pipedrive user) id. |
-| `lifecycle_stage` | string | no | A lifecycle stage value from `GET /crm/metadata`. |
-| `lead_status` | string | no | A lead status value from `GET /crm/metadata`. |
+| `owner_external_id` | string | 否 | 外部 CRM 负责人，即 Pipedrive 用户的 ID。 |
+| `lifecycle_stage` | string | 否 | 来自 `GET /crm/metadata` 的生命周期阶段值。 |
+| `lead_status` | string | 否 | 来自 `GET /crm/metadata` 的潜在客户状态值。 |
 
-Each value is at most 100 characters.
+每个值最多 100 个字符。
 
-### Response
+### 响应 [#response-40]
 
-The updated provider record, as in `GET /crm/contacts/:id`. `404 crm_contact_missing` when the contact is not linked to the provider.
+更新后的外部 CRM 记录，结构与 `GET /crm/contacts/:id` 相同。联系人未关联到服务商时，返回 `404 crm_contact_missing`。
 
-## List CRM lists
+## 列出 CRM 列表 [#list-crm-lists]
 
 `GET /crm/lists`
 
-List the HubSpot account's contact lists, newest first, for import. Needs HubSpot's optional list permission; a connection without it answers `409 crm_reauth_required`. In Pipedrive mode these are the company's saved people filters, most recently changed first, each with `size: -1` (Pipedrive does not count a filter) and `dynamic: true`.
+列出 HubSpot 账户的联系人列表，最新优先，用于导入。需要 HubSpot 可选的列表权限，连接缺少该权限时返回 `409 crm_reauth_required`。Pipedrive 模式下，返回公司的已保存人员筛选器，按最近修改优先排列；每项包含 `size: -1`（Pipedrive 不统计筛选器结果数）和 `dynamic: true`。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `q` | query | string | Filter by list name (at most 200 characters). |
-| `cursor` | query | string | Opaque cursor from a previous page's `pagination.next_cursor`. An unrecognized one answers `400`. |
-| `limit` | query | int | Page size, 1 to 100 (default 25). |
+| `q` | query | string | 按列表名称筛选，最多 200 个字符。 |
+| `cursor` | query | string | 上一页 `pagination.next_cursor` 中的不透明游标。无法识别时返回 `400`。 |
+| `limit` | query | int | 每页数量，范围 1 至 100，默认 25。 |
 
-### Response
+### 响应 [#response-41]
 
 ```json
 {
@@ -1435,22 +1435,22 @@ Auth: **Scope** `READ_CRM` · **Org permission** `manage_contacts`
 }
 ```
 
-## Preview a CRM list import
+## 预览 CRM 列表导入 [#preview-a-crm-list-import]
 
 `POST /crm/lists/preview`
 
-Count who a list would bring in and who it skips, by reason, without writing anything.
+统计列表将导入和跳过哪些联系人，并按跳过原因分类，不写入任何内容。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`
 
-### Request body
+### 请求体 [#request-body-20]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `list_id` | string | yes | HubSpot list id or Pipedrive filter id (at most 64 characters). |
-| `apply_guards` | boolean | no | Skip the contacts the workspace's import guards exclude (`config.guards`). |
+| `list_id` | string | 是 | HubSpot 列表 ID 或 Pipedrive 筛选器 ID，最多 64 个字符。 |
+| `apply_guards` | boolean | 否 | 跳过工作区导入保护规则排除的联系人（`config.guards`）。 |
 
-### Response
+### 响应 [#response-42]
 
 ```json
 {
@@ -1467,17 +1467,17 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
 }
 ```
 
-`reason` is `opted_out`, `lifecycle`, `open_deal`, `other_owner`, `no_email` or `duplicate`. One import reads at most 25,000 contacts; `truncated` is `true` when the list is larger.
+`reason` 为 `opted_out`、`lifecycle`、`open_deal`、`other_owner`、`no_email` 或 `duplicate`。一次导入最多读取 25,000 个联系人；列表更大时，`truncated` 为 `true`。
 
-## Import a CRM list
+## 导入 CRM 列表 [#import-a-crm-list]
 
 `POST /crm/lists/import`
 
-Turn a list into a [contact import](/api/reference/contacts/) draft, finished in the regular import review. The body and the skip rules are those of the preview. The imported contacts are linked to their provider records a few minutes later. The draft belongs to the caller (for an API key, the member who created it).
+将列表转为[联系人导入](/api/reference/contacts/)草稿，在常规导入审核中完成。请求体和跳过规则与预览相同。导入的联系人会在数分钟后关联到外部 CRM 记录。草稿归调用者所有；使用 API 密钥时，归创建该密钥的成员所有。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`
 
-### Response
+### 响应 [#response-43]
 
 `201 Created`.
 
@@ -1488,11 +1488,11 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
 }
 ```
 
-`400` when nobody in the list can be imported.
+列表中没有任何可导入联系人时，返回 `400`。
 
-## Errors
+## 错误 [#errors]
 
-All endpoints return the standard error envelope on failure, for example a malformed UUID path param or an invalid request body. See [error codes](/api/error-codes/) for the full list.
+所有端点失败时均返回标准错误封装，例如路径 UUID 参数格式错误或请求体无效。完整列表见[错误码](/api/error-codes/)。
 
 ```json
 {

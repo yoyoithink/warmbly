@@ -5,7 +5,7 @@ import { BookOpen, Braces, GraduationCap, Wrench } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Page not found',
+  title: '未找到页面',
   robots: { index: false },
 };
 
@@ -13,26 +13,26 @@ const sections = [
   {
     href: '/guides/mailboxes/',
     icon: BookOpen,
-    title: 'Guides',
-    description: 'How every part of the product works.',
+    title: '操作指南',
+    description: '了解产品各项功能的使用方法。',
   },
   {
     href: '/learn/email-warmup/',
     icon: GraduationCap,
-    title: 'Learn',
-    description: 'Cold email and deliverability fundamentals.',
+    title: '基础知识',
+    description: '冷邮件与邮件送达能力基础。',
   },
   {
     href: '/api/',
     icon: Braces,
-    title: 'API Reference',
-    description: 'Authenticate and drive Warmbly programmatically.',
+    title: 'API 参考',
+    description: '通过身份验证，以编程方式操作 Warmbly。',
   },
   {
     href: '/development/architecture/',
     icon: Wrench,
-    title: 'Development',
-    description: 'Self-host, deploy, and develop Warmbly.',
+    title: '开发文档',
+    description: '自托管、部署和开发 Warmbly。',
   },
 ];
 
@@ -44,12 +44,11 @@ export default function NotFound() {
           404
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-fd-foreground">
-          Page not found
+          未找到页面
         </h1>
         <p className="mt-3 max-w-md text-[15px] text-fd-muted-foreground">
-          The page you are looking for does not exist or has moved. Try the
-          search (press <kbd className="rounded-md border border-fd-border bg-fd-muted px-1.5 py-0.5 font-mono text-xs">/</kbd>)
-          or jump back into a section.
+          你要访问的页面不存在或已移至其他位置。可以搜索（按 <kbd className="rounded-md border border-fd-border bg-fd-muted px-1.5 py-0.5 font-mono text-xs">/</kbd>），
+          或返回以下文档分类。
         </p>
         <div className="mt-10 grid w-full max-w-4xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {sections.map((section) => (

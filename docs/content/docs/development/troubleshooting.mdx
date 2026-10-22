@@ -1,127 +1,127 @@
 ---
-title: Troubleshooting
-description: The errors self-hosters actually hit, what causes each one, and the command that fixes it.
+title: 故障排查
+description: 介绍自托管用户实际遇到的错误、各错误的原因，以及可用于修复的命令。
 ---
 
-Search this page for the exact string you saw. Every row names the cause and the command, not a category.
+请在本页搜索你看到的精确错误字符串。每一行都给出具体原因和命令，不只列问题类别。
 
-## I clicked register and got a 403
+## 点击注册后收到 403 [#i-clicked-register-and-got-a-403]
 
-> **403 This server is not accepting new accounts. Ask an administrator for an invitation.**
+> **403 此服务器不接受新账户。请联系管理员获取邀请。**
 
-Nothing is broken, and you do not need to change any setting to get in.
+这并不是故障，也不需要为了登录而修改设置。
 
-A self-hosted instance ships with `DISABLE_REGISTRATION=invite_only`, which closes the sign-up form to the public. There is exactly one exemption: while the users table is **empty**, any signup is allowed, and that is what makes a fresh instance claimable. Once one account exists, the exemption is spent for good.
+自托管实例默认使用 `DISABLE_REGISTRATION=invite_only`，关闭面向公众的注册表单。只有一个例外：当 users 表**为空**时，允许任何注册，这让全新实例可以被认领。只要有一个账户存在，该例外就永久结束。
 
-The usual sequence behind that 403 is:
+出现这个 403，通常经历了以下过程：
 
-1. you ran `make dev` at some point, which seeds nine fixture accounts by default
-2. `make dev` and `make up` pin the same compose project, the same `warmbly_postgres_data` volume and the same `warmbly_dev` database, so those accounts are your instance's accounts
-3. `make up` therefore found a claimed instance, issued no setup link, and printed none
-4. the sign-up form was the only path left, and `invite_only` refuses it
+1. 你曾运行 `make dev`，它默认创建九个示例账户。
+2. `make dev` 和 `make up` 固定使用同一 Compose 项目、同一个 `warmbly_postgres_data` 卷和 `warmbly_dev` 数据库，因此那些示例账户就是实例账户。
+3. 所以 `make up` 发现实例已认领，不签发也不打印设置链接。
+4. 剩下的入口只有注册表单，而 `invite_only` 会拒绝它。
 
-Pick the fix that matches what you want:
+按你的目的选择修复方式：
 
-| You want | Do this |
+| 目的 | 操作 |
 |---|---|
-| An account for yourself, right now | `docker compose -p warmbly exec backend warmblyctl user create --email you@example.com --admin` |
-| To recover an account that already exists | `docker compose -p warmbly exec backend warmblyctl user reset-password --email you@example.com` and open the printed URL |
-| To let teammates in | Invite them from **Settings > Members** and share the link. See [inviting teammates](/development/accounts-and-access/#inviting-teammates) |
-| A truly fresh start | `make reset && make up`. This destroys the volumes, including the per-organization encryption keys |
-| Open public signup | `DISABLE_REGISTRATION=false` and restart. Read the consequence first: [opening public signup](/development/accounts-and-access/#opening-public-signup) |
+| 立即为自己创建账户 | `docker compose -p warmbly exec backend warmblyctl user create --email you@example.com --admin` |
+| 恢复已有账户 | 执行 `docker compose -p warmbly exec backend warmblyctl user reset-password --email you@example.com`，再打开打印的 URL |
+| 让团队成员加入 | 从**设置 > 成员**邀请并分享链接。参见[邀请团队成员](/development/accounts-and-access/#inviting-teammates) |
+| 完全重新开始 | `make reset && make up`。这会销毁卷，包括按组织加密密钥 |
+| 开放公众注册 | 设置 `DISABLE_REGISTRATION=false` 并重启。先阅读影响：[开放公众注册](/development/accounts-and-access/#opening-public-signup) |
 
-Not sure which state you are in?
+不确定当前处于什么状态？
 
 ```bash
 make doctor
 ```
 
-Newer builds return the invite-only refusal with its own machine code, `registration_invite_only`, and the text "This server is invite only. Ask an administrator to invite you, then open the link in the invitation to create your account." Same cause, same fixes.
+较新构建为仅邀请拒绝提供独立机器代码 `registration_invite_only`，文字说明为“此服务器仅接受邀请。请联系管理员邀请你，再打开邀请中的链接创建账户。”原因和修复方式相同。
 
-## First run and sign-in
+## 首次运行与登录 [#first-run-and-sign-in]
 
-| Symptom | Cause and fix |
+| 现象 | 原因与修复 |
 |---|---|
-| `403 This server is invite only.` when registering | `DISABLE_REGISTRATION` defaults to `invite_only` on self-host. Open the invitation link that carries the token, run `warmblyctl user create --email you@example.com --admin`, or set `DISABLE_REGISTRATION=false` and restart. See [accounts and access](/development/accounts-and-access/) |
-| `403 This server is not accepting new accounts.` | `DISABLE_REGISTRATION=true`. No invitation overrides it. Only `warmblyctl user create` adds accounts |
-| Signup worked once, then stopped | The first-launch exemption applies only while the users table is empty. See [the first-launch exemption](/development/accounts-and-access/#the-first-launch-exemption) |
-| `make up` printed no claim link | The database already has accounts, usually from a previous `make dev`. Use `warmblyctl user create --email you@example.com --admin`, or `make reset` to start over, which destroys the encryption volume |
-| The claim link says invalid or expired | 24 hour lifetime, single use, and it does not survive a Redis flush. Print a new one with `warmblyctl setup-link` |
-| `/setup` says the instance is already set up | An account exists, so no claim link will ever be issued. `warmblyctl user reset-password --email ...`, or `warmblyctl user create --email you@example.com --admin` |
-| An invited person gets `invitation_invalid` | The invitation expired (7 days by default), was cancelled, was already used, or they typed a different address than the one it was issued for. Re-invite them |
-| Single sign-on succeeds at the provider then 404s | The redirect URI must be `<API_PUBLIC_URL>/v1/auth/oidc/callback`, not `/api/v1/...`. It has to match on both sides exactly. See [single sign-on](/development/accounts-and-access/#single-sign-on) |
-| Single sign-on stopped provisioning new users | Provisioning now obeys `DISABLE_REGISTRATION`. Invite the person, or set `SSO_AUTO_PROVISION=true` and restart |
-| No login code arrives | Self-host does not send one (`AUTH_LOGIN_CODE=off`). Registration and reset codes go wherever `MAIL_TRANSPORT` points; under compose that is the backend log |
-| No invitation email arrives | Same cause. Copy the link from **Pending invitations** and send it yourself. See [without a mail relay](/development/accounts-and-access/#without-a-mail-relay) |
-| "Too many attempts" on password reset | Password reset is capped at 2 requests per address per 4 hours. Use `warmblyctl user reset-password` instead of waiting |
-| The reset form says the mail was sent and nothing arrives | The address has no account on this instance (the form says the same thing either way, on purpose). The backend logs `password reset requested for an address with no account` with the address it was given. If that line is absent, the mail was really attempted and the transport is the place to look |
-| The passkey button is missing | Passkeys need a secure context, so `APP_URL` must be HTTPS or a `localhost` address. A LAN IP over plain HTTP cannot be a relying party |
-| Google, Apple or passkey buttons appear but never work | The sign-in screen follows `GET /auth/config`. If they still appear, that request is failing and the screen says which API URL it tried |
-| Locked out of the only admin account | `warmblyctl user create --email you@example.com --admin`. Every recovery command is on [recovering access](/development/accounts-and-access/#recovering-access) |
+| 注册时出现 `403 This server is invite only.` | 自托管的 `DISABLE_REGISTRATION` 默认为 `invite_only`。打开携带令牌的邀请链接，执行 `warmblyctl user create --email you@example.com --admin`，或设置 `DISABLE_REGISTRATION=false` 并重启。参见[账户与访问权限](/development/accounts-and-access/) |
+| `403 This server is not accepting new accounts.` | 设置了 `DISABLE_REGISTRATION=true`。任何邀请都不能覆盖，只能通过 `warmblyctl user create` 添加账户 |
+| 注册成功一次后就停止 | 首次启动例外仅在 users 表为空时适用。参见[首次启动例外](/development/accounts-and-access/#the-first-launch-exemption) |
+| `make up` 没有打印认领链接 | 数据库已有账户，通常来自之前的 `make dev`。使用 `warmblyctl user create --email you@example.com --admin`，或用 `make reset` 从头开始，后者会销毁加密卷 |
+| 认领链接提示无效或过期 | 有效期 24 小时、仅限一次使用，Redis 清空后也会失效。用 `warmblyctl setup-link` 打印新链接 |
+| `/setup` 提示实例已经设置 | 已有账户，因此不会再签发认领链接。使用 `warmblyctl user reset-password --email ...`，或 `warmblyctl user create --email you@example.com --admin` |
+| 被邀请者收到 `invitation_invalid` | 邀请已过期，默认七天；或已取消、已使用，或输入地址与邀请地址不同。重新邀请即可 |
+| 单点登录在服务商侧成功，之后返回 404 | 重定向 URI 必须为 `<API_PUBLIC_URL>/v1/auth/oidc/callback`，不能是 `/api/v1/...`，两侧必须精确一致。参见[单点登录](/development/accounts-and-access/#single-sign-on) |
+| 单点登录不再创建新用户 | 现在创建用户遵守 `DISABLE_REGISTRATION`。请邀请该用户，或设置 `SSO_AUTO_PROVISION=true` 并重启 |
+| 收不到登录验证码 | 自托管不发送登录验证码，默认 `AUTH_LOGIN_CODE=off`。注册和重置验证码发送到 `MAIL_TRANSPORT` 指定的目标；Compose 下为后端日志 |
+| 收不到邀请邮件 | 原因相同。从**待接受邀请**复制链接并自行发送。参见[没有邮件中继时](/development/accounts-and-access/#without-a-mail-relay) |
+| 重置密码提示“尝试次数过多” | 每个地址每四小时最多请求两次密码重置。无需等待，可使用 `warmblyctl user reset-password` |
+| 重置表单提示已发送，却收不到邮件 | 此地址在实例中没有账户。为避免泄露账户是否存在，表单有意使用相同提示。后端会记录 `password reset requested for an address with no account` 及收到的地址。如果没有这条日志，说明确实尝试发信，应检查传输配置 |
+| 通行密钥按钮缺失 | 通行密钥需要安全上下文，因此 `APP_URL` 必须为 HTTPS 或 `localhost` 地址。通过普通 HTTP 访问的局域网 IP 不能作为依赖方 |
+| Google、Apple 或通行密钥按钮出现却无法使用 | 登录界面遵循 `GET /auth/config`。如果仍显示这些按钮，说明请求失败，界面会说明尝试的 API URL |
+| 唯一管理员账户无法登录 | 使用 `warmblyctl user create --email you@example.com --admin`。所有恢复命令见[恢复访问](/development/accounts-and-access/#recovering-access) |
 
-## The build fails
+## 构建失败 [#the-build-fails]
 
-| Symptom | Cause and fix |
+| 现象 | 原因与修复 |
 |---|---|
-| `no space left on device`, often from a random service mid-compile | Docker is out of disk. Free space with `docker builder prune -af` and `docker image prune -af`, check the host has about 10 GB free, then re-run `make up` |
-| `failed to authorize: ... EOF` while pulling a base image | A transient registry blip. Re-run `make up`; completed layers are cached |
-| `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY` while building the `forms` image | A `forms/node_modules` from a native `make forms` or `make dev` was shipped into the Docker build context and overwrote the image's own install, and pnpm will not recreate it without a terminal. Current checkouts keep every `node_modules` out of the context and run pnpm in CI mode; on an older checkout, `rm -rf forms/node_modules` and re-run `make up` |
-| `failed to xattr /path/._something: operation not permitted` on macOS | The checkout is on a filesystem without native extended attributes (exFAT, NTFS or a network share), so macOS writes `._*` sidecar files that BuildKit cannot read. Run `dot_clean -m .` then `find . -name '._*' -delete` and re-run. Cloning to an APFS volume avoids it |
+| `no space left on device`，常在某个服务编译中途出现 | Docker 磁盘不足。用 `docker builder prune -af` 和 `docker image prune -af` 释放空间，确认主机约有 10 GB 空闲，再运行 `make up` |
+| 拉取基础镜像时出现 `failed to authorize: ... EOF` | 镜像仓库临时异常。重新运行 `make up`，已完成层会使用缓存 |
+| 出现 `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`，发生在 `forms` 镜像构建期间 | `forms/node_modules` 来自原生 `make forms` 或 `make dev`，被带入 Docker 构建上下文，覆盖了镜像自身安装；没有终端时 pnpm 不会重建。当前检出会排除所有 `node_modules` 并以 CI 模式运行 pnpm；旧检出可先执行 `rm -rf forms/node_modules`，再运行 `make up` |
+| macOS 上出现 `failed to xattr /path/._something: operation not permitted` | 检出目录位于不原生支持扩展属性的文件系统，如 exFAT、NTFS 或网络共享，macOS 因而写入 BuildKit 无法读取的 `._*` 旁文件。先运行 `dot_clean -m .`，再运行 `find . -name '._*' -delete`，然后重试。克隆到 APFS 卷可避免此问题 |
 
-## The stack is up but something is wrong
+## 服务栈已经启动，但功能异常 [#the-stack-is-up-but-something-is-wrong]
 
-| Symptom | Cause and fix |
+| 现象 | 原因与修复 |
 |---|---|
-| The backend exits at boot | Read the first log lines. The usual causes are a published default secret with `APP_ENV=prod` (the message names `ALLOW_INSECURE_DEFAULTS`), cloud provider defaults outside compose, a `CREDENTIALS_ENCRYPTION_KEY` that is not exactly 64 hex characters, or a missing `EMAIL_ADDRESS`, `EMAIL_NAME` or `GEODB_PATH` |
-| The dashboard loads but every request fails | Check `http://localhost:5173/config.js` returns the right `API_URL`. It is generated at container start from `WARMBLY_API_URL`. If the URL is right, the origin is probably missing from `CORS_ALLOW_ORIGINS` |
-| Nothing updates live and presence is empty | `AUTH_SECRET` must equal realtime's `JWT_SECRET`, and `PUBSUB_ENABLED` must agree across backend, consumer and realtime. Compare the fingerprints under **Instance > Configuration > Environment** |
-| Workers or tracking get 401s | `INTERNAL_API_TOKEN` must match on the backend and tracking. Workers present `NODE_BROKER_TOKEN` when the backend sets one (otherwise `INTERNAL_API_TOKEN`, as `ENCRYPTED_KEYS_WORKER_TOKEN`), and it must match too. Unset fails closed |
-| "No mailbox workers are available" when connecting a mailbox | No worker has a heartbeat inside the last 10 minutes. Check `make status` shows `worker` running and `make logs worker` is clean. An empty `ENCRYPTED_KEYS_BACKEND_URL` or worker token lets a worker start and never register, silently |
-| Connecting a mailbox fails with `SERVER_UNREACHABLE` on a reachable host | The security setting may not match the server. A server expecting STARTTLS looks unreachable to a client attempting implicit TLS, and vice versa. Any port from 1 to 65535 is accepted, so the port alone no longer decides: set **Security** to SSL / TLS for a server that is encrypted from the first byte (usually SMTP `465`, IMAP `993`) and STARTTLS for one that upgrades in place (usually SMTP `587` or `2525`, IMAP `143`). The error names the step that failed and its cause. A refused or timed out `dial` never reached the server. `tls: first record does not look like a TLS handshake` points to a protocol mismatch. Other `tls:` dial failures describe certificate or handshake problems and do not by themselves mean the security mode is wrong. Anything from `mail from` onwards is the server's own answer |
-| Sending fails with `SERVER_UNREACHABLE` on port `465` while `587` works | The network between the sending machine and the mail server does not allow implicit TLS submission; some hosting providers block `465` outbound while leaving `587` open. The mailbox's error says `dial <host>:465: connect: connection refused` or `i/o timeout`. Move the mailbox to `587` with STARTTLS, or have the block lifted |
-| A mailbox shows `SERVER_UNREACHABLE` for a pass or two, and the worker logs `imap: server sent a body structure that could not be read` | One message in the folder is described in a form the IMAP client cannot read, typically an RFC 6533 bounce (`message/global`). Nothing needs doing: the worker asks for those messages without their structure from the next pass and reads them whole, then one at a time, and leaves behind only a message no form can read (logged with its folder and UID). Each step costs at most one failed pass |
-| A mailbox's error says the sending network blocks outbound port `465`, and the worker's detail page in **Workers** says the same | The worker has seen several servers leave `465` silent while answering on `587`, so the block is its own network, not the mail server. Mailboxes whose server offers `587` keep sending through the automatic fallback; a server that accepts submission only on `465` cannot be reached from that machine. Many cloud providers block outbound `25` and `465` on new servers until asked: request that outbound `465` be opened for the worker's address. The warning clears on its own once any `465` connection succeeds |
-| A local relay such as Proton Bridge will not connect, and the **None** security option is not there | It appears only for a loopback literal (`localhost`, `127.0.0.0/8`, `::1`) on a self-hosted instance, because the mode is safe only when the credentials never leave the machine. A hostname that resolves to `127.0.0.1` is refused; type the address itself. On hosted Warmbly the worker is not your machine and cannot reach a Bridge at all. See [local mail relays](/guides/mailboxes/#local-mail-relays-proton-bridge) |
-| A mailbox reports `INSECURE_REMOTE_HOST` | It is stored with the unencrypted security mode but its host is not this machine, so the worker refused to dial it rather than put the password on a wire. Reconnect it with SSL / TLS or STARTTLS, or point it back at the local relay |
-| Connecting an Outlook mailbox stops at "Need admin approval" (or "Approval required", `AADSTS90095`) | The organization requires an administrator to approve the app. With default consent settings that is because the app registration has no verified publisher: Microsoft sends every user of a new, unverified multitenant app that asks for mail permissions to an administrator. [Verify the publisher](https://learn.microsoft.com/entra/identity-platform/publisher-verification-overview), or have an administrator approve once for the organization with the link the **Sign in one mailbox** panel shows after a first try (or **Enterprise applications > your app > Permissions > Grant admin consent**). Check the registration lists only the delegated `User.Read`, `Mail.Send`, `Mail.ReadWrite` and `offline_access`. If a non-admin is still refused after a tenant-wide grant, the instance predates the fix that stopped sending `prompt=consent`; upgrade it |
-| **Whole organization** answers `AADSTS90001` (the `prompt` value `admin_consent` is invalid) | The instance predates the fix that moved the Microsoft 365 organization grant to Microsoft's admin consent page. Upgrade it |
-| A mailbox stalls after about an hour | The worker is missing `BOX_GOOGLE_*` or `BOX_OUTLOOK_*`. The backend starts the OAuth flow but each worker refreshes the token. Set them and restart the worker |
-| Sending fails with an authentication error but the password is right | Warmbly negotiates the sign-in method from what the server advertises. If the mailbox reports `AUTH_UNSUPPORTED`, the server offers only mechanisms Warmbly does not implement, such as NTLM or GSSAPI, or it offers no encrypted connection at all and Warmbly will not send the password in the clear; an app password, or the provider's documented SMTP host, usually resolves both |
-| A send is refused and not retried | A `SEND_REJECTED` or `RECIPIENT_REJECTED` error means the receiving server answered with a permanent `5xx`, so retrying cannot deliver the message and would only spend the mailbox's daily budget. Both carry the server's own words, which is what distinguishes an address that no longer exists from one blocked by a policy. A temporary `4xx` is retried automatically and reported as a connection problem |
-| An IMAP mailbox connects but no mail ever arrives | Check the sync card in the mailbox drawer for a folder count. Zero folders on a reachable server means the server refused `STATUS` for every folder; the worker log names each one it skipped. A connected mailbox whose inbox is genuinely empty is normal |
-| A mailbox shows an error that is already fixed | Connection errors clear themselves: the first sync pass that reaches the server again resolves them. Errors that need you to act, such as wrong credentials or a domain-authentication refusal, stay until you reconnect the mailbox or fix the cause |
-| An IMAP mailbox shows `IMAP_UNKNOWN` with `Bad token (expecting date specification)` and imports nothing | The server refuses a date in `SEARCH` in the quoted form the IMAP client writes (Seznam.cz does). Current workers notice the refusal, log `server refused a dated SEARCH` once per mailbox, and read each message's `INTERNALDATE` instead, so the import runs and the error clears on the next completed pass. On an instance that still shows it, update the workers |
-| An IMAP mailbox stopped syncing and the log is quiet | Sessions dropped by the server, or by a firewall that removed the mapping without closing the connection, are re-dialed on the next pass, and every pass that cannot reach the server is retried on a widening interval up to five minutes. If a mailbox is still stuck, `make logs worker` shows the folder cursors; a mailbox held by the sync budget says so in its drawer instead |
-| A folder is missing from the unibox | Up to `100` folders per mailbox are synced (**Instance > Configuration > Effective limits**). Past that, the inbox and the special folders are kept and the rest follow the server's order, and the mailbox drawer's **Sync** card names how many were left out. Gmail's All Mail, Starred and Important are label views over other folders and are deliberately never synced. A folder can also be skipped when the mail server lists the same folder name twice, which the Sync card says as well. A folder sharing its `UIDVALIDITY` with another folder is no longer a reason to skip anything: folders are identified by name, which is what IMAP guarantees is unique. Both notes clear themselves on the next pass once the cause is gone |
-| Scheduled sends never fire | Delayed sends run through the in-process Postgres task poller (`TASKS_PROVIDER=local`), so the backend must be running |
-| Every send dead-letters with `permission denied` on `/data/blobs` | The `blobs` volume was created before the images owned that path, so it is still `root:root` while the services run as uid 1000. Fix it once with `docker compose -p warmbly exec -u root backend chown -R warmbly:warmbly /data/blobs`. The `blob_fs_root` health check reports it, and volumes created from current images are already correct |
-| `email account <id> not found in worker` | The mailbox is assigned to a worker that no longer exists, usually because the worker was recreated and came back with a fresh UUID. The reconciler releases and re-places it on a live worker within its interval. Compose workers now keep their id in the `worker_state` volume (`WORKER_STATE_DIR`), so this stops recurring once that volume exists; removing the volume or unsetting `WORKER_STATE_DIR` reintroduces the churn. See [worker identity](/development/deployment-guide/#worker-identity) |
-| Opens and clicks never record | First check the container is actually up with `docker compose -p warmbly ps -a`: a dead `tracking` breaks nothing else, because sends do not wait on it. Then check `TRACKING_DOMAIN` resolves and the service answers on `/health`. If you overrode `KAFKA_TRACKING_TOPIC`, it has to be overridden for the Rust publisher and the Go subscriber together |
-| `tracking` exits immediately with `Bind for 0.0.0.0:3000 failed: port is already allocated` | Something else on the host owns port `3000`, a very common default. Set `TRACKING_PORT=3001` in `.env`, re-run `make up`, and point your reverse proxy's tracking host at the new port |
-| The backend restart-loops with `duplicate migration file` | Two migrations on the branch share a version, which stops golang-migrate before a single one runs. Renumber the one that has not been released yet to the next free version and re-deploy. `make check-migrations` reports it, and CI runs the same check on every pull request. See [adding a migration](/development/local-development/#adding-a-migration) |
-| Seeding fails with `no migration found for version N` | The seed image is older than your schema. Re-run with `--build` |
-| A whole workspace stopped sending and its banner says suspended | Its abuse posture reached `suspended`. Open the org in the admin panel, read the findings in the **Abuse posture** panel, then retract the ones that are wrong or set the posture directly. See [workspace abuse posture](/development/accounts-and-access/#workspace-abuse-posture) |
-| Worker heartbeat offline | Nothing connects to a node, so this is always diagnosed on the machine itself: `systemctl status warmbly-worker`, then check it can reach the backend URL, NATS or Kafka, and Redis. `warmblyctl fleet show <id>` gives the last time it was seen |
+| 后端启动时退出 | 阅读最前面的日志。常见原因包括：`APP_ENV=prod` 使用公开默认秘密值，消息会提到 `ALLOW_INSECURE_DEFAULTS`；Compose 之外使用了云服务商默认值；`CREDENTIALS_ENCRYPTION_KEY` 不是精确的 64 个十六进制字符；或缺少 `EMAIL_ADDRESS`、`EMAIL_NAME`、`GEODB_PATH` |
+| 控制台能加载，但每个请求失败 | 检查 `http://localhost:5173/config.js` 是否返回正确 `API_URL`。它在容器启动时根据 `WARMBLY_API_URL` 生成。URL 正确时，可能是 `CORS_ALLOW_ORIGINS` 缺少对应来源 |
+| 没有实时更新，在线状态为空 | `AUTH_SECRET` 必须与实时服务的 `JWT_SECRET` 相同，后端、消费者和实时服务的 `PUBSUB_ENABLED` 必须一致。在**实例 > 配置 > 环境**比较指纹 |
+| 工作节点或跟踪服务收到 401 | 后端和跟踪服务的 `INTERNAL_API_TOKEN` 必须一致。后端设置了 `NODE_BROKER_TOKEN` 时，工作节点提交该值，否则使用 `INTERNAL_API_TOKEN`，以 `ENCRYPTED_KEYS_WORKER_TOKEN` 传递，也必须匹配。未设置时保守拒绝 |
+| 连接邮箱时提示“没有可用邮箱工作节点” | 最近十分钟没有任何节点心跳。检查 `make status` 是否显示 `worker` 运行，`make logs worker` 是否正常。`ENCRYPTED_KEYS_BACKEND_URL` 或节点令牌为空，会让节点启动却始终不登记，且没有明显提示 |
+| 主机可达，连接邮箱却报 `SERVER_UNREACHABLE` | 安全设置可能与服务器不匹配。要求 STARTTLS 的服务器，对尝试隐式 TLS 的客户端会表现为不可达，反之亦然。允许任何 1 至 65535 端口，因此端口本身不再决定模式：从第一个字节就加密的服务器，应将**安全**设为 SSL / TLS，通常 SMTP 为 `465`、IMAP 为 `993`；原地升级加密的服务器应设为 STARTTLS，通常 SMTP 为 `587` 或 `2525`、IMAP 为 `143`。错误会说明失败步骤和原因。`dial` 被拒绝或超时表示从未到达服务器。`tls: first record does not look like a TLS handshake` 指向协议不匹配。其他 `tls:` 连接失败描述证书或握手问题，本身不代表安全模式错误。从 `mail from` 开始的错误则是服务器自身答复 |
+| 发送报 `SERVER_UNREACHABLE`，使用的是 `465` 端口，而 `587` 可用 | 发送机器到邮件服务器的网络不允许隐式 TLS 提交；部分托管服务商封锁出站 `465`，但开放 `587`。邮箱错误会显示 `dial <host>:465: connect: connection refused` 或 `i/o timeout`。将邮箱改为 `587` 加 STARTTLS，或申请解除封锁 |
+| 邮箱一两轮显示 `SERVER_UNREACHABLE`，工作节点日志为 `imap: server sent a body structure that could not be read` | 文件夹中某封邮件的结构描述无法由 IMAP 客户端读取，通常是 RFC 6533 退信，即 `message/global`。无需操作：工作节点从下一轮开始不请求这些邮件的结构，先整封读取，再逐封读取，最终只跳过任何方式都无法读取的邮件，并记录其文件夹和 UID。每个阶段最多导致一次失败同步 |
+| 邮箱错误提示发送网络封锁出站 `465`，**工作节点**详情页也显示相同提示 | 工作节点观察到多个服务器在 `465` 无响应、却在 `587` 响应，因此封锁来自自身网络，而不是邮件服务器。服务商支持 `587` 的邮箱会通过自动回退继续发送；只接受 `465` 提交的服务器无法从该机器访问。许多云服务商默认封锁新服务器出站 `25` 和 `465`，需申请开放。请为工作节点地址申请开放出站 `465`。任意一次 `465` 连接成功后，警告自动清除 |
+| Proton Bridge 等本地中继无法连接，也没有**无**安全选项 | 此选项仅在自托管实例上、主机为回环字面值 `localhost`、`127.0.0.0/8` 或 `::1` 时出现，因为只有凭据不离开机器才安全。解析为 `127.0.0.1` 的主机名也会被拒绝，请直接输入地址。托管 Warmbly 的节点不在你的机器上，无法访问 Bridge。参见[本地邮件中继](/guides/mailboxes/#local-mail-relays-proton-bridge) |
+| 邮箱报告 `INSECURE_REMOTE_HOST` | 存储的安全模式为未加密，但主机不是本机，工作节点因此拒绝连接，避免在线路上明文发送密码。使用 SSL / TLS 或 STARTTLS 重新连接，或改回本地中继 |
+| 连接 Outlook 邮箱停在“需要管理员批准”或“要求批准”，代码为 `AADSTS90095` | 组织要求管理员批准应用。默认同意设置下，原因通常是应用注册没有已验证发布者：对于请求邮件权限的新建未验证多租户应用，Microsoft 会将每个用户都转交管理员。可以[验证发布者](https://learn.microsoft.com/entra/identity-platform/publisher-verification-overview)，或让管理员通过**登录单个邮箱**面板在首次尝试后显示的链接，为组织批准一次；也可进入 **Enterprise applications > your app > Permissions > Grant admin consent（企业应用 > 应用 > 权限 > 授予管理员同意）**。检查注册只列出委派权限 `User.Read`、`Mail.Send`、`Mail.ReadWrite` 和 `offline_access`。租户级授权后，非管理员仍被拒绝，说明实例早于停止发送 `prompt=consent` 的修复，请升级 |
+| **整个组织**返回 `AADSTS90001`，提示 `prompt` 值 `admin_consent` 无效 | 实例早于将 Microsoft 365 组织授权迁移到 Microsoft 管理员同意页面的修复，请升级 |
+| 邮箱约一小时后停滞 | 工作节点缺少 `BOX_GOOGLE_*` 或 `BOX_OUTLOOK_*`。后端开始 OAuth 流程，但每个节点自行刷新令牌。设置这些值并重启节点 |
+| 密码正确，发送仍报身份验证错误 | Warmbly 根据服务器声明协商登录方式。如果邮箱报告 `AUTH_UNSUPPORTED`，服务器只提供 Warmbly 未实现的机制，例如 NTLM 或 GSSAPI，或根本没有加密连接，而 Warmbly 不会明文发送密码。使用应用专用密码或服务商文档指定的 SMTP 主机，通常可以解决 |
+| 发送被拒绝且不重试 | `SEND_REJECTED` 或 `RECIPIENT_REJECTED` 表示接收服务器返回永久性 `5xx`，重试无法投递，只会消耗邮箱每日预算。两者都保留服务器原话，以区分地址不存在和策略阻止。临时 `4xx` 会自动重试，并报告为连接问题 |
+| IMAP 邮箱连接成功，却始终没有邮件到达 | 查看邮箱侧边面板同步卡片中的文件夹数量。服务器可达但文件夹为零，表示服务器对每个文件夹都拒绝 `STATUS`；节点日志会列出跳过的文件夹。已连接邮箱的收件箱确实为空则属正常 |
+| 邮箱仍显示已经修好的错误 | 连接错误会自动清除：第一次重新连上服务器的同步会解决它。错误凭据或域身份验证拒绝等需要人工处理的错误，会保留到重新连接或修复原因 |
+| IMAP 邮箱显示 `IMAP_UNKNOWN` 和 `Bad token (expecting date specification)`，不导入任何内容 | 服务器拒绝 IMAP 客户端在 `SEARCH` 中写入的带引号日期，Seznam.cz 就会这样。当前工作节点会识别拒绝，每个邮箱只记录一次 `server refused a dated SEARCH`，改为读取每封邮件的 `INTERNALDATE`，导入继续，错误在下一次完整同步后清除。仍显示此问题时，请更新工作节点 |
+| IMAP 邮箱停止同步，日志也安静 | 服务器断开，或防火墙删除映射但未关闭连接的会话，会在下一轮重新连接；无法访问服务器的同步轮次，会以逐渐增长、最多五分钟的间隔重试。如果仍卡住，`make logs worker` 可查看文件夹游标；若因同步预算暂停，邮箱侧边面板会明确说明 |
+| 统一收件箱缺少某个文件夹 | 每个邮箱最多同步 `100` 个文件夹，可在**实例 > 配置 > 实际生效限额**查看。超出时保留收件箱和特殊文件夹，其余按服务器顺序选择，侧边面板**同步**卡片说明跳过数量。Gmail 的“所有邮件”“星标”和“重要”只是其他文件夹的标签视图，有意不同步。服务器重复列出同一文件夹名时，也可能跳过，同步卡片会说明。文件夹与另一个文件夹共用 `UIDVALIDITY` 已不再是跳过理由：IMAP 保证唯一的是名称，因此按名称识别文件夹。原因消失后，两类提示都会在下一轮自动清除 |
+| 计划发送始终不触发 | 延迟发送通过进程内 Postgres 任务轮询器 `TASKS_PROVIDER=local` 运行，因此后端必须运行 |
+| 每次发送都因 `permission denied` 进入死信，错误路径为 `/data/blobs` | `blobs` 卷创建于镜像取得该路径所有权之前，因此仍为 `root:root`，而服务以 uid 1000 运行。执行一次 `docker compose -p warmbly exec -u root backend chown -R warmbly:warmbly /data/blobs` 修复。`blob_fs_root` 健康检查会报告，当前镜像新建的卷已正确配置 |
+| `email account <id> not found in worker` | 邮箱分配给了不存在的工作节点，通常是节点重建后使用新 UUID。协调器会在其周期内释放邮箱并重新分配给活跃节点。Compose 工作节点现在将 ID 保存在 `worker_state` 卷中，由 `WORKER_STATE_DIR` 控制；卷存在后就不会反复发生。移除卷或取消 `WORKER_STATE_DIR` 会再次引入变化。参见[工作节点身份](/development/deployment-guide/#worker-identity) |
+| 打开和点击从不记录 | 先用 `docker compose -p warmbly ps -a` 确认容器确实运行；`tracking` 停止不会影响其他功能，因为发送不等待它。再检查 `TRACKING_DOMAIN` 是否解析，服务是否在 `/health` 响应。如果覆盖了 `KAFKA_TRACKING_TOPIC`，必须同时覆盖 Rust 发布者和 Go 订阅者 |
+| `tracking` 立即退出，错误为 `Bind for 0.0.0.0:3000 failed: port is already allocated` | 主机上的其他进程占用常见默认端口 `3000`。将 `TRACKING_PORT=3001` 写入 `.env`，重新运行 `make up`，并将反向代理的跟踪主机指向新端口 |
+| 后端因 `duplicate migration file` 不断重启 | 分支上两个迁移共用版本号，golang-migrate 在执行任何迁移前就停止。将尚未发布的迁移改为下一个可用版本，再部署。`make check-migrations` 会报告此问题，CI 对每个拉取请求执行相同检查。参见[添加迁移](/development/local-development/#adding-a-migration) |
+| 填充数据报 `no migration found for version N` | seed 镜像早于当前 Schema。带 `--build` 重新运行 |
+| 整个工作区停止发送，横幅显示已暂停 | 滥用风险状态达到 `suspended`。在管理面板打开组织，阅读**滥用风险状态**面板发现，再撤回错误发现或直接设置状态。参见[工作区滥用风险状态](/development/accounts-and-access/#workspace-abuse-posture) |
+| 工作节点心跳离线 | 没有服务主动连接节点，因此总要在机器本身诊断：先执行 `systemctl status warmbly-worker`，再检查能否访问后端 URL、NATS 或 Kafka，以及 Redis。`warmblyctl fleet show <id>` 显示最后出现时间 |
 
-## Recovery
+## 恢复 [#recovery]
 
-Every recovery command, in all four runtimes, is on [recovering access](/development/accounts-and-access/#recovering-access): instance status, listing admins, resetting a password through a printed one-time link, creating a new owner and admin, clearing a lost authenticator, and reissuing the first-run claim link.
+全部四种运行环境的恢复命令都在[恢复访问](/development/accounts-and-access/#recovering-access)：实例状态、列出管理员、通过打印的一次性链接重置密码、创建新所有者和管理员、清除丢失的验证器，以及重新签发首次认领链接。
 
-The destructive alternative is `make reset`, which removes the volumes and starts over.
+破坏性的替代方案是 `make reset`，它删除卷并从头开始。
 
-<Callout type="warn" title="make reset destroys the encryption volume">
-The volumes hold the per-organization data keys. Every sealed mailbox credential and every stored message body becomes permanently undecryptable, even if you restore a database dump afterwards.
+<Callout type="warn" title="make reset 会销毁加密卷">
+卷中保存按组织数据密钥。所有密封邮箱凭据和已存储邮件正文都会永久无法解密，即使之后恢复数据库备份也一样。
 </Callout>
 
-<Callout type="warn" title="Do not flush Redis to clear a rate limit">
-`redis-cli FLUSHDB` also destroys `bootstrap:setup_token`, every pending auth session and every login attempt counter. On an unclaimed instance that throws away the only way in. Delete the specific key, or wait out the window.
+<Callout type="warn" title="不要为清除速率限制而清空 Redis">
+`redis-cli FLUSHDB` 还会销毁 `bootstrap:setup_token`、所有待完成身份验证会话和登录尝试计数。对于尚未认领的实例，这会丢掉唯一入口。请删除具体键，或等待窗口结束。
 </Callout>
 
-## Collecting errors somewhere you can read them
+## 将错误集中到便于查看的位置 [#collecting-errors-somewhere-you-can-read-them]
 
-`make logs` shows you what a service printed. It does not tell you that a handler threw at 3am, in which build, for which organization. Every runtime in Warmbly can send that to an error tracker instead, and none of them do until you say where.
+`make logs` 显示服务打印了什么，却不会主动告诉你凌晨三点哪个构建、哪个组织的处理器抛出了异常。Warmbly 的每种运行时都能将这些信息发送到错误跟踪器；指定目标前，没有任何运行时会这样做。
 
-There are two backends. PostHog is the default:
+支持两种后端，默认是 PostHog：
 
 ```bash
 # backend, consumer, worker, forms, tracking, realtime
@@ -133,26 +133,26 @@ POSTHOG_HOST=https://eu.i.posthog.com
 WARMBLY_POSTHOG_HOST=https://eu.i.posthog.com
 ```
 
-Sentry is still supported, on its own or alongside PostHog:
+仍支持 Sentry，可单独使用，也可与 PostHog 并用：
 
 ```bash
 SENTRY_DSN=https://<key>@<host>/<project>
 WARMBLY_SENTRY_DSN=https://<key>@<host>/<project>
 ```
 
-Set both backends and every error goes to both, which is the safe way to try one without giving up the other. Going the other way, `POSTHOG_ERROR_TRACKING=false` keeps a PostHog key for product analytics and reports no exceptions there.
+同时配置两者，每个错误就发送到两者，适合在保留原服务时试用另一个。反过来，`POSTHOG_ERROR_TRACKING=false` 可保留 PostHog 产品分析密钥，但不向它报告异常。
 
-Under the installer's compose file these go in `.env`: every service inherits them through `env_file`, so a couple of lines and a `docker compose up -d` covers the whole instance.
+使用安装器生成的 Compose 文件时，将这些值写入 `.env`；所有服务通过 `env_file` 继承，因此添加几行后执行 `docker compose up -d`，即可覆盖整个实例。
 
-Every event is tagged with the service that raised it, the environment and the build, so one project can hold the whole instance and still be filterable. Exceptions also carry the workspace and user they happened to and, where there was one, the failing request's id and route, so a support message quoting a request id and an issue in error tracking are the same incident. What each property is and where it comes from is on [configuration](/development/configuration/#error-reporting). Server-side services take the environment from `APP_ENV`. The dashboard and admin panel take theirs from `WARMBLY_SENTRY_ENVIRONMENT`, since the container serving the bundle is not the process reporting the error, and the name is that one whichever backend receives the event. Hosted form pages are the exception among the browser apps: their environment is stamped into the page by the forms service, so it comes from that service's `APP_ENV`. The frontends are separate projects' worth of events in practice; give the browser ones their own project if you want the noise apart.
+每个事件都带有产生它的服务、环境和构建标签，因此一个项目可容纳整个实例，并仍能筛选。异常还带有所属工作区和用户，以及存在时的失败请求 ID 和路由，使支持消息中的请求 ID 与错误跟踪中的问题对应同一事件。各属性含义和来源见[配置](/development/configuration/#error-reporting)。服务端从 `APP_ENV` 读取环境。控制台和管理面板从 `WARMBLY_SENTRY_ENVIRONMENT` 读取，因为提供静态包的容器不是报告错误的进程；无论事件发给哪个后端，都使用这一变量名。托管表单页面是浏览器应用中的例外：环境由表单服务写入页面，因此取该服务的 `APP_ENV`。实际中，各前端产生的事件量值得分别管理；希望分开噪声时，可给浏览器事件独立项目。
 
-The server behind either is your choice. PostHog Cloud's free tier covers 100k exceptions a month and `POSTHOG_HOST` points at a PostHog you run yourself; Sentry Cloud's free Developer plan covers 5k errors a month, and a self-hosted Sentry or a Sentry-compatible server such as GlitchTip works with the same DSN variable.
+两种后端的服务器都由你选择。PostHog Cloud 免费层每月覆盖 10 万次异常，`POSTHOG_HOST` 也可指向自己运行的 PostHog；Sentry Cloud 免费 Developer 套餐每月覆盖 5,000 次错误，自托管 Sentry 或 GlitchTip 等兼容服务也使用相同 DSN 变量。
 
-Browser stack traces are minified unless the images were built with source-map upload configured, which the published ones are. See [source maps](/development/configuration/#source-maps) if you build your own.
+除非构建镜像时配置了源码映射上传，否则浏览器堆栈经过压缩；公开发布镜像已配置。自行构建时参见[源码映射](/development/configuration/#source-maps)。
 
-Configuring neither backend is a supported configuration, not a degraded one: no host is contacted and errors go to the log as before. See [data control](/development/data-control/#error-reporting).
+两个后端都不配置也是受支持的正常配置：不会联系任何主机，错误与之前一样写入日志。参见[数据控制](/development/data-control/#error-reporting)。
 
-## Still stuck
+## 仍未解决时 [#still-stuck]
 
 ```bash
 make logs            # follow everything
@@ -160,12 +160,12 @@ make logs backend    # follow one service
 make doctor          # the full health check set, exits non-zero on an error
 ```
 
-Ask in [Discord](https://dc.warmbly.com) or open a [GitHub issue](https://github.com/warmbly/warmbly/issues) with the output of `make doctor` and the first 50 lines of the failing service's log.
+可在 [Discord](https://dc.warmbly.com) 提问，或提交 [GitHub issue](https://github.com/warmbly/warmbly/issues)，附上 `make doctor` 输出和失败服务日志的前 50 行。
 
-## See also
+## 另请参阅 [#see-also]
 
-- [First run](/development/first-run/)
-- [Accounts and access](/development/accounts-and-access/)
+- [首次运行](/development/first-run/)
+- [账户与访问权限](/development/accounts-and-access/)
 - [warmblyctl](/development/warmblyctl/)
-- [Configuration reference](/development/configuration/)
-- [Instance health](/development/instance-health/)
+- [配置参考](/development/configuration/)
+- [实例健康状态](/development/instance-health/)

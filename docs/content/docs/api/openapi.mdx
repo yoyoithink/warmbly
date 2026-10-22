@@ -1,30 +1,30 @@
 ---
-title: OpenAPI spec
-description: A machine-readable OpenAPI 3.1 description of the Warmbly API.
+title: "OpenAPI 规范"
+description: "采用 OpenAPI 3.1 格式、可供机器读取的 Warmbly API 说明。"
 ---
 
-The full Warmbly API is described by a machine-readable OpenAPI 3.1 document:
+Warmbly 的完整 API 由一份机器可读的 OpenAPI 3.1 文档描述：
 
 ```
 https://docs.warmbly.com/openapi.json
 ```
 
-Everything in this reference is generated from the same surface the spec describes, so the document and the docs never drift.
+本参考文档的所有内容均根据该规范所描述的同一组接口生成，因此规范与文档始终保持一致。
 
-## What you can do with it
+## 可实现的用途 [#what-you-can-do-with-it]
 
-- **Generate a client.** Point any OpenAPI generator (openapi-generator, oapi-codegen, openapi-typescript, and friends) at the URL to produce a typed client in your language.
-- **Explore it interactively.** Import the URL into Postman or Insomnia to get a ready-to-call collection with every endpoint, parameter, and schema.
-- **Validate against it.** Use it for contract tests so your integration breaks loudly when an assumption changes.
+- **生成客户端。** 将任意 OpenAPI 生成器（openapi-generator、oapi-codegen、openapi-typescript 等）指向此 URL，即可生成所用语言的强类型客户端。
+- **交互式探索。** 将此 URL 导入 Postman 或 Insomnia，即可获得可直接调用的集合，包含所有端点、参数和数据结构。
+- **依据规范进行验证。** 使用该规范进行契约测试，以便集成所依赖的假设发生变化时，测试能够明确报错。
 
-Official JavaScript and TypeScript, Python, and Go libraries exist (see [SDKs](/api/sdks/)). For any other language, generating a client from this spec or calling the API over plain HTTP is the supported path.
+目前提供 JavaScript 和 TypeScript、Python 及 Go 官方库（参阅 [SDK](/api/sdks/)）。对于其他语言，支持的接入方式是根据此规范生成客户端，或直接通过 HTTP 调用 API。
 
-The realtime WebSocket gateway has its own machine-readable description in [AsyncAPI 3.1](https://docs.warmbly.com/asyncapi.json); see the [realtime guide](/api/realtime/).
+实时 WebSocket 网关提供独立的 [AsyncAPI 3.1](https://docs.warmbly.com/asyncapi.json) 机器可读描述；请参阅[实时通信指南](/api/realtime/)。
 
-## Conventions baked into the spec
+## 规范内置的约定 [#conventions-baked-into-the-spec]
 
-- The single server is `https://api.warmbly.com/v1`. Every path in the spec is relative to that versioned base. See [versioning](/api/).
-- Authentication is an API key sent as a Bearer token (`bearerAuth`). See [authentication](/api/authentication/).
-- List endpoints share a `data` plus `pagination` envelope with an opaque `cursor` token, and errors share a `code` plus `request_id` shape. See the [overview](/api/) and [error codes](/api/error-codes/).
+- 规范中仅定义了一个服务器：`https://api.warmbly.com/v1`。其中所有路径均相对于这个包含版本号的基础 URL。请参阅[版本管理](/api/)。
+- 身份验证采用以 Bearer 令牌传入的 API 密钥（`bearerAuth`）。请参阅[身份验证](/api/authentication/)。
+- 列表端点统一使用 `data` 与 `pagination` 响应封装，以及不透明的 `cursor` 令牌；错误统一使用 `code` 与 `request_id` 结构。请参阅[概述](/api/)和[错误码](/api/error-codes/)。
 
-The spec is versioned with the API: a breaking change ships as a new spec under a new version, never as an in-place edit to `v1`.
+规范随 API 一同进行版本管理：破坏兼容性的变更会以新版本下的新规范发布，绝不会直接修改现有 `v1` 规范。

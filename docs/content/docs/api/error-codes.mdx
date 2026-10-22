@@ -1,13 +1,13 @@
 ---
-title: Error codes
-description: Reference for all API error codes and their meanings.
+title: "错误码"
+description: "所有 API 错误码及其含义的参考说明。"
 ---
 
-The Warmbly API uses standard HTTP status codes and returns structured error responses in JSON format.
+Warmbly API 使用标准 HTTP 状态码，并以 JSON 格式返回结构化错误响应。
 
-## Error response format
+## 错误响应格式 [#error-response-format]
 
-All errors follow this structure:
+所有错误均采用以下结构：
 
 ```json
 {
@@ -18,58 +18,58 @@ All errors follow this structure:
 }
 ```
 
-`error` and `message` are for people. Client logic should use `code`, HTTP status, and endpoint-specific fields such as `retry_after`. Include `request_id` when contacting support.
+`error` 和 `message` 供用户阅读。客户端逻辑应使用 `code`、HTTP 状态码及 `retry_after` 等端点特有字段。联系支持时，请附上 `request_id`。
 
-## HTTP status codes
+## HTTP 状态码 [#http-status-codes]
 
-### Send-admission diagnostics
+### 发送准入诊断 [#send-admission-diagnostics]
 
-These codes appear in campaign activity and task failure metadata, not as HTTP response codes:
+这些错误码出现在营销活动动态和任务失败元数据中，不是 HTTP 响应状态码：
 
-| Code | Meaning |
+| 错误码 | 含义 |
 |------|---------|
-| `CAMPAIGN_DAILY_LIMIT_REACHED` | This campaign has reached its configured UTC-day maximum for this sending mailbox. Other mailboxes have separate campaign allowances. |
-| `MAILBOX_SENDING_PLAN_DENIED` | The mailbox's enabled local-day sending plan is unavailable, outside working hours or on a break, or its daily/hourly quota is exhausted. The scheduler retries when capacity opens. |
-| `MANUAL_SEND_LIMIT_REACHED` | A unibox send (reply, forward or compose, including `POST /unibox/*` and `POST /emails/:id/send`) would exceed the mailbox's fair-use allowance: recipients on one email, in an hour, in 24 hours, in new conversations over 24 hours, or, across all the workspace's mailboxes, the 24-hour allowance its plan gives. The failure message names which. Unibox sends never count toward campaign or warmup limits. See [sending controls](/guides/unibox/#sending-controls). |
-| `RECIPIENT_SUPPRESSED` | A recipient is on the workspace suppression list, directly or through its domain. The failure message names the address. A unibox forward is never refused for this. |
-| `SEND_ADMISSION_DENIED` | Another current send-authority, recipient or mailbox capacity check denied admission. |
+| `CAMPAIGN_DAILY_LIMIT_REACHED` | 此营销活动在当前发件邮箱上已达到配置的 UTC 当日发送上限。其他邮箱有独立的营销活动额度。 |
+| `MAILBOX_SENDING_PLAN_DENIED` | 邮箱已启用的本地日发送计划不可用、当前不在工作时段或处于休息时间，或每日/每小时额度已耗尽。容量恢复后，调度器会重试。 |
+| `MANUAL_SEND_LIMIT_REACHED` | 统一收件箱发送（回复、转发或新建邮件，包括 `POST /unibox/*` 和 `POST /emails/:id/send`）将超过邮箱的合理使用额度：单封邮件收件人数、每小时收件人数、24 小时收件人数、24 小时新会话收件人数，或工作区所有邮箱共用的套餐 24 小时额度。失败消息会指出具体限制。统一收件箱发送从不计入营销活动或预热上限。参见 [发送控制](/guides/unibox/#sending-controls)。 |
+| `RECIPIENT_SUPPRESSED` | 收件人直接或因其域名而位于工作区禁止发送名单中。失败消息会指出地址。统一收件箱转发不会因此遭拒。 |
+| `SEND_ADMISSION_DENIED` | 其他当前发送授权、收件人或邮箱容量检查拒绝了准入。 |
 
-Admission denial before dispatch releases the send reservation without spending a failed-send attempt. A refused unibox send ends with status `failed`, is not retried, and is reported to the mailbox owner. See [campaigns](/guides/campaigns/) and [sending behavior](/guides/sending-behavior/) for the separate configurable ceilings and daily targets.
+分发前的准入拒绝会释放发送预留，不消耗一次失败发送尝试。遭拒的统一收件箱发送以 `failed` 状态结束，不会重试，并向邮箱所有者报告。独立可配置上限及每日目标量，参见 [营销活动](/guides/campaigns/) 和 [发送行为](/guides/sending-behavior/)。
 
-### Client errors (4xx)
+### 客户端错误（4xx） [#client-errors-4xx]
 
-| Code | Error | Description |
+| 错误码 | 错误 | 说明 |
 |------|-------|-------------|
-| 400 | Bad Request | Invalid request syntax or parameters, or a quota that would be passed (`storage_limit_reached`) |
-| 401 | Unauthorized | Missing or invalid authentication |
-| 402 | Payment Required | Out of credits (`insufficient_credits`), or no free placement tests left this month (`placement_quota_exceeded`, `placement_not_entitled`) |
-| 403 | Forbidden | Authenticated but lacks permission, or the workspace's mailbox allowance is full (`mailbox_allowance_reached`) |
-| 404 | Not Found | Resource doesn't exist |
-| 409 | Conflict | Resource already exists |
-| 422 | Unprocessable | Validation failed |
-| 429 | Too Many Requests | Rate limit or AI usage cap exceeded (`rate_limit_exceeded`, `usage_cap_exceeded`), or too many placement tests or batches running at once (`placement_too_many_running`, `placement_too_many_batches`) |
+| 400 | 请求无效（Bad Request） | 请求语法或参数无效，或将超过配额（`storage_limit_reached`） |
+| 401 | 未通过身份验证（Unauthorized） | 缺少身份验证信息或信息无效 |
+| 402 | 需要付款（Payment Required） | 积分不足（`insufficient_credits`），或本月没有剩余免费投递位置测试（`placement_quota_exceeded`、`placement_not_entitled`） |
+| 403 | 禁止访问（Forbidden） | 已通过身份验证但缺少权限，或工作区邮箱数量额度已满（`mailbox_allowance_reached`） |
+| 404 | 未找到（Not Found） | 资源不存在 |
+| 409 | 冲突（Conflict） | 资源已存在 |
+| 422 | 无法处理（Unprocessable） | 验证失败 |
+| 429 | 请求过多（Too Many Requests） | 超过速率限制或 AI 用量上限（`rate_limit_exceeded`、`usage_cap_exceeded`），或同时运行的投递位置测试或批次过多（`placement_too_many_running`、`placement_too_many_batches`） |
 
-### Server errors (5xx)
+### 服务端错误（5xx） [#server-errors-5xx]
 
-| Code | Error | Description |
+| 错误码 | 错误 | 说明 |
 |------|-------|-------------|
-| 500 | Internal Server Error | Unexpected server error |
-| 501 | Not Implemented | Feature not available |
-| 503 | Service Unavailable | Service temporarily down |
+| 500 | 服务器内部错误（Internal Server Error） | 未预期的服务器错误 |
+| 501 | 尚未实现（Not Implemented） | 功能不可用 |
+| 503 | 服务不可用（Service Unavailable） | 服务暂时不可用 |
 
-## Error details
+## 错误详情 [#error-details]
 
-### 400 Bad Request
+### 400 Bad Request（请求无效） [#400-bad-request]
 
-Returned when the request cannot be processed due to invalid syntax.
+请求因语法无效而无法处理时返回。
 
-**Common causes:**
-- Invalid JSON in request body
-- Missing required fields
-- Invalid field types
-- Values outside allowed ranges
+**常见原因：**
+- 请求体中的 JSON 无效
+- 缺少必填字段
+- 字段类型无效
+- 值超出允许范围
 
-**Example:**
+**示例：**
 
 ```json
 {
@@ -80,72 +80,72 @@ Returned when the request cannot be processed due to invalid syntax.
 }
 ```
 
-When the body cannot be read, the `message` says why:
+无法读取请求体时，`message` 会说明原因：
 
-| The body | `message` |
+| 请求体情况 | `message` |
 |----------|-----------|
-| is empty | `The request body is empty. ...` |
-| is not valid JSON | `The request body is not valid JSON: <reason> (at byte N).` |
-| is the wrong JSON type at the top level | `The request body must be a JSON array, not a JSON object.` |
-| has a field of the wrong JSON type | `Field "to" must be a JSON array, not a JSON string.` |
-| has a time that is not RFC 3339 | `The request body has a time that is not RFC 3339 (such as 2026-10-01T09:00:00Z): "tomorrow".` |
-| has a text field containing a NUL character | `Field "<name>" contains a NUL character, which is not supported.` |
-| is missing required fields or has values out of range | `The request body is missing or has invalid fields: "to" is required; ...` (up to five fields, then a count of the rest) |
+| 为空 | `The request body is empty. ...` |
+| 不是有效 JSON | `The request body is not valid JSON: <reason> (at byte N).` |
+| 顶层 JSON 类型错误 | `The request body must be a JSON array, not a JSON object.` |
+| 某字段的 JSON 类型错误 | `Field "to" must be a JSON array, not a JSON string.` |
+| 包含非 RFC 3339 格式的时间 | `The request body has a time that is not RFC 3339 (such as 2026-10-01T09:00:00Z): "tomorrow".` |
+| 文本字段包含 NUL 字符 | `Field "<name>" contains a NUL character, which is not supported.` |
+| 缺少必填字段或值超出范围 | `The request body is missing or has invalid fields: "to" is required; ...`（最多列出五个字段，其余以数量表示） |
 
-Fields are named by their JSON key, with nested fields as a dotted path (`inner.name`). The `code` is `bad_request` in every case, so branch on `code` and show or log `message`.
+字段以 JSON 键名标识，嵌套字段采用点分路径（`inner.name`）。所有情况下，`code` 均为 `bad_request`，因此应依据 `code` 分支处理，并显示或记录 `message`。
 
-Versioned API routes check every query parameter name and value before the endpoint runs, including endpoints that read filters directly. The legacy `/invitations/lookup` alias applies the same validation. NUL characters, invalid UTF-8 and malformed query encoding return `400` rather than sending unsupported text to the database. For example, `?q=%00` returns `Query parameter "q[0]" contains a NUL character, which is not supported.` Valid Unicode text and properly encoded punctuation remain unchanged.
+带版本的 API 路由在端点运行前检查每个查询参数的名称和值，包括直接读取筛选条件的端点。旧版别名 `/invitations/lookup` 采用相同验证。NUL 字符、无效 UTF-8 和格式错误的查询编码会返回 `400`，而不会将不支持的文本传给数据库。例如，`?q=%00` 返回 `Query parameter "q[0]" contains a NUL character, which is not supported.`。有效 Unicode 文本和正确编码的标点保持不变。
 
-Resource IDs on email, campaign and contact routes must be UUIDs. Email `tags` and campaign `email_tags` and `folders` arrays also require UUID values. Malformed values return `400` with `code: "bad_request"` and a `request_id` before a database write. Valid UUIDs are normalized and repeated relation IDs are deduplicated; workspace ownership checks still apply.
+邮箱、营销活动和联系人路由上的资源 ID 必须为 UUID。邮箱的 `tags` 及营销活动的 `email_tags`、`folders` 数组也要求 UUID 值。格式无效的值会在写入数据库之前返回 `400`，并带有 `code: "bad_request"` 和 `request_id`。有效 UUID 会被规范化，重复关系 ID 会去重；工作区归属检查仍然适用。
 
-**How to fix:**
-- Check that your JSON is valid
-- Verify all required fields are present
-- Ensure field values match expected types
-- Compare the body's shape with the endpoint's reference page: some endpoints take an array, most take an object
+**解决方法：**
+- 检查 JSON 是否有效
+- 确认所有必填字段均已提供
+- 确保字段值符合预期类型
+- 将请求体结构与端点参考页面对照：某些端点接受数组，多数接受对象
 
-**Specific 400 codes:**
+**具体 400 错误码：**
 
-| `code` | Meaning |
+| `code` | 含义 |
 |--------|---------|
-| `invalid_lead_status` | `POST /contacts/search` or `POST /contacts/export` was given a `lead_status` that is not one of the documented values |
-| `invalid_sort_by` | `POST /contacts/search`, `POST /contacts/export` or a bulk action's `all` selection was given a `sort_by` of the form `custom:<key>` whose key could never be a custom-field name (letters, numbers, underscores, spaces or dashes) |
-| `invalid_column`, `duplicate_column`, `too_many_columns`, `invalid_sort` | `PUT /me/views/:view` was given a column id that view cannot render, the same column twice, more than 64 columns, or a sort that names neither a sortable contact column nor a well-formed `custom:<key>` (`unibox_rail` has no columns or sort at all) |
-| `invalid_layout` | `PUT /me/views/:view` was given a `layout` on a view that has none, or a `unibox_rail` layout with an unknown field, an empty or over-long key (200 bytes), more than 500 keys in a list or 32 sections, or a favorite name over 40 characters |
-| `invalid_mail_host` | `POST /contacts/search`, `POST /contacts/export` or a bulk action's `all` selection was given a `mail_hosts` entry that is not a documented provider value |
-| `invalid_engagement` | `POST /contacts/search` or `POST /contacts/export` was given an `engagement` that is not one of the documented values |
-| `lead_filter_requires_campaign` | `lead_status` or `engagement` was set without exactly one `campaign_ids` entry; both filters describe a contact inside one campaign |
-| `unknown_verification_status` | A contact's `verification_status` is not a value any known verification service writes |
-| `unknown_verification_provider` | A contact's `verification_provider` names a vocabulary the platform cannot read |
-| `invalid_action` | `POST /contacts/verification` was given an `action` other than `verify`, `mark_deliverable` or `mark_undeliverable` |
-| `no_contacts` | `POST /contacts/verification` selected no contacts: neither `contacts` nor a `campaign_id` with refused leads |
-| `list_bounce_risk` | `POST /campaigns/:id/start` refused the launch on the list's projected bounce rate. Clean or verify the list, or repeat the request with `acknowledge_list_risk: true` |
-| `leads_undeliverable` | `POST /campaigns/:id/start` found nothing to send because address verification refused every remaining lead; the campaign is parked at `paused_undeliverable` until they are re-verified or marked deliverable |
-| `empty_step_body` | `POST /campaigns/:id/start` found an email step with nothing in either body, so it would send a blank message to every lead it reached. Write the step's body and start again |
-| `no_leads` | `POST /campaigns/:id/start` on a campaign that has never had a lead, with `continuous` off. Add contacts, or set `continuous` so it starts empty and waits for them. A campaign whose leads have all finished is a different case: it starts and waits |
-| `no_remaining_leads` | A platform-initiated restart of a campaign with nothing left to send and `continuous` off found nothing to do; the campaign is `completed` again. A start you request never answers this: it turns `continuous` on and waits |
-| `too_many_tasks` | `PATCH /crm/tasks` or `DELETE /crm/tasks` was given more than `1000` ids in one request, or more than `50,000` exclusions. Split it into batches |
-| `too_many_contacts` | A contact bulk action was given more than `10,000` contact ids in one request, or more than `250,000` exclusions. Split it into batches, or send a filter selection instead of ids |
-| `selection_too_large` | A `"all": true` bulk selection resolved to more than its limit: `250,000` contacts, or `50,000` CRM tasks. Narrow the filter and run it in parts; nothing was changed |
-| `invalid_filter` | A task filter carried an id that is not one: `assigned_to`, `contact_id` and `deal_id` name records, and are matched against id columns. Sent by `POST /crm/tasks/search`, `POST /crm/tasks/summary`, and the `filters` of a `"all": true` bulk selection |
-| `invalid_setting` | `PATCH /outreach/settings` (or a campaign's advanced settings) carried a value outside the documented vocabulary, for example a `reply_intent.crm_task_intents` entry that is not a reply intent, or an `inbox_tagging.questions` entry with no question text, a label that is missing, repeated or built in, or a choice question with fewer than two options, or an `inbox_tagging.languages` entry that is not a supported language code |
-| `invalid_slug` | `PATCH /organization/current` was given a `slug` that is not 2 to 80 lowercase letters, numbers or dashes starting and ending with a letter or number |
-| `invalid_sync_folder` | `PUT /emails/:id/sync` was given a folder the sync always follows (`INBOX`, or a sent, drafts, spam, trash or archive folder by attribute or name), a name that is empty after trimming, longer than 255 characters or carrying a control character, more than 50 names, or a mailbox that is not IMAP. The `message` names the entry refused |
-| `no_organization` | The request needs a workspace and the caller has none selected. Every entitlement, limit and suppression rule is scoped to a workspace, so a write that would run unscoped is refused rather than run without those checks. API keys always carry their workspace; a dashboard session picks one at sign-in, so this normally means the session predates the workspace being chosen. Select a workspace and retry |
-| `lead_cc_limit` | [Set a lead's CC](/api/reference/campaigns/#set-a-leads-cc) was given more than `2` contacts |
-| `lead_cc_self` | [Set a lead's CC](/api/reference/campaigns/#set-a-leads-cc) named the lead itself as a copy |
-| `invalid_recipient` | `POST /emails/:id/send`, `POST /unibox/reply` or `POST /unibox/compose` was given a `to`, `cc` or `bcc` entry that is not exactly one email address (`ana@example.com` or `Ana <ana@example.com>`), or no `to` address at all. Put each address in its own entry |
-| `recipient_suppressed` | `POST /emails/:id/send`, `POST /unibox/reply` or `POST /unibox/compose` named a `to`, `cc` or `bcc` address on the workspace [suppression list](/guides/unsubscribe/#the-suppression-list), directly or through its domain. The `message` names the address and the entry. Nothing was queued. A forward (`POST /unibox/reply` with `forward_message_id`) is not checked against the list |
-| `invalid_message_id` | `POST /emails/:id/send` or `POST /unibox/reply` was given an `in_reply_to` entry that is not one Message-ID: printable characters with no spaces or line breaks, with or without the surrounding `<` and `>` |
+| `invalid_lead_status` | `POST /contacts/search` 或 `POST /contacts/export` 收到的 `lead_status` 不属于文档列出的值 |
+| `invalid_sort_by` | `POST /contacts/search`、`POST /contacts/export` 或批量操作的 `all` 选择收到形如 `custom:<key>` 的 `sort_by`，但其中的键不可能是有效自定义字段名（仅允许字母、数字、下划线、空格或连字符） |
+| `invalid_column`, `duplicate_column`, `too_many_columns`, `invalid_sort` | `PUT /me/views/:view` 收到该视图无法显示的列 ID、重复列、超过 64 列，或排序字段既不是可排序联系人列，也不是格式正确的 `custom:<key>`（`unibox_rail` 完全不支持列或排序） |
+| `invalid_layout` | `PUT /me/views/:view` 为不支持布局的视图提供了 `layout`，或提供的 `unibox_rail` 布局包含未知字段、空键或过长键（200 字节）、列表超过 500 个键或超过 32 个分区，或收藏名称超过 40 个字符 |
+| `invalid_mail_host` | `POST /contacts/search`、`POST /contacts/export` 或批量操作的 `all` 选择收到的 `mail_hosts` 项不属于文档列出的服务商值 |
+| `invalid_engagement` | `POST /contacts/search` 或 `POST /contacts/export` 收到的 `engagement` 不属于文档列出的值 |
+| `lead_filter_requires_campaign` | 设置了 `lead_status` 或 `engagement`，但 `campaign_ids` 未恰好包含一项；这两个筛选条件均描述联系人在单个营销活动中的情况 |
+| `unknown_verification_status` | 联系人的 `verification_status` 不是任何已知验证服务使用的值 |
+| `unknown_verification_provider` | 联系人的 `verification_provider` 指定了平台无法识别的服务商状态词 |
+| `invalid_action` | `POST /contacts/verification` 收到的 `action` 不是 `verify`、`mark_deliverable` 或 `mark_undeliverable` |
+| `no_contacts` | `POST /contacts/verification` 未选中联系人：既没有 `contacts`，也没有包含验证遭拒潜在客户的 `campaign_id` |
+| `list_bounce_risk` | `POST /campaigns/:id/start` 根据名单的预估退信率拒绝启动。请清理或验证名单，或以 `acknowledge_list_risk: true` 重试请求 |
+| `leads_undeliverable` | `POST /campaigns/:id/start` 因地址验证拒绝了所有剩余潜在客户而无内容可发；营销活动停留在 `paused_undeliverable`，直到重新验证或将其标记为可投递 |
+| `empty_step_body` | `POST /campaigns/:id/start` 发现某个邮件步骤的两种正文均为空，若继续将向触达的每位潜在客户发送空白邮件。请编写步骤正文后重新启动 |
+| `no_leads` | 对从未有过潜在客户且 `continuous` 关闭的营销活动调用 `POST /campaigns/:id/start`。请添加联系人，或设置 `continuous`，使其可空启动并等待联系人。所有潜在客户均已完成的活动则不同：它会启动并等待 |
+| `no_remaining_leads` | 平台发起重启时，营销活动无内容可发且 `continuous` 关闭，因此无工作可做，活动再次成为 `completed`。您主动请求的启动绝不会返回此错误：它会开启 `continuous` 并等待 |
+| `too_many_tasks` | `PATCH /crm/tasks` 或 `DELETE /crm/tasks` 单次请求收到超过 `1000` 个 ID，或超过 `50,000` 个排除项。请分批处理 |
+| `too_many_contacts` | 联系人批量操作单次请求收到超过 `10,000` 个联系人 ID，或超过 `250,000` 个排除项。请分批处理，或改用筛选选择而非 ID |
+| `selection_too_large` | `"all": true` 批量选择的结果超过上限：`250,000` 位联系人，或 `50,000` 个 CRM 任务。请缩小筛选范围并分批运行；未作任何更改 |
+| `invalid_filter` | 任务筛选条件携带了无效 ID：`assigned_to`、`contact_id` 和 `deal_id` 指向记录，并与 ID 列匹配。由 `POST /crm/tasks/search`、`POST /crm/tasks/summary` 及 `"all": true` 批量选择的 `filters` 提交 |
+| `invalid_setting` | `PATCH /outreach/settings`（或营销活动高级设置）包含文档规定范围之外的值，例如 `reply_intent.crm_task_intents` 中有非回复意图的项，或 `inbox_tagging.questions` 中存在无问题文本、标签缺失/重复/为内置标签、选择题少于两个选项的项，或 `inbox_tagging.languages` 中含不支持的语言代码 |
+| `invalid_slug` | `PATCH /organization/current` 收到的 `slug` 不符合规则：2 至 80 个小写字母、数字或连字符，并以字母或数字开头和结尾 |
+| `invalid_sync_folder` | `PUT /emails/:id/sync` 收到同步始终跟随的文件夹（`INBOX`，或按属性/名称识别的已发送、草稿、垃圾邮件、垃圾箱或归档文件夹）、去除首尾空白后为空、超过 255 个字符或含控制字符的名称、超过 50 个名称，或非 IMAP 邮箱。`message` 指出被拒绝的条目 |
+| `no_organization` | 请求需要工作区，但调用者尚未选择。所有权益、限制及禁止发送规则均以工作区为范围，因此可能在无范围状态下执行的写入会被拒绝，而不会跳过检查。API 密钥始终携带工作区；控制台会话在登录时选择工作区，因此这通常表示会话早于工作区选择。请选择工作区后重试 |
+| `lead_cc_limit` | [设置潜在客户的抄送对象](/api/reference/campaigns/#set-a-leads-cc) 收到超过 `2` 位联系人 |
+| `lead_cc_self` | [设置潜在客户的抄送对象](/api/reference/campaigns/#set-a-leads-cc) 将潜在客户本人指定为抄送对象 |
+| `invalid_recipient` | `POST /emails/:id/send`、`POST /unibox/reply` 或 `POST /unibox/compose` 中某个 `to`、`cc` 或 `bcc` 项并非恰好一个邮箱地址（`ana@example.com` 或 `Ana <ana@example.com>`），或完全没有 `to` 地址。请将每个地址分别放在独立项中 |
+| `recipient_suppressed` | `POST /emails/:id/send`、`POST /unibox/reply` 或 `POST /unibox/compose` 指定的某个 `to`、`cc` 或 `bcc` 地址，直接或因其域名而位于工作区 [禁止发送名单](/guides/unsubscribe/#the-suppression-list) 中。`message` 指出地址和对应条目。没有任务入队。转发（带有 `forward_message_id` 的 `POST /unibox/reply`）不检查该名单 |
+| `invalid_message_id` | `POST /emails/:id/send` 或 `POST /unibox/reply` 收到的 `in_reply_to` 项并非单个 Message-ID：应为无空格和换行的可打印字符，可带或不带外围 `<` 和 `>` |
 
-#### Password refusals
+#### 密码被拒绝的情况 [#password-refusals]
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `password_breached` | 400 | The password appears in a public list of breached passwords and was refused. Choose one that does not |
-| `sso_link_expired` | 400 | The pending token from a `link_required` sign-in is unknown, expired (ten minutes), already used, or has had three wrong passwords. Start the provider sign-in again |
+| `password_breached` | 400 | 密码出现在公开泄露密码名单中，因此遭拒。请换用不在名单中的密码 |
+| `sso_link_expired` | 400 | `link_required` 登录返回的待处理令牌未知、已过期（十分钟）、已使用，或已经输入三次错误密码。请重新发起服务商登录 |
 
-A password must be 8 to 128 characters. There is no composition rule, but it is checked against the 100,000 most commonly breached passwords published by the UK National Cyber Security Centre, case-insensitively.
+密码须为 8 至 128 个字符。不要求特定字符组合，但会不区分大小写地与英国国家网络安全中心发布的 100,000 个最常泄露密码比对。
 
 ```json
 {
@@ -156,17 +156,17 @@ A password must be 8 to 128 characters. There is no composition rule, but it is 
 }
 ```
 
-#### App Attest refusals
+#### App Attest 验证被拒绝的情况 [#app-attest-refusals]
 
-The native app proves itself with [App Attest](/api/reference/account-org/#app-attest-native-apps) in place of the captcha on sign-in, registration and password reset.
+原生应用在登录、注册和密码重置时通过 [App Attest](/api/reference/account-org/#app-attest-native-apps) 证明自身身份，以替代验证码。
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `app_attest_failed` | 400 | The proof did not verify: the challenge expired or was already used, the proof came from another app or from a development build the server does not accept, the assertion's counter did not advance, the key id was already registered, or the object was malformed. Fetch a fresh challenge and make a new proof; if it keeps failing, update the app |
-| `app_attest_key_unknown` | 400 | The `key_id` was never registered on this server. Register the key again with `POST /auth/app-attest/keys`, then retry the call |
-| `app_attest_unavailable` | 404 | `POST /auth/app-attest/challenge` or `/keys` on an instance with App Attest off. When `GET /auth/config` reports a captcha without `app_attest`, email and password sign-in is unavailable in the app; Sign in with Apple, Google and passkeys still work |
+| `app_attest_failed` | 400 | 证明未通过验证：质询过期或已使用、证明来自其他应用或服务端不接受的开发版本、断言计数器未递增、密钥 ID 已注册，或对象格式无效。请获取新质询并生成新证明；若持续失败，请更新应用 |
+| `app_attest_key_unknown` | 400 | `key_id` 从未在此服务器注册。请通过 `POST /auth/app-attest/keys` 重新注册密钥，然后重试调用 |
+| `app_attest_unavailable` | 404 | 在关闭 App Attest 的实例上调用 `POST /auth/app-attest/challenge` 或 `/keys`。当 `GET /auth/config` 报告需要验证码但没有 `app_attest` 时，应用内无法使用邮箱和密码登录；“通过 Apple 登录”、Google 登录和通行密钥仍可使用 |
 
-Each registered key may make 30 protected calls per hour. Past that the call answers `400` with code `bad_request` and the message `Too many attempts, please try again later.`, the same answer as the other sign-in attempt budgets.
+每个已注册密钥每小时最多执行 30 次受保护调用。超过后返回 `400`，错误码为 `bad_request`，消息为 `Too many attempts, please try again later.`，与其他登录尝试额度的响应相同。
 
 ```json
 {
@@ -177,42 +177,42 @@ Each registered key may make 30 protected calls per hour. Past that the call ans
 }
 ```
 
-#### Cloud connection refusals
+#### Cloud 连接被拒绝的情况 [#cloud-connection-refusals]
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `cloud_link_workspace_required` | 409 | Disconnecting a shared server connection requires explicit confirmation of the server-wide scope; it affects all local workspaces using that connection |
-| `pool_link_workspace_required` | 409 | Cloud refused a new connection request without local workspace scope. Update the self-hosted instance before creating a new connection; existing connections can still enroll mailboxes and start placement tests |
-| `pool_link_workspace_connected` | 409 | The Cloud workspace already has an active self-hosted connection, including a legacy link. Use another Cloud workspace and plan, or disconnect the existing link first |
-| `cloud_link_upgrade_required` | 409 | This Cloud deployment does not support workspace-scoped connections. Upgrade Cloud first |
-| `organization_cloud_connected` | 409 | Disconnect the workspace's Cloud connection before deleting it or scheduling deletion of it or its owner account |
+| `cloud_link_workspace_required` | 409 | 断开共用服务器连接需要显式确认服务器全局范围；会影响使用该连接的所有本地工作区 |
+| `pool_link_workspace_required` | 409 | Cloud 拒绝缺少本地工作区范围的新连接请求。请先更新自托管实例，再创建新连接；现有连接仍可加入邮箱并启动投递位置测试 |
+| `pool_link_workspace_connected` | 409 | Cloud 工作区已有活跃的自托管连接，旧版关联也计入。请使用其他 Cloud 工作区和套餐，或先断开现有连接 |
+| `cloud_link_upgrade_required` | 409 | 此 Cloud 部署不支持工作区范围连接。请先升级 Cloud |
+| `organization_cloud_connected` | 409 | 删除工作区、计划删除工作区或其所有者账户之前，请先断开工作区的 Cloud 连接 |
 
-#### Warmbly Cloud warmup refusals
+#### Warmbly Cloud 预热被拒绝的情况 [#warmbly-cloud-warmup-refusals]
 
-A mailbox warmed by Warmbly Cloud has its warmup settings changed through the cloud (see [warmup settings](/guides/warmbly-cloud/#warmup-settings)). `PATCH /emails/:id` and the warmup start, pause and resume routes answer with these when that cannot happen. In every case the rest of the patch is not applied on the instance. After `cloud_warmup_not_applied`, the mailbox's copy of its Warmbly Cloud settings is still refreshed to what Warmbly Cloud reported. A replay with the same `Idempotency-Key` returns the stored answer, so retry with a new key.
+由 Warmbly Cloud 预热的邮箱必须通过云端更改预热设置（参见 [预热设置](/guides/warmbly-cloud/#warmup-settings)）。无法执行时，`PATCH /emails/:id` 及预热启动、暂停和恢复路由会返回以下错误。所有情况下，实例均不会应用此次更新的其余部分。在 `cloud_warmup_not_applied` 之后，邮箱本地保存的 Warmbly Cloud 设置仍会刷新为 Cloud 报告的值。使用相同 `Idempotency-Key` 重放会返回已保存响应，因此请使用新键重试。
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `cloud_warmup_value_unsupported` | 422 | Warmbly Cloud does not take 0 from an instance for the starting volume, maximum, daily increase or reply rate. Use 1 or more, or change it in Warmbly Cloud |
-| `cloud_warmup_not_applied` | 409 | Warmbly Cloud answered but did not apply the named settings. The mailbox now shows the values Warmbly Cloud reported |
-| `cloud_warmup_managed` | 409 | Participation, the shared daily and recipient limits, and stopping warmup are changed with the mailbox's Warmbly Cloud controls, not on the mailbox |
-| `cloud_link_disconnecting` | 409 | The workspace is disconnecting from Warmbly Cloud. Retry once it has finished |
-| `cloud_link_unreachable` | 503 | Warmbly Cloud could not be reached |
-| `cloud_link_bad_response` | 503 | Warmbly Cloud answered without the mailbox's warmup settings |
+| `cloud_warmup_value_unsupported` | 422 | Warmbly Cloud 不接受实例将起始量、最大量、每日递增量或回复率设为 0。请使用 1 或更大的值，或在 Warmbly Cloud 中更改 |
+| `cloud_warmup_not_applied` | 409 | Warmbly Cloud 已响应，但未应用指定设置。邮箱现在显示 Warmbly Cloud 报告的值 |
+| `cloud_warmup_managed` | 409 | 参与状态、共用每日及收件人数限制，以及停止预热，需通过邮箱的 Warmbly Cloud 控制项更改，不能直接在邮箱设置中更改 |
+| `cloud_link_disconnecting` | 409 | 工作区正在断开 Warmbly Cloud。完成后重试 |
+| `cloud_link_unreachable` | 503 | 无法连接 Warmbly Cloud |
+| `cloud_link_bad_response` | 503 | Warmbly Cloud 已响应，但未包含邮箱预热设置 |
 
-#### Name refusals
+#### 名称被拒绝的情况 [#name-refusals]
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `invalid_name` | 400 | A first name, last name, workspace name, company name, OAuth app name or mailbox display name broke the naming rules. The `message` names the field and the rule |
+| `invalid_name` | 400 | 名、姓、工作区名称、公司名称、OAuth 应用名称或邮箱显示名称违反命名规则。`message` 指出字段及规则 |
 
-Names are shown to other people, including in invitation and notification emails, so they carry plain text only. The same rules apply to the dashboard, the API, the setup page and `warmblyctl`:
+名称会显示给其他人，包括出现在邀请和通知邮件中，因此仅允许纯文本。控制台、API、设置页面及 `warmblyctl` 采用相同规则：
 
-- a first or last name is at most 50 characters and contains a letter; a workspace or company name is at most 64 characters and contains a letter or a number; a mailbox display name keeps its own 2 to 100 character bound
-- no links, web addresses or email addresses: nothing with `@`, `//`, `www.` or a scheme such as `https:`, no hostname such as `example.com`, and no IP address. Full-width and ideographic dots count as dots
-- no control characters, invisible formatting characters (zero-width and bidirectional overrides), `<`, `>`, `` ` `` or `\`, and no more than three stacked combining marks
-- leading and trailing spaces are trimmed and runs of spaces become one, and that is the form stored
-- an OAuth app name cannot include Warmbly, spaced out or spelled with look-alike characters included. An app that already had such a name keeps it until the name is changed
+- 名或姓最多 50 个字符，且包含字母；工作区或公司名称最多 64 个字符，且包含字母或数字；邮箱显示名称仍采用自身的 2 至 100 个字符限制
+- 不得包含链接、网址或邮箱地址：不得含有 `@`、`//`、`www.` 或 `https:` 等协议前缀，也不得含有 `example.com` 这样的主机名或 IP 地址。全角点和中文句号也按点处理
+- 不得包含控制字符、不可见格式字符（零宽字符和双向覆盖字符）、`<`、`>`、`` ` `` 或 `\`，也不得叠加超过三个组合附加符号
+- 去除首尾空格，连续空格合并为一个，并以此规范化形式保存
+- OAuth 应用名称不得包含 Warmbly，包括插入空格或使用相似字符的写法。已有此类名称的应用在名称更改前保留原名
 
 ```json
 {
@@ -223,22 +223,22 @@ Names are shown to other people, including in invitation and notification emails
 }
 ```
 
-A name from Google, Apple or a single sign-on provider that breaks these rules is dropped rather than refusing the sign-in, and you are asked for it during onboarding.
+来自 Google、Apple 或单点登录服务商的名称若违反规则，会被丢弃而不会拒绝登录，并在接入流程中要求重新填写。
 
-#### Mailbox import refusals
+#### 邮箱导入被拒绝的情况 [#mailbox-import-refusals]
 
-The [mailbox import](/guides/mailbox-import/) routes (`/emails/imports`) answer these. A row that fails to connect is not an HTTP error: the import carries it, with its reason in the row's `cause` (listed in [the guide](/guides/mailbox-import/#when-rows-fail)).
+[邮箱导入](/guides/mailbox-import/) 路由（`/emails/imports`）返回这些错误。某行连接失败不是 HTTP 错误：导入对象会记录该行，原因位于其 `cause`（参见 [指南](/guides/mailbox-import/#when-rows-fail)）。
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `mailbox_import_empty` | 400 | No file and no pasted text, or an input with no rows, or a header row and nothing under it |
-| `mailbox_import_too_large` | 400 | More than 5,000 mailboxes, a file over 10 MB, a pasted list over 2 MB, or a body that is not multipart form data. Split the file and import the rest separately |
-| `mailbox_import_no_email_column` | 400 | `POST /emails/imports` with a mapping in which no column is `email` |
-| `mailbox_import_row_incomplete` | 400 | `PATCH /emails/imports/:id/rows/:line` left the row without an SMTP and IMAP server or without a password. The `message` says which |
-| `invalid_cursor` | 400 | `GET /emails/imports` or `GET /emails/imports/:id/rows` was given a `cursor` this API did not issue. Start again without one |
-| `mailbox_import_row_not_failed` | 409 | Only a row that did not connect can be fixed; this one is queued, running, connected, updated, skipped, cancelled or waiting for sign-in |
-| `mailbox_import_credentials_expired` | 409 | The row's credentials were deleted 7 days after the import finished, so it cannot be retried. Import it again |
-| `mailbox_import_nothing_to_retry` | 409 | `POST /emails/imports/:id/retry` matched no failed row that still holds its credentials |
+| `mailbox_import_empty` | 400 | 未提供文件或粘贴文本，输入没有行，或只有标题行而无数据 |
+| `mailbox_import_too_large` | 400 | 邮箱超过 5,000 个、文件超过 10 MB、粘贴列表超过 2 MB，或请求体不是 multipart 表单数据。请拆分文件，分别导入其余部分 |
+| `mailbox_import_no_email_column` | 400 | `POST /emails/imports` 的映射中没有任何列为 `email` |
+| `mailbox_import_row_incomplete` | 400 | `PATCH /emails/imports/:id/rows/:line` 使该行缺少 SMTP 和 IMAP 服务器或密码。`message` 会指出具体缺项 |
+| `invalid_cursor` | 400 | `GET /emails/imports` 或 `GET /emails/imports/:id/rows` 收到非此 API 签发的 `cursor`。请不带游标重新开始 |
+| `mailbox_import_row_not_failed` | 409 | 仅连接失败的行可以修正；此行正在排队、运行，或已连接、已更新、已跳过、已取消，或正在等待登录 |
+| `mailbox_import_credentials_expired` | 409 | 导入完成 7 天后，该行凭据已删除，无法重试。请重新导入 |
+| `mailbox_import_nothing_to_retry` | 409 | `POST /emails/imports/:id/retry` 未匹配到仍保留凭据的失败行 |
 
 ```json
 {
@@ -249,50 +249,50 @@ The [mailbox import](/guides/mailbox-import/) routes (`/emails/imports`) answer 
 }
 ```
 
-#### Mailbox source refusals
+#### 邮箱来源被拒绝的情况 [#mailbox-source-refusals]
 
-The [inbox vendor](/guides/mailbox-import/#import-from-an-inbox-vendor) routes (`/emails/vendors`), the [admin grant](/guides/mailbox-import/#connect-a-whole-google-workspace-domain) routes (`/emails/grants`) and the [sending domain](/guides/sending-domains/) routes (`/emails/domains`) answer these. Inside an import, the vendor and grant failures land on the row instead, as its `cause` (see [the guide](/guides/mailbox-import/#when-rows-fail)).
+[邮箱供应商](/guides/mailbox-import/#import-from-an-inbox-vendor) 路由（`/emails/vendors`）、[管理员授权](/guides/mailbox-import/#connect-a-whole-google-workspace-domain) 路由（`/emails/grants`）和 [发件域名](/guides/sending-domains/) 路由（`/emails/domains`）返回这些错误。在导入内部，供应商和授权失败改为记录在行的 `cause` 中（参见 [指南](/guides/mailbox-import/#when-rows-fail)）。
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `mailbox_vendor_unauthorized` | 400 | The vendor did not accept the API key. A saved connection is marked invalid until the key is updated |
-| `mailbox_vendor_no_workspace` | 400 | The key is accepted but the vendor lists no workspace or organization for it, so there is nothing to read. Create one at the vendor, then connect again |
-| `mailbox_vendor_invalid_fields` | 400 | A field the vendor requires is empty, or a field holds control characters. `GET /emails/vendors/catalog` lists each vendor's fields |
-| `mailbox_vendor_unknown` | 400 | `vendor` is not one of the supported vendors |
-| `mailbox_vendor_rate_limited` | 429 | The vendor is rate limiting Warmbly's requests. Try again in a minute |
-| `mailbox_vendor_unavailable` | 400 | The vendor answered with something unexpected, did not answer, or no longer has the mailbox. Try again shortly |
-| `mailbox_grant_not_configured` | 400 | This instance has no Google service account or no Microsoft app for admin grants. An operator sets them up; see [configuration](/development/configuration/#whole-domain-connects). `GET /emails/grants/config` names the settings still unset in `google_missing` and `microsoft_missing` |
-| `google_delegation_unauthorized` | 400 | Google refused the domain-wide delegation, or accepted it and refused the call: the client ID or a scope is missing from the Admin console entry, an OAuth client ID was entered instead of the service account's numeric one, or the admin address is not a super administrator. Admin console changes can take a few minutes to apply. See [when Google refuses](/development/whole-domain-connect/#when-google-refuses) |
-| `microsoft_consent_missing` | 400 | The Microsoft 365 organization has not granted admin consent, does not exist, or the consent lacks `Mail.ReadWrite`, `Mail.Send` or `User.Read.All`; or the consent sign-in did not complete or name the organization. A Global Administrator connects it again, and again after the app's permissions change. See [when Microsoft refuses](/development/whole-domain-connect/#when-microsoft-refuses) |
-| `mailbox_grant_state_invalid` | 400 | The Google sign-in or Microsoft consent `state` expired (15 minutes), was already used, or was started by another member or workspace, or Google did not accept the sign-in. Start again |
-| `mailbox_grant_proof_missing` | 400 | The workspace has not proved it controls the Google Workspace domain: the `_warmbly.<domain>` `TXT` record does not hold this workspace's `warmbly-verify=` value yet, or the Google sign-in was not the admin address entered on that domain. Also returned when the directory does not list the admin address as a super administrator, and for a Microsoft 365 consent signed in by someone without the Global Administrator or Privileged Role Administrator role. Publish the record (DNS can take a while to appear) or sign in as that administrator, then finish again |
-| `mailbox_grant_unavailable` | 503 | Google, Microsoft or the DNS lookup for the proof did not answer. Nothing was recorded or changed, and a grant's status is left as it was. Try again in a minute |
-| `mailbox_grant_domain_mismatch` | 400 | The admin address is not on the domain entered, or the mailbox is on a domain the grant does not cover |
-| `mailbox_grant_mailbox_unreachable` | 400 | Google or Microsoft has no mailbox for the account: it does not exist, is suspended or disabled, or has no Exchange Online license |
-| `mailbox_grant_inactive` | 400 | The grant failed its last check, so it connects nothing. Check the grant (`POST /emails/grants/:id/check`), then retry |
-| `mailbox_vendor_domain_not_found` | 404 | `PUT /emails/domains/:domain/vendor-forwarding` or `POST /emails/domains/:domain/vendor-tracking` on a domain none of the workspace's active vendor accounts holds |
-| `mailbox_vendor_domain_unsupported` | 400 | The vendor holding the domain cannot do this through its API: it has no forwarding removal, writes no DNS records for Warmbly, or the existing record is one the vendor manages itself. See [domains held by an inbox vendor](/guides/sending-domains/#domains-held-by-an-inbox-vendor) |
-| `mailbox_reauth_delegated` | 409 | `POST /emails/onboarding/oauth/reauth/:id` on a mailbox connected through an admin grant. It has no sign-in of its own to renew; check its grant instead, from **Add account > Google or Microsoft > Whole domain** or with `POST /emails/grants/:id/check` |
-| `sending_domain_not_in_workspace` | 404 | The workspace has no mailbox on this domain. Also `400` when no domain was given |
-| `sending_domain_shared_provider` | 400 | The domain belongs to a shared email provider, such as `gmail.com`, and cannot be redirected |
-| `domain_redirect_invalid_target` | 400 | `target_url` (or a vendor forwarding `url`) is not an `http` or `https` address on a host, carries credentials, is longer than 2,048 characters, or points back at the same domain or its `www`. An import's `redirects` option answers the same. Also returned by `vendor-tracking` when `host` is not a subdomain of the domain |
-| `domain_redirect_taken` | 409 | Another workspace on this instance already serves a verified redirect for this domain, or already has Warmbly Cloud serve it. The redirect is saved but does not verify. On Warmbly Cloud's linked-instance API, the linked workspace already has its own redirect for the domain |
-| `domain_redirect_linked` | 409 | On Warmbly Cloud: this domain's redirect is served for a linked self-hosted instance, and only that instance changes it |
-| `domain_redirect_cloud_unavailable` | 409 | `served_by` is `cloud`, but this instance is not linked to Warmbly Cloud, or Cloud does not serve redirects for it |
-| `domain_redirect_cloud_unreachable` | 503 | Warmbly Cloud could not be reached while saving, moving or removing a redirect it serves, so nothing changed. Retry |
-| `domain_redirect_limit` | 409 | Warmbly Cloud already serves 200 redirects for this linked instance |
-| `pool_link_redirect_not_found` | 404 | On Warmbly Cloud's linked-instance API: Cloud serves no redirect for this domain for the calling instance |
-| `pool_link_cleartext_mailbox` | 422 | Enrolling a mailbox in [Warmbly Cloud](/guides/warmbly-cloud/), or updating its credential there: SMTP or IMAP uses security `none`. Cloud reaches the mail server over the internet and needs TLS or STARTTLS on both legs. Switch the mailbox to TLS, or keep warming it on the instance |
-| `pool_link_mailbox_conflict` | 409 | Enrollment found the address already connected in the linked Cloud workspace and could not attach it. Cloud attaches an existing copy only when it is an active SMTP/IMAP mailbox, the server presents exactly the credentials Cloud holds for it, no active Cloud campaign sends from it and no other server has enrolled it. Nothing is attached by address alone. Contact Warmbly support to check the exact instance and mailbox IDs; do not delete or re-enroll the mailbox |
-| `pool_link_instance_url` | 422 | Starting a Google or Microsoft sign-in through [Warmbly Cloud](/guides/warmbly-cloud/#google-and-microsoft-mailboxes-sign-in-through-warmbly-cloud) from an instance that registered no address of its own when it was linked, so Cloud has nowhere to return the sign-in to. Set `APP_URL` on the instance, disconnect it and link it again |
-| `pool_link_return_url` | 400 | The same sign-in named a return address that is not on the instance's registered address (same scheme and host) |
-| `pool_link_oauth_browser` | 400 | The brokered sign-in was not continued from the Warmbly Cloud page that started it, or returned to a different browser. Nothing was connected. Start again from the instance |
-| `cloud_link_managed_protocol` | 409 | Cloud does not advertise durable managed-consent protocol 1. Upgrade all Cloud control-plane replicas before opening a new managed connection or adoption. Existing mailboxes are unchanged |
-| `pool_link_oauth_unknown` | 409 | The provider exchange has no confirmed committed mailbox. Do not retry the authorization code or infer success; remove the pending connection before starting new explicit consent |
-| `cli_auth_scopes_role` | 403 | Approving a [CLI sign-in](/api/cli/#scopes): your role in the chosen workspace allows none of the scopes the CLI asked for. Pick another workspace, or ask for narrower scopes with `--scopes` |
-| `sending_domain_bulk_invalid` | 400 | A bulk setup named no domain, more than 100, neither a `tracking_label` nor a `redirect_url`, a `tracking_label` that is not one DNS label, or a `served_by` other than `instance` or `cloud` |
-| `tracking_domain_taken` | 409 | Another workspace on this instance has already verified this tracking domain, on a mailbox or as a campaign's override. Returned when saving or verifying a mailbox's tracking domain, applying one to a sending domain (including bulk setup), and verifying a campaign's override. Nothing changes |
-| `tracking_host_not_configured` | 400 | This instance has no tracking host (`TRACKING_DOMAIN`), so it cannot serve a tracking domain or a redirect |
+| `mailbox_vendor_unauthorized` | 400 | 供应商不接受该 API 密钥。已保存连接会标记为无效，直到更新密钥 |
+| `mailbox_vendor_no_workspace` | 400 | 密钥已被接受，但供应商未为其列出工作区或组织，因此无内容可读。请在供应商处创建后重新连接 |
+| `mailbox_vendor_invalid_fields` | 400 | 供应商必填字段为空，或字段含控制字符。`GET /emails/vendors/catalog` 列出各供应商字段 |
+| `mailbox_vendor_unknown` | 400 | `vendor` 不是受支持的供应商 |
+| `mailbox_vendor_rate_limited` | 429 | 供应商正在限制 Warmbly 请求速率。请一分钟后重试 |
+| `mailbox_vendor_unavailable` | 400 | 供应商返回未预期内容、没有响应，或已不再持有该邮箱。请稍后重试 |
+| `mailbox_grant_not_configured` | 400 | 此实例未配置用于管理员授权的 Google 服务账户或 Microsoft 应用。需由运维人员设置；参见 [配置](/development/configuration/#whole-domain-connects)。`GET /emails/grants/config` 在 `google_missing` 和 `microsoft_missing` 中列出尚未配置的设置名称 |
+| `google_delegation_unauthorized` | 400 | Google 拒绝全域委派，或接受委派但拒绝调用：管理控制台条目缺少客户端 ID 或某个权限范围、误填了 OAuth 客户端 ID 而非服务账户的数字 ID，或管理员地址不是超级管理员。管理控制台的更改可能需要几分钟生效。参见 [Google 拒绝时](/development/whole-domain-connect/#when-google-refuses) |
+| `microsoft_consent_missing` | 400 | Microsoft 365 组织未授予管理员同意、组织不存在，或同意缺少 `Mail.ReadWrite`、`Mail.Send` 或 `User.Read.All`；也可能同意登录未完成或未指明组织。需要全局管理员重新连接，应用权限变化后也需重新同意。参见 [Microsoft 拒绝时](/development/whole-domain-connect/#when-microsoft-refuses) |
+| `mailbox_grant_state_invalid` | 400 | Google 登录或 Microsoft 同意的 `state` 已过期（15 分钟）、已使用、由其他成员或工作区发起，或 Google 未接受此次登录。请重新开始 |
+| `mailbox_grant_proof_missing` | 400 | 工作区尚未证明控制 Google Workspace 域名：`_warmbly.<domain>` 的 `TXT` 记录尚未包含本工作区的 `warmbly-verify=` 值，或 Google 登录身份不是该域名上填写的管理员地址。目录未将管理员地址列为超级管理员时，以及 Microsoft 365 同意由不具备全局管理员或特权角色管理员角色的用户登录时，也返回此错误。请发布记录（DNS 生效可能需要时间），或以该管理员登录，然后再次完成验证 |
+| `mailbox_grant_unavailable` | 503 | Google、Microsoft 或证明所需的 DNS 查询没有响应。未记录或更改任何内容，授权状态保持原样。请一分钟后重试 |
+| `mailbox_grant_domain_mismatch` | 400 | 管理员地址不属于填写的域名，或邮箱所在域名不在授权覆盖范围内 |
+| `mailbox_grant_mailbox_unreachable` | 400 | Google 或 Microsoft 没有该账户的邮箱：账户不存在、已暂停或禁用，或没有 Exchange Online 许可证 |
+| `mailbox_grant_inactive` | 400 | 授权最近一次检查失败，因此不会连接任何邮箱。请检查授权（`POST /emails/grants/:id/check`），然后重试 |
+| `mailbox_vendor_domain_not_found` | 404 | 对工作区所有活跃供应商账户均未持有的域名调用 `PUT /emails/domains/:domain/vendor-forwarding` 或 `POST /emails/domains/:domain/vendor-tracking` |
+| `mailbox_vendor_domain_unsupported` | 400 | 持有域名的供应商无法通过其 API 执行此操作：不支持移除转发、不为 Warmbly 写入 DNS 记录，或现有记录由供应商自行管理。参见 [邮箱供应商持有的域名](/guides/sending-domains/#domains-held-by-an-inbox-vendor) |
+| `mailbox_reauth_delegated` | 409 | 对通过管理员授权连接的邮箱调用 `POST /emails/onboarding/oauth/reauth/:id`。它没有独立登录可续期；请改为从 **添加账户 > Google 或 Microsoft > 整个域名** 或通过 `POST /emails/grants/:id/check` 检查其授权 |
+| `sending_domain_not_in_workspace` | 404 | 工作区在此域名下没有邮箱。未提供域名时也返回 `400` |
+| `sending_domain_shared_provider` | 400 | 域名属于 `gmail.com` 等公共邮件服务商，无法重定向 |
+| `domain_redirect_invalid_target` | 400 | `target_url`（或供应商转发 `url`）不是主机上的 `http` 或 `https` 地址、携带凭据、超过 2,048 个字符，或指回同一域名或其 `www`。导入的 `redirects` 选项也返回相同错误。`vendor-tracking` 中的 `host` 不是该域名的子域名时，也会返回 |
+| `domain_redirect_taken` | 409 | 本实例上的其他工作区已为该域名提供已验证重定向，或已由 Warmbly Cloud 为其提供服务。重定向会保存，但无法验证。在 Warmbly Cloud 的关联实例 API 上，表示关联工作区已为该域名设置自己的重定向 |
+| `domain_redirect_linked` | 409 | 在 Warmbly Cloud 上：该域名重定向为关联的自托管实例提供服务，只有该实例可以更改 |
+| `domain_redirect_cloud_unavailable` | 409 | `served_by` 为 `cloud`，但此实例未关联 Warmbly Cloud，或 Cloud 不为其提供重定向服务 |
+| `domain_redirect_cloud_unreachable` | 503 | 保存、迁移或移除由 Warmbly Cloud 提供服务的重定向时无法连接 Cloud，因此未作任何更改。请重试 |
+| `domain_redirect_limit` | 409 | Warmbly Cloud 已为此关联实例提供 200 个重定向 |
+| `pool_link_redirect_not_found` | 404 | 在 Warmbly Cloud 的关联实例 API 上：Cloud 未为调用实例提供此域名的重定向 |
+| `pool_link_cleartext_mailbox` | 422 | 将邮箱加入 [Warmbly Cloud](/guides/warmbly-cloud/) 或在其中更新凭据时，SMTP 或 IMAP 的安全设置为 `none`。Cloud 经互联网访问邮件服务器，发送和接收两端均要求 TLS 或 STARTTLS。请将邮箱改为 TLS，或继续在实例本地预热 |
+| `pool_link_mailbox_conflict` | 409 | 加入时发现该地址已连接到关联的 Cloud 工作区，但无法附加。Cloud 仅在以下条件全部满足时附加现有副本：它是活跃的 SMTP/IMAP 邮箱，服务器提供的凭据与 Cloud 保存的完全相同，没有活跃 Cloud 营销活动从该邮箱发送，也没有其他服务器将其加入。绝不只凭地址附加。请联系 Warmbly 支持核查精确的实例和邮箱 ID；不要删除或重新加入邮箱 |
+| `pool_link_instance_url` | 422 | 实例在建立关联时未注册自身地址，却尝试通过 [Warmbly Cloud](/guides/warmbly-cloud/#google-and-microsoft-mailboxes-sign-in-through-warmbly-cloud) 发起 Google 或 Microsoft 登录，导致 Cloud 无法将登录结果返回实例。请在实例设置 `APP_URL`，断开后重新关联 |
+| `pool_link_return_url` | 400 | 同一登录流程指定的返回地址不属于实例已注册地址（要求协议及主机相同） |
+| `pool_link_oauth_browser` | 400 | 代理登录未从发起它的 Warmbly Cloud 页面继续，或返回了不同浏览器。未连接任何邮箱。请从实例重新开始 |
+| `cloud_link_managed_protocol` | 409 | Cloud 未声明支持持久化托管同意协议 1。打开新的托管连接或接管流程前，请升级所有 Cloud 控制平面副本。现有邮箱不受影响 |
+| `pool_link_oauth_unknown` | 409 | 服务商兑换流程没有已确认提交的邮箱。不要重试授权码或推断成功；开始新的显式同意前，请移除待处理连接 |
+| `cli_auth_scopes_role` | 403 | 批准 [CLI 登录](/api/cli/#scopes) 时，您在所选工作区的角色不允许 CLI 请求的任何权限范围。请选择其他工作区，或用 `--scopes` 请求更窄的权限范围 |
+| `sending_domain_bulk_invalid` | 400 | 批量设置未指定域名、超过 100 个域名、既无 `tracking_label` 也无 `redirect_url`、`tracking_label` 不是单个 DNS 标签，或 `served_by` 不是 `instance` 或 `cloud` |
+| `tracking_domain_taken` | 409 | 本实例上的其他工作区已在邮箱或营销活动覆盖设置上验证此跟踪域名。保存或验证邮箱跟踪域名、将其应用到发件域名（包括批量设置），以及验证营销活动覆盖域名时返回。未作任何更改 |
+| `tracking_host_not_configured` | 400 | 此实例没有跟踪主机（`TRACKING_DOMAIN`），因此无法提供跟踪域名或重定向服务 |
 
 ```json
 {
@@ -303,41 +303,41 @@ The [inbox vendor](/guides/mailbox-import/#import-from-an-inbox-vendor) routes (
 }
 ```
 
-#### App password switch refusals
+#### 切换应用专用密码被拒绝的情况 [#app-password-switch-refusals]
 
-`POST /emails/onboarding/app-password/:id` [moves a mailbox off per-mailbox Google sign-in](/guides/mailboxes/#moving-off-per-mailbox-google-sign-in) onto an app password. Besides these, a password Gmail refuses answers with the same codes as an SMTP/IMAP connect, such as [`mailbox_auth_refused`](#mailbox_auth_refused). Nothing is changed on any refusal.
+`POST /emails/onboarding/app-password/:id` 会 [将邮箱从逐邮箱 Google 登录迁移](/guides/mailboxes/#moving-off-per-mailbox-google-sign-in) 至应用密码方式。除以下错误外，Gmail 拒绝密码时会返回与 SMTP/IMAP 连接相同的错误码，例如 [`mailbox_auth_refused`](#mailbox_auth_refused)。任何拒绝均不会更改内容。
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `app_password_invalid` | 400 | `app_password` is not 16 letters once spaces are removed. Create one at myaccount.google.com/apppasswords and send it as Google shows it |
-| `mailbox_not_google_signin` | 409 | The mailbox is not connected with per-mailbox Google sign-in: it is already on an app password or an admin grant, is an Outlook or SMTP/IMAP mailbox, or its sign-in is held by Warmbly Cloud. A repeat of a switch that succeeded answers this |
+| `app_password_invalid` | 400 | 去除空格后，`app_password` 不是 16 个字母。请在 myaccount.google.com/apppasswords 创建，并按 Google 显示的形式提交 |
+| `mailbox_not_google_signin` | 409 | 邮箱并非通过逐邮箱 Google 登录连接：已使用应用密码或管理员授权、属于 Outlook 或 SMTP/IMAP 邮箱，或登录由 Warmbly Cloud 持有。成功切换后重复调用也返回此错误 |
 
-#### Placement test refusals
+#### 投递位置测试被拒绝的情况 [#placement-test-refusals]
 
-The [inbox placement test](/guides/placement-tests/) routes (`/placement/*` and `/campaigns/:id/placement-monitor`) answer these. A refused test sends nothing: every check runs before the first copy is scheduled.
+[收件箱投递位置测试](/guides/placement-tests/) 路由（`/placement/*` 和 `/campaigns/:id/placement-monitor`）返回这些错误。遭拒的测试不会发送任何邮件：所有检查均在安排第一份副本之前执行。
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `placement_not_entitled` | 402 | The workspace has no active trial or subscription, so it cannot start a test. Only the hosted product answers this |
-| `placement_quota_exceeded` | 402 | The workspace has used its free tests for the month on the instance panel, or the linked Warmbly Cloud workspace has used its free tests on Warmbly Cloud's panel. A tracking comparison needs two. On the instance panel of a paid workspace the `message` names the price in credits: send `max_credits` of at least that much to pay it. Monitors and trials cannot pay, and wait for the next month. Tests on the workspace's own seed inboxes are never counted |
-| `placement_too_many_running` | 429 | The workspace already has `3` tests running, counting each half of a tracking comparison. Wait for one to finish |
-| `placement_sender_busy` | 409 | The sending mailbox still has copies of another test waiting to be sent. One test sends from a mailbox at a time |
-| `placement_sender_unavailable` | 409 | The sending mailbox is not connected and active, or it is itself a seed inbox, which receives tests and cannot send one |
-| `placement_daily_budget` | 409 | The mailbox has too little of its daily limit left today for a useful test (at least five seeds per test, ten for a comparison), or for every seed chosen with `seed_ids`. A test that fits otherwise is sized down to what is left rather than refused. The `message` gives both numbers |
-| `placement_no_seeds` | 409 | The panel has no seed inbox the test could use: none were added, none is connected, or every one is on the sender's own domain, which is always skipped |
-| `placement_panel_unavailable` | 409 | `panel` is `cloud` on an instance that is not linked to Warmbly Cloud |
-| `placement_invalid_seeds` | 400 | `seed_ids` names a mailbox that is not a seed inbox of the workspace, or one that is not connected and running right now; the `message` names it |
-| `placement_invalid_tracking` | 400 | `tracking` is `on` or `compare` for a campaign that sends plain text, which carries no tracking |
-| `placement_not_running` | 409 | `POST /placement/tests/:id/cancel` on a test that has already finished or been cancelled |
-| `placement_seed_unavailable` | 409 | The mailbox cannot be marked as a seed inbox: it is on the instance panel, or a placement test is still sending from it |
-| `placement_seed_limit` | 409 | The workspace already has `50` seed inboxes. Unmark one first |
-| `mailbox_is_seed` | 409 | Warmup was started or resumed on a seed inbox. A seed never warms up; unmark it first with `PUT /placement/seeds/:email_account_id` |
-| `placement_batch_empty` | 400 | `POST /placement/batches` resolved to no sending mailbox: the scope, its filters and the sample left nothing |
-| `placement_batch_too_large` | 400 | The batch would hold more mailboxes than the instance allows in one batch (`10,000` by default, an operator setting). The `message` gives both numbers; narrow the selection or take a sample |
-| `placement_too_many_batches` | 429 | The workspace already has `5` batches running. Wait for one to finish, or cancel one |
-| `placement_batch_not_running` | 409 | `POST /placement/batches/:id/cancel` on a batch that has already finished or been cancelled |
+| `placement_not_entitled` | 402 | 工作区没有有效试用或订阅，因此无法启动测试。仅托管产品返回此错误 |
+| `placement_quota_exceeded` | 402 | 工作区已用完本月在实例种子邮箱组上的免费测试，或关联的 Warmbly Cloud 工作区已用完 Cloud 种子邮箱组上的免费测试。跟踪对比需要两次测试。付费工作区的实例种子邮箱组会在 `message` 中说明积分价格：提供至少该数量的 `max_credits` 即可付费执行。监控及试用不能付费，须等待下个月。使用工作区自己的种子收件箱测试从不计入 |
+| `placement_too_many_running` | 429 | 工作区已有 `3` 个测试运行，跟踪对比的每一半分别计数。请等待一个测试完成 |
+| `placement_sender_busy` | 409 | 发件邮箱仍有另一个测试的副本待发送。每个邮箱同一时间只能发送一个测试 |
+| `placement_sender_unavailable` | 409 | 发件邮箱未连接或未激活，或其本身是种子收件箱；种子收件箱用于接收测试，不能发送测试 |
+| `placement_daily_budget` | 409 | 邮箱今天剩余的每日额度不足以完成有意义的测试（每次测试至少五个种子邮箱，对比测试十个），或不足以覆盖 `seed_ids` 指定的所有种子邮箱。若其他条件允许，测试会缩小到剩余额度，而非拒绝。`message` 给出两个数量 |
+| `placement_no_seeds` | 409 | 种子邮箱组没有可供测试使用的收件箱：未添加、均未连接，或所有邮箱都与发件人同域，而同域始终跳过 |
+| `placement_panel_unavailable` | 409 | 未关联 Warmbly Cloud 的实例将 `panel` 设为 `cloud` |
+| `placement_invalid_seeds` | 400 | `seed_ids` 指定的邮箱不是工作区种子收件箱，或当前未连接运行；`message` 会指出该邮箱 |
+| `placement_invalid_tracking` | 400 | 对发送纯文本、无跟踪的营销活动，将 `tracking` 设为 `on` 或 `compare` |
+| `placement_not_running` | 409 | 对已完成或已取消的测试调用 `POST /placement/tests/:id/cancel` |
+| `placement_seed_unavailable` | 409 | 邮箱无法标记为种子收件箱：它属于实例种子邮箱组，或仍有投递位置测试正从该邮箱发送 |
+| `placement_seed_limit` | 409 | 工作区已有 `50` 个种子收件箱。请先取消一个标记 |
+| `mailbox_is_seed` | 409 | 尝试在种子收件箱上启动或恢复预热。种子邮箱从不预热；请先通过 `PUT /placement/seeds/:email_account_id` 取消标记 |
+| `placement_batch_empty` | 400 | `POST /placement/batches` 未解析出任何发件邮箱：范围、筛选及抽样后没有剩余项 |
+| `placement_batch_too_large` | 400 | 批次包含的邮箱数量将超过实例单批上限（默认 `10,000`，由运维配置）。`message` 给出两个数量；请缩小选择范围或抽样 |
+| `placement_too_many_batches` | 429 | 工作区已有 `5` 个批次运行。请等待一个完成，或取消一个 |
+| `placement_batch_not_running` | 409 | 对已完成或已取消的批次调用 `POST /placement/batches/:id/cancel` |
 
-A batch runs every check that applies to the whole batch (the copy, the panel, the tracking, the allowance and the credits agreed) before it is created, and refuses with the codes above. The checks for each mailbox run when its turn comes: a mailbox refused then is deferred or skipped, and its sender row in `GET /placement/batches/:id/senders` carries the code as `reason` with its sentence as `detail`. Besides the single-test codes, a sender row can carry `placement_sender_deleted` (the mailbox was removed from the workspace), `placement_batch_retry_expired` (still unavailable when the seven-day retry window closed), `placement_batch_start_failed` (the test could not be started after several tries) and `placement_batch_copy_unavailable` (the campaign or step being tested was deleted, which skips every mailbox not started yet).
+批次在创建前执行所有适用于整个批次的检查（邮件内容、种子邮箱组、跟踪、额度及同意使用的积分），并以上述错误码拒绝。各邮箱的检查在轮到它时执行：届时遭拒的邮箱会延后或跳过，其在 `GET /placement/batches/:id/senders` 中的发件邮箱行以 `reason` 携带错误码，以 `detail` 携带说明句。除单次测试错误码外，发件邮箱行还可能包含 `placement_sender_deleted`（邮箱已从工作区移除）、`placement_batch_retry_expired`（七天重试窗口结束时仍不可用）、`placement_batch_start_failed`（多次尝试后仍无法启动测试）及 `placement_batch_copy_unavailable`（被测营销活动或步骤已删除，因此跳过所有尚未开始的邮箱）。
 
 ```json
 {
@@ -348,50 +348,50 @@ A batch runs every check that applies to the whole batch (the copy, the panel, t
 }
 ```
 
-A `400` without one of these codes is a malformed request: an unknown `panel` or `tracking`, a `sequence_id` without its `campaign_id`, a missing subject or body on an ad-hoc test, a monitor `interval_days` outside `1` to `30` or an `alert_below` outside `0` to `100`, or on a batch `pace` `quick`, both or neither of `sender_account_ids` and `sender_scope`, an unknown `sender_scope.type`, `sample.mode` or `on_unavailable`, or `sample.stratify` on a sample that is not random or percent.
+未带这些错误码的 `400` 表示请求格式有误：`panel` 或 `tracking` 未知、提供 `sequence_id` 却没有对应 `campaign_id`、临时测试缺少主题或正文、监控 `interval_days` 超出 `1` 至 `30` 或 `alert_below` 超出 `0` 至 `100`，或批次将 `pace` 设为 `quick`、同时提供或均未提供 `sender_account_ids` 和 `sender_scope`、`sender_scope.type`、`sample.mode` 或 `on_unavailable` 未知，或在非 random/percent 抽样中提供 `sample.stratify`。
 
-#### OAuth app and community directory refusals
+#### OAuth 应用与社区目录操作被拒绝的情况 [#oauth-app-and-community-directory-refusals]
 
-`POST /oauth/applications` registers an app and `PUT /oauth/applications/:id/listing` publishes or edits its [community directory listing](/api/oauth/#publish-to-the-community-directory). Nothing is saved on any refusal.
+`POST /oauth/applications` 注册应用，`PUT /oauth/applications/:id/listing` 发布或编辑其 [社区目录条目](/api/oauth/#publish-to-the-community-directory)。任何拒绝均不会保存内容。
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `invalid_listing` | 400 | A listing field breaks a rule: the `slug` is not 3 to 48 lowercase letters, numbers or single dashes, or is reserved for a built-in integration; the `tagline` is empty or over 120 characters; the `description` is over 2,000; either holds control, invisible or bidirectional-override characters; the `category` is unknown; or `install_url`, `support_url` or `privacy_url` is not an `https` address on a host without credentials. The `message` names the field |
-| `app_not_listable` | 400 | The app cannot be listed: it is disabled or suspended, or it is a client created by dynamic registration, which has no publishing workspace |
-| `developer_access_blocked` | 403 | The instance's operators have blocked this workspace or person from registering and publishing apps. `GET /oauth/applications` reports the reason in `developer_access`. Also returned by `POST /oauth/applications` |
-| `invalid_website` | 400 | `website` on `POST` or `PATCH /oauth/applications` is not an `http` or `https` address on a host without credentials |
-| `invalid_logo` | 400 | `logo_url` on `POST` or `PATCH /oauth/applications` is not an address this instance issued for the workspace. Upload the logo with `POST /oauth/applications/{id}/logo` instead |
-| `listing_slug_taken` | 409 | Another app on this instance already uses the `slug`. Choose another |
-| `listing_hidden` | 409 | The instance's operators hid this listing, so `DELETE /oauth/applications/{id}/listing` cannot remove it. The hide note is on the listing |
-| `app_suspended` | 409 | The instance's operators suspended this app. It cannot be edited or given a new logo until it is unsuspended |
+| `invalid_listing` | 400 | 目录字段违反规则：`slug` 不是 3 至 48 个小写字母、数字或单个连字符，或为内置集成保留；`tagline` 为空或超过 120 个字符；`description` 超过 2,000 个字符；上述文本包含控制、不可见或双向覆盖字符；`category` 未知；或 `install_url`、`support_url`、`privacy_url` 不是不含凭据的主机上的 `https` 地址。`message` 指出字段 |
+| `app_not_listable` | 400 | 应用无法上架：已禁用或暂停，或是通过动态注册创建、没有发布工作区的客户端 |
+| `developer_access_blocked` | 403 | 实例运维人员禁止此工作区或用户注册和发布应用。`GET /oauth/applications` 在 `developer_access` 中报告原因。`POST /oauth/applications` 也会返回此错误 |
+| `invalid_website` | 400 | `POST` 或 `PATCH /oauth/applications` 中的 `website` 不是不含凭据的主机上的 `http` 或 `https` 地址 |
+| `invalid_logo` | 400 | `POST` 或 `PATCH /oauth/applications` 中的 `logo_url` 不是本实例为该工作区签发的地址。请改用 `POST /oauth/applications/{id}/logo` 上传标志 |
+| `listing_slug_taken` | 409 | 本实例上的其他应用已使用该 `slug`。请另选一个 |
+| `listing_hidden` | 409 | 实例运维人员隐藏了此条目，因此 `DELETE /oauth/applications/{id}/listing` 无法将其移除。隐藏说明显示在条目上 |
+| `app_suspended` | 409 | 实例运维人员暂停了此应用。解除暂停之前，无法编辑或上传新标志 |
 
-#### Credential management refusals
+#### 凭据管理操作被拒绝的情况 [#credential-management-refusals]
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `oauth_token_not_allowed` | 403 | An OAuth app token called a route that manages credentials: creating, editing, revoking or deleting API keys, or anything under `/oauth/applications` and `/oauth/application-logo`. Use the dashboard or an API key |
-| `api_key_permissions_exceed_caller` | 403 | `POST /api-keys` or `PATCH /api-keys/{id}` would give a key more than its creator has: a permission the member's role does not cover, or, for an API key caller, a permission, mailbox or IP address the calling key does not have (a mailbox- or IP-limited key can only manage keys limited to a subset of its own). See [what a role can delegate](/api/permissions/#what-a-role-can-delegate) |
-| `api_key_holder_left` | 401 | The member who created this API key is no longer in the workspace, so the key no longer works. Create a new key from a current member |
-| `api_key_mailbox_limited` | 403 | An API key limited to some mailboxes called a surface that acts across the workspace: `/ai/tools` or `/mcp`, a campaign sender pool resolved from mailbox tags, or starting a campaign whose pool is not an explicit list of the key's mailboxes. See [email account restrictions](/api/authentication/#email-account-restrictions) |
+| `oauth_token_not_allowed` | 403 | OAuth 应用令牌调用了管理凭据的路由：创建、编辑、撤销或删除 API 密钥，或 `/oauth/applications` 和 `/oauth/application-logo` 下的任何路由。请使用控制台或 API 密钥 |
+| `api_key_permissions_exceed_caller` | 403 | `POST /api-keys` 或 `PATCH /api-keys/{id}` 将授予密钥超出创建者范围的权限：成员角色未覆盖的权限，或对 API 密钥调用者而言，调用密钥本身没有的权限、邮箱或 IP 地址（受邮箱/IP 限制的密钥只能管理限制范围为自身子集的密钥）。参见 [角色可委派的权限](/api/permissions/#what-a-role-can-delegate) |
+| `api_key_holder_left` | 401 | 创建此 API 密钥的成员已不在工作区中，因此密钥失效。请由当前成员创建新密钥 |
+| `api_key_mailbox_limited` | 403 | 限定了邮箱范围的 API 密钥调用了工作区整体接口：`/ai/tools` 或 `/mcp`、通过邮箱标签解析营销活动发件邮箱池，或启动发件邮箱池并非该密钥允许邮箱的显式列表的营销活动。参见 [邮箱账户限制](/api/authentication/#email-account-restrictions) |
 
-The OAuth consent and token endpoints answer in the [RFC 6749](https://www.rfc-editor.org/rfc/rfc6749#section-5.2) shape (`error`, `error_description`) instead. `access_denied` from `GET /oauth/authorize/details` or `POST /oauth/authorize` means the approving member's role covers none of the requested scopes. `invalid_grant` on a refresh means the token is unknown, expired, revoked, was already used (which also revokes the grant), or its member no longer holds any of its scopes. A failure inside the server is `500` `server_error` with a fixed description and a `request_id`.
+OAuth 同意和令牌端点改用 [RFC 6749](https://www.rfc-editor.org/rfc/rfc6749#section-5.2) 结构（`error`、`error_description`）。`GET /oauth/authorize/details` 或 `POST /oauth/authorize` 返回 `access_denied`，表示批准成员的角色不覆盖任何请求权限范围。刷新时返回 `invalid_grant`，表示令牌未知、已过期、已撤销、已经使用（同时撤销授权），或其成员已不再拥有任何已授予权限范围。服务器内部失败返回 `500` `server_error`，附带固定描述和 `request_id`。
 
-#### CRM provider refusals
+#### CRM 服务商操作被拒绝的情况 [#crm-provider-refusals]
 
-Returned by the CRM endpoints while a workspace runs its CRM on [HubSpot](/guides/hubspot/) or [Pipedrive](/guides/pipedrive/). A change is written to the provider before it is saved in Warmbly, so each of these means nothing was changed on either side.
+工作区使用 [HubSpot](/guides/hubspot/) 或 [Pipedrive](/guides/pipedrive/) 作为 CRM 时，由 CRM 端点返回。更改先写入服务商，再保存到 Warmbly，因此以下每项都表示两端均未更改。
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `crm_not_connected` | 409 | `GET /crm/metadata`, `POST /crm/sync`, `POST /crm/backfill`, a `/crm/contacts/:id` or a `/crm/lists` call on a workspace that is not in HubSpot or Pipedrive mode. Connect the provider and choose it as the CRM with `PUT /crm/settings` first |
-| `crm_reauth_required` | 409 | The provider revoked Warmbly's access, the connection was removed, or the connection lacks a permission provider mode needs (in HubSpot deals, companies, owners, the contact schema, or the optional list permission for a list import; in Pipedrive deals, people, activities and users, or the connected user may not make the change). Reconnect and approve every permission |
-| `crm_managed_externally` | 409 | A create, update or delete of a pipeline, stage or task type. They are managed in HubSpot or Pipedrive while it is the CRM; change them there and they update in Warmbly within minutes |
-| `crm_stage_unknown` | 400 | The `pipeline_id` or `stage_id` given is not a mirrored pipeline or stage of the provider, or (in HubSpot) a deal was marked `won` or `lost` in a pipeline with no closed stage of that kind. Also `409` from a copy into the provider when it has no deal pipeline to copy deals into |
-| `crm_owner_unmapped` | 400 | A deal or task was assigned to a member who is not matched to a HubSpot owner or Pipedrive user. Match them with `PUT /crm/owners/:externalId` |
-| `crm_contact_missing` | 404 | The contact is not in the provider, and creating contacts there is turned off in the workspace's CRM settings |
-| `crm_record_missing` | 404 | The record no longer exists in the provider; it was deleted there |
-| `crm_provider_rejected` | 422 | The provider refused the change. The `message` carries its reason, such as a required property HubSpot enforces or a Pipedrive plan without the feature |
-| `crm_sync_running` | 429 | `POST /crm/sync` within 30 seconds (HubSpot) or a minute (Pipedrive) of the last one. The running sync finishes in a minute or two |
-| `crm_unavailable` | 503 | The provider did not answer or failed, including a Pipedrive company out of its daily API budget. Nothing was changed; retry shortly |
+| `crm_not_connected` | 409 | 在未处于 HubSpot 或 Pipedrive 模式的工作区调用 `GET /crm/metadata`、`POST /crm/sync`、`POST /crm/backfill`、`/crm/contacts/:id` 或 `/crm/lists`。请先连接服务商，并通过 `PUT /crm/settings` 选择其作为 CRM |
+| `crm_reauth_required` | 409 | 服务商撤销了 Warmbly 访问权、连接被移除，或连接缺少服务商模式所需权限（HubSpot 的商机、公司、负责人、联系人模式，或名单导入的可选列表权限；Pipedrive 的商机、联系人、活动和用户，或所连接用户无权执行更改）。请重新连接并批准全部权限 |
+| `crm_managed_externally` | 409 | 尝试创建、更新或删除销售管道、阶段或任务类型。使用 HubSpot 或 Pipedrive 作为 CRM 时，这些资源由其管理；请在那里更改，几分钟内会更新到 Warmbly |
+| `crm_stage_unknown` | 400 | 提供的 `pipeline_id` 或 `stage_id` 不是服务商镜像的销售管道或阶段，或在 HubSpot 中将商机标记为 `won` 或 `lost`，但管道没有相应类型的关闭阶段。向服务商复制时，若没有可供复制商机的销售管道，也返回 `409` |
+| `crm_owner_unmapped` | 400 | 商机或任务被分配给未匹配 HubSpot 负责人或 Pipedrive 用户的成员。请通过 `PUT /crm/owners/:externalId` 匹配 |
+| `crm_contact_missing` | 404 | 联系人不在服务商中，且工作区 CRM 设置关闭了在服务商创建联系人 |
+| `crm_record_missing` | 404 | 服务商中的记录已不存在，已在那里删除 |
+| `crm_provider_rejected` | 422 | 服务商拒绝更改。`message` 携带其原因，例如 HubSpot 强制要求的属性，或 Pipedrive 套餐不支持该功能 |
+| `crm_sync_running` | 429 | 距离上次调用不足 30 秒（HubSpot）或一分钟（Pipedrive）时，再次调用 `POST /crm/sync`。运行中的同步将在一两分钟内完成 |
+| `crm_unavailable` | 503 | 服务商未响应或失败，包括 Pipedrive 公司已用完当日 API 额度。未作任何更改；请稍后重试 |
 
 ```json
 {
@@ -402,56 +402,56 @@ Returned by the CRM endpoints while a workspace runs its CRM on [HubSpot](/guide
 }
 ```
 
-#### Salesforce sync refusals
+#### Salesforce 同步被拒绝的情况 [#salesforce-sync-refusals]
 
-The [Salesforce](/guides/salesforce/) endpoints answer with their own codes. When Salesforce itself refused, `message` carries its `errorCode` and text, such as `Salesforce: INVALID_FIELD: No such column 'Tier__c' on entity 'Lead'`.
+[Salesforce](/guides/salesforce/) 端点返回自身错误码。若由 Salesforce 本身拒绝，`message` 携带其 `errorCode` 和文本，例如 `Salesforce: INVALID_FIELD: No such column 'Tier__c' on entity 'Lead'`。
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `invalid_salesforce_domain` | 400 | The custom domain given to `POST /integrations/oauth/start` is not a Salesforce My Domain (`*.my.salesforce.com`) |
-| `invalid_salesforce_settings` | 400 | `PUT /integrations/salesforce/:id/settings` named something the sync cannot run: an unknown field, a related field to write, an engagement field to read, a field mapped twice, or a fixed owner with no user |
-| `salesforce_error` | 400 | Salesforce refused the request. The message is Salesforce's own |
-| `salesforce_unreachable` | 400 | Salesforce did not answer. Retry later |
-| `salesforce_sync_off` | 400 | `POST /integrations/salesforce/:id/sync-now` on a connection with sync turned off |
-| `salesforce_reconnect_required` | 409 | The Salesforce session ended (a revoked app, a password reset, a deactivated user). Reconnect the integration |
-| `import_running` | 409 | `POST /integrations/salesforce/:id/import-sources/:sourceId/run` or `POST /integrations/apollo/:id/import-sources/:sourceId/run` while that import is already running |
-| `salesforce_rate_limited` | 429 | The Salesforce org has used its API requests for today |
+| `invalid_salesforce_domain` | 400 | 提供给 `POST /integrations/oauth/start` 的自定义域名不是 Salesforce My Domain（`*.my.salesforce.com`） |
+| `invalid_salesforce_settings` | 400 | `PUT /integrations/salesforce/:id/settings` 指定了同步无法执行的配置：未知字段、要写入的关联字段、要读取的互动字段、重复映射的字段，或没有对应用户的固定负责人 |
+| `salesforce_error` | 400 | Salesforce 拒绝请求。消息为 Salesforce 原始消息 |
+| `salesforce_unreachable` | 400 | Salesforce 未响应。请稍后重试 |
+| `salesforce_sync_off` | 400 | 对关闭同步的连接调用 `POST /integrations/salesforce/:id/sync-now` |
+| `salesforce_reconnect_required` | 409 | Salesforce 会话已结束（应用被撤销、密码重置或用户停用）。请重新连接集成 |
+| `import_running` | 409 | 导入已在运行时调用 `POST /integrations/salesforce/:id/import-sources/:sourceId/run` 或 `POST /integrations/apollo/:id/import-sources/:sourceId/run` |
+| `salesforce_rate_limited` | 429 | Salesforce 组织已用完今天的 API 请求额度 |
 
-#### Apollo and Clay refusals
+#### Apollo 和 Clay 操作被拒绝的情况 [#apollo-and-clay-refusals]
 
-The [Apollo](/guides/apollo/) and [Clay](/guides/clay/) endpoints answer with their own codes.
+[Apollo](/guides/apollo/) 和 [Clay](/guides/clay/) 端点返回自身错误码。
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `apollo_enrich_too_many` | 400 | `POST /integrations/apollo/:id/enrichments` selected more than 5,000 contacts |
-| `clay_webhook_url` | 400 | `PATCH /integrations/clay/:id` set a `webhook_url` that is not a Clay table webhook |
-| `clay_webhook_missing` | 400 | `PATCH /integrations/clay/:id` chose events to send with no table webhook saved |
-| `apollo_key_rejected` | 422 | Apollo refused the saved API key. Replace it with `PUT /integrations/apollo/:id/key` |
-| `apollo_key_forbidden` | 422 | The API key works but cannot reach an endpoint the integration uses. Use a master key, or one with lists, contact search and people enrichment |
-| `apollo_key_missing` | 422 | The Apollo connection has no API key |
-| `apollo_rate_limited` | 429 | Apollo's rate limit for the account was reached. Retry later |
+| `apollo_enrich_too_many` | 400 | `POST /integrations/apollo/:id/enrichments` 选择了超过 5,000 位联系人 |
+| `clay_webhook_url` | 400 | `PATCH /integrations/clay/:id` 设置的 `webhook_url` 不是 Clay 表格 Webhook |
+| `clay_webhook_missing` | 400 | `PATCH /integrations/clay/:id` 选择了要发送的事件，但尚未保存表格 Webhook |
+| `apollo_key_rejected` | 422 | Apollo 拒绝已保存的 API 密钥。请通过 `PUT /integrations/apollo/:id/key` 替换 |
+| `apollo_key_forbidden` | 422 | API 密钥有效，但无法访问集成使用的某个端点。请使用主密钥，或具有列表、联系人搜索和人员数据补全权限的密钥 |
+| `apollo_key_missing` | 422 | Apollo 连接没有 API 密钥 |
+| `apollo_rate_limited` | 429 | 已达到 Apollo 账户速率限制。请稍后重试 |
 
-#### Automation refusals
+#### 自动化流程操作被拒绝的情况 [#automation-refusals]
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `action_provider_mismatch` | 400 | `POST /automations`, `PATCH /automations/:id` or `POST /integrations/connections/:id/events` paired an action with a connection whose provider does not run it, such as a Slack message on a HubSpot connection. Each action runs only on the integration it belongs to; the provider's actions are listed under `capability.actions` in `GET /integrations/catalog` |
+| `action_provider_mismatch` | 400 | `POST /automations`、`PATCH /automations/:id` 或 `POST /integrations/connections/:id/events` 将操作与不支持该操作的服务商连接配对，例如在 HubSpot 连接上发送 Slack 消息。每个操作只能在所属集成上运行；服务商操作列于 `GET /integrations/catalog` 的 `capability.actions` 下 |
 
-#### `mailbox_oauth_return_origin`
+#### `mailbox_oauth_return_origin` [#mailbox_oauth_return_origin]
 
-A `400` with `code: "mailbox_oauth_return_origin"` means a Google or Microsoft mailbox connect or reauthorization came from a dashboard origin the backend does not allow. Add its exact HTTP(S) origin to `CORS_ALLOW_ORIGINS`, as in [shared-backend dashboard configuration](/development/configuration/#google-sign-in-per-dashboard-deployment). A wildcard is not an OAuth return allowlist.
+带有 `code: "mailbox_oauth_return_origin"` 的 `400` 表示 Google 或 Microsoft 邮箱连接或重新授权来自后端不允许的控制台源地址。请按 [共用后端的控制台配置](/development/configuration/#google-sign-in-per-dashboard-deployment) 所述，将其精确 HTTP(S) 源地址添加到 `CORS_ALLOW_ORIGINS`。通配符不能充当 OAuth 返回允许列表。
 
-### 401 Unauthorized
+### 401 Unauthorized（未通过身份验证） [#401-unauthorized]
 
-Returned when authentication fails.
+身份验证失败时返回。
 
-**Common causes:**
-- Missing `Authorization` header
-- Invalid API key format
-- Expired API key
-- Revoked API key
+**常见原因：**
+- 缺少 `Authorization` 请求头
+- API 密钥格式无效
+- API 密钥已过期
+- API 密钥已撤销
 
-**Example:**
+**示例：**
 
 ```json
 {
@@ -462,19 +462,19 @@ Returned when authentication fails.
 }
 ```
 
-**How to fix:**
-- Include the `Authorization: Bearer wmbly_...` header
-- Verify your API key is correct
-- Check if your key has expired or been revoked
-- Generate a new key if necessary
+**解决方法：**
+- 包含 `Authorization: Bearer wmbly_...` 请求头
+- 确认 API 密钥正确
+- 检查密钥是否已过期或撤销
+- 必要时生成新密钥
 
-Two `401` variants are not about API keys at all. `setup_token_invalid` is returned by the first-run claim endpoint when the setup link is invalid, already used or expired. Print a new one with `warmblyctl setup-link`, described in [first run](/development/first-run/).
+有两种 `401` 情况与 API 密钥无关。首次认领端点在设置链接无效、已使用或已过期时返回 `setup_token_invalid`。通过 `warmblyctl setup-link` 输出新链接，详见 [首次运行](/development/first-run/)。
 
-`sso_wrong_browser` is returned by `POST /auth/sso/exchange` when the handoff code is collected without the binding secret that `POST /auth/<provider>/begin` handed the browser that started the sign-in. The handoff is deliberately non-transferable: a sign-in link that was forwarded, or opened in another browser, cannot sign the recipient in. Start the sign-in again in the browser you want to use.
+`POST /auth/sso/exchange` 在兑换交接代码时未提供 `POST /auth/<provider>/begin` 发给登录发起浏览器的绑定密钥，则返回 `sso_wrong_browser`。交接被刻意设计为不可转移：转发的登录链接或在其他浏览器打开的链接不能使接收者登录。请在打算使用的浏览器中重新开始登录。
 
-### 402 Payment Required
+### 402 Payment Required（需要付款） [#402-payment-required]
 
-Returned when an AI action, or a placement test paid in credits, is requested but the organization does not have enough credits. The response carries the stable code `insufficient_credits`.
+请求 AI 操作或使用积分支付的投递位置测试，但组织积分不足时返回。响应携带稳定错误码 `insufficient_credits`。
 
 ```json
 {
@@ -485,24 +485,24 @@ Returned when an AI action, or a placement test paid in credits, is requested bu
 }
 ```
 
-**How to fix:**
-- Wait for the monthly allowance to reset, or buy a top-up pack (see [AI credits](/guides/ai-credits/))
-- Related: a `429` with code `usage_cap_exceeded` means a short-term AI usage cap was hit; retry later
+**解决方法：**
+- 等待每月额度重置，或购买充值包（参见 [AI 积分](/guides/ai-credits/)）
+- 相关情况：错误码为 `usage_cap_exceeded` 的 `429` 表示触及短期 AI 用量上限；请稍后重试
 
-Placement tests answer `402` too, with `placement_not_entitled` or `placement_quota_exceeded`; see [placement test refusals](#placement-test-refusals). A paid placement test past the credit balance answers `insufficient_credits`, and one past a spend limit answers `429` with `usage_cap_exceeded`; neither charges anything.
+投递位置测试也会返回 `402`，错误码为 `placement_not_entitled` 或 `placement_quota_exceeded`；参见 [投递位置测试拒绝原因](#placement-test-refusals)。付费投递位置测试超出积分余额时返回 `insufficient_credits`，超出支出上限时返回 `429` 和 `usage_cap_exceeded`；两者均不收费。
 
-### 403 Forbidden
+### 403 Forbidden（禁止访问） [#403-forbidden]
 
-Returned when authenticated but lacking necessary permissions.
+已通过身份验证但缺少所需权限时返回。
 
-**Common causes:**
-- API key lacks required permission
-- Request IP not in allowlist
-- Email account not in allowlist
-- Organization access restricted
-- The member is restricted to selected resources (`member_access_restricted`)
+**常见原因：**
+- API 密钥缺少所需权限
+- 请求 IP 不在允许列表中
+- 邮箱账户不在允许列表中
+- 组织访问受限
+- 成员仅限访问选定资源（`member_access_restricted`）
 
-**Example:**
+**示例：**
 
 ```json
 {
@@ -513,14 +513,14 @@ Returned when authenticated but lacking necessary permissions.
 }
 ```
 
-**How to fix:**
-- Check your API key's permissions
-- Verify IP restrictions if configured
-- Request additional permissions if needed
+**解决方法：**
+- 检查 API 密钥权限
+- 若配置了 IP 限制，请核对
+- 必要时申请更多权限
 
-#### `mailbox_gmail_oauth_disabled`
+#### `mailbox_gmail_oauth_disabled` [#mailbox_gmail_oauth_disabled]
 
-A `403` whose `code` is `mailbox_gmail_oauth_disabled` comes from `POST /emails/onboarding/oauth/start` with `provider: "gmail"`. The backend has no complete Google mailbox client credentials, or explicitly disables new Google OAuth connects through `BOX_GOOGLE_OAUTH_CONNECT`; `GET /auth/config` announces it as `gmail_oauth_connect: false`. Nothing about the caller's permissions is wrong. Re-authorizing an existing Gmail mailbox (`POST /emails/onboarding/oauth/reauth/:id`) is never refused this way.
+`code` 为 `mailbox_gmail_oauth_disabled` 的 `403` 来自带有 `provider: "gmail"` 的 `POST /emails/onboarding/oauth/start`。后端没有完整的 Google 邮箱客户端凭据，或通过 `BOX_GOOGLE_OAUTH_CONNECT` 显式禁用新 Google OAuth 连接；`GET /auth/config` 将其声明为 `gmail_oauth_connect: false`。调用者权限并无问题。重新授权现有 Gmail 邮箱（`POST /emails/onboarding/oauth/reauth/:id`）绝不会因此遭拒。
 
 ```json
 {
@@ -531,20 +531,20 @@ A `403` whose `code` is `mailbox_gmail_oauth_disabled` comes from `POST /emails/
 }
 ```
 
-**How to fix:**
-- Connect the mailbox through `POST /emails/onboarding/smtp-imap` with `smtp.gmail.com:465` and `imap.gmail.com:993`, both TLS, and a Google app password. See [Gmail and Google Workspace](/guides/mailboxes/#gmail-and-google-workspace)
-- An instance with its own Google app must set both `BOX_GOOGLE_CLIENT_ID` and `BOX_GOOGLE_CLIENT_SECRET`. Leave `BOX_GOOGLE_OAUTH_CONNECT` unset or set it to `true`, then enable the [dashboard visibility flag](/development/configuration/#google-sign-in-per-dashboard-deployment) on the deployments that should offer Google sign-in
+**解决方法：**
+- 通过 `POST /emails/onboarding/smtp-imap` 连接邮箱，使用 `smtp.gmail.com:465` 和 `imap.gmail.com:993`，两者均采用 TLS，并提供 Google 应用密码。参见 [Gmail 与 Google Workspace](/guides/mailboxes/#gmail-and-google-workspace)
+- 使用自有 Google 应用的实例必须同时设置 `BOX_GOOGLE_CLIENT_ID` 和 `BOX_GOOGLE_CLIENT_SECRET`。将 `BOX_GOOGLE_OAUTH_CONNECT` 留空或设为 `true`，然后在应提供 Google 登录的部署上启用 [控制台显示开关](/development/configuration/#google-sign-in-per-dashboard-deployment)
 
-#### Registration and invitation refusals
+#### 注册和邀请被拒绝的情况 [#registration-and-invitation-refusals]
 
-Signup and invitation refusals carry their own `code`, so a client can branch on the specific condition instead of matching on text. They describe the deployment's policy and never say anything about whether a given address exists.
+注册和邀请拒绝携带各自的 `code`，使客户端可以根据具体条件分支处理，无需匹配文本。它们描述部署策略，绝不透露给定地址是否存在。
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `registration_invite_only` | 403 | The server runs `DISABLE_REGISTRATION=invite_only`. Creating an account requires an invitation link, which carries the token that permits the signup |
-| `registration_closed` | 403 | The server runs `DISABLE_REGISTRATION=true`. Signups are off and invitations do not override it |
-| `invitation_invalid` | 403 | The invitation is expired, cancelled, already used, or was issued for a different email address |
-| `setup_already_complete` | 403 | The first-run claim was attempted on an instance that already has an account |
+| `registration_invite_only` | 403 | 服务器运行 `DISABLE_REGISTRATION=invite_only`。创建账户需要邀请链接，其中携带许可注册的令牌 |
+| `registration_closed` | 403 | 服务器运行 `DISABLE_REGISTRATION=true`。注册已关闭，邀请不能覆盖此设置 |
+| `invitation_invalid` | 403 | 邀请已过期、取消、使用，或发给不同邮箱地址 |
+| `setup_already_complete` | 403 | 在已有账户的实例上尝试首次运行认领 |
 
 ```json
 {
@@ -555,23 +555,23 @@ Signup and invitation refusals carry their own `code`, so a client can branch on
 }
 ```
 
-**How to fix:** on a self-hosted deployment these are configuration, not faults. See [accounts and access](/development/accounts-and-access/#registration-modes).
+**解决方法：** 在自托管部署中，这些属于配置行为，而非故障。参见 [账户与访问](/development/accounts-and-access/#registration-modes)。
 
-#### Confirmation required
+#### 需要确认 [#confirmation-required]
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `reauth_required` | 403 | The action needs a proof of identity newer than the session. Confirm with `POST /v1/auth/reauth`, then retry |
-| `reauth_limited` | 400 | Too many failed confirmations for this account within the hour. Wait, or sign out and sign in again: a sign-in counts as a confirmation for five minutes |
-| `reauth_no_factor` | 400 | `POST /auth/reauth` was sent a password or code for an account that has neither. Confirm with a passkey or the linked sign-in provider listed by `GET /auth/reauth/methods`; an account with none of those signs out and in again (a sign-in counts as a confirmation for five minutes) |
-| `reauth_identity_mismatch` | 400 | The Google, Apple or single sign-on account verified during a confirmation is not the one linked to this Warmbly account. Continue with the account you sign in with |
-| `reauth_expired` | 400 | The confirmation's code or nonce expired or was already used. Start the confirmation again |
-| `admin_mfa_required` | 403 | An admin route was reached by a session that did not present a second factor. Turn on 2FA or add a passkey, then sign in again |
-| `passkey_user_verification_required` | 400 | A passkey sign-in came from an authenticator that did not verify the user with a PIN or biometric. Set a PIN on the security key, or sign in another way |
-| `two_fa_invalid_code` | 400 | The authenticator or recovery code did not match. Wait for a fresh code and try again; the login challenge allows five attempts per pending session |
-| `password_changed_sign_in_again` | 409 | `POST /auth/me/password` stored the new password but could not issue the calling device a new session. Every earlier token is invalid; discard them and sign in again with the new password |
+| `reauth_required` | 403 | 此操作需要比当前会话更新的身份证明。请通过 `POST /v1/auth/reauth` 确认，然后重试 |
+| `reauth_limited` | 400 | 此账户一小时内确认失败过多。请等待，或退出后重新登录：登录后的五分钟内视为已确认 |
+| `reauth_no_factor` | 400 | `POST /auth/reauth` 为既无密码也无验证码因素的账户提交了密码或代码。请使用通行密钥，或 `GET /auth/reauth/methods` 列出的关联登录服务商确认；若这些方式均无，则退出后重新登录（登录后的五分钟内视为已确认） |
+| `reauth_identity_mismatch` | 400 | 确认期间验证的 Google、Apple 或单点登录账户，并非关联到此 Warmbly 账户的身份。请继续使用平时登录的账户 |
+| `reauth_expired` | 400 | 确认代码或 nonce 已过期或已使用。请重新开始确认 |
+| `admin_mfa_required` | 403 | 未提供第二因素的会话访问了管理员路由。请开启 2FA 或添加通行密钥，然后重新登录 |
+| `passkey_user_verification_required` | 400 | 通行密钥登录所用认证器未通过 PIN 或生物识别验证用户。请为安全密钥设置 PIN，或改用其他方式登录 |
+| `two_fa_invalid_code` | 400 | 认证器代码或恢复代码不匹配。请等待新代码后重试；每个待处理会话的登录质询允许五次尝试 |
+| `password_changed_sign_in_again` | 409 | `POST /auth/me/password` 已保存新密码，但无法为调用设备签发新会话。所有先前令牌均已失效；请丢弃并使用新密码重新登录 |
 
-`reauth_required` guards the changes that hand out a durable credential, reveal a signing secret, change who can get in, cannot be undone, or reach a whole domain's mail. The full list is under [actions that need a recent confirmation](/api/endpoints/#actions-that-need-a-recent-confirmation). List the ways the account can confirm with `GET /v1/auth/reauth/methods` (a passkey and a linked Google, Apple or single sign-on identity are among them; see [endpoints](/api/endpoints/#actions-that-need-a-recent-confirmation)). With a password or a current two-factor code:
+`reauth_required` 保护会发放长期凭据、披露签名密钥、更改访问者、不可撤销，或访问整个域邮件的更改。完整列表见 [需要近期确认的操作](/api/endpoints/#actions-that-need-a-recent-confirmation)。通过 `GET /v1/auth/reauth/methods` 列出账户可用的确认方式（包括通行密钥，以及关联的 Google、Apple 或单点登录身份；参见 [端点](/api/endpoints/#actions-that-need-a-recent-confirmation)）。使用密码或当前双重验证代码时：
 
 ```bash
 curl -X POST "https://api.warmbly.com/v1/auth/reauth" \
@@ -584,9 +584,9 @@ curl -X POST "https://api.warmbly.com/v1/auth/reauth" \
 { "valid_for_seconds": 300 }
 ```
 
-The confirmation is recorded on the session and lasts for the window returned, so a run of related changes only asks once.
+确认记录在会话上，并在返回的时间窗口内有效，因此连续执行相关更改只需确认一次。
 
-Turning on two-factor authentication (`POST /auth/2fa/enroll/start` and `/confirm`) is guarded too, since a confirmed authenticator is itself a way to confirm. An account with a password confirms as above. An account with neither a password nor 2FA (created through Google, Apple or single sign-on) confirms with its passkey or linked identity. One with none of those is allowed for five minutes after a sign-in like every confirmed action; an older session gets `reauth_no_factor` and the fix is to sign out and sign in again. API keys and OAuth tokens have no session to confirm, so these routes are reachable only with a signed-in session; that is deliberate for key creation, which otherwise lets one leaked key mint more.
+启用双重身份验证（`POST /auth/2fa/enroll/start` 和 `/confirm`）同样受保护，因为已确认的认证器本身也可用于确认身份。有密码的账户按上述方式确认。既无密码也无 2FA 的账户（通过 Google、Apple 或单点登录创建）使用通行密钥或关联身份确认。若均无，则与其他需确认操作一样，可在登录后五分钟内执行；更早的会话返回 `reauth_no_factor`，需退出后重新登录。API 密钥和 OAuth 令牌没有可供确认的会话，因此这些路由仅能通过已登录会话访问；对于密钥创建，这是有意设计，否则泄露的密钥可能继续签发更多密钥。
 
 ```json
 {
@@ -597,21 +597,21 @@ Turning on two-factor authentication (`POST /auth/2fa/enroll/start` and `/confir
 }
 ```
 
-#### Member access scope
+#### 成员访问范围 [#member-access-scope]
 
-A member restricted to [selected resources](/guides/team-roles/#access-scope), and any API key or OAuth app acting for one, reaches only the read routes that filter to their grants. The scope's own refusals:
+仅限访问 [选定资源](/guides/team-roles/#access-scope) 的成员，以及代表该成员的 API 密钥或 OAuth 应用，只能访问按授权范围筛选的读取路由。范围相关拒绝如下：
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `member_access_restricted` | 403 | The caller's selected-resource scope does not cover this route. Resource writes and workspace-wide surfaces such as contacts and settings are refused. Workspace creation is refused to accounts with only restricted memberships, except instance administrators; limit-request operations require an unrestricted membership in the target workspace |
-| `invalid_access_resource` | 400 | `PUT /organization/members/:id/access` or an invitation named a campaign folder, campaign or mailbox that is not in this workspace |
-| `invalid_access_scope` | 400 | The scope is neither `workspace` nor `restricted` |
-| `too_many_access_grants` | 400 | More than 500 folders, campaigns or mailboxes in one list |
-| `owner_access_unrestricted` | 403 | The workspace owner always reaches the entire workspace and cannot be restricted |
+| `member_access_restricted` | 403 | 调用者的选定资源范围不覆盖此路由。资源写入及联系人、设置等工作区整体接口均被拒绝。只有受限成员关系的账户不能创建工作区，实例管理员除外；限额申请操作要求在目标工作区具有非受限成员关系 |
+| `invalid_access_resource` | 400 | `PUT /organization/members/:id/access` 或邀请指定了不属于此工作区的营销活动文件夹、营销活动或邮箱 |
+| `invalid_access_scope` | 400 | 范围既不是 `workspace`，也不是 `restricted` |
+| `too_many_access_grants` | 400 | 单个列表超过 500 个文件夹、营销活动或邮箱 |
+| `owner_access_unrestricted` | 403 | 工作区所有者始终可访问整个工作区，不能受限 |
 
-A campaign or mailbox outside a restricted caller's grants answers `404`, the same as one that does not exist, so a scope does not reveal what else the workspace holds. `GET /unibox/thread/labels` likewise returns the same `404` for an unknown thread, a thread outside the selected workspace, or a thread with no message in an accessible mailbox. An accessible thread with no labels returns an empty list.
+超出受限调用者授权范围的营销活动或邮箱返回 `404`，与不存在的资源相同，因此不会通过权限范围泄露工作区中的其他资源。`GET /unibox/thread/labels` 对未知会话、位于所选工作区之外的会话，或可访问邮箱中没有任何邮件的会话，也返回相同的 `404`。可访问但无标签的会话返回空列表。
 
-Failure to resolve a restricted scope or its scoped counts fails the request rather than returning workspace-wide data. Realtime authorization lookup errors stop campaign, mailbox and organization channels; user-channel events whose authorization cannot be verified are withheld. See [bounded realtime authorization](/api/realtime/#channels).
+解析受限范围或范围内计数失败时，请求会失败，而不会返回工作区整体数据。实时授权查询错误会停止营销活动、邮箱和组织通道；无法验证授权的用户通道事件会被暂扣。参见 [有时限的实时授权](/api/realtime/#channels)。
 
 ```json
 {
@@ -622,11 +622,11 @@ Failure to resolve a restricted scope or its scoped counts fails the request rat
 }
 ```
 
-**How to fix:** ask a member with **Manage team** to widen the access under **Settings > Members**.
+**解决方法：** 请具有 **管理团队** 权限的成员在 **设置 > 成员** 中扩大访问范围。
 
-#### `slack_link_email_mismatch`
+#### `slack_link_email_mismatch` [#slack_link_email_mismatch]
 
-A `403` whose `code` is `slack_link_email_mismatch` comes from `POST /integrations/slack/link` sent without a Sign in with Slack result. Confirming a [Slack link](/guides/slack/#link-your-slack-account) that way needs the email on the Slack account's profile to be the signed-in user's Warmbly email, compared without regard to case. The code stays usable: confirm it again with `slack_code` and `state` from `POST /integrations/slack/link/verify`. `GET /integrations/slack/link/:code` reports the check ahead of time as `email_matches`, and whether Sign in with Slack is available as `verify_available`.
+`code` 为 `slack_link_email_mismatch` 的 `403` 来自未提交 Slack 登录结果的 `POST /integrations/slack/link`。以这种方式确认 [Slack 关联](/guides/slack/#link-your-slack-account)，要求 Slack 账户资料中的邮箱与已登录用户的 Warmbly 邮箱相同，比较时忽略大小写。代码仍可使用：请提供来自 `POST /integrations/slack/link/verify` 的 `slack_code` 和 `state` 再次确认。`GET /integrations/slack/link/:code` 通过 `email_matches` 提前报告匹配检查结果，并通过 `verify_available` 说明 Slack 登录是否可用。
 
 ```json
 {
@@ -637,21 +637,21 @@ A `403` whose `code` is `slack_link_email_mismatch` comes from `POST /integratio
 }
 ```
 
-**How to fix:**
-- Sign in to Warmbly with the address on your Slack profile, then confirm again
-- If the addresses already match, a member with `manage_settings` reconnects Slack under **Integrations > Slack** so the connection grants `users:read` and `users:read.email`
+**解决方法：**
+- 使用 Slack 个人资料中的邮箱登录 Warmbly，然后再次确认
+- 若地址已经相同，请具有 `manage_settings` 的成员在 **集成 > Slack** 中重新连接 Slack，使连接授予 `users:read` 和 `users:read.email`
 
-### 404 Not Found
+### 404 Not Found（未找到） [#404-not-found]
 
-Returned when the requested resource doesn't exist.
+请求的资源不存在时返回。
 
-**Common causes:**
-- Invalid resource ID
-- Resource was deleted
-- Resource belongs to different organization
-- Typo in endpoint URL
+**常见原因：**
+- 资源 ID 无效
+- 资源已删除
+- 资源属于其他组织
+- 端点 URL 拼写错误
 
-**Example:**
+**示例：**
 
 ```json
 {
@@ -662,35 +662,35 @@ Returned when the requested resource doesn't exist.
 }
 ```
 
-**How to fix:**
-- Verify the resource ID is correct
-- Check that the resource hasn't been deleted
-- Ensure you're using the correct endpoint
+**解决方法：**
+- 确认资源 ID 正确
+- 检查资源是否已删除
+- 确保使用正确端点
 
-**Specific 404 codes:**
+**具体 404 错误码：**
 
-| `code` | Meaning |
+| `code` | 含义 |
 |--------|---------|
-| `unknown_view` | `/me/views/:view` was given a view name other than `contacts`, `campaign_leads` or `unibox_rail` |
-| `app_attest_unavailable` | `POST /auth/app-attest/challenge` or `/keys` on an instance with App Attest off. See [App Attest refusals](#app-attest-refusals) |
-| `lead_cc_contact_not_found` | [Set a lead's CC](/api/reference/campaigns/#set-a-leads-cc) named a contact that is not in the workspace |
-| `slack_not_connected` | A [Slack](/guides/slack/) route was called for a workspace that has not connected Slack, or whose connection was removed. Connect it under **Integrations > Slack** |
-| `slack_link_invalid` | The Slack link code is unknown, expired or already used. Mention or message the bot in Slack for a new link button |
-| `slack_verify_failed` | `POST /integrations/slack/link` with a Sign in with Slack result that is unknown, expired, already used, started by someone else or for another code. Start again from `POST /integrations/slack/link/verify` |
-| `slack_verify_wrong_account` | `POST /integrations/slack/link` after Sign in with Slack signed in a different Slack account than the one the link code names |
-| `slack_verify_unavailable` | `POST /integrations/slack/link/verify` on an instance whose Slack app has no client credentials |
-| `slack_not_linked` | `PATCH /integrations/slack/link` from a member who has not linked a Slack account in this workspace |
+| `unknown_view` | `/me/views/:view` 收到的视图名称不是 `contacts`、`campaign_leads` 或 `unibox_rail` |
+| `app_attest_unavailable` | 在关闭 App Attest 的实例上调用 `POST /auth/app-attest/challenge` 或 `/keys`。参见 [App Attest 验证被拒绝的情况](#app-attest-refusals) |
+| `lead_cc_contact_not_found` | [设置潜在客户的抄送对象](/api/reference/campaigns/#set-a-leads-cc) 指定了不属于工作区的联系人 |
+| `slack_not_connected` | 为尚未连接 Slack 或连接已移除的工作区调用了 [Slack](/guides/slack/) 路由。请在 **集成 > Slack** 中连接 |
+| `slack_link_invalid` | Slack 关联代码未知、已过期或已使用。请在 Slack 中提及机器人或向其发消息，获取新的关联按钮 |
+| `slack_verify_failed` | `POST /integrations/slack/link` 提交的 Slack 登录结果未知、已过期、已使用、由他人发起或属于另一代码。请从 `POST /integrations/slack/link/verify` 重新开始 |
+| `slack_verify_wrong_account` | Slack 登录使用了与关联代码指定身份不同的 Slack 账户后，调用 `POST /integrations/slack/link` |
+| `slack_verify_unavailable` | 在 Slack 应用没有客户端凭据的实例上调用 `POST /integrations/slack/link/verify` |
+| `slack_not_linked` | 尚未在此工作区关联 Slack 账户的成员调用 `PATCH /integrations/slack/link` |
 
-### 409 Conflict
+### 409 Conflict（冲突） [#409-conflict]
 
-Returned when the request conflicts with existing data.
+请求与现有数据冲突时返回。
 
-**Common causes:**
-- Trying to create a resource that already exists
-- Duplicate unique values
-- Deleting something whose state does not allow it yet, such as an API key that can still authenticate
+**常见原因：**
+- 尝试创建已存在的资源
+- 唯一值重复
+- 尝试删除当前状态尚不允许删除的资源，例如仍可用于身份验证的 API 密钥
 
-**Example:**
+**示例：**
 
 ```json
 {
@@ -701,33 +701,33 @@ Returned when the request conflicts with existing data.
 }
 ```
 
-Creating an account for an address that already has one answers `409` with the generic `conflict` code and a message pointing to sign-in and password reset. With email verification on it comes from `POST /auth/register/confirm`, after the emailed code has shown the address is the caller's; without it, `POST /auth/register` answers it directly.
+为已有账户的地址创建账户，会返回 `409`，使用通用 `conflict` 错误码，并提示登录或重置密码。启用邮箱验证时，邮件验证码证明地址属于调用者后，由 `POST /auth/register/confirm` 返回；未启用时则由 `POST /auth/register` 直接返回。
 
-A few conflicts carry their own `code`. The mailbox import's are under [mailbox import refusals](#mailbox-import-refusals). A contact's email address has to be free, so changing one to an address another contact already holds is refused rather than merging the two:
+部分冲突具有独立 `code`。邮箱导入冲突见 [邮箱导入拒绝原因](#mailbox-import-refusals)。联系人的邮箱地址必须未被占用，因此将其改为另一联系人已使用的地址时会被拒绝，而不会合并两位联系人：
 
-| `code` | Status | Meaning |
+| `code` | 状态 | 含义 |
 |--------|--------|---------|
-| `contact_email_taken` | 409 | The address given to [update a contact](/api/reference/contacts/#update-a-contact) already belongs to another contact |
-| `lead_cc_lead_is_copied` | 409 | [Set a lead's CC](/api/reference/campaigns/#set-a-leads-cc) on a lead that is itself copied on another lead in the campaign, so it sends nothing of its own to copy anyone on |
-| `lead_cc_has_copies` | 409 | [Set a lead's CC](/api/reference/campaigns/#set-a-leads-cc) names a contact that has copies of their own in the campaign |
-| `mailbox_is_seed` | 409 | Warmup was started or resumed on a placement seed inbox. See [placement test refusals](#placement-test-refusals) |
-| `mailbox_not_google_signin` | 409 | `POST /emails/onboarding/app-password/:id` on a mailbox that is not connected with per-mailbox Google sign-in. See [app password switch refusals](#app-password-switch-refusals) |
-| `approval_not_pending` | 409 | `POST /ai/sessions/:id/approve` named a tool call the conversation is not waiting on: it was already decided, in another tab or in Slack, or a newer message replaced it |
-| `mailbox_cloud_unenroll_failed` | 409 | The mailbox is linked to [Warmbly Cloud](/guides/warmbly-cloud/) and its link could not be released, so `DELETE /emails/{id}` would leave Warmbly Cloud holding its credential or its claim on it. The mailbox record remains, and restoration onto its worker is attempted |
+| `contact_email_taken` | 409 | 提供给 [更新联系人](/api/reference/contacts/#update-a-contact) 的地址已属于另一位联系人 |
+| `lead_cc_lead_is_copied` | 409 | 对本身已是同一营销活动中另一潜在客户抄送对象的潜在客户调用 [设置潜在客户的抄送对象](/api/reference/campaigns/#set-a-leads-cc)；它不再收到自己的独立邮件，因此无法再为其抄送他人 |
+| `lead_cc_has_copies` | 409 | [设置潜在客户的抄送对象](/api/reference/campaigns/#set-a-leads-cc) 指定了在营销活动中已有自身抄送对象的联系人 |
+| `mailbox_is_seed` | 409 | 在投递位置种子收件箱上启动或恢复预热。参见 [投递位置测试拒绝原因](#placement-test-refusals) |
+| `mailbox_not_google_signin` | 409 | 对非通过逐邮箱 Google 登录连接的邮箱调用 `POST /emails/onboarding/app-password/:id`。参见 [切换应用密码的拒绝原因](#app-password-switch-refusals) |
+| `approval_not_pending` | 409 | `POST /ai/sessions/:id/approve` 指定了会话当前并未等待的工具调用：可能已在另一选项卡或 Slack 中作出决定，或已被更新消息替代 |
+| `mailbox_cloud_unenroll_failed` | 409 | 邮箱已关联 [Warmbly Cloud](/guides/warmbly-cloud/)，但无法释放关联，因此 `DELETE /emails/{id}` 将导致 Warmbly Cloud 继续持有凭据或认领状态。邮箱记录保留，并尝试恢复到工作节点 |
 
-`mailbox_cloud_unenroll_failed` is a self-hosted instance losing contact with Warmbly Cloud mid-delete. Deleting an enrolled mailbox has to revoke its enrollment before the record goes, because the pool holds the mailbox's own SMTP/IMAP credentials and that record is the only thing that knows the enrollment exists. The same call releases a cloud-managed mirror before the record goes, so the mailbox returns to the cloud workspace and can be adopted again instead of staying claimed by an instance that no longer keeps it. The mailbox record remains. Warmbly attempts to restore it onto its worker immediately, and the worker reconciler may restore it later if that attempt fails. Retry the delete once the instance can reach the cloud again. Unenrolling under **Settings > Warmbly Cloud** first does not help: it makes the same call.
+`mailbox_cloud_unenroll_failed` 表示自托管实例在删除过程中失去与 Warmbly Cloud 的联系。删除已加入预热池的邮箱时，必须先撤销加入关系，再移除记录，因为池中持有邮箱自身的 SMTP/IMAP 凭据，而该记录是唯一知道加入关系存在的地方。同一调用还会在移除记录前释放云端托管镜像，使邮箱返回云端工作区并可再次接管，而不会继续被已经不再保有它的实例认领。邮箱记录会保留。Warmbly 立即尝试将其恢复到工作节点；若失败，工作节点协调器可能稍后恢复。实例恢复云端连接后，请重试删除。先在 **设置 > Warmbly Cloud** 中取消加入并无帮助，因为它调用的是同一接口。
 
-### 422 Unprocessable
+### 422 Unprocessable（无法处理） [#422-unprocessable]
 
-Returned when validation fails on the request data.
+请求数据验证失败时返回。
 
-**Common causes:**
-- Invalid email format
-- String exceeds maximum length
-- Number outside valid range
-- Invalid enum value
+**常见原因：**
+- 邮箱地址格式无效
+- 字符串超过最大长度
+- 数字超出有效范围
+- 枚举值无效
 
-**Example:**
+**示例：**
 
 ```json
 {
@@ -738,11 +738,11 @@ Returned when validation fails on the request data.
 }
 ```
 
-### 500 Internal Server Error
+### 500 Internal Server Error（服务器内部错误） [#500-internal-server-error]
 
-Returned when an unexpected error occurs on the server.
+服务器发生未预期错误时返回。
 
-**Example:**
+**示例：**
 
 ```json
 {
@@ -753,13 +753,13 @@ Returned when an unexpected error occurs on the server.
 }
 ```
 
-**How to fix:**
-- Retry the request after a short delay
-- If persistent, contact support with request details
+**解决方法：**
+- 稍作等待后重试请求
+- 若持续发生，请附带请求详情联系支持
 
-A 500 always carries this same message. The underlying detail is not returned, because it is usually database or provider output naming tables, columns and hosts, none of which helps a caller. It is logged against the `request_id` in the response, so quoting that id in a support request is what connects the two.
+500 始终携带相同消息。不返回底层详情，因为它通常是包含表名、列名和主机名的数据库或服务商输出，对调用者没有帮助。详情会与响应中的 `request_id` 关联记录，因此在支持请求中引用该 ID 即可关联两者。
 
-One `internal_error` variant is worth distinguishing. When an authentication endpoint cannot send its email, the message names that specifically rather than reporting a generic fault, because on a self-hosted instance the person reading it is often the one who can fix it:
+有一种 `internal_error` 情况需要区分。身份验证端点无法发送邮件时，消息会明确说明，而不是报告通用故障，因为自托管实例上看到消息的人通常就是能够修复它的人：
 
 ```json
 {
@@ -770,13 +770,13 @@ One `internal_error` variant is worth distinguishing. When an authentication end
 }
 ```
 
-On a self-hosted deployment that means `MAIL_TRANSPORT` and the `SMTP_` variables. See [self-hosting](/development/deployment-guide/).
+在自托管部署中，这涉及 `MAIL_TRANSPORT` 和 `SMTP_` 变量。参见 [自托管](/development/deployment-guide/)。
 
-### 503 Service Unavailable
+### 503 Service Unavailable（服务不可用） [#503-service-unavailable]
 
-Returned when the service is temporarily unavailable.
+服务暂时不可用时返回。
 
-**Example:**
+**示例：**
 
 ```json
 {
@@ -787,13 +787,13 @@ Returned when the service is temporarily unavailable.
 }
 ```
 
-**How to fix:**
-- Wait and retry with exponential backoff
-- Check status page for incidents
+**解决方法：**
+- 等待后采用指数退避重试
+- 检查状态页面是否有故障事件
 
-#### `mailbox_provider_not_configured`
+#### `mailbox_provider_not_configured` [#mailbox_provider_not_configured]
 
-A `503` whose `code` is `mailbox_provider_not_configured` is not transient and retrying will not help. It means the deployment has no OAuth client for the mailbox provider the request asked for, which only happens on a self-hosted install.
+`code` 为 `mailbox_provider_not_configured` 的 `503` 不是暂时性问题，重试无效。它表示部署未配置请求所需邮箱服务商的 OAuth 客户端，仅发生在自托管安装中。
 
 ```json
 {
@@ -804,14 +804,14 @@ A `503` whose `code` is `mailbox_provider_not_configured` is not transient and r
 }
 ```
 
-**How to fix:**
-- Set `BOX_GOOGLE_CLIENT_ID` and `BOX_GOOGLE_CLIENT_SECRET`, or `BOX_OUTLOOK_CLIENT_ID` and `BOX_OUTLOOK_CLIENT_SECRET`, in the `.env` at your install root, then restart
-- Or connect the mailbox over SMTP and IMAP instead, which needs no configuration
-- Full walkthrough: [connect mailboxes](/development/deployment-guide/#connect-mailboxes)
+**解决方法：**
+- 在安装根目录的 `.env` 中设置 `BOX_GOOGLE_CLIENT_ID` 和 `BOX_GOOGLE_CLIENT_SECRET`，或 `BOX_OUTLOOK_CLIENT_ID` 和 `BOX_OUTLOOK_CLIENT_SECRET`，然后重启
+- 或改用 SMTP 和 IMAP 连接邮箱，无需这些配置
+- 完整步骤：[连接邮箱](/development/deployment-guide/#connect-mailboxes)
 
-#### `ai_not_configured`
+#### `ai_not_configured` [#ai_not_configured]
 
-A `503` whose `code` is `ai_not_configured` is not transient and retrying will not help. It comes from `POST /templates/analyze` and means the deployment has no AI provider set up at all. It is how a client tells "there is no AI here" apart from "the provider is having a bad minute", which returns the generic `service_unavailable` and is worth retrying.
+`code` 为 `ai_not_configured` 的 `503` 不是暂时性问题，重试无效。它来自 `POST /templates/analyze`，表示部署完全没有配置 AI 服务商。客户端可据此区分“此处没有 AI”和“服务商暂时异常”；后者返回通用 `service_unavailable`，值得重试。
 
 ```json
 {
@@ -822,13 +822,13 @@ A `503` whose `code` is `ai_not_configured` is not transient and retrying will n
 }
 ```
 
-**How to fix:**
-- Set `AI_PROVIDER` and `AI_API_KEY` in the `.env` at your install root, then restart. See the [configuration reference](/development/configuration/)
-- Hide the AI affordance in your client rather than retrying: nothing about the request will make it succeed
+**解决方法：**
+- 在安装根目录的 `.env` 中设置 `AI_PROVIDER` 和 `AI_API_KEY`，然后重启。参见 [配置参考](/development/configuration/)
+- 在客户端隐藏 AI 功能入口，而非重试：修改请求内容无法使其成功
 
-#### `slack_not_configured`
+#### `slack_not_configured` [#slack_not_configured]
 
-A `503` whose `code` is `slack_not_configured` is not transient and retrying will not help. The instance is not set up for [Slack](/guides/slack/), which only happens on a self-hosted install. The three Slack request URLs (`/api/v1/integrations/slack/events`, `/interactivity` and `/commands`) answer it whenever `SLACK_SIGNING_SECRET` is unset.
+`code` 为 `slack_not_configured` 的 `503` 不是暂时性问题，重试无效。实例未配置 [Slack](/guides/slack/)，仅发生在自托管安装中。未设置 `SLACK_SIGNING_SECRET` 时，三个 Slack 请求 URL（`/api/v1/integrations/slack/events`、`/interactivity` 和 `/commands`）都会返回此错误。
 
 ```json
 {
@@ -839,15 +839,15 @@ A `503` whose `code` is `slack_not_configured` is not transient and retrying wil
 }
 ```
 
-**How to fix:**
-- Create the instance's Slack app and set `SLACK_OAUTH_CLIENT_ID`, `SLACK_OAUTH_CLIENT_SECRET` and `SLACK_SIGNING_SECRET` on the backend and the consumer, then restart. See [Slack app](/development/slack-app/)
-- In a client, read `app_configured` and `interactive_configured` from `GET /integrations/slack/status` and hide the Slack affordances rather than retrying
+**解决方法：**
+- 创建实例的 Slack 应用，并在后端和消费者进程上设置 `SLACK_OAUTH_CLIENT_ID`、`SLACK_OAUTH_CLIENT_SECRET` 和 `SLACK_SIGNING_SECRET`，然后重启。参见 [Slack 应用](/development/slack-app/)
+- 客户端应从 `GET /integrations/slack/status` 读取 `app_configured` 和 `interactive_configured`，并隐藏 Slack 功能入口，而非重试
 
-Those request URLs answer `401` `unauthorized` to a request whose Slack signature does not verify. Linking a Slack account to a workspace you are not a member of is `403` `forbidden`, and linking one whose email is not yours without signing in to it with Slack is `403` [`slack_link_email_mismatch`](#slack_link_email_mismatch).
+这些请求 URL 对 Slack 签名验证失败的请求返回 `401` `unauthorized`。将 Slack 账户关联到自己并非成员的工作区，返回 `403` `forbidden`；关联邮箱不属于自己的账户且未通过 Slack 登录验证时，返回 `403` [`slack_link_email_mismatch`](#slack_link_email_mismatch)。
 
-#### `mailbox_allowance_reached`
+#### `mailbox_allowance_reached` [#mailbox_allowance_reached]
 
-A `403` whose `code` is `mailbox_allowance_reached` comes from every path that connects a mailbox: `POST /emails/onboarding/oauth/start`, `POST /emails/onboarding/oauth/finish`, `POST /emails/onboarding/smtp-imap`, and per row inside `POST /emails/onboarding/smtp-imap/bulk`. A [mailbox import](/guides/mailbox-import/) does not answer it over HTTP: the rows past the allowance fail with the `cause` `allowance_reached` and can be retried once it is raised. It is not a permission problem: the workspace holds its whole [mailbox allowance](/guides/mailboxes/#mailbox-allowance), which on a paid plan is one mailbox for every send a day the plan includes, and `10` on a free workspace. Nothing was connected.
+`code` 为 `mailbox_allowance_reached` 的 `403` 可来自所有邮箱连接途径：`POST /emails/onboarding/oauth/start`、`POST /emails/onboarding/oauth/finish`、`POST /emails/onboarding/smtp-imap`，以及 `POST /emails/onboarding/smtp-imap/bulk` 内的逐行结果。[邮箱导入](/guides/mailbox-import/) 不以 HTTP 错误返回它：超出额度的行以 `cause` 为 `allowance_reached` 失败，额度提高后可重试。这不是权限问题：工作区已用完全部 [邮箱数量额度](/guides/mailboxes/#mailbox-allowance)，付费套餐中每日每包含一封发送量对应一个邮箱，免费工作区则为 `10`。未连接任何邮箱。
 
 ```json
 {
@@ -858,14 +858,14 @@ A `403` whose `code` is `mailbox_allowance_reached` comes from every path that c
 }
 ```
 
-**How to fix:**
-- Read `GET /emails/allowance` first: `remaining` says how many connects will succeed, and `pending_request` whether an increase is already asked for
-- Submit a limit-increase request for `max_email_accounts` via `POST /organization/:orgId/limit-requests`, or move to a plan with more daily sends. An approved request raises the allowance immediately; retry the connect then
-- Reconnecting an existing mailbox never returns this code
+**解决方法：**
+- 先读取 `GET /emails/allowance`：`remaining` 表示还能成功连接多少个邮箱，`pending_request` 表示是否已申请增额
+- 通过 `POST /organization/:orgId/limit-requests` 为 `max_email_accounts` 提交增额申请，或升级到每日发送量更高的套餐。申请获批会立即提高额度，届时重试连接
+- 重新连接现有邮箱绝不会返回此错误码
 
-#### `storage_limit_reached`
+#### `storage_limit_reached` [#storage_limit_reached]
 
-A `400` whose `code` is `storage_limit_reached` comes from `POST /campaigns/:id/attachments`, from `POST /email-images`, and from a campaign duplicate that would copy attachments. The workspace's stored bytes, its attachments across every campaign plus its email image library, would pass the quota. The check and the write happen together under one per-workspace lock shared by both, so two uploads racing for the last of the quota cannot both get in. Nothing was stored.
+`code` 为 `storage_limit_reached` 的 `400` 来自 `POST /campaigns/:id/attachments`、`POST /email-images`，以及会复制附件的营销活动复制操作。工作区存储字节数（所有营销活动附件加邮件图片库）将超过配额。检查与写入在两者共用的单个工作区锁下完成，因此争抢最后剩余配额的两个上传无法同时通过。未存储任何内容。
 
 ```json
 {
@@ -876,13 +876,13 @@ A `400` whose `code` is `storage_limit_reached` comes from `POST /campaigns/:id/
 }
 ```
 
-**How to fix:**
-- `GET /organization/current/limits` reports `storage.used_bytes` and `storage.limit_bytes`, and `storage.over_quota` when a plan change left the workspace above the quota. Existing attachments keep sending either way
-- Delete attachments you no longer need (`DELETE /campaigns/:id/attachments/:attachmentId`) or images (`DELETE /email-images/:id`), or move to a paid plan for the larger quota
+**解决方法：**
+- `GET /organization/current/limits` 报告 `storage.used_bytes` 和 `storage.limit_bytes`；若套餐变更导致工作区超额，还报告 `storage.over_quota`。无论是否超额，现有附件仍可继续发送
+- 删除不再需要的附件（`DELETE /campaigns/:id/attachments/:attachmentId`）或图片（`DELETE /email-images/:id`），或升级到付费套餐以获得更大配额
 
-#### `mailbox_validation_timeout`
+#### `mailbox_validation_timeout` [#mailbox_validation_timeout]
 
-A `400` whose `code` is `mailbox_validation_timeout` comes from the SMTP and IMAP connect and re-authorize endpoints. Warmbly proves credentials by opening a real connection to the mail server before it stores anything, and a connection stayed silent inside that window. The message names the leg that did not answer and says whether the other one signed in. Nothing was saved and no mailbox was created.
+`code` 为 `mailbox_validation_timeout` 的 `400` 来自 SMTP 和 IMAP 连接及重新授权端点。Warmbly 在保存任何内容前，通过实际连接邮件服务器验证凭据，但某一路连接在验证窗口内始终未响应。消息会指出未响应的一端，并说明另一端是否已成功登录。未保存任何内容，也未创建邮箱。
 
 ```json
 {
@@ -893,17 +893,17 @@ A `400` whose `code` is `mailbox_validation_timeout` comes from the SMTP and IMA
 }
 ```
 
-The same code with a message that begins `Warmbly's worker did not report back` means no worker answered the check at all, so the mail server was never tested. The check is offered to each healthy worker in turn and waits on at most two that take it without answering, so this means the fleet as a whole is not answering. On the hosted product, retry and contact support if it persists. On a self-hosted instance, check that a worker is running, heartbeating, and reaching the same Redis as the backend: the check reaches the worker over Redis and its answer comes back the same way.
+同一错误码的消息若以 `Warmbly's worker did not report back` 开头，表示根本没有工作节点回应检查，因此邮件服务器从未被测试。检查依次交给每个健康工作节点，最多等待两个已接受却不回应的工作节点，因此此错误意味着整个节点集群都未响应。在托管产品上，请重试，持续失败则联系支持。在自托管实例上，请检查工作节点是否运行、是否有心跳，以及是否能访问与后端相同的 Redis：检查通过 Redis 到达工作节点，结果也通过同一路径返回。
 
-**How to fix:**
-- Read which leg stayed silent. One leg passing and the other hanging is the network between the worker and that port, not the password: a port that nothing listens on, or that a firewall drops, takes the full timeout rather than refusing straight away
-- When 465 never answers, the worker also tries 587 with STARTTLS on the same server and uses it if it connects; a passing check is then stored with port 587. This error means neither port answered, so check that the server is reachable from outside your network and which port it listens on
-- Retry. A mail server under load can be slow once and answer immediately on the next attempt
-- Confirm the server accepts connections from outside your network, and that the security setting matches the port: `tls` for 465 and 993, `starttls` for 587 and 143
+**解决方法：**
+- 阅读消息，确认哪一端未响应。一端通过而另一端挂起，说明问题在工作节点到该端口的网络，而非密码：无人监听或被防火墙丢弃数据包的端口会等待完整超时，而不会立即拒绝
+- 465 始终未响应时，工作节点还会尝试同一服务器的 587 STARTTLS，连接成功则使用它；验证通过后保存的端口为 587。此错误表示两个端口均未响应，请检查服务器是否可从网络外部访问，以及实际监听哪个端口
+- 请重试。负载较高的邮件服务器可能某次响应较慢，下次立即响应
+- 确认服务器接受来自网络外部的连接，并确保安全模式与端口匹配：465 和 993 使用 `tls`，587 和 143 使用 `starttls`
 
-#### `mailbox_auth_refused`
+#### `mailbox_auth_refused` [#mailbox_auth_refused]
 
-A `400` whose `code` is `mailbox_auth_refused` comes from the SMTP and IMAP connect and re-authorize endpoints. The mail server answered and refused the sign-in. The message names the leg and the server, quotes the server's own reply, and for Google's servers says what an app password is. Nothing was saved.
+`code` 为 `mailbox_auth_refused` 的 `400` 来自 SMTP 和 IMAP 连接及重新授权端点。邮件服务器已响应，但拒绝登录。消息会指出哪一端、哪台服务器，引用服务器原始回复；对于 Google 服务器，还会说明应用密码的含义。未保存任何内容。
 
 ```json
 {
@@ -914,15 +914,15 @@ A `400` whose `code` is `mailbox_auth_refused` comes from the SMTP and IMAP conn
 }
 ```
 
-**How to fix:**
-- Read the server's reply in the message: it says which leg refused and usually why (a wrong password, an app password required, IMAP switched off for the domain)
-- The username is normally the full address. The password is the provider's app password when the account has two-step verification on, never the account password
-- Whitespace is not the problem: Warmbly trims the password on every path, and removes every space from one bound for a Google server
-- On Google, a refusal with a real app password nearly always means the address is not the account that issued it: enter the account's own sign-in address rather than an alias or a group, create the app password while signed in to that account, and check it has not been deleted since. On Google Workspace the administrator can also block app passwords or IMAP for the organization
+**解决方法：**
+- 阅读消息中的服务器回复：它说明哪一端拒绝，通常也说明原因（密码错误、需要应用密码、域名关闭 IMAP）
+- 用户名通常为完整邮箱地址。账户启用两步验证时，密码应为服务商的应用密码，绝不能使用账户密码
+- 空白字符不是问题：Warmbly 在所有途径都会去除密码首尾空白，对 Google 服务器使用的密码还会去除所有空格
+- 对于 Google，使用真实应用密码仍遭拒时，几乎总是地址并非签发该密码的账户：请填写账户自己的登录地址，而非别名或群组；登录该账户后创建应用密码，并确认之后没有删除。在 Google Workspace 中，管理员也可能对组织禁用应用密码或 IMAP
 
-#### `mailbox_unreachable`
+#### `mailbox_unreachable` [#mailbox_unreachable]
 
-A `400` whose `code` is `mailbox_unreachable` comes from the same endpoints. The worker could not open a connection to the server at all: the name did not resolve, the port refused, or a firewall dropped the packets. The message says which server and which of those it was. Nothing was saved.
+`code` 为 `mailbox_unreachable` 的 `400` 来自同一组端点。工作节点完全无法连接服务器：域名解析失败、端口拒绝连接，或防火墙丢弃数据包。消息指出服务器和具体情况。未保存任何内容。
 
 ```json
 {
@@ -933,13 +933,13 @@ A `400` whose `code` is `mailbox_unreachable` comes from the same endpoints. The
 }
 ```
 
-**How to fix:**
-- Check the host and port for typos
-- The connection leaves from the worker, not from your browser or from the API host: the worker's network has to reach the server on that port. Some hosting providers block outbound mail ports until asked
+**解决方法：**
+- 检查主机和端口是否拼写错误
+- 连接从工作节点发出，而非浏览器或 API 主机：工作节点所在网络必须能访问服务器的对应端口。部分托管服务商默认封锁外发邮件端口，需要申请开放
 
-#### `mailbox_tls_failed`
+#### `mailbox_tls_failed` [#mailbox_tls_failed]
 
-A `400` whose `code` is `mailbox_tls_failed` comes from the same endpoints. The server was reached but no secure connection could be made: the certificate did not verify for that host name, the handshake failed, or the port expects a different mode (`tls` on a STARTTLS port, or the reverse) and no STARTTLS was offered. Nothing was saved.
+`code` 为 `mailbox_tls_failed` 的 `400` 来自同一组端点。已连到服务器，但无法建立安全连接：证书不能通过该主机名验证、握手失败，或端口要求不同模式（在 STARTTLS 端口使用 `tls`，或反之）且服务器未提供 STARTTLS。未保存任何内容。
 
 ```json
 {
@@ -950,13 +950,13 @@ A `400` whose `code` is `mailbox_tls_failed` comes from the same endpoints. The 
 }
 ```
 
-**How to fix:**
-- Match the security setting to the port: `tls` for 465 and 993, `starttls` for 587 and 143, unless the provider documents otherwise
-- Use the host name the certificate is issued for, which is the one in the provider's documentation rather than an alias or an IP address
+**解决方法：**
+- 安全设置须与端口匹配：465 和 993 使用 `tls`，587 和 143 使用 `starttls`，除非服务商文档另有说明
+- 使用证书签发的主机名，即服务商文档中的主机名，而非别名或 IP 地址
 
-#### `mailbox_server_declined`
+#### `mailbox_server_declined` [#mailbox_server_declined]
 
-A `400` whose `code` is `mailbox_server_declined` comes from the same endpoints. The sign-in could not be completed for a reason other than the credentials: the server asked for a retry later (a `4xx` reply, often a login rate limit), it offers no sign-in method Warmbly implements, it answered with a `5xx` that is not about the password (a mechanism it does not support, a STARTTLS it insists on), the conversation broke, or the probe itself failed before a reply arrived. The message carries the server's reply when there is one. Nothing was saved.
+`code` 为 `mailbox_server_declined` 的 `400` 来自同一组端点。登录因凭据之外的原因无法完成：服务器要求稍后重试（`4xx` 回复，常见于登录限流）、未提供 Warmbly 实现的登录方式、返回与密码无关的 `5xx`（不支持某种机制、强制要求 STARTTLS）、协议交互中断，或探测在收到回复前自身失败。若服务器有回复，消息会携带该回复。未保存任何内容。
 
 ```json
 {
@@ -967,13 +967,13 @@ A `400` whose `code` is `mailbox_server_declined` comes from the same endpoints.
 }
 ```
 
-**How to fix:**
-- For a `4xx` reply, wait a few minutes and retry
-- For a server that offers only mechanisms Warmbly does not implement (NTLM, GSSAPI), use the provider's documented SMTP submission host, which normally offers `LOGIN` or `PLAIN`; a different password does not add a mechanism
+**解决方法：**
+- 对于 `4xx` 回复，请等待几分钟后重试
+- 若服务器仅提供 Warmbly 未实现的机制（NTLM、GSSAPI），请使用服务商文档中的 SMTP 提交主机，通常提供 `LOGIN` 或 `PLAIN`；更换密码不会增加认证机制
 
-#### `mailbox_worker_unreachable`
+#### `mailbox_worker_unreachable` [#mailbox_worker_unreachable]
 
-A `503` whose `code` is `mailbox_worker_unreachable` comes from `DELETE /emails/{id}`. Disconnecting a mailbox has to reach the machine that syncs it before the record goes, because once the record is gone nothing can tell that machine to stop. When the instruction cannot be delivered, nothing is removed and the mailbox is left exactly as it was.
+`code` 为 `mailbox_worker_unreachable` 的 `503` 来自 `DELETE /emails/{id}`。断开邮箱前，必须先通知负责同步的机器，再删除记录，因为记录删除后就无法再通知该机器停止。指令无法投递时，不删除任何内容，邮箱完全保持原样。
 
 ```json
 {
@@ -984,12 +984,12 @@ A `503` whose `code` is `mailbox_worker_unreachable` comes from `DELETE /emails/
 }
 ```
 
-**How to fix:**
-- Retry the delete. It is safe to repeat: a mailbox that is already gone returns `404`, and one that is still there is untouched
+**解决方法：**
+- 重试删除。可安全重复：邮箱已不存在时返回 `404`，仍存在时保持不变
 
-#### `mailbox_send_as_unsupported`
+#### `mailbox_send_as_unsupported` [#mailbox_send_as_unsupported]
 
-A `400` whose `code` is `mailbox_send_as_unsupported` comes from `POST /emails/{id}/identity/refresh` and from a `PATCH /emails/{id}` that sets `send_as_email`. Only Gmail and Google Workspace mailboxes publish the addresses they are allowed to send as; an Outlook or SMTP/IMAP mailbox has no such list, so there is nothing to refresh and nothing to choose from.
+`code` 为 `mailbox_send_as_unsupported` 的 `400` 来自 `POST /emails/{id}/identity/refresh`，以及设置 `send_as_email` 的 `PATCH /emails/{id}`。只有 Gmail 和 Google Workspace 邮箱会提供允许使用的发件地址列表；Outlook 或 SMTP/IMAP 邮箱没有此类列表，因此无内容可刷新，也无地址可选择。
 
 ```json
 {
@@ -1000,13 +1000,13 @@ A `400` whose `code` is `mailbox_send_as_unsupported` comes from `POST /emails/{
 }
 ```
 
-**How to fix:**
-- Read `GET /emails/{id}/identity` first. Its `supported` field is `false` for these mailboxes, and `identities` is empty
-- Send from the mailbox's own address, which is what an empty `send_as_email` means
+**解决方法：**
+- 先读取 `GET /emails/{id}/identity`。这些邮箱的 `supported` 字段为 `false`，`identities` 为空
+- 使用邮箱自身地址发送，即将 `send_as_email` 留空
 
-#### `mailbox_send_as_unknown`
+#### `mailbox_send_as_unknown` [#mailbox_send_as_unknown]
 
-A `400` whose `code` is `mailbox_send_as_unknown` comes from a `PATCH /emails/{id}` that sets `send_as_email` to an address the provider has not verified for that mailbox. The choice is refused here rather than at send time, where the provider's own refusal arrives days later against a campaign step and names nothing you could act on.
+`code` 为 `mailbox_send_as_unknown` 的 `400` 来自将 `send_as_email` 设为服务商尚未为该邮箱验证的地址的 `PATCH /emails/{id}`。此处即拒绝选择，而非等到发送时；否则服务商可能几天后才针对营销活动步骤返回拒绝，且没有足以指导修复的信息。
 
 ```json
 {
@@ -1017,13 +1017,13 @@ A `400` whose `code` is `mailbox_send_as_unknown` comes from a `PATCH /emails/{i
 }
 ```
 
-**How to fix:**
-- Add the alias in Gmail (Settings, Accounts, "Send mail as") and finish its verification
-- Call `POST /emails/{id}/identity/refresh` so Warmbly re-reads the list, then set `send_as_email` to an address whose `verified` is `true`
+**解决方法：**
+- 在 Gmail（设置、账户、“用这个地址发送邮件”）中添加别名并完成验证
+- 调用 `POST /emails/{id}/identity/refresh`，让 Warmbly 重新读取列表，再将 `send_as_email` 设为 `verified` 为 `true` 的地址
 
-#### `mailbox_signature_too_large`
+#### `mailbox_signature_too_large` [#mailbox_signature_too_large]
 
-A `400` whose `code` is `mailbox_signature_too_large` comes from `POST /emails/{id}/identity/refresh` with `import_signature` set. The provider's signature is larger than Warmbly stores (`20000` characters of HTML), and it is refused rather than truncated: half a signature is worse than none. The send-as list is not stored either, so the call changes nothing.
+`code` 为 `mailbox_signature_too_large` 的 `400` 来自设置了 `import_signature` 的 `POST /emails/{id}/identity/refresh`。服务商签名超过 Warmbly 存储上限（`20000` 个 HTML 字符），因此拒绝而非截断：不完整签名比没有签名更糟。发件地址列表也不会保存，因此调用不作任何更改。
 
 ```json
 {
@@ -1034,13 +1034,13 @@ A `400` whose `code` is `mailbox_signature_too_large` comes from `POST /emails/{
 }
 ```
 
-**How to fix:**
-- Shorten the signature in Gmail, usually by linking an image rather than embedding it, and import again
-- Or write the signature in Warmbly directly with `PATCH /emails/{id}`
+**解决方法：**
+- 在 Gmail 中缩短签名，通常可将内嵌图片改为图片链接，然后重新导入
+- 或通过 `PATCH /emails/{id}` 直接在 Warmbly 中编写签名
 
-#### `mailbox_identity_unavailable`
+#### `mailbox_identity_unavailable` [#mailbox_identity_unavailable]
 
-A `503` whose `code` is `mailbox_identity_unavailable` comes from `POST /emails/{id}/identity/refresh`. Reading a mailbox's sending addresses is an account operation, so it runs on the worker holding that mailbox, never from the API itself. It is unavailable exactly when that machine is: while the mailbox is being moved between workers, just after a worker restart, or before a newly connected mailbox has been placed. Nothing was changed.
+`code` 为 `mailbox_identity_unavailable` 的 `503` 来自 `POST /emails/{id}/identity/refresh`。读取邮箱发件地址属于账户操作，因此在持有该邮箱的工作节点上执行，而不由 API 自身执行。当该机器不可用时，此操作也不可用：例如邮箱正在工作节点间迁移、工作节点刚重启，或新连接邮箱尚未分配。未作任何更改。
 
 ```json
 {
@@ -1051,15 +1051,15 @@ A `503` whose `code` is `mailbox_identity_unavailable` comes from `POST /emails/
 }
 ```
 
-**How to fix:**
-- Retry. Placement happens within moments, so a second attempt usually succeeds
-- `GET /emails/{id}` reports the mailbox's `status`; an `inactive` mailbox is not placed on a worker at all and will keep refusing until it is reactivated
+**解决方法：**
+- 请重试。分配通常很快完成，第二次尝试往往成功
+- `GET /emails/{id}` 报告邮箱的 `status`；`inactive` 邮箱根本不会分配到工作节点，在重新激活前会持续拒绝
 
-## Error handling best practices
+## 错误处理最佳实践 [#error-handling-best-practices]
 
-### Implement retry logic
+### 实现重试逻辑 [#implement-retry-logic]
 
-For transient errors (5xx, 429), implement exponential backoff:
+对于暂时性错误（5xx、429），请实现指数退避：
 
 ```javascript
 async function requestWithRetry(url, options, maxRetries = 3) {
@@ -1089,9 +1089,9 @@ async function requestWithRetry(url, options, maxRetries = 3) {
 }
 ```
 
-### Parse error responses
+### 解析错误响应 [#parse-error-responses]
 
-Always parse and handle error responses:
+始终解析并处理错误响应：
 
 ```javascript
 async function apiRequest(url, options) {
@@ -1114,9 +1114,9 @@ class ApiError extends Error {
 }
 ```
 
-## Rate limiting
+## 速率限制 [#rate-limiting]
 
-When you exceed rate limits, you'll receive:
+超过速率限制时，您将收到：
 
 ```
 HTTP/1.1 429 Too Many Requests
@@ -1132,21 +1132,13 @@ Retry-After: 60
 }
 ```
 
-Use the `Retry-After` header to determine when to retry.
+使用 `Retry-After` 响应头确定重试时间。
 
-## Admin device request errors
+## 管理员设备请求错误 [#admin-device-request-errors]
 
-The [admin device flow](/api/authentication/#platform-admin-device-sessions)
-adds `admin_device_expired` (404, indistinguishable invalid/unknown/expired/
-consumed request), `admin_device_resolved` (409, already decided or mismatched/
-replayed consent), and `admin_device_slow_down` (429, poll faster than five
-seconds). Start again on expiry and never auto-approve on conflict.
-Attempt budgets use existing `rate_limit_exceeded`. Auth/MFA/reauth and
-dependency failures keep existing codes. Redis failures never authorize a
-single-factor or anonymous admin. [Node diagnostics](/api/endpoints/#platform-node-diagnostics)
-use generic errors and explicit unavailable/stale coverage, not outage inference.
+[管理员设备流程](/api/authentication/#platform-admin-device-sessions) 新增 `admin_device_expired`（404，无法区分无效、未知、过期或已消费请求）、`admin_device_resolved`（409，已作决定，或同意不匹配/被重放）及 `admin_device_slow_down`（429，轮询间隔短于五秒）。过期后重新开始，冲突时绝不自动批准。尝试额度采用现有 `rate_limit_exceeded`。身份验证/MFA/重新验证及依赖失败保留现有错误码。Redis 失败绝不会授权单因素或匿名管理员。[节点诊断](/api/endpoints/#platform-node-diagnostics) 使用通用错误及显式不可用/过时覆盖状态，而不是推断故障。
 
-## See also
+## 另请参阅 [#see-also]
 
-- [Authentication](/api/authentication/)
-- [Endpoints](/api/endpoints/)
+- [身份验证](/api/authentication/)
+- [端点](/api/endpoints/)

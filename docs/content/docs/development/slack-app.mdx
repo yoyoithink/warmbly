@@ -1,46 +1,46 @@
 ---
-title: Slack app
-description: "Create the Slack app a self-hosted instance needs for Warmbly for Slack: the manifest, request URLs, scopes, events and environment variables."
+title: Slack 应用
+description: 为自托管实例创建 Warmbly for Slack 所需的 Slack 应用，配置应用清单、请求 URL、权限范围、事件和环境变量。
 ---
 
-[Warmbly for Slack](/guides/slack/) (the assistant in Slack, the inbox channel, and channel and DM notifications) runs through a Slack app. Warmbly Cloud uses Warmbly's own. A self-hosted instance needs one of its own, because Slack sends every event and button press for an app to the single set of request URLs in that app's configuration. One Slack app cannot serve two instances.
+[Warmbly for Slack](/guides/slack/) 中的 Slack 助手、收件箱频道，以及频道和私信通知，都通过 Slack 应用运行。Warmbly Cloud 使用 Warmbly 自己的应用。自托管实例需要创建自己的应用，因为 Slack 会把一个应用的所有事件和按钮操作发送到该应用配置中的同一组请求 URL。一个 Slack 应用不能服务两个实例。
 
-Until the app's credentials are set, the dashboard's Slack panel reports Slack as not set up, and the Slack request URLs answer `503` with [`slack_not_configured`](/api/error-codes/#slack_not_configured).
+在设置应用凭据之前，控制台的 Slack 面板会显示尚未配置，Slack 请求 URL 则返回 `503` 和 [`slack_not_configured`](/api/error-codes/#slack_not_configured)。
 
-## What it needs from your network
+## 网络要求 [#what-it-needs-from-your-network]
 
-| Feature | Needs |
+| 功能 | 网络要求 |
 |---|---|
-| Connecting Slack, posting notifications and inbox replies | Outbound HTTPS to `slack.com` only |
-| The assistant, the inbox buttons, the Home tab | Slack reaching the backend's request URLs over public HTTPS, with a certificate Slack trusts |
+| 连接 Slack、发布通知和收件箱回复 | 仅需能够出站通过 HTTPS 访问 `slack.com` |
+| 助手、收件箱按钮、主页选项卡 | Slack 能通过公网 HTTPS 访问后端请求 URL，且证书受 Slack 信任 |
 
-An instance only reachable on a private network can still post to Slack. Everything interactive needs the backend's public address.
+仅能通过私有网络访问的实例仍可向 Slack 发消息。所有交互功能都需要后端具有公开地址。
 
-## Create the app
+## 创建应用 [#create-the-app]
 
 <Steps>
 
 <Step>
 
-### Fill in the manifest
+### 填写应用清单 [#fill-in-the-manifest]
 
-Take `deploy/slack/manifest.json` from the repository (or from the release you run) and replace every `https://YOUR-BACKEND-HOST` with your backend's public URL, for example `https://api.example.com`. That fills in the three URLs listed under [request URLs](#request-urls).
-
-</Step>
-
-<Step>
-
-### Create the app from it
-
-At [api.slack.com/apps](https://api.slack.com/apps) choose **Create New App > From a manifest**, pick the Slack workspace to create it in, paste the manifest, review, and create.
+从仓库或你正在运行的版本中取出 `deploy/slack/manifest.json`，将所有 `https://YOUR-BACKEND-HOST` 替换为后端公开 URL，例如 `https://api.example.com`。这会填好[请求 URL](#request-urls)中列出的三个地址。
 
 </Step>
 
 <Step>
 
-### Copy the credentials
+### 根据清单创建应用 [#create-the-app-from-it]
 
-In the new app's **Basic Information**, under **App Credentials**, copy the **Client ID**, **Client Secret** and **Signing Secret** into the `.env` at your install root:
+在 [api.slack.com/apps](https://api.slack.com/apps) 选择 **Create New App > From a manifest（创建新应用 > 从清单创建）**，选择要创建应用的 Slack 工作区，粘贴清单，检查后创建。
+
+</Step>
+
+<Step>
+
+### 复制凭据 [#copy-the-credentials]
+
+在新应用的 **Basic Information（基本信息）** 页面，找到 **App Credentials（应用凭据）**，将 **Client ID（客户端 ID）**、**Client Secret（客户端密钥）** 和 **Signing Secret（签名密钥）** 复制到安装根目录的 `.env` 中：
 
 ```bash
 SLACK_OAUTH_CLIENT_ID=1234567890.1234567890
@@ -48,114 +48,114 @@ SLACK_OAUTH_CLIENT_SECRET=...
 SLACK_SIGNING_SECRET=...
 ```
 
-All three belong on the backend and the consumer. The shipped `docker-compose.yml` passes them to both, and `.env.example` lists them. The host in the manifest must be your `API_PUBLIC_URL`, which an install already has. Restart both services.
+三个值都需要配置到后端和消费者。随项目提供的 `docker-compose.yml` 会将它们传给两个服务，`.env.example` 也列出了这些变量。清单中的主机必须与你的 `API_PUBLIC_URL` 一致，安装时已经设置了该值。然后重启两个服务。
 
 </Step>
 
 <Step>
 
-### Verify the events URL
+### 验证事件 URL [#verify-the-events-url]
 
-Slack checks the events URL by sending it a challenge, and the backend only answers a challenge it can verify with the signing secret. If Slack marked the URL as unverified when you created the app, open **Event Subscriptions** and select **Retry** now that the secret is set.
+Slack 会发送挑战请求检查事件 URL，后端只会响应能通过签名密钥验证的挑战。如果创建应用时 Slack 将 URL 标为未验证，现在密钥已设置，可以打开 **Event Subscriptions（事件订阅）** 并选择 **Retry（重试）**。
 
 </Step>
 
 <Step>
 
-### Connect a workspace
+### 连接工作区 [#connect-a-workspace]
 
-In the dashboard, open **Integrations > Slack** and select **Connect**. See [connect Slack](/guides/slack/#connect-slack).
+在控制台中打开**集成 > Slack**，选择**连接**。参见[连接 Slack](/guides/slack/#connect-slack)。
 
 </Step>
 
 </Steps>
 
-## Request URLs
+## 请求 URL [#request-urls]
 
-Every URL is on the backend's public URL, `API_PUBLIC_URL` (or `BACKEND_PUBLIC_URL` when that is set), which has to match the host in the manifest.
+所有地址都基于后端公开 URL，即 `API_PUBLIC_URL`；设置了 `BACKEND_PUBLIC_URL` 时则使用后者。它必须与清单中的主机一致。
 
-| Slack setting | URL |
+| Slack 设置 | URL |
 |---|---|
-| **Event Subscriptions** request URL | `https://<backend>/api/v1/integrations/slack/events` |
-| **Interactivity & Shortcuts** request URL | `https://<backend>/api/v1/integrations/slack/interactivity` |
-| **OAuth & Permissions** redirect URL | `https://<backend>/integrations/oauth/callback`, or `INTEGRATIONS_OAUTH_REDIRECT_URL` when set |
+| **Event Subscriptions（事件订阅）** 请求 URL | `https://<backend>/api/v1/integrations/slack/events` |
+| **Interactivity & Shortcuts（交互与快捷操作）** 请求 URL | `https://<backend>/api/v1/integrations/slack/interactivity` |
+| **OAuth & Permissions（OAuth 与权限）** 重定向 URL | `https://<backend>/integrations/oauth/callback`，设置了 `INTEGRATIONS_OAUTH_REDIRECT_URL` 时使用该值 |
 
-The same redirect URL serves Sign in with Slack, which members use to link a Slack account whose email is not their Warmbly email. It needs no extra scope or setting.
+相同的重定向 URL 也用于“使用 Slack 登录”，让成员关联邮箱地址与 Warmbly 不同的 Slack 账户。无需额外权限范围或设置。
 
-Each request Slack sends is checked against the signing secret: the signature must match and its timestamp must be within five minutes, and the body is capped at 1 MiB. A request that fails is answered `401` and nothing in it is parsed. Each one is answered within Slack's three-second limit, and the work it starts runs afterwards.
+Slack 发来的每个请求都会使用签名密钥检查：签名必须匹配，时间戳必须在五分钟内，请求体最多 1 MiB。验证失败返回 `401`，且不解析其中任何内容。所有请求都会在 Slack 的三秒限制内响应，随后再执行由它启动的工作。
 
-If the backend's public URL changes, update these URLs in the Slack app (or create the app again from the manifest with the new host and replace the credentials), and update `API_PUBLIC_URL`.
+如果后端公开 URL 改变，请在 Slack 应用中更新这些地址，或使用新主机的清单重新创建应用并替换凭据，同时更新 `API_PUBLIC_URL`。
 
-## Scopes
+## 权限范围 [#scopes]
 
-The manifest asks for these bot scopes and nothing else. There are no user scopes: the app never acts as a Slack user.
+清单只请求以下机器人权限范围，没有用户权限范围：应用绝不会以 Slack 用户身份操作。
 
-| Scope | Why |
+| 权限范围 | 用途 |
 |---|---|
-| `app_mentions:read` | Receive `@Warmbly` mentions in channels |
-| `assistant:write` | Run the assistant pane: its status line and suggested prompts |
-| `channels:history` | Read replies in threads the assistant answers in public channels, and a thread's earlier messages when the bot is mentioned inside it |
-| `channels:read` | List public channels for the channel pickers, and tell whether a channel is shared with another organization |
-| `chat:write` | Post notifications, inbox conversations, answers and approval cards |
-| `chat:write.public` | Post notifications to a public channel the bot has not joined |
-| `commands` | The **Ask Warmbly about this** message shortcut |
-| `groups:history` | The same as `channels:history`, for private channels the bot was invited to |
-| `groups:read` | List the private channels the bot is in for the channel pickers |
-| `im:history` | Read messages sent to the bot in DMs |
-| `im:read` | Recognise the DM conversations it is part of |
-| `im:write` | Open a DM to send link buttons, link confirmations, and personal notifications |
-| `mpim:history` | Read a group DM thread's earlier messages when the bot is mentioned in one |
-| `reactions:write` | React to a message it is working on (👀) and mark it done (✅) |
-| `users:read` | Show the name and picture of the Slack account a link button links |
-| `users:read.email` | Read that account's email, which has to match the Warmbly account confirming the link |
+| `app_mentions:read` | 接收频道中的 `@Warmbly` 提及 |
+| `assistant:write` | 运行助手面板，包括状态行和建议提示词 |
+| `channels:history` | 读取助手正在回复的公共频道会话中的后续回复，以及在会话内提及机器人时读取此前消息 |
+| `channels:read` | 为频道选择器列出公共频道，并判断频道是否与其他组织共享 |
+| `chat:write` | 发布通知、收件箱会话、答案和审批卡片 |
+| `chat:write.public` | 向机器人尚未加入的公共频道发布通知 |
+| `commands` | 提供**就此询问 Warmbly**消息快捷操作 |
+| `groups:history` | 与 `channels:history` 相同，但用于机器人受邀加入的私有频道 |
+| `groups:read` | 为频道选择器列出机器人已加入的私有频道 |
+| `im:history` | 读取发给机器人的私信 |
+| `im:read` | 识别机器人参与的私信会话 |
+| `im:write` | 打开私信，发送关联按钮、关联确认和个人通知 |
+| `mpim:history` | 在群组私信中提及机器人时，读取该会话此前的消息 |
+| `reactions:write` | 对正在处理的消息添加 👀 表情，并用 ✅ 标记完成 |
+| `users:read` | 显示关联按钮所关联 Slack 账户的姓名和头像 |
+| `users:read.email` | 读取该账户邮箱，必须与确认关联的 Warmbly 账户匹配 |
 
-An install made before the app asked for a scope keeps working with what it has. The dashboard lists the missing scopes and offers **Reconnect**, and the features that need them stay off until then.
+在应用新增权限范围之前已完成的安装，会继续使用现有权限。控制台会列出缺失范围并提供**重新连接**；需要这些权限的功能在重新连接之前保持关闭。
 
-## Events and features
+## 事件与功能 [#events-and-features]
 
-The app subscribes to these bot events:
+应用订阅以下机器人事件：
 
-| Event | Used for |
+| 事件 | 用途 |
 |---|---|
-| `app_mention` | A question in a channel, including in an inbox conversation's thread |
-| `message.im` | A question or follow-up in a DM |
-| `message.channels`, `message.groups` | Follow-ups in a thread the assistant is answering. Every other channel message, including team discussion in inbox threads, is ignored |
-| `assistant_thread_started`, `assistant_thread_context_changed` | The assistant pane opening, and the channel you are viewing changing while it is open |
-| `app_home_opened` | Drawing the Home tab |
-| `app_uninstalled`, `tokens_revoked` | Stopping use of a Slack workspace's connection when the app is removed or its token revoked |
+| `app_mention` | 频道中的提问，包括收件箱会话线程中的提问 |
+| `message.im` | 私信中的提问或追问 |
+| `message.channels`、`message.groups` | 助手正在回复的线程中的追问。其他频道消息全部忽略，包括收件箱线程中的团队讨论 |
+| `assistant_thread_started`、`assistant_thread_context_changed` | 助手面板打开，以及面板打开时当前查看的频道发生变化 |
+| `app_home_opened` | 绘制主页选项卡 |
+| `app_uninstalled`、`tokens_revoked` | 应用移除或令牌撤销时，停止使用对应 Slack 工作区连接 |
 
-It also turns on the **Home** and **Messages** tabs, the assistant view with its suggested prompts and the message shortcut **Ask Warmbly about this** (callback `ask_warmbly_about_message`).
+它还会启用 **Home（主页）** 和 **Messages（消息）** 选项卡、带建议提示词的助手视图，以及**就此询问 Warmbly**消息快捷操作，回调为 `ask_warmbly_about_message`。
 
-## Environment variables
+## 环境变量 [#environment-variables]
 
-| Variable | Where it comes from | What it does |
+| 变量 | 来源 | 作用 |
 |---|---|---|
-| `SLACK_OAUTH_CLIENT_ID` | **Basic Information > App Credentials > Client ID** | With the secret, lets a workspace connect Slack |
-| `SLACK_OAUTH_CLIENT_SECRET` | **Client Secret** | The other half of the OAuth client |
-| `SLACK_SIGNING_SECRET` | **Signing Secret** | Verifies every request Slack sends. Without it notifications and inbox conversations still post, but the assistant and buttons are off, and the dashboard reports Slack as only partly configured |
+| `SLACK_OAUTH_CLIENT_ID` | **Basic Information > App Credentials > Client ID（基本信息 > 应用凭据 > 客户端 ID）** | 与密钥配合，让工作区连接 Slack |
+| `SLACK_OAUTH_CLIENT_SECRET` | **Client Secret（客户端密钥）** | OAuth 客户端的另一半凭据 |
+| `SLACK_SIGNING_SECRET` | **Signing Secret（签名密钥）** | 验证 Slack 发来的每个请求。缺失时仍能发布通知和收件箱会话，但助手和按钮关闭，控制台显示 Slack 仅部分配置完成 |
 
-The request URLs and the OAuth redirect are built on `API_PUBLIC_URL`, which every install already sets. `BACKEND_PUBLIC_URL` overrides it when the URL third parties call differs from the one the dashboard uses.
+请求 URL 和 OAuth 重定向基于每次安装都会设置的 `API_PUBLIC_URL`。如果第三方访问的 URL 与控制台使用的不同，可用 `BACKEND_PUBLIC_URL` 覆盖。
 
-All three need a restart and belong on the backend and the consumer. Treat the client secret and the signing secret like any other credential: to rotate one, regenerate it in **Basic Information**, update `.env`, and restart. See also the [configuration reference](/development/configuration/#integrations).
+三个值都需要配置到后端和消费者，并在修改后重启。客户端密钥和签名密钥应与其他凭据同样保护：轮换时，在 **Basic Information（基本信息）** 中重新生成，更新 `.env`，然后重启。另见[配置参考](/development/configuration/#integrations)。
 
-## One workspace or many
+## 一个或多个工作区 [#one-workspace-or-many]
 
-**Your own Slack workspace.** An app installs into the Slack workspace it was created in without any further step. This is the usual self-hosted setup: your team, your Slack.
+**自己的 Slack 工作区。** 应用可以直接安装到创建它的 Slack 工作区，无需额外步骤。这是常见的自托管方式：你的团队使用自己的 Slack。
 
-**Other Slack workspaces.** If the instance serves several companies, each with their own Slack, the app has to be distributed. In the app's settings open **Manage Distribution**, complete the checklist, and select **Activate Public Distribution**. Any Slack workspace can then install it through **Integrations > Slack**. This does not list the app in the Slack Marketplace, and you do not need to submit it there.
+**其他 Slack 工作区。** 如果实例服务于多家公司，每家都有自己的 Slack，应用需要开启分发。在应用设置中打开 **Manage Distribution（管理分发）**，完成检查清单，再选择 **Activate Public Distribution（启用公开分发）**。之后任何 Slack 工作区都可以通过**集成 > Slack**安装它。这不会将应用上架 Slack Marketplace，也无需向 Marketplace 提交。
 
-<Callout type="warn" title="Slack limits history reads for distributed apps outside the Marketplace">
-Slack heavily rate limits `conversations.history` and `conversations.replies` for commercially distributed apps that are not in the Slack Marketplace and were created after May 2025: at the time of writing, one request a minute returning at most 15 messages. Apps installed only in the workspace that created them (internal apps) are not affected. See Slack's [announcement](https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps).
+<Callout type="warn" title="Slack 限制 Marketplace 之外分发应用的历史读取">
+对于在 2025 年 5 月之后创建、商业分发且未进入 Slack Marketplace 的应用，Slack 对 `conversations.history` 和 `conversations.replies` 施加严格速率限制：本文编写时为每分钟一次请求，最多返回 15 条消息。仅安装在创建它们的工作区中的内部应用不受影响。参见 Slack 的[公告](https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps)。
 
-Warmbly only makes those calls to read a thread's earlier messages when someone mentions the bot inside a thread or uses **Ask Warmbly about this**. When Slack limits them, the assistant answers from the message it was given, without the thread around it. Nothing else is affected.
+Warmbly 仅在有人在线程中提及机器人，或使用**就此询问 Warmbly**时，才调用这些接口读取此前消息。Slack 限流时，助手会仅根据收到的那条消息作答，不包含周围线程上下文。其他功能不受影响。
 </Callout>
 
-## The assistant pane
+## 助手面板 [#the-assistant-pane]
 
-Slack's assistant pane, the side panel opened from Slack's AI apps entry, appears only when the Slack workspace allows AI apps. That is a Slack workspace setting, and not every Slack plan offers it. Where it is off, the pane is missing and everything else works: DMs, mentions, the message shortcut and the inbox channel.
+Slack 助手面板是从 Slack AI 应用入口打开的侧边面板，只有 Slack 工作区允许 AI 应用时才会出现。这由 Slack 工作区设置控制，并非所有 Slack 套餐都提供。如果未启用，面板不会显示，但私信、提及、消息快捷操作和收件箱频道仍正常工作。
 
-## See also
+## 另请参阅 [#see-also]
 
-- [Slack](/guides/slack/) for what members see and do
-- [Configuration reference](/development/configuration/)
-- [Operator notifications](/development/operator-notifications/), a separate Slack incoming webhook for alerts to you
+- [Slack](/guides/slack/)：成员看到的界面和可执行的操作。
+- [配置参考](/development/configuration/)。
+- [运维通知](/development/operator-notifications/)：用于向你发送警报的独立 Slack 传入 Webhook。

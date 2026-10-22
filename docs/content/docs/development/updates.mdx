@@ -1,144 +1,132 @@
 ---
-title: Updates
-description: How a self-hosted instance learns about a new Warmbly version, what the indicator in the admin panel means, and how Update and restart pulls, rebuilds and restarts the stack for you.
+title: 更新
+description: 介绍自托管实例如何获知 Warmbly 新版本、管理面板中的更新提示代表什么，以及“更新并重启”如何拉取版本、重新构建并重启服务栈。
 ---
 
-A self-hosted Warmbly checks for a newer version on its own and shows it in the admin panel. Applying it is one button when the updater runs next to the stack: the new version is fetched, the services that changed are recreated, and the panel reconnects once the backend answers again. Nothing in flight is lost: sending and syncing pause for the restart and resume from the database on the other side.
+自托管 Warmbly 会自行检查新版本，并在管理面板显示。如果更新器与服务栈一起运行，点击一个按钮即可应用更新：获取新版本，重新创建发生变化的服务，后端恢复响应后面板重新连接。正在进行的工作不会丢失：发送和同步在重启期间暂停，之后从数据库继续。
 
-How "fetched" happens depends on how the instance was installed, and the updater has a mode for each:
+“获取”的方式取决于实例如何安装，更新器为每种方式提供模式：
 
-| Mode | For | What an update is |
+| 模式 | 适用安装 | 更新内容 |
 |---|---|---|
-| `image` | An install from [`install.sh`](/development/install/) | Pin the new tag in `.env`, `docker compose pull`, recreate. Nothing is built |
-| `compose` | A git clone | `git pull`, `docker compose build`, recreate |
-| `command` | Anything else | `git pull`, then a build-and-restart script of your own |
+| `image` | 通过 [`install.sh`](/development/install/) 安装 | 在 `.env` 固定新标签，执行 `docker compose pull` 并重建容器，不进行构建 |
+| `compose` | Git 克隆 | 执行 `git pull`、`docker compose build`，然后重建容器 |
+| `command` | 其他方式 | 执行 `git pull`，再运行你自己的构建和重启脚本 |
 
-## The indicator
+## 更新提示 [#the-indicator]
 
-The foot of the **admin panel** (`:5174`) sidebar carries a version pill next to the environment label. It reads the running backend's build identity, so it shows exactly what is deployed, not what the checkout says.
+**管理面板** `:5174` 侧边栏底部，在环境标签旁显示版本标记。它读取正在运行的后端构建身份，因此显示的是实际部署版本，不是检出目录声称的版本。
 
-| Pill | Means |
+| 标记 | 含义 |
 |---|---|
-| `v1.4.0` (grey) | Up to date. Click it for the details and a manual check |
-| `Update to v1.5.0` (highlighted, pulsing) | A newer release exists on the configured channel |
-| `Update available` (highlighted, pulsing) | The checkout is behind its branch (an install that tracks `main`) |
-| `Updating` (blue, spinning) | An update job is running; the pill follows it from any tab |
-| `Restarting` (blue, spinning) | The backend is coming back after an update |
+| `v1.4.0`，灰色 | 已是最新。点击查看详情和手动检查 |
+| `Update to v1.5.0`，高亮并闪动 | 配置渠道中已有更新发布 |
+| `Update available`，高亮并闪动 | 检出目录落后于其分支，适用于跟随 `main` 的安装 |
+| `Updating`，蓝色并旋转 | 更新任务正在运行；从任何选项卡都可通过标记跟踪 |
+| `Restarting`，蓝色并旋转 | 更新后后端正在重新启动 |
 
-The same facts sit at the top of **Instance > Setup and health**, and an available update is also a finding there (`update_available`, info severity), so a page that only lists findings still tells you.
+相同信息也显示在**实例 > 设置与健康状态**顶部；有更新时还会出现发现项 `update_available`，严重级别为信息，因此只列发现的页面也会提示。
 
-## In the dashboard
+## 在控制台中 [#in-the-dashboard]
 
-Every member of a self-hosted workspace sees the same version pill in the **dashboard** header, next to the plan badge: the running version in grey, or "Update to vX.Y.Z" in amber with a pulsing dot once a newer release exists. It is there so nobody has to ask which version the server runs, and so the people who cannot update still know one is waiting.
+自托管工作区的每个成员都能在**控制台**顶部、套餐徽章旁看到相同版本标记：当前版本为灰色；发现新发布后，显示琥珀色“Update to vX.Y.Z”，并带闪动圆点。这样无需询问服务器运行什么版本，无权更新的人也知道有更新待处理。
 
-Who can act on it follows platform admin access, not workspace roles:
+能否操作取决于平台管理权限，而不是工作区角色：
 
-- **Members** see a badge. Its tooltip names the version and says to ask a platform admin.
-- **Platform admins whose session has no second factor** get the same badge, and clicking it explains that administrative access needs two-factor authentication, with a link to Settings > Security. Turn on 2FA or add a passkey there and sign in again; the same rule gates the admin panel.
-- **Platform admins** click it and get the update dialog: the running and available versions with the release notes, the checkout and updater state, a "Check now" button, and **Update and restart**. That button leads to a confirmation pane that spells out what the update does (pull, rebuild and restart, sending pauses and resumes, migrations apply, the tab reconnects) before anything runs.
+- **成员**只看到徽章，提示框说明版本，并提示联系平台管理员。
+- **当前会话没有第二因素的平台管理员**看到相同徽章；点击会说明管理访问需要双因素身份验证，并链接到“设置 > 安全”。在那里启用 2FA 或添加通行密钥，再重新登录；管理面板也受同一规则限制。
+- **平台管理员**点击后打开更新对话框，其中有当前和可用版本、发布说明、检出目录与更新器状态、“立即检查”按钮，以及**更新并重启**。点击后先进入确认页面，明确说明拉取、重建、重启、发送暂停后恢复、应用迁移及选项卡重新连接，然后才执行。
 
-While the update runs the dialog shows a progress bar, the step list with the live step highlighted, and the log behind a toggle. When the backend goes away for the restart the dialog says it is reconnecting and keeps polling; the pill in the header turns into a spinner so the job stays visible with the dialog closed, and a reload picks it back up. When the new backend answers, the dialog shows the result and reloads the dashboard after a short countdown, or, if the dialog was closed, a toast reports the new version and every list refreshes.
+更新期间，对话框显示进度条、突出当前步骤的步骤列表，以及可展开的日志。后端因重启暂时不可用时，对话框显示正在重新连接，并持续轮询；顶部版本标记变成旋转图标，因此关闭对话框仍能看到任务，刷新页面也能重新接上。新后端响应后，对话框显示结果，短暂倒计时后重新加载控制台；如果对话框已关闭，则用提示通知新版本，并刷新所有列表。
 
-The dashboard reads `GET /auth/instance` for the version (any member) and the admin endpoints below for the rest (platform admins only, the same permission gates as the admin panel).
+控制台通过 `GET /auth/instance` 获取版本，任何成员均可读取；其余信息使用下方管理端点，仅平台管理员可访问，权限规则与管理面板相同。
 
-## What counts as newer
+## 如何判断版本较新 [#what-counts-as-newer]
 
-Two signals, and either one lights the pill:
+有两个信号，任一出现都会点亮版本标记：
 
-- **A release.** The newest release of `RELEASES_GITHUB_REPO` on `UPDATE_CHANNEL` (`stable`, or `dev` to include prereleases) is compared with the running build's version. A build stamped `v1.4.0-3-gabc1234` (three commits past the `v1.4.0` tag) is treated as newer than `v1.4.0` and older than `v1.4.1`, so an instance built from `main` is not nagged about the release it already contains.
-- **Commits.** When the updater runs, it fetches the remote on `UPDATER_FETCH_INTERVAL` and reports how far the checkout is behind its branch. Any distance counts as an update on an install that tracks a branch.
+- **发布。** 将 `RELEASES_GITHUB_REPO` 在 `UPDATE_CHANNEL` 上的最新发布，与运行构建版本比较。`stable` 只看稳定版，`dev` 包含预发布。标记为 `v1.4.0-3-gabc1234` 的构建表示比 `v1.4.0` 标签多三个提交，会被视为新于 `v1.4.0`、旧于 `v1.4.1`，因此从 `main` 构建的实例不会被反复提醒安装已包含的发布。
+- **提交。** 更新器运行时，按 `UPDATER_FETCH_INTERVAL` 获取远程内容，并报告检出目录落后分支多少提交。对于跟随分支的安装，落后任何数量都算更新。
 
-A build that carries no version (an image built without the build arguments, reported as `dev`) cannot be compared with a release, and only the commit distance applies.
+没有版本信息的构建，例如未传构建参数的镜像，报告为 `dev`，无法与发布比较，只能使用提交差距。
 
-The version comes from the binary itself: the Dockerfiles and `make up` stamp the tag, commit and build time in (`internal/version`), CI does the same for published images, and `warmblyctl status` prints it as the first line.
+版本来自二进制本身：Dockerfile 和 `make up` 会写入标签、提交和构建时间，使用 `internal/version`；CI 对公开镜像也如此，`warmblyctl status` 将它打印在第一行。
 
-## Before updating past this release
+## 升级到此版本之后的版本前 [#before-updating-past-this-release]
 
-Two boot-time requirements were added, and an instance that does not meet them
-will restart-loop after the pull rather than starting with a warning. Both are
-worth checking before you press the button.
+新增了两项启动要求。不满足时，拉取后实例会陷入重启循环，而不是带警告启动。点击更新前应先检查两者。
 
-- **`AUTH_SECRET` must be at least 32 characters.** It signs every session
-  token, and a shorter key can be recovered offline from any token the instance
-  has issued. The realtime service applies the same floor to the same value
-  (`JWT_SECRET`). Generate one with `make gen-key`, or any 32-plus-character
-  random string, and set it in the install's `.env`. **Changing it signs
-  everybody out**, which is the intended effect and is a good moment to do it.
-- **Administrators need two-factor authentication.** Every admin route now
-  refuses a session that did not present a second factor. Enrol at least one
-  administrator under **Settings > Security** in the dashboard *before*
-  updating, or the admin panel is unreachable until someone does. The dashboard
-  itself is unaffected, so enrolling afterwards still works; it is just a worse
-  moment to discover it.
+- **`AUTH_SECRET` 至少需要 32 个字符。** 它签署每个会话令牌，较短密钥可能从实例签发的任意令牌中被离线恢复。实时服务对同一个值 `JWT_SECRET` 应用相同下限。可以用 `make gen-key` 生成，或使用任意至少 32 字符的随机字符串，并写入安装的 `.env`。**更改它会让所有人退出登录**，这是预期效果，也正适合在更新时处理。
+- **管理员需要双因素身份验证。** 所有管理路由都会拒绝未提供第二因素的会话。应在更新*之前*，至少让一位管理员在控制台的**设置 > 安全**中登记，否则管理面板无法访问，直到有人完成。控制台本身不受影响，因此更新后仍能登记，只是在那个时刻才发现不够方便。
 
-Check the first one with:
+用以下命令检查第一项：
 
 ```bash
 awk -F= '/^AUTH_SECRET=/{print length($2)" characters"}' /opt/warmbly/.env
 ```
 
-## Update and restart
+## 更新并重启 [#update-and-restart]
 
-The button appears when the updater is reachable and something newer exists. It needs the `manage_settings` admin permission, and every press is an audit row (`upgrade` on `instance`).
+更新器可访问且存在更新时，按钮才会出现。它需要管理员权限 `manage_settings`，每次点击都会生成审计行，操作为 `upgrade`，对象为 `instance`。
 
-On an install from `install.sh`, in image mode:
+通过 `install.sh` 安装、使用镜像模式时：
 
-1. **Pin release.** The chosen tag is written into `WARMBLY_TAG` in the install's `.env`, so the pull, the recreate, and every later `docker compose up` you run by hand all resolve the same images. A pull that fails puts the old tag back rather than leaving `.env` pointing at images that do not exist.
-2. **Pull images.** `docker compose pull`.
-3. **Restart.** `docker compose up -d --no-build` for every service, minus the updater itself.
-4. **Clean up.** `docker image prune -f`, unless `UPDATER_PRUNE=false`.
-5. **Wait for backend.** The updater polls `/health` until it answers, for up to six minutes.
+1. **固定发布。** 将所选标签写入 `WARMBLY_TAG`，保存在安装的 `.env` 中，让拉取、重建和以后手动执行的每次 `docker compose up` 都解析到相同镜像。拉取失败会恢复旧标签，避免 `.env` 留在不存在的镜像版本。
+2. **拉取镜像。** 执行 `docker compose pull`。
+3. **重启。** 对除更新器自身外的所有服务执行 `docker compose up -d --no-build`。
+4. **清理。** 执行 `docker image prune -f`，除非设置了 `UPDATER_PRUNE=false`。
+5. **等待后端。** 更新器轮询 `/health`，直到响应，最多等待六分钟。
 
-On a git checkout, in compose mode:
+Git 检出使用 Compose 模式时：
 
-1. **Fetch.** `git fetch --tags --prune` on the checkout.
-2. **Pull.** On a branch, a fast-forward merge of the remote branch. On a checkout pinned to a tag, a checkout of the newest release. A checkout with local modifications is refused rather than merged over; commit or stash them, or set `UPDATER_ALLOW_DIRTY=true`.
-3. **Build.** `docker compose build` for every service, with the version stamped in.
-4. **Restart.** `docker compose up -d --no-build` for every service the checkout defines plus everything running, minus the updater itself. Compose recreates only the containers whose image or configuration changed, so Postgres, Redis and NATS stay up, and the backend applies migrations as it boots.
-5. **Clean up.** `docker image prune -f`, unless `UPDATER_PRUNE=false`.
-6. **Wait for backend.** The updater polls `/health` until it answers, for up to six minutes, and marks the job as succeeded or failed.
+1. **获取。** 在检出目录执行 `git fetch --tags --prune`。
+2. **拉取。** 位于分支时，对远程分支执行快进合并；固定在标签时，检出最新发布。有本地修改的目录会被拒绝，不会强行合并；请提交或暂存修改，或设置 `UPDATER_ALLOW_DIRTY=true`。
+3. **构建。** 对每个服务执行 `docker compose build`，并写入版本信息。
+4. **重启。** 对检出目录定义的全部服务，加上所有正在运行的服务，执行 `docker compose up -d --no-build`，排除更新器自身。Compose 只重建镜像或配置变化的容器，因此 Postgres、Redis 和 NATS 保持运行，后端启动时应用迁移。
+5. **清理。** 执行 `docker image prune -f`，除非设置了 `UPDATER_PRUNE=false`。
+6. **等待后端。** 更新器轮询 `/health`，最多六分钟，并将任务标为成功或失败。
 
-If the updater's own image changed, it recreates itself last, after the outcome is already on disk, so the new updater reports the finished job.
+如果更新器自己的镜像变化，它会在结果已写入磁盘后最后重建自己，让新更新器能够报告已完成任务。
 
-The dialog streams the log. Close it and the pill keeps following the job; reload the page and the pill picks the job up again. When the backend answers with a new build, a toast says which version is now running and every list refreshes.
+对话框实时显示日志。关闭后，版本标记继续跟踪；重新加载页面也会重新接上任务。后端以新构建响应时，提示会说明当前版本，并刷新全部列表。
 
-Migrations are forward-only, so an update never needs to be rolled back to be safe with data in place. Read [backing up](/development/deployment-guide/#backing-up) anyway: a backup before an update is the one you are glad to have.
+迁移只向前应用，因此为保证现有数据安全，更新不需要通过回滚来处理。仍请阅读[备份](/development/deployment-guide/#backing-up)：更新前的备份通常会让你庆幸提前准备。
 
-<Callout type="warn" title="The updater holds the docker socket">
-The updater mounts `/var/run/docker.sock`, which is root on the host. That is why on a clone it lives behind the `updater` compose profile, and why in every install it answers only to a bearer token the backend holds, on the compose network, with no published port. The backend gates the button on an admin permission and audits it. If any of that is more trust than the host should extend, leave the profile off and update by hand.
+<Callout type="warn" title="更新器持有 Docker socket">
+更新器挂载 `/var/run/docker.sock`，这相当于主机 root 权限。因此在克隆安装中，它位于 `updater` Compose 配置组后；在所有安装中，它都只接受后端持有的持有者令牌，只在 Compose 网络响应，不公开端口。后端通过管理员权限控制按钮并记录审计。如果不希望主机授予这些信任，请关闭该配置组，手动更新。
 </Callout>
 
-## Enabling the updater
+## 启用更新程序 [#enabling-the-updater]
 
-### An install from install.sh
+### 通过 install.sh 安装的实例 [#an-install-from-installsh]
 
-Already done. The installer writes the updater into the generated compose file in image mode, pointed at the install directory, with its own `UPDATER_TOKEN` that the backend also reads from `.env`. Nothing to configure.
+已经配置完成。安装器会把镜像模式更新器写入生成的 Compose 文件，指向安装目录，并生成独立 `UPDATER_TOKEN`，后端也从 `.env` 读取它。无需额外设置。
 
-To update by hand instead, from the install directory:
+如果要手动更新，在安装目录执行：
 
 ```bash
 docker compose -p warmbly pull && docker compose -p warmbly up -d
 ```
 
-To leave the button out entirely, delete the `updater` service from `docker-compose.yml` and set `UPDATER_URL=none` in `.env`.
+如果完全不想显示按钮，删除 `updater` 服务，即从 `docker-compose.yml` 移除它，并将 `UPDATER_URL=none` 写入 `.env`。
 
-### Docker Compose from a clone
+### 克隆仓库后使用 Docker Compose [#docker-compose-from-a-clone]
 
-`make up` starts the stack with the `updater` profile, so a stock install already has the button. For a plain `docker compose up`, put this in `.env`:
+`make up` 会带 `updater` 配置组启动服务栈，因此标准安装已经有按钮。如果直接执行 `docker compose up`，请在 `.env` 添加：
 
 ```bash
 COMPOSE_PROFILES=updater
 ```
 
-The service mounts the checkout at its own host path (`WARMBLY_REPO_DIR`, `$PWD` by default) so the compose file's relative paths resolve the same way inside the container, and shares `INTERNAL_API_TOKEN` with the backend as `UPDATER_TOKEN`. Nothing else to configure.
+服务会按主机上的原路径挂载检出目录，由 `WARMBLY_REPO_DIR` 指定，默认 `$PWD`，使 Compose 文件的相对路径在容器内以相同方式解析；并将后端的 `INTERNAL_API_TOKEN` 共享为 `UPDATER_TOKEN`。无需其他配置。
 
-Files git writes as root are given back to the checkout's owner after each pull, so your own `git pull` on the host keeps working.
+Git 以 root 写入的文件，会在每次拉取后归还检出目录所有者，因此你在主机上的 `git pull` 仍可正常工作。
 
-To update by hand instead: `make upgrade` (a fast-forward pull, then `make up`). To leave the button out entirely, start with `make up UPDATER=false` and set `UPDATER_URL=none` in `.env`; the panel then only reports.
+手动更新可使用 `make upgrade`，即快进拉取后运行 `make up`。完全隐藏按钮时，用 `make up UPDATER=false` 启动，并将 `UPDATER_URL=none` 写入 `.env`；面板之后只报告信息。
 
-### Without Docker
+### 不使用 Docker [#without-docker]
 
-On a [bare-metal install](/development/bare-metal/) the updater is a systemd unit that runs `scripts/upgrade-bare-metal.sh` after pulling. The script builds every artifact this host runs as the checkout's owner, then hands off to one privileged installer, `warmbly-install-release`, which copies the artifacts into `/opt/warmbly`, keeps each frontend's `config.js`, restarts the backend first and the rest once it answers.
+在[裸机安装](/development/bare-metal/)中，更新器是一个 systemd 单元，拉取后运行 `scripts/upgrade-bare-metal.sh`。脚本以检出目录所有者身份构建本机运行的所有产物，再交给唯一的特权安装器 `warmbly-install-release`，由它复制产物到 `/opt/warmbly`，保留各前端 `config.js`，先重启后端，待其响应后再启动其他服务。
 
 ```bash
 cd /opt/warmbly/src
@@ -150,72 +138,72 @@ sudo chmod 0600 /etc/warmbly/updater.env
 sudo systemctl daemon-reload && sudo systemctl enable --now warmbly-updater
 ```
 
-The unit runs as the user who owns the checkout (`deploy` as shipped; edit it). The only root step is the installer, so that user needs exactly one sudoers line, and nothing broader:
+单元以检出目录所有者身份运行，随附值为 `deploy`，请按需修改。唯一需要 root 的步骤是安装器，因此该用户只需一行精确的 sudoers 规则，不需要更大权限：
 
 ```bash
 echo "deploy ALL=(root) NOPASSWD: /usr/local/sbin/warmbly-install-release" | sudo tee /etc/sudoers.d/warmbly-upgrade >/dev/null
 sudo chmod 0440 /etc/sudoers.d/warmbly-upgrade
 ```
 
-The installer is root-owned and not writable by that user, takes no arguments, reads only from fixed paths under the checkout and refuses symlinks there, so owning the checkout does not become owning the host. The binaries it installs run as the unprivileged `warmbly` user either way.
+安装器归 root 所有，普通用户不可写，不接受参数，只读取检出目录下的固定路径，并拒绝其中的符号链接，因此拥有检出目录不等于拥有主机。它安装的二进制始终以无特权 `warmbly` 用户运行。
 
-Then point the backend at the updater in `warmbly.env` and restart it:
+然后在 `warmbly.env` 中让后端指向更新器，并重启后端：
 
 ```bash
 UPDATER_URL=http://127.0.0.1:8095
 ```
 
-The same script works by hand: `scripts/upgrade-bare-metal.sh --pull`.
+也可以手动运行相同脚本：`scripts/upgrade-bare-metal.sh --pull`。
 
-## Configuration
+## 配置 [#configuration]
 
-Backend:
+后端：
 
-| Variable | What it does | Default |
+| 变量 | 作用 | 默认值 |
 |---|---|---|
-| `UPDATE_CHECK_ENABLED` | Polls GitHub Releases and shows a newer version in the panel | `true` |
-| `UPDATE_CHECK_INTERVAL` | How often the release check runs; minimum `5m` | `30m` |
-| `UPDATE_CHANNEL` | `stable` follows releases; `dev` also offers prereleases | `stable` |
-| `RELEASES_GITHUB_REPO` | The `owner/repo` whose releases are Warmbly versions. Point a fork's instance at the fork | `warmbly/warmbly` |
-| `RELEASES_GITHUB_TOKEN` | Optional; only raises the GitHub API rate limit | unset |
-| `UPDATER_URL` | The updater. Unset, or `none`, leaves the panel report-only | `http://updater:8095` under compose |
-| `UPDATER_TOKEN` | Bearer token presented to the updater. Give it its own value; the one-command installer generates one | `INTERNAL_API_TOKEN` |
+| `UPDATE_CHECK_ENABLED` | 轮询 GitHub Releases，并在面板显示新版本 | `true` |
+| `UPDATE_CHECK_INTERVAL` | 发布检查频率，最短 `5m` | `30m` |
+| `UPDATE_CHANNEL` | `stable` 跟随稳定发布，`dev` 也提供预发布 | `stable` |
+| `RELEASES_GITHUB_REPO` | 将其发布视为 Warmbly 版本的 `owner/repo`；分支实例可指向自己的分支 | `warmbly/warmbly` |
+| `RELEASES_GITHUB_TOKEN` | 可选，仅用于提高 GitHub API 速率额度 | 未设置 |
+| `UPDATER_URL` | 更新器地址；未设置或为 `none` 时，面板只报告信息 | Compose 下为 `http://updater:8095` |
+| `UPDATER_TOKEN` | 提交给更新器的持有者令牌。应使用独立值；一条命令安装器会生成 | `INTERNAL_API_TOKEN` |
 
-Updater:
+更新器：
 
-| Variable | What it does | Default |
+| 变量 | 作用 | 默认值 |
 |---|---|---|
-| `UPDATER_TOKEN` | The token it accepts; falls back to `INTERNAL_API_TOKEN`. Refuses to start without one | unset |
-| `UPDATER_MODE` | `image` pins a release tag and pulls; `compose` rebuilds a checkout; `command` runs `UPDATER_COMMAND` | `compose` |
-| `UPDATER_COMMAND` | The build-and-restart command for `command` mode | unset |
-| `UPDATER_REPO_DIR` | The checkout, or in image mode the install directory holding the compose file and `.env` | working directory |
-| `UPDATER_REMOTE` | The git remote to fetch and pull from | `origin` |
-| `UPDATER_COMPOSE_PROJECT` | The `-p` the stack was started with | `warmbly` |
-| `UPDATER_COMPOSE_PROFILES` | Extra profiles on every compose call, so its own image is rebuilt | `updater` |
-| `UPDATER_BACKEND_HEALTH_URL` | Polled after the restart until it answers | `http://backend:8080/health` |
-| `UPDATER_FETCH_INTERVAL` | How often it fetches for the commits-behind count | `30m` |
-| `UPDATER_PRUNE` | `docker image prune -f` after a successful update | `true` |
-| `UPDATER_ALLOW_DIRTY` | Update over local modifications in the checkout | `false` |
-| `UPDATER_STATE_DIR` | Where the last job is kept across restarts | `/var/lib/warmbly-updater` |
-| `UPDATER_ADDR` | Listen address | `:8095` |
+| `UPDATER_TOKEN` | 接受的令牌，回退到 `INTERNAL_API_TOKEN`；没有令牌时拒绝启动 | 未设置 |
+| `UPDATER_MODE` | `image` 固定发布标签并拉取；`compose` 重建检出目录；`command` 运行 `UPDATER_COMMAND` | `compose` |
+| `UPDATER_COMMAND` | `command` 模式中的构建和重启命令 | 未设置 |
+| `UPDATER_REPO_DIR` | 检出目录；镜像模式下为保存 Compose 文件和 `.env` 的安装目录 | 工作目录 |
+| `UPDATER_REMOTE` | 获取和拉取使用的 Git 远程 | `origin` |
+| `UPDATER_COMPOSE_PROJECT` | 启动服务栈时使用的 `-p` 值 | `warmbly` |
+| `UPDATER_COMPOSE_PROFILES` | 每次 Compose 调用附加的配置组，使更新器自身镜像也能重建 | `updater` |
+| `UPDATER_BACKEND_HEALTH_URL` | 重启后持续轮询直到响应 | `http://backend:8080/health` |
+| `UPDATER_FETCH_INTERVAL` | 获取远程并计算落后提交数的频率 | `30m` |
+| `UPDATER_PRUNE` | 成功更新后执行 `docker image prune -f` | `true` |
+| `UPDATER_ALLOW_DIRTY` | 允许在检出目录存在本地修改时更新 | `false` |
+| `UPDATER_STATE_DIR` | 跨重启保存最近任务的位置 | `/var/lib/warmbly-updater` |
+| `UPDATER_ADDR` | 监听地址 | `:8095` |
 
-## Endpoints
+## 端点 [#endpoints]
 
-| Endpoint | Auth | Returns |
+| 端点 | 身份验证 | 返回内容 |
 |---|---|---|
-| `GET /admin/instance/update` | platform admin, `view_analytics` | Running build, latest release, whether an update is available, updater and job state. `?log=1` includes the job log |
-| `POST /admin/instance/update/check` | platform admin, `manage_settings` | Runs both checks now and returns the state |
-| `POST /admin/instance/update/apply` | platform admin, `manage_settings` | Starts an update job (`{"target": "latest"}` or a release tag) and returns it. The backend restarts as part of it |
+| `GET /admin/instance/update` | 平台管理员，`view_analytics` | 运行构建、最新发布、是否可更新、更新器和任务状态；`?log=1` 包含任务日志 |
+| `POST /admin/instance/update/check` | 平台管理员，`manage_settings` | 立即执行两项检查并返回状态 |
+| `POST /admin/instance/update/apply` | 平台管理员，`manage_settings` | 启动更新任务并返回，可传 `{"target": "latest"}` 或发布标签；过程中后端会重启 |
 
-The updater's own API (`GET /status`, `POST /check`, `POST /update`) is bearer-authenticated and meant for the backend only.
+更新器自己的 API，即 `GET /status`、`POST /check` 和 `POST /update`，使用持有者令牌验证，只面向后端。
 
-## Findings
+## 检查发现的问题 [#findings]
 
-Two [instance health](/development/instance-health/) checks belong to this page:
+两项[实例健康状态](/development/instance-health/)检查与本页相关：
 
-- `update_available` (info): a newer version exists, with the version and how to apply it.
-- `updater_unreachable` (warning): `UPDATER_URL` is set but nothing answers there, so the button cannot work. Start the updater, fix the address, or remove the variable to update by hand.
+- `update_available`，信息级：存在新版本，显示版本及应用方法。
+- `updater_unreachable`，警告级：已设置 `UPDATER_URL`，但该地址没有响应，因此按钮无法工作。请启动更新器、修正地址，或删除该变量并手动更新。
 
-## Workers on other machines
+## 在其他主机上运行工作节点 [#workers-on-other-machines]
 
-This page is about the control plane. Remote workers installed from the panel keep their own daily self-update timer and the **Pull latest and restart** action on the worker's page; see [day-2 operations](/development/deployment-guide/#day-2-operations).
+本页针对控制平面。通过面板安装的远程工作节点保留自己的每日自更新定时器，以及节点页面上的**拉取最新版本并重启**操作；参见[日常运维](/development/deployment-guide/#day-2-operations)。

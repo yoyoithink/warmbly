@@ -1,119 +1,119 @@
 ---
-title: Live collaboration
-description: See your team working in real time across the whole dashboard.
+title: "实时协作"
+description: "在整个控制台中实时查看团队成员的工作动态。"
 ---
 
-The dashboard is live: sends, opens, replies, new mail and other changes appear for everyone the moment they happen, with no refresh. You can also see who is online and what each teammate is working on.
+控制台会实时更新：发送、打开、回复、新邮件及其他变更发生后，所有人都能立即看到，无需刷新。你还可以查看谁在线，以及每位团队成员正在处理什么。
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- The header shows everyone with the dashboard open. Click a teammate to jump to their page.
-- Anywhere a record opens, you see when a teammate has it open too.
-- Press `/` on a shared page to chat from your cursor.
-- Live events respect permissions: a member only receives what they are allowed to see.
-- An admin can hide who is online, or what each person is doing, under **Settings > Workspace > Team presence**.
+- 页眉显示所有打开控制台的成员。点击成员即可跳转到其所在页面。
+- 打开任意记录时，都可以看到是否有其他成员同时打开了该记录。
+- 在共享页面按 `/`，即可从光标位置聊天。
+- 实时事件遵守权限限制，成员只会收到其有权查看的内容。
+- 管理员可在**设置 > 工作区 > 团队在线状态**中隐藏在线成员，或隐藏各成员的当前操作。
 
 <Fold>
 
-## How the dashboard stays live
+## 控制台如何保持实时更新 [#how-the-dashboard-stays-live]
 
-The dashboard is live by default: sends, opens, clicks, replies, new mail, contact changes, automation runs, meetings, and audit entries appear the moment they happen, for everyone, without a refresh. A presence layer on top shows who is online and what they are working on.
+控制台默认实时更新。发送、打开、点击、回复、新邮件、联系人变更、自动化运行、会议和审计条目发生后，所有成员都会立即看到，无需刷新。在此基础上，在线状态功能展示谁在线以及正在处理什么。
 
 </Fold>
 
 <Fold>
 
-## Online teammates
+## 在线团队成员 [#online-teammates]
 
-The header shows an avatar stack of everyone with the dashboard open. Hover for each person's name and where they are ("in unibox", "editing"). Click a teammate to jump straight to their page, which is the fastest way to join someone.
+页眉以头像组显示所有打开控制台的成员。悬停可查看姓名和所在位置，例如“在统一收件箱中”或“正在编辑”。点击成员即可直接进入其所在页面，快速加入协作。
 
 </Fold>
 
 <Fold>
 
-## Who is already on this?
+## 查看正在处理此项的成员 [#who-is-already-on-this]
 
-Anywhere a record opens, Warmbly shows when a teammate has it too:
+打开任何记录时，Warmbly 都会提示是否有其他成员也在处理：
 
-| Surface | Indicator |
+| 位置 | 提示 |
 |---------|-----------|
-| Unibox | Green pulse on a row someone is reading, amber when they are writing a reply, plus a name pill on the open thread, so two people never answer the same prospect |
-| Automations | An amber "is editing" pill by the automation name. Coordinate before saving: last save wins |
-| Campaigns, contacts | Who else is viewing or editing the same record |
-| Deals, tasks, templates, mailbox settings, integrations | The same indicator on every record that opens |
+| 统一收件箱 | 有人阅读时，该行显示绿色脉动；有人起草回复时显示琥珀色。打开的会话还会显示姓名标记，避免两人同时回复同一潜在客户 |
+| 自动化流程 | 流程名称旁显示琥珀色的“正在编辑”标记。保存前请协调，因为最后一次保存会覆盖先前内容 |
+| 营销活动、联系人 | 显示正在查看或编辑同一记录的其他成员 |
+| 商机、任务、模板、邮箱设置、集成 | 每项打开的记录都会显示相同提示 |
 
-Indicators are workspace-scoped. Teammates see only your name, avatar, current page, and open record.
-
-</Fold>
-
-<Fold>
-
-## What updates live
-
-- Campaign sends update progress, the leads list, and analytics for every viewer as the worker sends.
-- Opens, clicks, and replies pulse into stats and the activity feed. Out-of-office and other automated replies never count as replies.
-- New mail appears in every member's unibox as it syncs, respecting inbox permissions.
-- Contact imports, edits, and deletes refresh contacts views for the whole team.
-- Mailbox health transitions (a warmup quarantine, say) flip status badges live.
-- The CRM is live end to end: moving a deal, ticking a task, or editing pipeline stages shows up immediately, and a deal being dragged carries a colored ring so you know it is in motion.
-- Mailbox tags, labels and campaign folders each have their own shared set per workspace, so a label anyone creates appears in everybody's pickers and chips as they make it.
-- The audit log streams new entries, so the activity trail is itself a live feed.
-
-**Events are permission-aware**: a member without inbox access never receives unibox events, and billing events reach only those who can manage billing. See [Team roles](/guides/team-roles/).
-
-A member restricted to [selected resources](/guides/team-roles/#access-scope) receives only events about what they were granted: new mail in their mailboxes, and activity on their campaigns. They are not part of presence or live cursors, in either direction: they do not appear online, and they do not see who else is or what teammates are viewing.
+这些提示仅限当前工作区。团队成员只能看到你的姓名、头像、当前页面和打开的记录。
 
 </Fold>
 
 <Fold>
 
-## Connection status
+## 实时更新的内容 [#what-updates-live]
 
-A dot in the header reports the live connection: green **Live** when it is healthy, amber **Slow connection** or red **Poor connection** when heartbeats are taking longer than they should, amber **Reconnecting...** while it retries, and red **Disconnected** when it is down. The reading comes from the measured round trip to the realtime service, so amber means your connection genuinely is slow rather than merely busy.
+- 工作节点发送营销活动邮件时，所有查看者的发送进度、潜在客户列表和分析数据都会更新。
+- 打开、点击和回复实时进入统计与活动列表。外出自动回复及其他自动回复不会计入回复数。
+- 新邮件同步后会出现在各成员的统一收件箱中，并遵守收件箱权限。
+- 联系人导入、编辑和删除会刷新全团队的联系人视图。
+- 邮箱健康状态变化，例如预热隔离，会实时更新状态标记。
+- CRM 全流程实时更新：移动商机、勾选任务或编辑销售管道阶段都会立即显示。正在拖动的商机会出现彩色边框，便于看出移动状态。
+- 邮箱标签、联系人标签和营销活动文件夹分别在工作区内共享；任何人创建的标签都会立即出现在其他成员的选择器和标签标记中。
+- 审计日志持续推送新条目，因此活动轨迹本身也是实时信息流。
 
-Stored data still catches up while it is down. Warmbly refreshes counts and lists on a slower cycle, and on reconnect it refetches everything that could have drifted. The events themselves are never replayed, so live-only signals such as presence and cursors resume from wherever things stand rather than backfilling what you missed. On a self-hosted install a permanently disconnected dot usually means the realtime service is not running; see [troubleshooting](/development/troubleshooting/).
+**事件遵守权限限制**：没有收件箱访问权限的成员不会收到统一收件箱事件，账单事件仅发送给能够管理账单的成员。参见[团队角色](/guides/team-roles/)。
 
-</Fold>
-
-<Fold>
-
-## Live cursors and chat
-
-On a shared page you see each other's cursors move, tagged with avatar and name, across the contacts table, deal board, unibox, settings, and everywhere else. On app-scrolling pages the cursor tracks content as either person scrolls.
-
-Press `/` to chat from your cursor: an input opens at your pointer and what you type appears live in a colored bubble beside your cursor on teammates' screens, exactly where you are pointing. Enter sends (it lingers a few seconds, then fades), Escape dismisses. It is built for spatial remarks that do not deserve a thread: "this one?", "typo here".
-
-Chat respects record permissions, enforced by the realtime service like the rest of the stream.
+仅被授予[指定资源](/guides/team-roles/#access-scope)访问权限的成员，只会收到相关资源的事件，例如其邮箱中的新邮件及其营销活动的动态。他们不会参与在线状态和实时光标共享，双向都不参与：不会显示为在线，也看不到其他在线成员或他们正在查看的内容。
 
 </Fold>
 
 <Fold>
 
-## Shared builder canvases
+## 连接状态 [#connection-status]
 
-The [automation builder](/guides/automations/) and [sequence](/guides/sequences/) editor are shared canvases. You see teammates' cursors and what each person has selected, outlined in their cursor color with their name, so "the step I have selected" is visible rather than described. Cursor chat works here too.
+页眉中的圆点表示实时连接状态：正常时为绿色**实时连接**；心跳耗时过长时为琥珀色**连接较慢**或红色**连接不佳**；重试期间为琥珀色**正在重新连接…**；断开时为红色**已断开连接**。该状态依据与实时服务之间实测的往返延迟，因此琥珀色确实表示连接缓慢，而不只是系统忙碌。
 
-Both lay themselves out from the flow's structure, so everyone sees the same picture without arranging anything.
-
-</Fold>
-
-<Fold>
-
-## Presence privacy
-
-An admin controls this under **Settings > Workspace > Team presence** with two independent toggles:
-
-- **Show who's online** turns the avatar stack and online indicators on or off workspace-wide.
-- **Show activity** keeps online status but hides what each person is doing, so no "viewing" or "editing" detail is shared.
-
-The realtime service enforces both, so a hidden signal is **never sent**, not merely hidden in the interface. Changes apply immediately with no reload, and editing them needs the Manage settings permission. With "show activity" off, cursors and selections are not shared either.
+连接断开时，已存储的数据仍会逐步更新。Warmbly 会以较慢的周期刷新计数和列表，并在重新连接后重新获取可能发生变化的数据。事件本身不会重放，因此在线状态、光标等仅实时存在的信号会从当前状态恢复，不会补回断线期间错过的变化。自托管部署中，圆点长期显示断开通常意味着实时服务没有运行；参见[故障排查](/development/troubleshooting/)。
 
 </Fold>
 
 <Fold>
 
-## Developers
+## 实时光标与聊天 [#live-cursors-and-chat]
 
-The same stream, including presence events, is available over a WebSocket. See the [Realtime WebSocket](/api/realtime/) reference.
+在共享页面上，可以看到彼此的光标移动，旁边标注头像与姓名；联系人表格、商机看板、统一收件箱、设置等位置均支持。在应用内滚动页面上，无论哪位成员滚动，光标都会跟随内容保持对应位置。
+
+按 `/` 可从光标位置聊天：指针旁会出现输入框，输入的文字实时显示为彩色气泡，出现在其他成员屏幕上你的光标旁，正好对应你所指的位置。按 Enter 发送，内容停留几秒后淡出；按 Escape 关闭。此功能适合与页面位置相关、不必另开讨论串的简短交流，例如“是这个吗？”或“这里有错字”。
+
+聊天遵守记录权限，与其他实时信息一样由实时服务执行权限控制。
+
+</Fold>
+
+<Fold>
+
+## 共享流程画布 [#shared-builder-canvases]
+
+[自动化流程编辑器](/guides/automations/)和[邮件序列](/guides/sequences/)编辑器使用共享画布。你可以看到团队成员的光标，以及各自选中的内容；所选项以相应光标颜色描边并标注姓名，因此“我选中的步骤”可以直接看见，无需描述。这里也支持光标聊天。
+
+两个编辑器都会根据流程结构自动布局，因此无需手动排列，所有人看到的画面都相同。
+
+</Fold>
+
+<Fold>
+
+## 在线状态隐私 [#presence-privacy]
+
+管理员可在**设置 > 工作区 > 团队在线状态**中通过两个独立开关控制：
+
+- **显示在线成员**：在整个工作区开启或关闭头像组和在线提示。
+- **显示活动**：关闭后仍保留在线状态，但隐藏每个人的操作，不再共享“正在查看”或“正在编辑”等详情。
+
+这两项设置都由实时服务执行，因此隐藏的信号**根本不会发送**，而不仅仅是在界面中隐藏。更改立即生效，无需刷新；修改需要管理设置权限。关闭“显示活动”后，光标和选择状态也不再共享。
+
+</Fold>
+
+<Fold>
+
+## 开发者 [#developers]
+
+包括在线状态事件在内的同一信息流也可通过 WebSocket 获取，参见[实时 WebSocket](/api/realtime/)参考。
 
 </Fold>

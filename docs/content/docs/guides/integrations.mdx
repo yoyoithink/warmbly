@@ -1,235 +1,235 @@
 ---
-title: Integrations
-description: "Connect third-party tools over OAuth and send data out via webhooks."
+title: "集成"
+description: "通过 OAuth 连接第三方工具，并通过 Webhook 向外部发送数据。"
 ---
 
-Integrations connect Warmbly to the rest of your tools. When a reply lands, a meeting is booked or an email bounces, your CRM, chat channel or automation tool hears about it.
+集成可将 Warmbly 与你使用的其他工具连接起来。收到回复、会议预约成功或邮件退信时，你的 CRM、聊天频道或自动化工具都能获知相应事件。
 
-## Connect an integration
+## 连接集成 [#connect-an-integration]
 
 <Steps>
 
 <Step>
 
-Open **Integrations** and find the app in **Discover**, **All apps** or a category, or search for it.
+打开**集成**，在**发现**、**全部应用**或某个分类中找到应用，也可以搜索。
 
 </Step>
 
 <Step>
 
-Select **Connect** on its card or its page.
+在应用卡片或详情页上选择**连接**。
 
 </Step>
 
 <Step>
 
-Sign in to the provider for a one-click connection, or paste an API key or webhook URL when asked.
+登录相应服务商以完成一键连接，或按提示粘贴 API 密钥或 Webhook URL。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Credentials are sealed with envelope encryption before they touch the database.
-- An expired or revoked token moves the connection to "reconnect required", and one click fixes it.
-- A workspace uses one verification service at a time.
-- Outbound events are HMAC-SHA256 signed so receivers can verify them.
-- HubSpot or Pipedrive can become the workspace's whole CRM, one at a time.
+- 凭据在写入数据库之前会通过信封加密进行保护。
+- 令牌过期或被撤销时，连接会变为“需要重新连接”，一键即可修复。
+- 一个工作区同一时间只能使用一项地址验证服务。
+- 出站事件使用 HMAC-SHA256 签名，供接收方验证。
+- HubSpot 或 Pipedrive 可以承担工作区完整的 CRM 功能，但同一时间只能启用其中一个。
 
 <Fold>
 
-## About the Integrations page
+## 集成页面简介 [#about-the-integrations-page]
 
-Browsing filters, searches and view choices are [remembered in your browser tab](/guides/browsing/) across refreshes and navigation, separately for each user and workspace.
+浏览时使用的筛选、搜索和视图选项会[保存在浏览器标签页中](/guides/browsing/)，刷新页面或切换页面后仍然保留，并按用户和工作区分别保存。
 
-Integrations push Warmbly events into the rest of your stack: a reply lands, a meeting is booked, an email bounces, and your CRM, chat channel, or automation tool hears about it.
+集成将 Warmbly 事件推送到你使用的其他系统：收到回复、预约会议或邮件退信时，你的 CRM、聊天频道或自动化工具都会获知相应事件。
 
-The Integrations page is one directory for everything that connects to Warmbly: the built-in integrations below, apps other developers have published, and the tools to build your own. State stays live, so a connection needing reauthorization surfaces without a refresh.
+集成页面是所有可连接 Warmbly 的工具的统一目录：包括下方介绍的内置集成、其他开发者发布的应用，以及构建自有集成的工具。状态会实时更新，需要重新授权的连接无需刷新页面即可显示出来。
 
 </Fold>
 
 <Fold>
 
-## Finding an integration
+## 查找集成 [#finding-an-integration]
 
-The sidebar holds **Discover**, **All apps**, **Connected**, one view per category, **Community apps** and **Build your own**; on a phone the same views sit in a row of tabs.
+侧边栏包含**发现**、**全部应用**、**已连接**、各个分类的视图、**社区应用**和**构建自己的应用**；在手机上，相同视图以一排标签页呈现。
 
-**Discover** shows a banner for any connection that is degraded or needs reconnecting, then **Recommended for you** (the gaps in your setup: a CRM if you have none, a chat alert so a reply never sits unseen, a scheduler so booked calls are credited to the campaign that earned them, and an address verifier), **Popular** (the integrations used by the most workspaces on the instance, or a curated order on a new one), and **Featured community apps**.
+**发现**首先显示连接状态降级或需要重新连接的提示横幅，然后依次显示**为你推荐**、**热门**和**精选社区应用**。推荐内容针对当前配置中缺少的部分：尚未使用 CRM 时推荐 CRM；推荐聊天提醒，避免回复无人查看；推荐预约工具，将已预约的通话归功于促成它的营销活动；以及推荐地址验证工具。热门集成按实例中使用它们的工作区数量排序，新实例则使用人工编排的顺序。
 
-Every app has its own page, at `/app/integrations/<provider>` for a built-in integration (for example `/app/integrations/hubspot`) and `/app/integrations/apps/<slug>` for a community app. It shows what the app does, the actions and triggers it adds to automations, the access it asks for, and your connections to it. **Connect** on a card or a page starts the connection in place; **Manage** opens one you already have. Built-in integrations carry a blue check next to Warmbly.
+每个应用都有自己的页面。内置集成位于 `/app/integrations/<provider>`，例如 `/app/integrations/hubspot`；社区应用位于 `/app/integrations/apps/<slug>`。页面介绍应用的用途、为自动化流程添加的操作与触发器、请求的访问权限，以及你的现有连接。在卡片或页面上点击**连接**，即可直接开始连接；点击**管理**则打开已有连接。内置集成在 Warmbly 名称旁带有蓝色勾选标记。
 
-### Search and filters
+### 搜索与筛选 [#search-and-filters]
 
-The search box sits at the top of the sidebar (above the views on a phone). On Discover and on an app's page it suggests apps and categories as you type; the arrow keys move through them, Enter opens the highlighted one, and **See all results** (or Enter with nothing highlighted) opens **All apps** with your search. Press `/` to jump to the search box when you are not typing in another field. Every word you type has to match, a match in an app's name ranks above one in its description, and everyday words find their category: "chat" finds Slack and Discord, "calendar" finds the schedulers.
+搜索框位于侧边栏顶部，在手机上则位于视图选项上方。在发现页和应用详情页中，输入时会建议匹配的应用与分类；方向键可以移动选择，回车打开高亮项；点击**查看全部结果**，或在没有高亮项时按回车，会带着当前搜索词打开**全部应用**。未在其他字段输入时，按 `/` 可跳到搜索框。输入的每个词都必须匹配；应用名称中的匹配优先于说明中的匹配；日常词语也可以找到相应分类，例如“chat”可找到 Slack 和 Discord，“calendar”可找到预约工具。
 
-On **All apps**, **Connected**, **Community apps** and each category, the same box filters the list as you type instead, and they share one toolbar:
+在**全部应用**、**已连接**、**社区应用**及各个分类页面中，同一个搜索框会在输入时直接筛选列表，这些视图共用一套工具栏：
 
-- **Sort** by best match (while searching), most popular, most installed, newest, or name.
-- **Category** (several at once, each with the number of apps it would leave), **Made by** (official or community), **Status** (connected or not), and under **More filters**, how an app connects (one-click sign in, API key or webhook URL), featured community apps only, and hiding integrations that are not available yet.
-- A grid or a list view.
+- **排序**：按最佳匹配（搜索时可用）、最热门、安装最多、最新或名称排序。
+- **分类**：可同时选择多个，每项显示应用该筛选后剩余的应用数量；**开发者**：官方或社区；**状态**：已连接或未连接；在**更多筛选条件**中，还可按连接方式（一键登录、API 密钥或 Webhook URL）筛选、仅显示精选社区应用，以及隐藏尚不可用的集成。
+- 网格视图或列表视图。
 
-The active filters show as chips you can clear one at a time or all at once. Search, sort, filters and view are kept in the page address, so a filtered view can be bookmarked or shared with a teammate.
+已启用的筛选条件显示为标签，可以逐个清除，也可以一次全部清除。搜索、排序、筛选和视图选择会保存在页面地址中，因此可以收藏筛选后的视图，或分享给团队成员。
 
 </Fold>
 
 <Fold>
 
-## Supported providers
+## 支持的服务商 [#supported-providers]
 
-| Provider | Category | Connect | What it does |
+| 服务商 | 分类 | 连接方式 | 功能 |
 | --- | --- | --- | --- |
-| HubSpot | CRM | one-click OAuth | Create or update a contact, log the reply as a note, or run the workspace's whole CRM on HubSpot ([HubSpot mode](/guides/hubspot/)) |
-| Salesforce | CRM | one-click OAuth (production, sandbox or My Domain) | Two-way sync: activity on the timeline, Lead Status writeback, opt-outs both ways, list view and Campaign imports. See [Salesforce](/guides/salesforce/) |
-| Pipedrive | CRM | one-click OAuth | Upsert a person on reply or on demand, or run the workspace's whole CRM on Pipedrive ([Pipedrive mode](/guides/pipedrive/)) |
-| Close | CRM | API key | Upsert a lead on reply or on demand |
-| Apollo | Data | API key | Import saved lists and keep them in sync, and enrich contacts from Apollo with your own credits. See [Apollo](/guides/apollo/) |
-| Clay | Data | minted inbound URL and a table webhook | Turn rows from a Clay table into contacts, and send replies, bounces and meetings back to Clay. See [Clay](/guides/clay/) |
-| Zapier, Make, n8n | Automation | Warmbly API key | Fan events to that tool's webhook URL |
-| Slack | Notifications and assistant | one-click OAuth | Route notifications to channels or DMs, work inbox replies in a channel, and ask the AI assistant from Slack. See [Slack](/guides/slack/) |
-| Discord | Notifications | webhook URL | Ping a server channel on reply, bounce, or warmup health |
-| Calendly, Cal.com | Meetings | minted inbound URL | Track booked, rescheduled, and canceled calls |
-| MillionVerifier | Verification | API key | Check every contact's address through your pay-as-you-go credits instead of the built-in probe |
-| CleanMyList | Verification | API key | Verify contacts using your CleanMyList plan allowance and credits |
+| HubSpot | CRM | 一键 OAuth | 创建或更新联系人，将回复记录为备注，或使用 HubSpot 承担工作区完整的 CRM 功能（[HubSpot 模式](/guides/hubspot/)） |
+| Salesforce | CRM | 一键 OAuth（生产环境、沙盒或 My Domain） | 双向同步：时间线活动、Lead Status 回写、双向退订同步、列表视图和 Campaign 导入。参见 [Salesforce](/guides/salesforce/) |
+| Pipedrive | CRM | 一键 OAuth | 收到回复时或按需创建或更新人员记录，或使用 Pipedrive 承担工作区完整的 CRM 功能（[Pipedrive 模式](/guides/pipedrive/)） |
+| Close | CRM | API 密钥 | 收到回复时或按需创建或更新潜在客户 |
+| Apollo | 数据 | API 密钥 | 导入已保存的列表并持续同步，使用你自己的积分从 Apollo 补全联系人信息。参见 [Apollo](/guides/apollo/) |
+| Clay | 数据 | 生成的入站 URL 和表格 Webhook | 将 Clay 表格行转换为联系人，并将回复、退信和会议信息发送回 Clay。参见 [Clay](/guides/clay/) |
+| Zapier、Make、n8n | 自动化 | Warmbly API 密钥 | 将事件分发到对应工具的 Webhook URL |
+| Slack | 通知与助手 | 一键 OAuth | 将通知发送到频道或私信，在频道中处理收件箱回复，并从 Slack 向 AI 助手提问。参见 [Slack](/guides/slack/) |
+| Discord | 通知 | Webhook URL | 收到回复、发生退信或预热健康度变化时通知服务器频道 |
+| Calendly、Cal.com | 会议 | 生成的入站 URL | 跟踪通话的预约、改期和取消 |
+| MillionVerifier | 验证 | API 密钥 | 使用你按量购买的积分检查每位联系人的地址，替代内置探测 |
+| CleanMyList | 验证 | API 密钥 | 使用 CleanMyList 套餐额度和积分验证联系人 |
 
-Slack does more than post: it brings the [AI assistant](/guides/ai-assistant/) into Slack, mirrors [Unibox](/guides/unibox/) replies into a channel where the team can reply, label and draft, and each member links their own Slack account. Its setup and settings have their own guide, [Slack](/guides/slack/).
+Slack 不仅可以发布消息：它还将 [AI 助手](/guides/ai-assistant/)带入 Slack，将[统一收件箱](/guides/unibox/)的回复同步到频道，供团队回复、添加标签和起草邮件；每位成员关联自己的 Slack 账户。其设置和配置详见专门的 [Slack](/guides/slack/) 指南。
 
-Only one Verification connection is active at a time; see [one verifier at a time](/guides/integrations/#one-verifier-at-a-time).
+同一时间只能启用一个验证服务连接；参见[一次使用一个验证服务](/guides/integrations/#one-verifier-at-a-time)。
 
-Three connect styles appear on the catalog cards: `one-click` OAuth, `api_key` for providers without an OAuth app, and `webhook` for a minted inbound URL or a pasted channel URL.
+目录卡片显示三种连接方式：`one-click` 表示 OAuth；`api_key` 用于没有 OAuth 应用的服务商；`webhook` 表示生成的入站 URL 或粘贴的频道 URL。
 
-<Callout type="info" title="OAuth providers cannot be connected with a pasted key">
-You must start the authorize flow; pasting credentials for an OAuth provider is rejected so a token is never stored the wrong way. An expired or revoked token moves the connection to "reconnect required" and one click fixes it.
+<Callout type="info" title="OAuth 服务商不能通过粘贴密钥来连接">
+必须启动授权流程。对于使用 OAuth 的服务商，系统会拒绝直接粘贴凭据，以免按错误方式存储令牌。令牌过期或被撤销时，连接会变为“需要重新连接”，一键即可修复。
 </Callout>
 
-<Callout type="info" title="Automation tools store no secret">
-Zapier, Make, and n8n connect in one click with nothing stored on the integration. Warmbly sends events to the webhook URL you configure there; when they call back into Warmbly they use a scoped API key you create.
+<Callout type="info" title="自动化工具不存储密钥">
+Zapier、Make 和 n8n 可以一键连接，集成本身不存储任何机密。Warmbly 将事件发送到你配置的 Webhook URL；这些工具回调 Warmbly 时，使用你创建的具有限定权限的 API 密钥。
 </Callout>
 
-<Callout type="info" title="MillionVerifier is checked before it is saved">
-The key is tested against your MillionVerifier account when you connect, so a mistyped key is refused rather than silently leaving contacts on the built-in check. From then on every new contact, and every re-verify, spends one credit there, from pay-as-you-go credits or a subscription's renewing allowance. Each verdict it produces reads **Verified with MillionVerifier** on the contact. When the balance runs out or the key is revoked, the connection is marked and the built-in check covers until it is fixed. See [address verification](/guides/deliverability/#address-verification).
+<Callout type="info" title="保存前会验证 MillionVerifier 密钥">
+连接时会用密钥访问你的 MillionVerifier 账户进行测试，因此输入有误的密钥会被拒绝，不会默默让联系人继续使用内置检查。此后，每个新联系人和每次重新验证都会在该服务消耗一个积分，从按量购买的积分或订阅定期补充的额度中扣除。联系人上由该服务生成的每项结论都会显示**已通过 MillionVerifier 验证**。余额耗尽或密钥被撤销时，连接会被标记，在修复之前由内置检查接替。参见[地址验证](/guides/deliverability/#address-verification)。
 </Callout>
 
-**Credentials** (OAuth tokens, pasted keys, webhook URLs) are sealed with envelope encryption before touching the database. Only non-secret display details like an account name or Salesforce instance host are stored in the clear, so the dashboard can label the connection.
+**凭据**（OAuth 令牌、粘贴的密钥、Webhook URL）在写入数据库之前都会通过信封加密保护。只有账户名称、Salesforce 实例主机名等非机密的展示信息以明文存储，供控制台标识连接。
 
-### Connect CleanMyList
+### 连接 CleanMyList [#connect-cleanmylist]
 
-1. Verify your account email in [CleanMyList](https://www.cleanmylist.io/), then create a workspace key under **App → API keys**.
-2. In Warmbly, open **Integrations → CleanMyList → Connect** and paste the key. Warmbly validates it with a free, read-only account request and stores it encrypted.
-3. New contacts and re-verification requests use CleanMyList. Each address uses one unit of plan allowance first, then credits. Its deliverable, risky, undeliverable, and unknown verdicts map to Warmbly's corresponding statuses.
+1. 在 [CleanMyList](https://www.cleanmylist.io/) 验证账户邮箱，然后在 **App → API keys**（应用 → API 密钥） 中创建工作区密钥。
+2. 在 Warmbly 中打开**集成 → CleanMyList → 连接**并粘贴密钥。Warmbly 会通过免费的只读账户请求验证密钥，并加密存储。
+3. 新联系人和重新验证请求将使用 CleanMyList。每个地址优先消耗一个套餐额度，之后再消耗积分。其可投递、有风险、不可投递和未知结论会映射到 Warmbly 中相应的状态。
 
-CleanMyList does not expose a balance through its API, so Warmbly omits the credit counter. View your allowance and credits in CleanMyList. If verification fails, including an exhausted account, Warmbly uses the built-in check. Fix the account or reconnect a revoked key to restore verification.
+CleanMyList 不通过 API 提供余额信息，因此 Warmbly 不显示积分计数。请在 CleanMyList 中查看额度和积分。如果验证失败，包括账户额度耗尽，Warmbly 会使用内置检查。修复账户问题或重新连接已撤销的密钥后，即可恢复验证。
 
-An account with nothing left is only visible when a check is refused, so Warmbly stops checking against it for 15 minutes rather than retrying every address. Topping up takes effect on the next pass after that. See the [CleanMyList API documentation](https://www.cleanmylist.io/developers) and [address verification](/guides/deliverability/#address-verification).
+只有在检查被拒绝时，才能知道账户已经没有可用额度。因此，Warmbly 会暂停向该账户发起检查 15 分钟，而不是为每个地址反复重试。充值会在此后下一轮检查时生效。参见 [CleanMyList API 文档](https://www.cleanmylist.io/developers)和[地址验证](/guides/deliverability/#address-verification)。
 
-### One verifier at a time
+### 一次只使用一个验证服务 [#one-verifier-at-a-time]
 
-A workspace uses one verification service. Connecting a second one is refused while the first is connected, because which one ran would otherwise be decided by connection order alone and every check would quietly move to a different bill. Disconnect the current service first, then connect the new one.
+每个工作区只能使用一项验证服务。已有服务连接时，系统会拒绝连接第二项服务，否则实际运行哪项服务将仅由连接顺序决定，所有检查也会在没有提示的情况下转移到另一份账单。请先断开当前服务，再连接新服务。
 
 </Fold>
 
 <Fold>
 
-## Community apps
+## 社区应用 [#community-apps]
 
-A community app is an [OAuth app](/api/oauth/) another team built on the Warmbly API and published. Opening one shows who built it, what it does, how many workspaces use it, and every permission it can ask for.
+社区应用是其他团队基于 Warmbly API 构建并发布的 [OAuth 应用](/api/oauth/)。打开应用页面后，可以查看开发者、功能、使用它的工作区数量，以及它可能请求的每项权限。
 
-**Install** opens the app's own install page. The app then sends you back to Warmbly's consent screen, where you approve exactly what it gets, the same as any OAuth app. Nothing is granted by opening the listing or clicking Install. A row reads **Installed** once anyone in your workspace has authorized the app, and you can remove your own access from the listing or under **Settings > OAuth apps > Authorized apps**.
+**安装**会打开应用自己的安装页面。随后应用将你带回 Warmbly 的授权同意页面，与任何 OAuth 应用一样，由你明确批准它能获得的权限。仅打开目录条目或点击安装不会授予任何权限。工作区内只要有一人授权过该应用，对应行就会显示**已安装**；你可以从目录条目或**设置 > OAuth 应用 > 已授权的应用**中撤销自己的授权。
 
-Publishing an app does not put it in front of everyone. A published app is **link only**: its developer shares `/app/integrations/apps/<slug>` with the people who use it, and it stays out of the directory, search and recommendations. It joins the **Community apps** view in one of two ways:
+发布应用并不意味着它会展示给所有人。已发布的应用最初**仅通过链接访问**：开发者将 `/app/integrations/apps/<slug>` 分享给使用者，应用不会出现在目录、搜索或推荐中。满足以下任一条件后，才会进入**社区应用**视图：
 
-- **Featured**: the team picked it. It carries a Featured badge and also appears on Discover. Featured means chosen for the directory, not built or run by Warmbly.
-- **Widely used**: it is installed in 25 workspaces on the instance other than the publisher's, each at least two weeks old.
+- **精选**：由团队选中。应用带有“精选”标记，也会出现在发现页。“精选”表示被选入目录，不代表由 Warmbly 开发或运营。
+- **广泛使用**：在发布者工作区以外，同一实例中已有 25 个工作区安装该应用，且每个工作区均已创建至少两周。
 
-An app opened from a link that is neither says so: it is shared by link and nobody has reviewed it, so install it only if you know who built it. The team can also **hide** an app, which takes it out of the directory and stops its link from opening.
+通过链接打开、且两项条件均不满足的应用会明确说明：该应用通过链接分享，尚未经过审查，因此只有在了解开发者身份时才应安装。团队也可以**隐藏**应用，将其移出目录，并使其链接无法打开。
 
-<Callout type="info" title="Community apps are per instance">
-An OAuth app can only authorize against the instance that registered it, so a self-hosted instance lists the apps published on that instance, and Warmbly Cloud lists the apps published on Cloud.
+<Callout type="info" title="社区应用按实例配置">
+OAuth 应用只能在注册它的实例上授权，因此自托管实例列出在该实例上发布的应用，Warmbly Cloud 列出在 Cloud 上发布的应用。
 </Callout>
 
-### Publish your app
+### 发布你的应用 [#publish-your-app]
 
-1. Register the app under **Settings > OAuth apps**: a name and logo, what it can do, and the address people return to after approving, then optionally the events it receives. Its name, logo, website and requested permissions are what the listing shows. See [register your app](/api/oauth/#register-your-app).
-2. On the app, choose **Publish** and fill in the listing: a link (the slug), a one-line tagline, a description, a category, and the **install URL** that Install opens. Start the OAuth flow from that page with your own `state`. Support and privacy links are optional.
-3. Copy the link and share it with the people who use your app.
+1. 在**设置 > OAuth 应用**中注册应用：填写名称和徽标、功能、用户批准后返回的地址，还可选择它接收的事件。目录条目会展示应用的名称、徽标、网站和请求的权限。参见[注册应用](/api/oauth/#register-your-app)。
+2. 在应用中选择**发布**并填写目录信息：链接标识（slug）、一句话简介、说明、分类，以及点击“安装”时打开的**安装 URL**。从该页面使用你自己的 `state` 启动 OAuth 流程。支持链接和隐私政策链接为可选项。
+3. 复制链接并分享给应用使用者。
 
-Any change to the listing, or to the app's name, logo, website or permissions, removes the Featured mark until the team picks it again, so a featured app cannot change after it was chosen. Saving without changing anything keeps it. A hidden listing stays hidden when edited, and shows the team's note. **Unpublish** removes the listing and its link; workspaces that already installed the app keep their access until they revoke it.
+修改目录信息，或修改应用名称、徽标、网站或权限，都会移除“精选”标记，直到团队重新选中该应用，以免应用入选后发生变更却仍保留原有认可。未作任何修改而直接保存，则保留标记。隐藏的条目编辑后仍然隐藏，并显示团队留下的说明。**取消发布**会移除目录条目及其链接；已经安装的工作区仍保留访问权限，直到自行撤销。
 
-A listing's link must be 3 to 48 lowercase letters, numbers or single dashes, and the names of the built-in integrations are reserved. The tagline is at most 120 characters and the description 2,000. Every link must be `https`.
-
-</Fold>
-
-<Fold>
-
-## HubSpot or Pipedrive as your CRM
-
-HubSpot and Pipedrive can do more than receive contacts: in [HubSpot mode](/guides/hubspot/) or [Pipedrive mode](/guides/pipedrive/) one of them becomes the workspace's CRM. Deals, pipelines, tasks and notes are the CRM's records written through from Warmbly, sends, replies, bounces, unsubscribes and meetings are logged on the contact, and a deal opened or a lifecycle stage (in Pipedrive, a label) reached there stops the contact's campaigns. Set it up from **Integrations > HubSpot** or **Integrations > Pipedrive**. A workspace runs on one CRM at a time.
+目录链接的标识必须由 3 至 48 个小写字母、数字或单个连字符组成，内置集成的名称为保留名称。简介最多 120 个字符，说明最多 2,000 个字符。所有链接必须使用 `https`。
 
 </Fold>
 
 <Fold>
 
-## CRM field mappings
+## 将 HubSpot 或 Pipedrive 用作 CRM [#hubspot-or-pipedrive-as-your-crm]
 
-A mapping decides how a Warmbly contact projects onto provider fields. Every connection ships a sensible default:
+HubSpot 和 Pipedrive 不仅能接收联系人：在 [HubSpot 模式](/guides/hubspot/)或 [Pipedrive 模式](/guides/pipedrive/)下，其中一个会成为工作区的 CRM。商机、销售管道、任务和备注直接使用该 CRM 的记录，Warmbly 中的操作会写入 CRM；发送、回复、退信、退订和会议会记录在联系人上；在 CRM 中创建商机，或达到某个生命周期阶段（Pipedrive 中为标签）时，会停止该联系人的营销活动。在**集成 > HubSpot**或**集成 > Pipedrive**中进行设置。一个工作区同一时间只能使用一个 CRM。
 
-| Provider | Default mapping |
+</Fold>
+
+<Fold>
+
+## CRM 字段映射 [#crm-field-mappings]
+
+字段映射决定 Warmbly 联系人如何对应到服务商字段。每个连接都提供合理的默认值：
+
+| 服务商 | 默认映射 |
 |----------|-----------------|
-| HubSpot | `email`, `firstname`, `lastname`, `company`, `phone` |
-| Pipedrive | `name`, `email`, `phone` (a person) |
-| Close | `name`, `email`, `phone`, `company` (a lead) |
+| HubSpot | `email`、`firstname`、`lastname`、`company`、`phone` |
+| Pipedrive | `name`、`email`、`phone`（人员记录） |
+| Close | `name`、`email`、`phone`、`company`（潜在客户） |
 
-Salesforce has its own field rules, per object and with a direction and a conflict policy; see [Salesforce field mapping](/guides/salesforce/#field-mapping).
+Salesforce 使用自己的字段规则，按对象分别设置，并带有同步方向和冲突策略；参见 [Salesforce 字段映射](/guides/salesforce/#field-mapping)。
 
-Override per connection: each row pairs a Warmbly source field with a destination name and can apply a `uppercase`, `lowercase`, or `trim` transform, or write a fixed `static` value. Custom contact fields are addressed as `custom:your_key`, and a static value can include event variables like `{{.company}}`.
+可以为每个连接覆盖默认设置：每行将一个 Warmbly 来源字段与目标字段名称配对，可以应用 `uppercase`、`lowercase` 或 `trim` 转换，也可以写入固定的 `static` 值。自定义联系人字段使用 `custom:your_key` 指定，静态值中可以包含 `{{.company}}` 这样的事件变量。
 
-Mappings resolve by specificity: provider defaults, then your connection map, then per-automation overrides, with the most specific winning.
+映射按具体程度依次覆盖：服务商默认值、连接级映射、单个自动化流程的覆盖设置；最具体的规则优先。
 
-In HubSpot or Pipedrive mode, contacts sync on their own with a field map of their own that also sets a direction per field. See [HubSpot contacts and field mapping](/guides/hubspot/#contacts-and-field-mapping) and [Pipedrive people and field mapping](/guides/pipedrive/#people-and-field-mapping).
+在 HubSpot 或 Pipedrive 模式中，联系人会自动同步，使用单独的字段映射，并可逐字段设置方向。参见 [HubSpot 联系人与字段映射](/guides/hubspot/#contacts-and-field-mapping)以及 [Pipedrive 人员与字段映射](/guides/pipedrive/#people-and-field-mapping)。
 
-<Callout type="info" title="Blank values are not written">
-Empty values are dropped before the upsert, so a missing first name never blanks an existing one in your CRM.
+<Callout type="info" title="空值不会写入">
+执行创建或更新之前会丢弃空值，因此缺少名字时，不会将 CRM 中已有的名字清空。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Webhook delivery
+## Webhook 投递 [#webhook-delivery]
 
-Outbound events are **HMAC-SHA256 signed** so receivers can verify them. Reveal the connection's `whsec_` signing secret in its settings and check the signature header on every request. The signed body carries a stable delivery id, event type, version, timestamp, and full event data.
+出站事件使用 **HMAC-SHA256 签名**，供接收方验证。在连接设置中显示 `whsec_` 签名密钥，并在每次请求时检查签名请求头。签名正文包含稳定的投递 ID、事件类型、版本、时间戳以及完整事件数据。
 
-URLs are validated before storage under the same policy as customer webhooks: the scheme must be `https` and the host must be publicly routable, with no localhost, loopback, private, or link-local addresses. This blocks requests aimed at internal services. Only development or self-hosted setups can opt out with `WARMBLY_ALLOW_UNSAFE_WEBHOOK_URLS=true`.
+URL 在存储之前会按与客户 Webhook 相同的策略验证：协议必须为 `https`，主机必须可从公网路由访问，不允许 localhost、环回、私有或链路本地地址。这样可以阻止指向内部服务的请求。只有开发或自托管环境可以通过 `WARMBLY_ALLOW_UNSAFE_WEBHOOK_URLS=true` 关闭此限制。
 
-<Callout type="info" title="Send a test event">
-**Send test event** fires a synthetic payload through the real delivery path, signed exactly like production, so you can verify your signature check first. CRM upserts are skipped during a test, so nothing junk lands in your CRM.
+<Callout type="info" title="发送测试事件">
+**发送测试事件**会通过实际投递流程发送模拟载荷，签名方式与生产环境完全相同，便于先验证签名检查逻辑。测试期间会跳过 CRM 的创建或更新操作，避免向 CRM 写入无用数据。
 </Callout>
 
-**Inbound webhooks** work the other way: Calendly and Cal.com call into a URL Warmbly mints for you, landing booked, rescheduled, and canceled calls on the contact timeline in real time. Rotate the secret from connection settings if exposed.
+**入站 Webhook**的方向相反：Calendly 和 Cal.com 调用 Warmbly 为你生成的 URL，将通话预约、改期和取消实时写入联系人时间线。如果密钥泄露，请在连接设置中轮换。
 
 </Fold>
 
 <Fold>
 
-## Feeding automations
+## 向自动化流程传递事件 [#feeding-automations]
 
-Integrations are most useful as the actions at the end of an [automation](/guides/automations/): post to Slack or Discord, upsert into a CRM, or fan out to Zapier, Make, n8n, or any signed webhook.
+将集成作为[自动化流程](/guides/automations/)末端的操作时，它最有价值：发送消息到 Slack 或 Discord，在 CRM 中创建或更新记录，或将事件分发到 Zapier、Make、n8n 及任何带签名的 Webhook。
 
-The most actionable events are available as triggers: reply received (with intent), contact created, form submitted, email bounced, unsubscribed, meeting booked, rescheduled, or canceled, warmup health changed, and deliverability complaint.
+最适合触发后续处理的事件都可以用作触发器：收到回复（含意图）、创建联系人、提交表单、邮件退信、退订、会议预约、改期或取消、预热健康度变化，以及邮件送达投诉。
 
-Data flows in as well as out. An automation's inbound webhook URL plus its **Create or update contact** action turns any push (a lead-form connector in Zapier, Make or n8n, a form tool's webhook, your own code) into a tagged, campaign-enrolled contact. See [Lead intake](/guides/automations/#lead-intake).
+数据既可以流出，也可以流入。将自动化流程的入站 Webhook URL 与**创建或更新联系人**操作结合，即可把任何推送转为已添加标签并加入营销活动的联系人。推送来源可以是 Zapier、Make 或 n8n 中的潜在客户表单连接器、表单工具的 Webhook，或你自己的代码。参见[潜在客户接收](/guides/automations/#lead-intake)。
 
-Actions run in the background, so a slow third party never blocks the event that triggered it. Failures are recorded against the connection's health and visible in its recent activity rather than retried forever or silently lost.
+操作在后台运行，因此响应缓慢的第三方不会阻塞触发它的事件。失败会计入连接健康度，并显示在最近活动中，不会无限重试或无声丢失。
 
-You can filter when an action runs, commonly firing only on a `positive` reply or above a minimum classifier confidence. Beyond events, you can push a batch of contacts into a connected CRM on demand, with each record reporting its own result.
+你可以筛选操作的运行条件，常见做法是只针对 `positive` 回复触发，或要求分类器置信度达到最低阈值。除了按事件触发，也可以按需将一批联系人推送到已连接的 CRM，每条记录都会报告自己的结果。
 
 </Fold>
 
-## Next steps
+## 后续步骤 [#next-steps]
 
 <Cards>
-  <Card title="Automations" href="/guides/automations/" />
+  <Card title="自动化流程" href="/guides/automations/" />
   <Card title="Slack" href="/guides/slack/" />
-  <Card title="Personalization & expressions" href="/guides/expressions/" />
-  <Card title="Deliverability" href="/guides/deliverability/" />
+  <Card title="个性化与表达式" href="/guides/expressions/" />
+  <Card title="邮件送达能力" href="/guides/deliverability/" />
 </Cards>

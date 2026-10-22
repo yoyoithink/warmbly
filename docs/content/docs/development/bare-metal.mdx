@@ -1,11 +1,11 @@
 ---
-title: Deploying without Docker
-description: Step-by-step instructions for running Warmbly as native systemd services on one Linux host, built from source, with no containers anywhere.
+title: 不使用 Docker 部署
+description: 分步介绍如何从源码构建 Warmbly，并在单台 Linux 主机上以原生 systemd 服务运行，全程不使用容器。
 ---
 
-The [self-hosting guide](/development/deployment-guide/) assumes Docker Compose. Nothing in Warmbly needs a container, though: every service is a single binary or a static build that reads its configuration from environment variables. This page walks through building those artifacts from source and running them under systemd on one Linux host, with nginx in front.
+[自托管指南](/development/deployment-guide/)默认使用 Docker Compose，但 Warmbly 并没有必须依赖容器的部分：每个服务都是读取环境变量配置的单一二进制或静态构建。本页介绍如何从源码构建这些产物，在一台 Linux 主机上通过 systemd 运行，并在前方使用 nginx。
 
-It is longer than the compose route because it does by hand what the compose file does for you: installing the backing services, generating secrets, fanning one set of values out to five processes, and serving two static frontends. Read it once end to end before starting; the [quick reference](#quick-reference) at the bottom is enough the second time.
+这条路径比 Compose 更长，因为需要手动完成 Compose 文件代劳的工作：安装基础服务、生成秘密值、将同一组配置分发给五个进程，以及提供两个静态前端。开始前请完整阅读一遍；第二次操作时，页面底部的[速查](#quick-reference)就足够。
 
 <Mermaid
   chart={`
@@ -30,35 +30,35 @@ flowchart LR
 `}
 />
 
-## Before you start
+## 开始前的准备 [#before-you-start]
 
-| You need | Why |
+| 要求 | 原因 |
 |----------|-----|
-| A Linux host with systemd | The units below; Debian 12, Ubuntu 22.04+ and their relatives are known to work |
-| Root or sudo | To install packages, create the service user, and write under `/etc` and `/opt` |
-| PostgreSQL 16, Redis 7, NATS 2.10+ | The backing services. Any packaging works: distro packages, upstream repositories, or a managed instance elsewhere |
-| Go 1.25 | Builds the backend, consumer, worker, `migrate` and `warmblyctl` |
-| Rust (stable, 1.93 or newer) | Builds the tracking service |
-| Elixir 1.18 on OTP 27 | Builds the realtime service |
-| Node 22 and pnpm | Builds the dashboard, admin panel and forms app |
-| nginx | Serves the static frontends and terminates TLS for the API, websocket, tracking and forms hosts |
-| Six DNS names | `app`, `admin`, `api`, `ws`, `t` and `forms` under your domain, all pointing at the host |
+| 带 systemd 的 Linux 主机 | 用于下方服务单元；已知 Debian 12、Ubuntu 22.04+ 及相关发行版可用 |
+| root 或 sudo 权限 | 安装软件包、创建服务用户，以及写入 `/etc` 和 `/opt` |
+| PostgreSQL 16、Redis 7、NATS 2.10+ | 基础服务。可使用发行版软件包、上游仓库，或其他位置的托管实例 |
+| Go 1.25 | 构建后端、消费者、工作节点、`migrate` 和 `warmblyctl` |
+| Rust 稳定版，1.93 或更新 | 构建跟踪服务 |
+| OTP 27 上的 Elixir 1.18 | 构建实时服务 |
+| Node 22 和 pnpm | 构建控制台、管理面板和表单应用 |
+| nginx | 提供静态前端，并为 API、WebSocket、跟踪和表单主机终止 TLS |
+| 六个 DNS 名称 | 域名下的 `app`、`admin`、`api`、`ws`、`t` 和 `forms`，全部指向该主机 |
 
-The toolchains are only needed on the machine that builds. If you would rather not install compilers on the production host, build on another machine of the same architecture and copy `/opt/warmbly` over; nothing below is path-dependent beyond the values you put in the env file.
+工具链只需安装在构建机器上。如果不想在生产主机安装编译器，可在同架构的另一台机器构建，再复制 `/opt/warmbly`；除环境文件中的配置值外，下方流程没有其他路径依赖。
 
-<Callout type="warn" title="Not a development setup">
-For working on Warmbly itself use `make dev`, which runs the Go services natively already and only puts Postgres, Redis and NATS in containers. This page is for running the product for other people, which means real secrets, TLS and a mail relay.
+<Callout type="warn" title="本页不是开发环境配置">
+开发 Warmbly 本身时请使用 `make dev`，它已经原生运行 Go 服务，只将 Postgres、Redis 和 NATS 放入容器。本页用于向其他人提供产品服务，因此需要真实秘密值、TLS 和邮件中继。
 </Callout>
 
-## Install the backing services
+## 安装基础依赖服务 [#install-the-backing-services]
 
 <Steps>
 
 <Step>
 
-### PostgreSQL
+### PostgreSQL [#postgresql]
 
-Install PostgreSQL 16, then create the role and database the backend will own:
+安装 PostgreSQL 16，然后创建后端使用的角色和数据库：
 
 ```bash
 sudo -u postgres psql <<'SQL'
@@ -67,25 +67,25 @@ CREATE DATABASE warmbly OWNER warmbly;
 SQL
 ```
 
-The migrations create every table and index, so nothing else is required in the database. Migrations apply automatically on every backend boot.
+迁移会创建所有表和索引，因此数据库中无需其他准备。每次后端启动都会自动应用迁移。
 
 </Step>
 
 <Step>
 
-### Redis
+### Redis [#redis]
 
-Install Redis 7 and leave the default configuration: localhost only, no password. Redis holds the rate limiter, the decrypted-key cache and the realtime bridge; none of it is durable state, and a restart loses nothing that matters.
+安装 Redis 7 并保留默认配置：仅监听 localhost，不设密码。Redis 保存速率限制、已解密密钥缓存和实时桥接；这些都不是持久状态，重启不会丢失关键数据。
 
-If you enable `requirepass`, put the password in every `REDIS` and `REDIS_URL` value below as `redis://:password@127.0.0.1:6379`.
+启用 `requirepass` 时，将密码写入下方每个 `REDIS` 和 `REDIS_URL` 值，形式为 `redis://:password@127.0.0.1:6379`。
 
 </Step>
 
 <Step>
 
-### NATS with JetStream
+### 启用 JetStream 的 NATS [#nats-with-jetstream]
 
-NATS is one static binary. Install it from your distribution or [nats.io](https://docs.nats.io/running-a-nats-system/introduction/installation), then run it with JetStream on, a storage directory, and both listeners bound to loopback:
+NATS 是一个静态二进制。通过发行版或 [nats.io](https://docs.nats.io/running-a-nats-system/introduction/installation) 安装，然后启用 JetStream、指定存储目录，并将两个监听器都绑定到回环地址：
 
 ```bash
 sudo useradd --system --home /var/lib/nats --create-home nats
@@ -112,21 +112,21 @@ sudo systemctl daemon-reload && sudo systemctl enable --now nats
 curl -s http://127.0.0.1:8222/healthz
 ```
 
-Two lines matter. `jetstream` is required: without it the backend starts, then fails on its first publish with a message about the stream not existing. `listen: 127.0.0.1` is what keeps the bus private. Everything that goes over NATS is unauthenticated by default, and it carries worker commands (send this mail, sync this mailbox) and tracking events, so a client that can reach port 4222 can issue both. On a single host nothing but the services on that host needs it, and loopback is the whole access control.
+两行配置尤其关键。`jetstream` 必须存在；缺少它时，后端会启动，但首次发布失败并提示流不存在。`listen: 127.0.0.1` 保证总线只在本机可用。默认 NATS 流量没有身份验证，其中既有工作节点命令，例如发送邮件和同步邮箱，也有跟踪事件，因此能访问 4222 端口的客户端就能发出两者。在单主机上，只有本机服务需要访问，回环地址就是完整的访问控制。
 
-Only open it when a worker on another machine has to reach it, and then add authentication and TLS in the same change. See [workers on other machines](#workers-on-other-machines) for the configuration.
+只有其他机器的工作节点必须访问时才开放，并在同一次变更中添加身份验证和 TLS。配置见[其他机器上的工作节点](#workers-on-other-machines)。
 
 </Step>
 
 </Steps>
 
-## Build from source
+## 从源码构建 [#build-from-source]
 
 <Steps>
 
 <Step>
 
-### Get the code and create the layout
+### 获取源码并创建目录结构 [#get-the-code-and-create-the-layout]
 
 ```bash
 sudo useradd --system --home /var/lib/warmbly --create-home --shell /usr/sbin/nologin warmbly
@@ -137,17 +137,17 @@ sudo install -d -o "$USER" -g "$USER" /opt/warmbly/src
 git clone https://github.com/warmbly/warmbly /opt/warmbly/src
 ```
 
-The checkout belongs to you, not root: every build below runs as your normal user and writes into `/opt/warmbly/src`, and only the final `sudo install` or `sudo cp` of each artifact touches the root-owned `/opt/warmbly/bin`, `/opt/warmbly/web` and friends. Cloning with `sudo` leaves a root-owned tree that the builds cannot write to.
+检出目录属于你，不属于 root：下方所有构建都以普通用户运行并写入 `/opt/warmbly/src`，只有各产物最后的 `sudo install` 或 `sudo cp` 会触碰 root 所有的 `/opt/warmbly/bin`、`/opt/warmbly/web` 等目录。使用 `sudo` 克隆会得到 root 所有的目录树，构建无法写入。
 
-Checkout a release tag rather than `main` when you want a known version: `git -C /opt/warmbly/src checkout vX.Y.Z`. Everything below runs from `/opt/warmbly/src`.
+需要已知版本时，应检出发布标签而非 `main`：`git -C /opt/warmbly/src checkout vX.Y.Z`。下方所有操作从 `/opt/warmbly/src` 开始。
 
 </Step>
 
 <Step>
 
-### Go services
+### Go 服务 [#go-services]
 
-Six binaries come out of one module. Static builds, so the production host needs no Go runtime:
+一个模块构建出六个二进制。它们采用静态构建，因此生产主机不需要 Go 运行时：
 
 ```bash
 cd /opt/warmbly/src
@@ -159,13 +159,13 @@ sudo install -m 0755 out/backend out/forms out/consumer out/worker out/migrate o
 sudo ln -sf /opt/warmbly/bin/warmblyctl /usr/local/bin/warmblyctl
 ```
 
-The default build has no Kafka support, which is what you want: NATS is the event bus. Add `-tags kafka` (and `CGO_ENABLED=1` with `librdkafka` installed) only if you are pointing at an existing Kafka cluster.
+默认构建不支持 Kafka，这正适合此处，因为事件总线是 NATS。只有连接已有 Kafka 集群时，才添加 `-tags kafka`，并设置 `CGO_ENABLED=1`、安装 `librdkafka`。
 
 </Step>
 
 <Step>
 
-### Tracking service (Rust)
+### 跟踪服务（Rust） [#tracking-service-rust]
 
 ```bash
 cd /opt/warmbly/src/tracking
@@ -173,15 +173,15 @@ cargo build --release
 sudo install -m 0755 target/release/tracking /opt/warmbly/bin/tracking
 ```
 
-The tracking snippet in `static/` is compiled into the binary, so nothing else needs copying.
+`static/` 中的跟踪代码片段会编译进二进制，无需再复制其他内容。
 
 </Step>
 
 <Step>
 
-### Realtime service (Elixir)
+### 实时服务（Elixir） [#realtime-service-elixir]
 
-A mix release bundles the Erlang runtime, so the host does not need Elixir installed once the build is done:
+Mix release 会打包 Erlang 运行时，因此构建完成后，主机无需安装 Elixir：
 
 ```bash
 cd /opt/warmbly/src/realtime
@@ -194,15 +194,15 @@ sudo cp -r _build/prod/rel/realtime /opt/warmbly/realtime
 sudo chown -R warmbly:warmbly /opt/warmbly/realtime
 ```
 
-Build on a machine with the same libc as the host: a release built on Alpine (musl) does not start on Debian (glibc), and the other way round.
+构建机器应与目标主机使用相同 libc。Alpine 的 musl 构建无法在 Debian 的 glibc 上启动，反过来也一样。
 
 </Step>
 
 <Step>
 
-### Dashboard, admin panel and forms app
+### 控制台、管理面板与表单应用 [#dashboard-admin-panel-and-forms-app]
 
-All three are static Vite builds. No URL is baked in at build time; the dashboard and admin read `config.js` at runtime (next step), and the forms app is served by the forms binary itself, which looks for it at `forms/dist` under its working directory.
+三者都是 Vite 静态构建。构建时不会固化 URL；控制台和管理端在运行时读取 `config.js`，下一步会配置。表单应用由 forms 二进制自身提供，它会在工作目录下的 `forms/dist` 查找文件。
 
 ```bash
 cd /opt/warmbly/src/web   && pnpm install --frozen-lockfile && pnpm build
@@ -219,9 +219,9 @@ sudo cp -r /opt/warmbly/src/forms/dist /opt/warmbly/forms/dist
 
 <Step>
 
-### Runtime config for the frontends
+### 前端运行时配置 [#runtime-config-for-the-frontends]
 
-In the container images an entrypoint renders this file from environment variables. Without containers you write it yourself, once per frontend:
+容器镜像中的入口脚本会根据环境变量生成此文件。没有容器时，需要为每个前端手动写入：
 
 ```bash
 sudo tee /opt/warmbly/web/config.js >/dev/null <<'EOF'
@@ -243,19 +243,19 @@ EOF
 sudo chmod -R a+rX /opt/warmbly/web /opt/warmbly/admin
 ```
 
-`TURNSTILE_KEY` is the Cloudflare Turnstile site key and stays empty unless you also set `CAPTCHA_PROVIDER=turnstile` on the backend. The file is read on every page load (nginx serves it with `no-store` below), so changing a URL later never needs a rebuild.
+`TURNSTILE_KEY` 是 Cloudflare Turnstile 站点密钥；除非后端同时设置 `CAPTCHA_PROVIDER=turnstile`，否则保持为空。每次页面加载都会读取该文件，下方 nginx 以 `no-store` 提供，因此以后修改 URL 无需重新构建。
 
 </Step>
 
 </Steps>
 
-## Configure
+## 配置设置 [#configure]
 
 <Steps>
 
 <Step>
 
-### Generate the secrets
+### 生成密钥 [#generate-the-secrets]
 
 ```bash
 AUTH_SECRET=$(openssl rand -base64 32)
@@ -265,17 +265,17 @@ KMS_LOCAL_MASTER_KEY=$(openssl rand -base64 32)
 CREDENTIALS_ENCRYPTION_KEY=$(openssl rand -hex 32)
 ```
 
-<Callout type="warn" title="Back up the last two before you connect a mailbox">
-`KMS_LOCAL_MASTER_KEY` and `CREDENTIALS_ENCRYPTION_KEY` seal every stored credential. Losing them is unrecoverable, and a database backup without them cannot be decrypted.
+<Callout type="warn" title="连接邮箱前先备份最后两个值">
+`KMS_LOCAL_MASTER_KEY` 和 `CREDENTIALS_ENCRYPTION_KEY` 密封所有已存储凭据。丢失后无法恢复；数据库备份没有它们也无法解密。
 </Callout>
 
 </Step>
 
 <Step>
 
-### Write `/etc/warmbly/warmbly.env`
+### 编写 `/etc/warmbly/warmbly.env` [#write-etcwarmblywarmblyenv]
 
-One file feeds the backend, consumer, tracking and realtime services. Compose maps a few names between services for you (`AUTH_SECRET` to `JWT_SECRET`, `PRIMARY_DB` to `DATABASE_URL`, `REDIS` to `REDIS_URL`); here both spellings sit in the same file with the same value.
+一个文件同时供后端、消费者、跟踪和实时服务读取。Compose 原本会在服务之间映射部分名称，例如 `AUTH_SECRET` 到 `JWT_SECRET`、`PRIMARY_DB` 到 `DATABASE_URL`、`REDIS` 到 `REDIS_URL`；这里将两种名称以相同值写入同一文件。
 
 ```bash
 sudo tee /etc/warmbly/warmbly.env >/dev/null <<EOF
@@ -355,22 +355,22 @@ sudo chmod 0600 /etc/warmbly/warmbly.env
 sudo chown warmbly:warmbly /etc/warmbly/warmbly.env
 ```
 
-A few lines differ from the compose defaults on purpose:
+有几行与 Compose 默认值有意不同：
 
-- `API_HOST`, `TRACKING_HOST` and the realtime `PORT` sit on `127.0.0.1`, so only nginx reaches them. The realtime service binds all interfaces regardless, so keep `4000` closed at the firewall
-- `TRUSTED_PROXIES` and `TRACKING_TRUSTED_PROXIES` name the proxy, so rate limits and audit records see the visitor's address instead of `127.0.0.1`
-- `CHECK_ORIGIN=true` makes the websocket refuse browsers that are not on `PHX_HOST`'s origin list
-- `GEODB_PATH` points at a file that need not exist. The backend refuses to start without the variable, but a missing database only means sessions, audit rows and email opens and clicks carry no city; drop a MaxMind `GeoLite2-City.mmdb` at that path if you have one, or set `GEODB_URL` and let the service fetch its own copy (see [GeoIP](/development/configuration/#geoip))
+- `API_HOST`、`TRACKING_HOST` 和实时服务的 `PORT` 设在 `127.0.0.1`，只让 nginx 访问。不过实时服务仍会绑定所有接口，因此防火墙中应关闭 `4000`。
+- `TRUSTED_PROXIES` 和 `TRACKING_TRUSTED_PROXIES` 指定代理，使速率限制和审计记录看到访问者地址，而不是 `127.0.0.1`。
+- `CHECK_ORIGIN=true` 会让 WebSocket 拒绝不在 `PHX_HOST` 来源列表中的浏览器。
+- `GEODB_PATH` 指向的文件可以不存在。没有这个变量时后端拒绝启动，但数据库文件缺失只会让会话、审计行、邮件打开和点击没有城市信息。如果已有 MaxMind `GeoLite2-City.mmdb`，放到该路径；也可设置 `GEODB_URL`，让服务自行获取副本，见 [GeoIP](/development/configuration/#geoip)。
 
-Every other variable, with its default, is in the [configuration reference](/development/configuration/), and [`deploy/config/env.example`](https://github.com/warmbly/warmbly/blob/main/deploy/config/env.example) is the annotated template this file was cut down from. Mail relay, OAuth clients, single sign-on and the AI provider are configured exactly as in the [self-hosting guide](/development/deployment-guide/#platform-email); only the way values reach the process differs.
+其他变量及默认值都在[配置参考](/development/configuration/)中；[`deploy/config/env.example`](https://github.com/warmbly/warmbly/blob/main/deploy/config/env.example) 是本文件所精简自的带注释模板。邮件中继、OAuth 客户端、单点登录和 AI 服务商的配置方式，与[自托管指南](/development/deployment-guide/#platform-email)完全相同，只是将值传给进程的方式不同。
 
 </Step>
 
 <Step>
 
-### Write `/etc/warmbly/worker.env`
+### 编写 `/etc/warmbly/worker.env` [#write-etcwarmblyworkerenv]
 
-The worker is deliberately blind to the database: it reaches encrypted keys over the backend's internal API and holds only what it needs to send. Give it its own file:
+工作节点有意不直接访问数据库：它通过后端内部 API 获取加密密钥，只持有发送所需内容。为它单独提供文件：
 
 ```bash
 sudo tee /etc/warmbly/worker.env >/dev/null <<EOF
@@ -403,21 +403,21 @@ sudo chmod 0600 /etc/warmbly/worker.env
 sudo chown warmbly:warmbly /etc/warmbly/worker.env
 ```
 
-`WORKER_ID` is generated once and never changed: it is the worker's identity, and the mailboxes assigned to it follow that UUID. A worker that boots with a fresh id every time leaves the old one behind still holding its mailboxes, and sending stalls until the reconciler notices. The `BOX_*` values must match the backend's, because the worker is what refreshes an expiring OAuth token.
+`WORKER_ID` 只生成一次，之后不再改变：它是工作节点身份，分配给它的邮箱跟随这个 UUID。如果每次启动都生成新 ID，旧节点仍会持有邮箱，发送会停滞，直到协调器发现。`BOX_*` 值必须与后端一致，因为过期 OAuth 令牌由工作节点刷新。
 
 </Step>
 
 </Steps>
 
-## Run it
+## 运行服务 [#run-it]
 
 <Steps>
 
 <Step>
 
-### Install the units
+### 安装 systemd 单元 [#install-the-units]
 
-The repository ships one unit per service in [`deploy/systemd/`](https://github.com/warmbly/warmbly/tree/main/deploy/systemd), already pointed at the paths above and locked down to the `warmbly` user:
+仓库在 [`deploy/systemd/`](https://github.com/warmbly/warmbly/tree/main/deploy/systemd) 为每个服务提供一个单元，已指向上述路径，并限制为 `warmbly` 用户运行：
 
 ```bash
 sudo cp /opt/warmbly/src/deploy/systemd/warmbly-*.service /etc/systemd/system/
@@ -428,31 +428,31 @@ sudo systemctl daemon-reload
 
 <Step>
 
-### Start the backend first
+### 先启动后端 [#start-the-backend-first]
 
-The backend applies migrations on boot, and everything else expects the schema to exist:
+后端启动时应用迁移，其他服务都假设 Schema 已存在：
 
 ```bash
 sudo systemctl enable --now warmbly-backend
 sudo journalctl -u warmbly-backend -f
 ```
 
-Watch for the migrations to finish and `curl http://127.0.0.1:8080/health` to answer `200`. A `prod` boot refuses any of the published development secrets, so a message naming a variable means the env file still has a placeholder in it.
+等待迁移完成，并确认 `curl http://127.0.0.1:8080/health` 返回 `200`。`prod` 启动会拒绝任何公开开发秘密值，因此如果消息指出某个变量，说明环境文件仍含占位符。
 
-To apply migrations without starting the API, for instance in a deploy script, `sudo -u warmbly env $(grep PRIMARY_DB /etc/warmbly/warmbly.env) /opt/warmbly/bin/migrate` runs the same embedded migrations and exits.
+如果要只应用迁移而不启动 API，例如在部署脚本中，可执行 `sudo -u warmbly env $(grep PRIMARY_DB /etc/warmbly/warmbly.env) /opt/warmbly/bin/migrate`，它运行相同的嵌入迁移后退出。
 
 </Step>
 
 <Step>
 
-### Start the rest
+### 启动其余服务 [#start-the-rest]
 
 ```bash
 sudo systemctl enable --now warmbly-forms warmbly-consumer warmbly-tracking warmbly-realtime warmbly-worker
 systemctl status 'warmbly-*' --no-pager
 ```
 
-Each answers on its own port:
+各服务在自己的端口响应：
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/health   # backend
@@ -461,15 +461,15 @@ curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8090/health   # forms
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:4000/health   # realtime
 ```
 
-The consumer and worker have no port; `journalctl -u warmbly-worker` shows the worker registering and heartbeating, and it appears in the admin panel under Workers once you can sign in.
+消费者和工作节点没有端口；`journalctl -u warmbly-worker` 可查看节点登记及心跳，能够登录后，也会在管理面板“工作节点”中看到它。
 
 </Step>
 
 <Step>
 
-### Put nginx in front
+### 在前端配置 nginx 代理 [#put-nginx-in-front]
 
-[`deploy/nginx/warmbly.conf`](https://github.com/warmbly/warmbly/blob/main/deploy/nginx/warmbly.conf) serves the two static frontends and proxies the API, websocket, tracking and forms hosts. It references Let's Encrypt certificate files by path, so the certificates have to exist before nginx will accept the site. Issue them first, in standalone mode with nothing on port 80, then enable the site:
+[`deploy/nginx/warmbly.conf`](https://github.com/warmbly/warmbly/blob/main/deploy/nginx/warmbly.conf) 提供两个静态前端，并代理 API、WebSocket、跟踪和表单主机。它按路径引用 Let's Encrypt 证书，因此 nginx 接受站点前，证书必须存在。先在 80 端口未被占用时用独立模式签发，再启用站点：
 
 ```bash
 sudo systemctl stop nginx
@@ -484,71 +484,71 @@ sudo ln -s /etc/nginx/sites-available/warmbly.conf /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl start nginx
 ```
 
-`--cert-name app.yourdomain.com` puts all six names on one certificate under `/etc/letsencrypt/live/app.yourdomain.com/`, which is the path every server block in the shipped file uses. Renewals run from the timer certbot installs; because the certificate was issued standalone, tell it how to reload nginx once:
+`--cert-name app.yourdomain.com` 将六个名称放在同一张证书中，路径为 `/etc/letsencrypt/live/app.yourdomain.com/`，随附配置中的每个 server 块都使用此路径。续期由 certbot 安装的定时器执行；因为证书以独立模式签发，需要一次性告知它如何重新加载 nginx：
 
 ```bash
 sudo certbot renew --dry-run --pre-hook 'systemctl stop nginx' --post-hook 'systemctl start nginx'
 ```
 
-Those hooks are saved in the renewal config and reused on every real renewal.
+这些钩子保存在续期配置中，每次真正续期都会复用。
 
-### Custom tracking and forms domains
+### 自定义跟踪域名和表单域名 [#custom-tracking-and-forms-domains]
 
-A workspace on this instance can point its own subdomain at your tracking or forms host (`t.acme.com` CNAME to `t.yourdomain.com`) and verify it. Verification is a DNS check, so it passes without nginx knowing anything about the name, and every tracked link and opt-out link on that domain then fails TLS because nginx has no certificate for it.
+实例中的工作区可以把自己的子域指向你的跟踪或表单主机，例如将 `t.acme.com` CNAME 指向 `t.yourdomain.com`，然后验证。验证只检查 DNS，因此 nginx 尚不知道该名称也会通过；但此域名下每个跟踪和退订链接都会因 nginx 没有证书而 TLS 失败。
 
-nginx has no on-demand issuance, so this is a per-domain step. Add the name to the certificate and give it a server block that proxies to `:3000` for tracking, or `:8090` for forms:
+nginx 不提供按需签发，因此需要逐域名处理。将名称加入证书，并为它添加 server 块：跟踪代理到 `:3000`，表单代理到 `:8090`：
 
 ```bash
 sudo certbot certonly --standalone --cert-name app.yourdomain.com \
   --expand -d t.acme.com
 ```
 
-The backend exposes the same answer nginx cannot ask for itself, at `GET /tls/authorize?domain=<host>`: `204` when this instance has verified the name, `403` otherwise. That is what the bundled Caddy install uses to issue certificates without a per-domain step, and it is what a script that automates the above should check before requesting one.
+后端在 `GET /tls/authorize?domain=<host>` 提供 nginx 自己无法查询的同一判断：实例已验证名称时返回 `204`，否则返回 `403`。内置 Caddy 安装正是利用它，无需逐域名步骤即可签发证书；自动化上述过程的脚本也应在申请证书前检查该端点。
 
-If you do not want to run that step per customer, leave custom domains unverified: links stay on your shared tracking host, which already has a certificate, and nothing breaks.
+如果不想逐客户执行这一步，就不要验证自定义域名：链接会继续使用已有证书的共享跟踪主机，不会出错。
 
-A [root redirect](/guides/sending-domains/#root-redirects) takes the same step for the bare domain and its `www` (`acme.io`, `www.acme.io`), proxied to `:3000` with `proxy_set_header Host $host;`. Until nginx sends it on, the sending domains page shows the redirect as **Not reaching visitors** with the change to make. An instance [linked to Warmbly Cloud](/guides/warmbly-cloud/#root-redirects-served-by-warmbly-cloud) can have Cloud serve redirects instead, which needs no change to nginx.
+[根域名重定向](/guides/sending-domains/#root-redirects)也需要为裸域名及其 `www` 执行同样步骤，例如 `acme.io` 和 `www.acme.io`，代理到 `:3000` 并设置 `proxy_set_header Host $host;`。在 nginx 正确转发前，“发送域名”页面会将重定向显示为**访问者无法到达**，并说明所需改动。[已连接 Warmbly Cloud](/guides/warmbly-cloud/#root-redirects-served-by-warmbly-cloud) 的实例也可改由 Cloud 提供重定向，这样无需修改 nginx。
 
-The frontends are plain files under `/opt/warmbly/web` and `/opt/warmbly/admin` with a history fallback to `index.html`, and `index.html` and `config.js` are served with `Cache-Control: no-store` so a redeploy is picked up on the next load. Any other web server can do the same; the config file has the exact headers.
+前端是 `/opt/warmbly/web` 和 `/opt/warmbly/admin` 下的普通文件，历史路由回退到 `index.html`；`index.html` 和 `config.js` 以 `Cache-Control: no-store` 提供，让下一次加载即可获取重新部署。其他 Web 服务器也能实现相同效果，配置文件列出了精确响应头。
 
 </Step>
 
 <Step>
 
-### Claim the instance
+### 认领实例 [#claim-the-instance]
 
-On its first boot with an empty `users` table the backend prints a single-use setup link to its log:
+首次启动且 `users` 表为空时，后端会在日志打印一次性设置链接：
 
 ```bash
 sudo journalctl -u warmbly-backend | grep -o 'http[^ ]*/setup?token=[a-f0-9]*' | tail -1
 ```
 
-Open it at `https://app.yourdomain.com`, pick a password, and you are the owner and platform admin. If the line has scrolled away, `warmblyctl setup-link` prints a fresh one:
+在 `https://app.yourdomain.com` 打开它，设置密码，即成为所有者和平台管理员。如果日志行已滚走，`warmblyctl setup-link` 可打印新的链接：
 
 ```bash
 sudo -u warmbly env $(grep -E '^(PRIMARY_DB|REDIS|AUTH_SECRET|APP_URL)=' /etc/warmbly/warmbly.env | xargs) warmblyctl setup-link
 ```
 
-`warmblyctl` is the same operator CLI the container image ships; it reads `PRIMARY_DB` and friends from the environment, so the `env $(grep ...)` prefix above is how every command on the [warmblyctl reference](/development/warmblyctl/) is run on a bare host. A shell alias saves typing it:
+`warmblyctl` 与容器镜像提供的运维 CLI 相同，从环境读取 `PRIMARY_DB` 等值。因此，在裸主机运行 [warmblyctl 参考](/development/warmblyctl/)中的每条命令，都可使用上方 `env $(grep ...)` 前缀。Shell 别名可以减少输入：
 
 ```bash
 alias warmblyctl='sudo -u warmbly env $(sudo grep -E "^(PRIMARY_DB|REDIS|AUTH_SECRET|APP_URL|API_PUBLIC_URL|MAIL_TRANSPORT|SMTP_HOST|EMAIL_ADDRESS|EMAIL_NAME)=" /etc/warmbly/warmbly.env | xargs) /opt/warmbly/bin/warmblyctl'
 warmblyctl status
 ```
 
-[First run](/development/first-run/) covers what to do when the database already has accounts, and unattended provisioning through `WARMBLY_BOOTSTRAP_EMAIL`.
+[首次运行](/development/first-run/)说明了数据库已有账户时的处理，以及通过 `WARMBLY_BOOTSTRAP_EMAIL` 无人值守配置的方法。
 
 </Step>
 
 </Steps>
 
-## Workers on other machines
+## 在其他主机上运行工作节点 [#workers-on-other-machines]
 
-The point of workers is to spread sending across machine identities, so most installs eventually add a worker on another host. Two routes, neither needing Docker on the control plane:
+工作节点的作用是把发送分布到不同机器身份，因此多数安装最终会在其他主机添加节点。有两条路径，控制平面都不需要 Docker：
 
-**The join script**, which is what the admin panel's Add a machine flow produces, runs the node as a container on the remote host. It needs Docker and systemd only there. The backend serves it at `GET /join.sh`, and it is embedded in the binary, so there is no path to configure.
+**加入脚本**，即管理面板“添加机器”流程生成的脚本，会在远程主机上以容器运行节点。仅远程机器需要 Docker 和 systemd。后端在 `GET /join.sh` 提供脚本，它嵌入二进制，因此无需配置脚本路径。
 
-**A native worker** is the same binary and env file as above, with the addresses changed. The backend renders a complete env file for a join token, so nothing has to be copied by hand:
+**原生工作节点**使用与上方相同的二进制和环境文件，只需更改地址。后端可根据加入令牌生成完整环境文件，因此无需手动复制各项配置：
 
 ```bash
 # On the remote host, with /opt/warmbly/bin/worker built for it:
@@ -562,9 +562,9 @@ sudo cp deploy/systemd/warmbly-worker.service /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable --now warmbly-worker
 ```
 
-The rendered file already carries this node's `WORKER_ID`, so its placement row and its node row are the same machine. Issue the token with `warmblyctl fleet join-token`; it works for any number of machines until it expires (seven days by default, `--ttl` up to 30 days) or another is issued, and the response carries the decryption material, so do this over HTTPS only. Before enrolling anything, set `API_PUBLIC_URL`, `NATS_URL` and `REDIS` on the backend to addresses the remote host can reach, and open those ports to it: the rendered file inherits the backend's own values, and `127.0.0.1` does not resolve to your control plane from another machine.
+生成的文件已包含该节点的 `WORKER_ID`，因此其分配行和节点行代表同一台机器。使用 `warmblyctl fleet join-token` 签发令牌；过期前可以用于任意数量机器，默认七天，`--ttl` 最多 30 天，或在签发新令牌后失效。响应包含解密材料，因此只能通过 HTTPS 操作。登记任何节点前，将后端的 `API_PUBLIC_URL`、`NATS_URL` 和 `REDIS` 设为远程主机可访问的地址，并向它开放对应端口：生成文件继承后端自身值，而其他机器上的 `127.0.0.1` 并不指向控制平面。
 
-Opening NATS and Redis to another machine means they stop being protected by the loopback bind, so give both a credential and TLS first. For NATS, extend `/etc/nats.conf` and restart it:
+NATS 和 Redis 对另一台机器开放后，就不再受回环绑定保护，因此应先为两者配置凭据和 TLS。对于 NATS，扩展 `/etc/nats.conf` 并重启：
 
 ```
 listen: 0.0.0.0:4222
@@ -577,13 +577,13 @@ tls {
 }
 ```
 
-Then set `NATS_URL=tls://<token>@nats.yourdomain.com:4222` in `warmbly.env` and `worker.env`; the token in the URL is what every service authenticates with. Redis gets `requirepass` and `REDIS=redis://:<password>@redis.yourdomain.com:6379`, ideally over a private network or a tunnel. Restrict both ports at the firewall to the worker's address as well. Use `BLOB_PROVIDER=s3` with a bucket both sides can reach: a worker reads the message body the backend wrote, so the filesystem provider only works when the two share storage and the permissions line up. The [self-hosting guide](/development/deployment-guide/#adding-a-machine) has the same caveats in more detail.
+然后设置 `NATS_URL=tls://<token>@nats.yourdomain.com:4222`，写入 `warmbly.env` 和 `worker.env`，URL 中的令牌供各服务进行身份验证。Redis 配置 `requirepass` 和 `REDIS=redis://:<password>@redis.yourdomain.com:6379`，最好通过私有网络或隧道连接。防火墙也应将两个端口限制为工作节点地址。使用 `BLOB_PROVIDER=s3` 和双方都可访问的存储桶：工作节点需要读取后端写入的正文，因此文件系统提供程序仅在双方共享存储且权限匹配时可用。[自托管指南](/development/deployment-guide/#adding-a-machine)有更详细的相同注意事项。
 
-Because the worker is not in a container, the join script's systemd service and update timer do not apply to it. Manage it with `systemctl` and the update steps below, and set its version by hand rather than through `warmblyctl fleet version`.
+因为工作节点不在容器中，加入脚本的 systemd 服务和更新定时器不适用于它。应使用 `systemctl` 和下方更新步骤管理，手动设置版本，而不是通过 `warmblyctl fleet version`。
 
-## Upgrading
+## 升级 [#upgrading]
 
-`scripts/upgrade-bare-metal.sh` is the build steps above in order: build every artifact this host runs as the checkout's owner, then run the root-owned installer `warmbly-install-release` through sudo, which installs them, restarts the backend first (migrations are forward-only and apply on its boot), then the rest, keeping each frontend's `config.js` across the copy. Install that one script root-owned once, then run the upgrade as the user who owns the checkout:
+`scripts/upgrade-bare-metal.sh` 按顺序执行上述构建步骤：以检出目录所有者身份构建本机运行的全部产物，再通过 sudo 调用 root 所有的安装器 `warmbly-install-release`。安装器安装产物，先重启后端，让只能向前应用的迁移在启动时执行，再重启其他服务，并在复制前端时保留各自的 `config.js`。先将这一个脚本安装为 root 所有，再以检出目录所有者身份运行升级：
 
 ```bash
 sudo install -o root -g root -m 0755 /opt/warmbly/src/deploy/systemd/warmbly-install-release.sh /usr/local/sbin/warmbly-install-release
@@ -592,15 +592,15 @@ sudo chmod 0440 /etc/sudoers.d/warmbly-upgrade
 cd /opt/warmbly/src && scripts/upgrade-bare-metal.sh --pull    # git pull --ff-only, build, install, restart
 ```
 
-The sudoers line is what lets the script call the installer without a password prompt; it allows that one root-owned command and nothing else.
+sudoers 配置让脚本无需密码提示即可调用安装器；它只允许这一个 root 所有的命令，不允许其他命令。
 
-To pin a release instead of following the branch, check the tag out first (`git checkout vX.Y.Z`) and run it without `--pull`.
+要固定发布版本而不是跟随分支，先检出标签 `git checkout vX.Y.Z`，再不带 `--pull` 运行。
 
-The admin panel can run the same script for you. The version pill at the foot of its sidebar shows when a newer release exists, and with the updater unit installed, **Update and restart** in it pulls, runs the script and reports back. [Updates](/development/updates/#without-docker) has the unit, the sudoers line it needs and the backend variable that points at it.
+管理面板也可以代你运行相同脚本。侧边栏底部版本标记会显示新发布；安装更新器单元后，其中的**更新并重启**会拉取、运行脚本并报告结果。[更新](/development/updates/#without-docker)提供所需服务单元、sudoers 配置，以及后端指向更新器的变量。
 
-## Backups
+## 备份 [#backups]
 
-Three things, all three:
+以下三项缺一不可：
 
 ```bash
 sudo -u postgres pg_dump warmbly > backup.sql       # 1. the database
@@ -608,29 +608,29 @@ sudo tar czf blobs.tgz -C /var/lib/warmbly blobs      # 2. uploads and stored me
 sudo cp /etc/warmbly/*.env somewhere-safe/            # 3. the env files, above all the two encryption keys
 ```
 
-Restore into an empty database before the backend starts, then start it and it applies only what is newer than the dump. See [restoring](/development/deployment-guide/#restoring); replace the `docker compose exec` commands with plain `psql`.
+在后端启动前恢复到空数据库，再启动后端，它只会应用比备份更新的迁移。参见[恢复](/development/deployment-guide/#restoring)，将 `docker compose exec` 命令替换为普通 `psql`。
 
-## Troubleshooting
+## 故障排查 [#troubleshooting]
 
-| Symptom | Cause |
+| 现象 | 原因 |
 |---------|-------|
-| Backend exits at boot naming `AUTH_SECRET` or another variable | `APP_ENV=prod` refuses the published development defaults; the env file still holds a placeholder |
-| First publish fails with a stream or JetStream error | `/etc/nats.conf` has no `jetstream` block |
-| `go build` or `cargo build` fails with permission denied | The checkout was cloned with `sudo` and is root-owned; `chown -R "$USER"` it and build as yourself |
-| `nginx -t` fails on a missing certificate file | The site was enabled before `certbot certonly` ran, or `--cert-name` does not match the path in the file |
-| `mkdir /var/lib/warmbly/blobs/...: permission denied` on the first send | `BLOB_FS_ROOT` is not writable by the `warmbly` user, or the unit's `ReadWritePaths` does not cover it |
-| Realtime unit starts and exits immediately | A release only listens when `PHX_SERVER=true`; the shipped unit sets it. Otherwise `journalctl -u warmbly-realtime` names the missing variable |
-| Realtime raises `JWT_SECRET ... required` | Prod releases read `JWT_SECRET`, `SECRET_KEY_BASE` and `DATABASE_URL`, not the backend's names; keep both spellings in the file |
-| Dashboard loads but every request is `403` | `CORS_ALLOW_ORIGINS` does not list the origin the browser is on; it must match the `APP_URL` you wrote into `config.js` |
-| Dashboard never goes live, notifications stay silent | `WEBSOCKET_URL` is wrong, or `CHECK_ORIGIN=true` with a `PHX_HOST` that is not the dashboard's host |
-| Worker logs `encryptedkeys.http: ... unexpected status 401` | `ENCRYPTED_KEYS_WORKER_TOKEN` does not equal the backend's `INTERNAL_API_TOKEN` |
-| Sends fail with `email account not found in worker` | The worker booted with a new `WORKER_ID`; the mailboxes still belong to the old one until the reconciler moves them. Pin the id |
-| Opens and clicks are not recorded | `TRACKING_DOMAIN` does not match the host nginx proxies to `:3000`, or `BACKEND_INTERNAL_URL` is unreachable from the tracking service |
-| Mailbox connects, then fails about an hour later | The worker env is missing the `BOX_*` OAuth client; only the worker refreshes tokens |
+| 后端启动退出，并指出 `AUTH_SECRET` 或其他变量 | `APP_ENV=prod` 拒绝公开开发默认值，环境文件仍有占位符 |
+| 第一次发布报流或 JetStream 错误 | `/etc/nats.conf` 没有 `jetstream` 块 |
+| `go build` 或 `cargo build` 因权限不足失败 | 检出目录使用 `sudo` 克隆，归 root 所有；用 `chown -R "$USER"` 调整，再以自己的用户构建 |
+| `nginx -t` 因证书文件缺失失败 | 在运行 `certbot certonly` 前就启用了站点，或 `--cert-name` 与文件路径不匹配 |
+| 首次发送报 `mkdir /var/lib/warmbly/blobs/...: permission denied` | `BLOB_FS_ROOT` 不可由 `warmbly` 用户写入，或服务单元的 `ReadWritePaths` 未包含它 |
+| 实时服务单元启动后立即退出 | 发布构建只在 `PHX_SERVER=true` 时监听；随附单元已设置。其他情况可通过 `journalctl -u warmbly-realtime` 查看缺失变量 |
+| 实时服务报 `JWT_SECRET ... required` | 生产发布读取 `JWT_SECRET`、`SECRET_KEY_BASE` 和 `DATABASE_URL`，不使用后端变量名；应在文件中保留两套名称 |
+| 控制台加载，但每个请求都是 `403` | `CORS_ALLOW_ORIGINS` 未包含浏览器所在来源；必须匹配 `APP_URL`，即写入 `config.js` 的值 |
+| 控制台始终没有实时更新，通知无响应 | `WEBSOCKET_URL` 错误，或启用 `CHECK_ORIGIN=true` 时，`PHX_HOST` 不是控制台主机 |
+| 工作节点日志报 `encryptedkeys.http: ... unexpected status 401` | `ENCRYPTED_KEYS_WORKER_TOKEN` 与后端 `INTERNAL_API_TOKEN` 不一致 |
+| 发送报 `email account not found in worker` | 节点使用新的 `WORKER_ID` 启动；在协调器迁移前，邮箱仍属于旧节点。应固定 ID |
+| 打开和点击未记录 | `TRACKING_DOMAIN` 与 nginx 代理到 `:3000` 的主机不一致，或跟踪服务无法访问 `BACKEND_INTERNAL_URL` |
+| 邮箱连接后约一小时失败 | 工作节点环境缺少 `BOX_*` OAuth 客户端；只有工作节点负责刷新令牌 |
 
-`warmblyctl status` runs the same instance checks the admin panel's **Instance > Setup and health > Services** tab shows and exits non-zero on anything at error severity. The [troubleshooting](/development/troubleshooting/) page covers symptoms that are not specific to running without Docker.
+`warmblyctl status` 执行与管理面板**实例 > 设置与健康状态 > 服务**相同的实例检查，只要存在错误级别问题，就以非零状态退出。[故障排查](/development/troubleshooting/)页面覆盖不局限于无 Docker 运行的其他问题。
 
-## Quick reference
+## 快速参考 [#quick-reference]
 
 ```
 /opt/warmbly/bin/{backend,forms,consumer,worker,tracking,migrate,warmblyctl}
@@ -651,4 +651,4 @@ warmblyctl status                # with the alias above
 warmblyctl setup-link
 ```
 
-See also: [self-hosting with Docker](/development/deployment-guide/), [configuration reference](/development/configuration/), [warmblyctl](/development/warmblyctl/), [architecture](/development/architecture/).
+另见：[使用 Docker 自托管](/development/deployment-guide/)、[配置参考](/development/configuration/)、[warmblyctl](/development/warmblyctl/)、[架构](/development/architecture/)。

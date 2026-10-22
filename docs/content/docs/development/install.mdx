@@ -1,37 +1,37 @@
 ---
-title: Install
-description: One command installs Warmbly from published release images, with a wizard that asks where your data lives, what is kept and for how long, and how it is backed up.
+title: 安装
+description: 通过一条命令，使用已发布的版本镜像安装 Warmbly；安装向导会询问数据存放位置、保留内容和期限，以及备份方式。
 ---
 
 ```bash
 curl -fsSL https://warmbly.com/install.sh | sh
 ```
 
-No clone, no compiler, no toolchain. The script checks Docker, creates one directory, generates every secret, pulls the pinned release images, starts the stack and prints the link that claims your instance. On a clean box with Docker already installed it finishes in under two minutes.
+无需克隆仓库、编译器或工具链。脚本检查 Docker，创建一个目录，生成所有秘密值，拉取固定版本的发布镜像，启动服务栈，并打印用于认领实例的链接。在已安装 Docker 的干净机器上，两分钟内即可完成。
 
-Add `--wizard` and it asks the questions a config reference cannot ask for you.
+加上 `--wizard`，安装向导就会询问那些配置参考无法替你决定的问题。
 
 ```bash
 curl -fsSL https://warmbly.com/install.sh | sh -s -- --wizard
 ```
 
-You do not have to remember the flag. A fresh install with a terminal in front of it and no hostname given asks whether to configure itself before it writes anything, because the alternative is an instance on `localhost`: a dashboard, a tracking host and an unsubscribe address that work from that machine and nowhere else, all of which end up inside campaign mail. Answer no and it says so plainly and carries on. `--assume-yes`, `--host`, `WARMBLY_HOST` and a re-run over an existing install all skip the question, because each of them already answered it.
+不必记住这个参数。首次安装时，如果有可用终端且未指定主机名，脚本会在写入任何内容前询问是否进行配置。否则实例只能使用 `localhost`：控制台、跟踪主机和退订地址都只能在该机器上访问，却会出现在营销活动邮件中。选择否时，脚本会明确说明这一点并继续。`--assume-yes`、`--host`、`WARMBLY_HOST`，以及对已有安装重新运行，都会跳过此问题，因为这些情况已经给出了答案。
 
-## What it installs
+## 安装哪些组件 [#what-it-installs]
 
 | | |
 |---|---|
-| Where | `/opt/warmbly`, or wherever you point `--dir` |
-| What | `docker-compose.yml`, a `.env` at 0600, `keys-backup.txt`, and the data root |
-| Version | The newest release, resolved once and pinned in `.env`. Never `latest` |
-| Images | `ghcr.io/warmbly/warmbly/*`, multi-arch for amd64 and arm64. Public, so no registry login and no GitHub account |
-| Services | Backend, consumer, worker, dashboard, admin, Postgres, Redis, NATS, and (unless you say core only) tracking, realtime and forms |
+| 安装位置 | `/opt/warmbly`，或 `--dir` 指定的位置 |
+| 安装内容 | `docker-compose.yml`、权限为 0600 的 `.env`、`keys-backup.txt` 和数据根目录 |
+| 版本 | 解析一次最新发布，并固定在 `.env` 中，绝不使用 `latest` |
+| 镜像 | `ghcr.io/warmbly/warmbly/*`，支持 amd64 和 arm64 多架构。镜像公开，无需登录镜像仓库或拥有 GitHub 账户 |
+| 服务 | 后端、消费者、工作节点、控制台、管理端、Postgres、Redis、NATS；除非选择仅核心组件，还包括跟踪、实时服务和表单 |
 
-Nothing is built on your machine. The clone-and-build path still exists and is still supported; see [self-hosting](/development/deployment-guide/) for when you want it.
+机器上不会进行任何构建。克隆并构建的路径仍然存在且受支持；需要时参见[自托管](/development/deployment-guide/)。
 
-## Before you run it
+## 运行前的准备 [#before-you-run-it]
 
-Piping a script into a shell is a fair thing to be uneasy about, and the objection is only answerable if the script is versioned, inspectable and checksummed. All three are:
+对把脚本直接通过管道交给 shell 执行有所顾虑是合理的。脚本只有具备版本管理、可检查和校验和，才有依据回应这一顾虑。这里三者都具备：
 
 ```bash
 curl -fsSLO https://warmbly.com/install.sh
@@ -41,210 +41,205 @@ less install.sh
 sh install.sh
 ```
 
-The script itself is written to deserve that: `set -eu`, every line inside a function, and `main "$@"` on the very last line, so a download that is cut off half way executes nothing at all. It never asks to be piped into `sudo`; it asks for elevation only for the specific steps that need it, and names them.
+脚本本身也按这一要求编写：使用 `set -eu`，所有代码行都放在函数内，最后一行才执行 `main "$@"`，因此下载中途截断时不会执行任何操作。它不会要求你把脚本通过管道交给 `sudo`；只在确实需要提权的具体步骤请求权限，并说明步骤名称。
 
-You also do not have to run it to see what it would do:
+无需真正运行安装，也能查看它准备做什么：
 
 ```bash
 sh install.sh --dry-run
 ```
 
-That prints the exact `.env` and compose file it would write, and touches nothing.
+这会打印准备写入的完整 `.env` 和 Compose 文件，不修改任何内容。
 
-### And after it runs
+### 运行完成后 [#and-after-it-runs]
 
-Every release publishes an `images.json` asset listing the manifest digest of each image in it. Once the pull finishes the installer compares what actually landed on the machine against that file, and stops before starting anything if they differ. You can check the same thing yourself at any time:
+每个发布都提供 `images.json` 资源，列出其中每个镜像的清单摘要。拉取完成后，安装器会将机器实际获得的镜像与该文件比较；不一致时，在启动任何服务前停止。你也可以随时自行检查：
 
 ```bash
 docker image inspect ghcr.io/warmbly/warmbly/backend:v1.4.2 --format '{{index .RepoDigests 0}}'
 ```
 
-An install pointed at your own registry with `--registry` has no manifest to check against, and the installer says so rather than pretending it verified something.
+通过 `--registry` 指向自有镜像仓库的安装，没有可用于比较的清单；安装器会明确说明，不会假装已经验证。
 
-## Requirements
+## 环境要求 [#requirements]
 
-| You need | Notes |
+| 要求 | 说明 |
 |---|---|
-| Linux or macOS, amd64 or arm64 | On Windows, run it inside WSL |
-| Docker 20.10+ with Compose v2 | The script offers to install Docker on Linux, and never does so quietly |
-| ~2 GB disk | The images, not a build cache. There is no build |
-| 4 GB RAM | The running stack idles near 300 MB |
-| Free ports | 8080, 5173, 5174, and 3000, 4000, 8090 with every component |
+| Linux 或 macOS，amd64 或 arm64 | Windows 上请在 WSL 内运行 |
+| Docker 20.10+ 和 Compose v2 | Linux 上脚本可协助安装 Docker，但绝不会悄悄安装 |
+| 约 2 GB 磁盘空间 | 用于镜像，不是构建缓存；本流程不构建 |
+| 4 GB 内存 | 整个服务栈空闲时约占 300 MB |
+| 空闲端口 | 8080、5173、5174；完整组件还需 3000、4000、8090 |
 
-Port `3000` is the one that actually collides: it is the default for a lot of other self-hosted software. The installer checks every port before it writes anything and tells you which one is taken.
+最容易冲突的是端口 `3000`，许多自托管软件都默认使用它。安装器会在写入任何内容前检查所有端口，并告诉你哪个已被占用。
 
-## The wizard
+## 安装向导 [#the-wizard]
 
-`--wizard` walks nine steps. Every answer has a default that matches the fast path, so pressing enter through the whole thing produces exactly the install the one-liner produces.
+`--wizard` 包含九个步骤。每个答案都有与快速安装一致的默认值，因此一路按回车，会得到与单行命令完全相同的安装。
 
-Every menu takes the keys you already use:
+菜单支持常用按键：
 
-| Keys | Does |
+| 按键 | 操作 |
 |---|---|
-| `↑` `↓`, `j` `k`, `ctrl-n` `ctrl-p` | Move |
-| `ctrl-d` `ctrl-u` | Half a screen |
-| `gg`, `G` | First, last |
-| `1` to `9` | Jump straight to that option |
-| `enter`, `space`, `l` | Take it |
-| `q`, `esc`, `ctrl-c` | Leave without installing |
+| `↑` `↓`、`j` `k`、`ctrl-n` `ctrl-p` | 移动 |
+| `ctrl-d` `ctrl-u` | 移动半屏 |
+| `gg`、`G` | 跳到首项、末项 |
+| `1` 至 `9` | 直接跳到对应选项 |
+| `enter`、`space`、`l` | 选择 |
+| `q`、`esc`、`ctrl-c` | 退出，不安装 |
 
-The review screen at the end takes `enter` to install, `e` to go back into a section, and `q` to quit.
+最后的确认页面按 `enter` 安装，按 `e` 返回某个部分，按 `q` 退出。
 
-Steps append rather than replacing each other, so the whole run stays scrollable and nothing above the installer is touched. `--clear` redraws the screen at each step instead, if you prefer that.
+各步骤会追加显示，而不是相互覆盖，因此整个过程可滚动回看，也不会影响安装器上方的终端内容。如果更喜欢每一步重绘屏幕，可使用 `--clear`。
 
 <Steps>
 
 <Step>
 
-### Where it lives
+### 安装位置 [#where-it-lives]
 
-One directory holds the compose file, the `.env`, and, unless you move it in step three, every store this instance writes to. Default `/opt/warmbly`.
+一个目录保存 Compose 文件、`.env`，以及实例写入的全部存储，除非在第三步将数据移到其他位置。默认目录为 `/opt/warmbly`。
 
 </Step>
 
 <Step>
 
-### How it is reached
+### 访问方式 [#how-it-is-reached]
 
-The hostname every link is built from: the dashboard URL, the unsubscribe link in campaign mail, the tracking pixel. Then how it is served:
+先确定所有链接使用的主机名，包括控制台 URL、营销活动邮件中的退订链接和跟踪像素，再选择提供服务的方式：
 
-| Choice | What it does |
+| 选项 | 行为 |
 |---|---|
-| **Plain HTTP** | Ports published as they are. Correct for localhost or a private network |
-| **Bundled Caddy** | Adds a Caddy service with automatic HTTPS, one hostname per surface, and binds everything else to loopback |
-| **Behind your proxy** | Binds every service to `127.0.0.1` and sets `TRUSTED_PROXIES`, which is silently wrong on every proxied install that was configured by hand |
+| **普通 HTTP** | 原样发布端口，适用于 localhost 或私有网络 |
+| **内置 Caddy** | 添加自动 HTTPS 的 Caddy 服务，每个界面使用一个主机名，其他服务全部绑定到回环地址 |
+| **使用自己的代理** | 将所有服务绑定到 `127.0.0.1`，并设置 `TRUSTED_PROXIES`；手动配置代理部署时，这个设置很容易在没有明显提示的情况下出错 |
 
-`TRUSTED_PROXIES` matters more than it looks. Without it every request appears to come from the proxy, so per-IP rate limits and click deduplication stop distinguishing between people.
+`TRUSTED_PROXIES` 比看起来更重要。没有它，每个请求都像来自代理，按 IP 速率限制和点击去重就无法区分不同用户。
 
-The bundled Caddy option serves six hostnames under the domain you give it, and the installer prints the DNS records at the end:
+内置 Caddy 选项会在给定域名下提供六个主机名，安装结束时打印 DNS 记录：
 
 ```
 app.example.com     admin.example.com    api.example.com
 ws.example.com      track.example.com    forms.example.com
 ```
 
-It also gets a certificate for hostnames that do not exist yet. A workspace on this instance can point its own [tracking domain](/guides/mailboxes/#custom-tracking-domain) or [forms domain](/guides/forms/#custom-domain) here months after the install, and a site block cannot name a host nobody has heard of. The generated Caddyfile carries `on_demand_tls` with an `ask` pointed at the backend, so Caddy obtains a certificate the first time such a name is requested, after the backend confirms this instance has verified it. A name nobody here has verified is refused, so pointing a domain at the machine is not enough to get a certificate out of it.
+它也能为尚不存在的主机名获取证书。实例中的工作区可能在安装几个月后，才将自己的[跟踪域名](/guides/mailboxes/#custom-tracking-domain)或[表单域名](/guides/forms/#custom-domain)指向这里，而站点块无法预先列出尚未出现的主机。生成的 Caddyfile 包含 `on_demand_tls`，其 `ask` 指向后端，因此第一次请求此类名称时，Caddy 会在后端确认该实例已验证此域名后获取证书。没有任何工作区验证过的名称会被拒绝，仅把域名指向机器不足以从它获取证书。
 
-Behind your own proxy this is yours to arrange: the same custom domains need certificates there, and how depends on the proxy. Caddy takes the same `on_demand_tls` block; nginx and Traefik need each domain added by hand. [Root redirects](/guides/sending-domains/#root-redirects) are custom domains too: the proxy sends the bare domain and its `www` to the tracking port with the original `Host` header. The sending domains page shows **Not reaching visitors**, and the change for Traefik, nginx, Caddy, Coolify or Dokploy, until it does. An instance [linked to Warmbly Cloud](/guides/warmbly-cloud/#root-redirects-served-by-warmbly-cloud) can have Cloud serve redirects instead.
+使用自有代理时，需要自行安排：相同的自定义域名也需要证书，具体方式取决于代理。Caddy 可以使用相同的 `on_demand_tls` 块；nginx 和 Traefik 需要手动添加每个域名。[根域名重定向](/guides/sending-domains/#root-redirects)也属于自定义域名：代理应将裸域名及其 `www` 请求转发到跟踪端口，并保留原始 `Host` 请求头。配置正确前，“发送域名”页面会显示**访问者无法到达**，并给出 Traefik、nginx、Caddy、Coolify 或 Dokploy 的修改方法。[已连接 Warmbly Cloud](/guides/warmbly-cloud/#root-redirects-served-by-warmbly-cloud) 的实例也可改由 Cloud 提供重定向。
 
 </Step>
 
 <Step>
 
-### Where the data sits
+### 数据的存储位置 [#where-the-data-sits]
 
-The question the rest of the install cannot answer for you, and the reason the wizard exists.
+这是其他安装步骤无法替你决定的问题，也是向导存在的原因。
 
-| Choice | What you get |
+| 选项 | 结果 |
 |---|---|
-| **Under the install directory** | `/opt/warmbly/data` holds Postgres, blobs, NATS and worker state |
-| **A path you choose** | An external disk or a mount you already snapshot |
-| **Docker named volumes** | Managed by Docker, portable only through `docker volume` |
+| **安装目录下** | `/opt/warmbly/data` 保存 Postgres、Blob、NATS 和工作节点状态 |
+| **自选路径** | 使用外置磁盘或已有快照机制的挂载点 |
+| **Docker 命名卷** | 由 Docker 管理，只能通过 `docker volume` 迁移 |
 
-A real path is the default, because it is the choice that makes backup and migration obvious: with the stack stopped, moving the instance to another host is `rsync` of that path plus the `.env`. Do not copy it while Postgres is running; a live data directory is not a consistent snapshot. To move an instance without stopping it, use [`warmblyctl backup`](/development/data-control/#backups). Compose reads a volume source starting with `/` as a bind mount and anything else as a named volume, so this is one variable per store and no second compose file.
+默认使用真实路径，因为这样备份和迁移最直观：停止服务栈后，通过 `rsync` 将该路径及 `.env` 一起复制到另一主机，即可迁移实例。Postgres 运行时不要直接复制，运行中的数据目录不是一致快照。要不停机迁移，请使用 [`warmblyctl backup`](/development/data-control/#backups)。Compose 将以 `/` 开头的卷源解释为绑定挂载，其他内容解释为命名卷，因此每个存储只需一个变量，无需第二份 Compose 文件。
 
-Then, behind one prompt: an external Postgres or Redis (the bundled container is left out entirely when you bring your own), and where message bodies, attachments and avatars go.
+随后通过一个提示配置外部 Postgres 或 Redis；自带数据库时，对应内置容器会完全移除。还会询问邮件正文、附件和头像的存放位置。
 
-<Callout type="warn" title="Filesystem blobs are local to one machine">
-A worker running on another host writes to its own disk. Once you scale workers out, blob storage has to be S3-compatible or bodies go missing. The wizard offers MinIO, R2, B2 and AWS.
+<Callout type="warn" title="文件系统 Blob 仅属于一台机器">
+运行在另一台主机上的工作节点会写入自己的磁盘。扩展到多主机工作节点后，Blob 存储必须兼容 S3，否则正文会缺失。向导提供 MinIO、R2、B2 和 AWS 选项。
 </Callout>
 
 </Step>
 
 <Step>
 
-### Keys and secrets
+### 密钥与机密信息 [#keys-and-secrets]
 
-Seven secrets are generated: `AUTH_SECRET`, `INTERNAL_API_TOKEN`, `NODE_BROKER_TOKEN`, `UPDATER_TOKEN`, `SECRET_KEY_BASE`, `KMS_LOCAL_MASTER_KEY` and `CREDENTIALS_ENCRYPTION_KEY`. `INTERNAL_API_TOKEN` is what the tracking and forms services present, `NODE_BROKER_TOKEN` is what workers and consumers present, and `UPDATER_TOKEN` is what the backend presents to the updater, so none of the three opens what another guards. A re-run adopts the ones already in `.env` and adds a missing `UPDATER_TOKEN`; it never adds a `NODE_BROKER_TOKEN` to an existing install, because nodes already joined to it hold only the shared token. They are written 0600, `APP_ENV` is set to `prod`, and no published default is ever reachable through this path.
+系统生成七个秘密值：`AUTH_SECRET`、`INTERNAL_API_TOKEN`、`NODE_BROKER_TOKEN`、`UPDATER_TOKEN`、`SECRET_KEY_BASE`、`KMS_LOCAL_MASTER_KEY` 和 `CREDENTIALS_ENCRYPTION_KEY`。跟踪及表单服务使用 `INTERNAL_API_TOKEN`，工作节点和消费者使用 `NODE_BROKER_TOKEN`，后端访问更新器使用 `UPDATER_TOKEN`，三者不能互相打开对方保护的入口。重新运行会沿用 `.env` 中已有值，并补上缺失的 `UPDATER_TOKEN`；但绝不会为已有安装添加 `NODE_BROKER_TOKEN`，因为已加入的节点只持有共享令牌。文件以 0600 权限写入，`APP_ENV` 设置为 `prod`，这条安装路径不会使用任何公开默认秘密值。
 
-The last two are unrecoverable. Every mailbox credential and every per-organization key is sealed with them, so a database backup that does not travel with them restores an instance whose mailboxes authenticate against nothing. The wizard prints both, writes them to `keys-backup.txt` next to the install, and waits until you type that you have a copy somewhere else.
+最后两个值无法找回。所有邮箱凭据和按组织密钥都由它们密封，因此数据库备份若不附带它们，恢复后的实例将无法用任何有效凭据登录邮箱。向导会打印这两个值，将其写入安装目录旁的 `keys-backup.txt`，并等待你输入确认，说明已在别处保存副本。
 
 </Step>
 
 <Step>
 
-### What is kept, and for how long
+### 保留哪些数据，以及保留多久 [#what-is-kept-and-for-how-long]
 
-Two groups, both editable afterwards in **Instance > Configuration > Settings**:
+设置分为两组，之后都可以在**实例 > 配置 > 设置**中修改：
 
-| Setting | Default | What it governs |
+| 设置 | 默认值 | 控制范围 |
 |---|---|---|
-| Import window | 90 days | How far back the initial import reaches when a mailbox is connected |
-| Import cap | 5,000 | The most messages that import stores per mailbox |
-| Daily per mailbox | 2,000 | New mail one mailbox may store per UTC day |
-| Daily per organization | 25,000 | New plus imported mail across one workspace per UTC day |
-| Opens and clicks | 365 days | Per-event logs, with the client, device and approximate location of each |
-| Form funnel events | 180 days | Views, starts, field-level drop-off |
-| Audit log | 90 days | Who did what, from which IP address and user agent |
-| Warmup mail in mailboxes | 30 days | Warmup mail is deleted from each mailbox once older than this, wherever it is filed |
-| Warmup records | 365 days | Per-message warmup tokens, receipts, tampering events and spam reports |
+| 导入时间窗口 | 90 天 | 连接邮箱后，首次导入向前追溯多久 |
+| 导入上限 | 5,000 | 每个邮箱首次导入最多存储多少封邮件 |
+| 每邮箱每日限额 | 2,000 | 单个邮箱每个 UTC 日可存储的新邮件数 |
+| 每组织每日限额 | 25,000 | 一个工作区每个 UTC 日的新邮件与导入邮件总数 |
+| 打开和点击 | 365 天 | 逐事件日志，包含客户端、设备和大致位置 |
+| 表单漏斗事件 | 180 天 | 浏览、开始填写和字段级流失 |
+| 审计日志 | 90 天 | 谁从哪个 IP 和用户代理做了什么 |
+| 邮箱中的预热邮件 | 30 天 | 超过期限后从每个邮箱删除预热邮件，不论放在哪个文件夹 |
+| 预热记录 | 365 天 | 逐邮件预热令牌、回执、篡改事件和垃圾邮件报告 |
 
-The opens, forms and audit windows are also how long that personal data is held. A "minimal retention" preset sets those three to 30 days, warmup mail to 7 and warmup records to 30.
-
-</Step>
-
-<Step>
-
-### Backups
-
-A scheduled `warmblyctl backup`: a target directory, a frequency, how many to keep, and whether the encryption keys travel in the bundle. It writes `backup.sh` next to the install and, on a systemd host, a service and a timer.
-
-Including the keys makes the bundle as sensitive as the instance itself. Leaving them out means keeping `keys-backup.txt` somewhere else, or the bundles cannot be restored at all.
+打开、表单和审计窗口也决定对应个人数据保留多久。“最少保留”预设将这三项设为 30 天，预热邮件设为 7 天，预热记录设为 30 天。
 
 </Step>
 
 <Step>
 
-### Who gets in
+### 备份 [#backups]
 
-The first owner, either as a printed claim link or unattended from `WARMBLY_BOOTSTRAP_EMAIL` plus a hash from `warmblyctl hash-password`. Then the registration posture, and platform mail: an SMTP relay, or skip it and have password resets and login codes printed to the backend log.
+配置定时 `warmblyctl backup`，包括目标目录、频率、保留份数，以及是否在备份包中包含加密密钥。它会在安装目录旁写入 `backup.sh`；systemd 主机上还会创建服务和定时器。
 
-</Step>
-
-<Step>
-
-### Footprint
-
-Everything, or core only (no tracking pixel, no websockets, no hosted forms). Core only leaves `TRACKING_DOMAIN` and `FORMS_DOMAIN` unset, because naming a host nothing answers on is worse than naming none: campaign mail would ship links and an opt-out address pointing at a name that does not resolve. Sending still works, without open and click tracking, and every [unsubscribe link](/guides/unsubscribe/) is served from `API_PUBLIC_URL`.
-
-Ports are checked for collisions before anything is written. Last, the update check, which is one outbound call to the GitHub releases API and the only outbound call this instance makes on its own. There is no telemetry in Warmbly.
+包含密钥后，备份包与实例本身同样敏感。不包含密钥时，必须在其他位置保存 `keys-backup.txt`，否则备份包根本无法恢复。
 
 </Step>
 
 <Step>
 
-### Review
+### 允许谁访问 [#who-gets-in]
 
-Every answer on one screen. Enter installs, `e` goes back to any section, `q` leaves without writing anything.
+创建首位所有者，可以打印认领链接，也可以通过 `WARMBLY_BOOTSTRAP_EMAIL` 和 `warmblyctl hash-password` 生成的哈希无人值守完成。然后选择注册策略和平台邮件：配置 SMTP 中继，或跳过并让密码重置及登录验证码打印到后端日志。
+
+</Step>
+
+<Step>
+
+### 安装范围 [#footprint]
+
+可以安装全部组件，或仅核心组件，不含跟踪像素、WebSocket 和托管表单。仅核心模式会将 `TRACKING_DOMAIN` 和 `FORMS_DOMAIN` 留空，因为填写一个没有服务响应的主机，比不填写更糟：营销活动邮件会带上指向无法解析名称的链接和退订地址。发送仍可正常进行，只是没有打开及点击跟踪；所有[退订链接](/guides/unsubscribe/)都由 `API_PUBLIC_URL` 提供。
+
+写入前会检查端口冲突。最后是更新检查，它向 GitHub Releases API 发起一次出站请求，也是实例自主发起的唯一出站调用。Warmbly 不包含遥测。
+
+</Step>
+
+<Step>
+
+### 核对配置 [#review]
+
+一个页面显示所有答案。按回车安装，`e` 返回任意部分，`q` 退出且不写入任何内容。
 
 </Step>
 
 </Steps>
 
-## See it first
+## 先预览安装过程 [#see-it-first]
 
 ```bash
 curl -fsSL https://warmbly.com/install.sh | sh -s -- --demo
 ```
 
-The real wizard and the real review, with the pull, the container creation and the health wait played rather than run. It writes no file, pulls no image, creates no container and needs no Docker, so it answers "what does this actually do" without a server to try it on.
+展示真实向导和确认页面，但拉取、容器创建和健康等待只是演示，不实际执行。它不写文件、不拉镜像、不创建容器，也不需要 Docker，因此无需准备服务器，就能了解“实际会做什么”。
 
-It takes about half a minute, paced so the phases are readable; a real install is several minutes, most of it the pull and the first boot's migrations. `WARMBLY_DEMO_FAST=1` collapses it to under ten seconds. From a checkout: `make installer-demo`.
+演示约半分钟，速度经过安排，方便阅读每个阶段；真实安装需要几分钟，主要花在拉取镜像和首次启动迁移。`WARMBLY_DEMO_FAST=1` 可缩短到十秒内。在源码检出目录中可运行 `make installer-demo`。
 
-## For agents
+## 供智能体使用 [#for-agents]
 
-An agent should never drive the wizard: it reads raw keypresses and needs a
-terminal. Every answer is also a flag, so `--yes` with flags is silent,
-deterministic and idempotent, and `--print-env` and `--dry-run` show what a run
-would produce without producing it.
+智能体不应操作向导，因为它读取原始按键并需要终端。每个答案都有对应参数，因此使用 `--yes` 配合参数，可以安静、确定且幂等地执行；`--print-env` 和 `--dry-run` 可展示运行结果，而不真正生成它们。
 
-The repository ships a `warmbly-install` skill under `skills/` covering exactly
-that, plus backups and moving an instance. Install it the way your agent
-expects, for example `cp -r skills/warmbly-install ~/.claude/skills/`.
+仓库提供 `warmbly-install` 技能，位于 `skills/` 下，专门覆盖这套流程，以及备份和实例迁移。按智能体要求安装即可，例如 `cp -r skills/warmbly-install ~/.claude/skills/`。
 
-## Unattended
+## 无人值守安装 [#unattended]
 
-Every answer is a flag and a `WARMBLY_*` environment variable, so the same script provisions from Ansible or cloud-init:
+每个答案都有对应参数和 `WARMBLY_*` 环境变量，因此同一脚本也可用于 Ansible 或 cloud-init 配置：
 
 ```bash
 curl -fsSL https://warmbly.com/install.sh | sh -s -- --yes \
@@ -258,106 +253,106 @@ curl -fsSL https://warmbly.com/install.sh | sh -s -- --yes \
   --version v1.4.2
 ```
 
-| Flag | Variable | Default |
+| 参数 | 变量 | 默认值 |
 |---|---|---|
 | `--dir` | `WARMBLY_DIR` | `/opt/warmbly` |
 | `--host` | `WARMBLY_HOST` | `localhost` |
-| `--tls` | `WARMBLY_TLS` | `none` (`caddy`, `proxy`) |
-| `--data-root` | `WARMBLY_DATA_ROOT` | `<dir>/data` (or `volumes`) |
-| `--blobs` | `WARMBLY_BLOBS` | `filesystem` (`s3`) |
-| `--database-url` | `WARMBLY_DATABASE_URL` | bundled Postgres |
-| `--redis-url` | `WARMBLY_REDIS_URL` | bundled Redis |
-| `--components` | `WARMBLY_COMPONENTS` | `full` (`core`) |
-| `--version` | `WARMBLY_VERSION` | newest release |
-| `--channel` | `WARMBLY_CHANNEL` | `stable` (`dev`) |
+| `--tls` | `WARMBLY_TLS` | `none`（`caddy`、`proxy`） |
+| `--data-root` | `WARMBLY_DATA_ROOT` | `<dir>/data`（或 `volumes`） |
+| `--blobs` | `WARMBLY_BLOBS` | `filesystem`（`s3`） |
+| `--database-url` | `WARMBLY_DATABASE_URL` | 内置 Postgres |
+| `--redis-url` | `WARMBLY_REDIS_URL` | 内置 Redis |
+| `--components` | `WARMBLY_COMPONENTS` | `full`（`core`） |
+| `--version` | `WARMBLY_VERSION` | 最新发布 |
+| `--channel` | `WARMBLY_CHANNEL` | `stable`（`dev`） |
 | `--registry` | `WARMBLY_IMAGE_PREFIX` | `ghcr.io/warmbly/warmbly` |
-| `--backup-dir` | `WARMBLY_BACKUP_DIR` | none |
+| `--backup-dir` | `WARMBLY_BACKUP_DIR` | 无 |
 | `--backup-keep` | `WARMBLY_BACKUP_KEEP` | `14` |
-| `--retention-preset` | | `default` (`minimal`) |
-| `--no-update-check` | `WARMBLY_UPDATE_CHECK` | on |
+| `--retention-preset` | | `default`（`minimal`） |
+| `--no-update-check` | `WARMBLY_UPDATE_CHECK` | 开启 |
 
-`--print-env` emits the `.env` and exits. `--dry-run` prints every file it would write and exits. `--demo` walks the whole thing and installs nothing.
+`--print-env` 输出 `.env` 后退出。`--dry-run` 打印准备写入的所有文件后退出。`--demo` 演示完整流程，但不安装任何内容。
 
-## Re-running it
+## 再次运行安装程序 [#re-running-it]
 
-The installer is idempotent. A second run:
+安装器是幂等的。第二次运行会：
 
-- adopts the existing `.env` and never regenerates a secret, because a new `AUTH_SECRET` signs everyone out and a new `CREDENTIALS_ENCRYPTION_KEY` is permanent data loss
-- keeps the existing data root, because pointing an install at a new path is not a move, it is an empty instance next to a full one
-- keeps any keys you added to `.env` yourself, in a clearly marked block at the end
-- regenerates `docker-compose.yml`, keeping the previous one as `docker-compose.yml.bak`
-- refuses a directory it did not create, unless you pass `--force`
+- 沿用现有 `.env`，绝不重新生成秘密值，因为新的 `AUTH_SECRET` 会让所有人退出登录，新的 `CREDENTIALS_ENCRYPTION_KEY` 则会造成永久数据丢失。
+- 保留现有数据根目录，因为把安装指向新路径不是迁移，而是在有数据的实例旁边另建一个空实例。
+- 保留你自行加入 `.env` 的键，并放在末尾明确标注的区块中。
+- 重新生成 `docker-compose.yml`，将旧文件保留为 `docker-compose.yml.bak`。
+- 拒绝使用不是由它创建的目录，除非传入 `--force`。
 
-Put your own compose changes in a `docker-compose.override.yml`, which compose merges on top and the installer never touches.
+请将自己的 Compose 改动放在 `docker-compose.override.yml` 中；Compose 会叠加合并，安装器也不会触碰该文件。
 
-## Updating
+## 更新 [#updating]
 
-Upgrade the backend first and confirm its database migrations complete before upgrading consumers. Consumers wait up to two minutes for the clean migration version required by their embedded code before starting database-dependent work. If the backend is still old or a migration failed, the consumer exits with an actionable schema-readiness error and can retry through the container restart policy. It does not run migrations or ignore missing tables.
+先升级后端，并确认数据库迁移完成，再升级消费者。消费者开始依赖数据库的工作前，最多等待两分钟，确认数据库达到其嵌入代码要求的干净迁移版本。如果后端仍旧或迁移失败，消费者会退出并给出可操作的 Schema 就绪错误，可由容器重启策略再次尝试。消费者不会执行迁移，也不会忽略缺失表。
 
-### Unibox forwarding upgrade order
+### 统一收件箱转发功能的升级顺序 [#unibox-forwarding-upgrade-order]
 
-Do not use forwarding to suppressed recipients until every backend handling submissions, queued send callbacks and worker/control-plane authorization has been upgraded, old requests have drained and old replicas have retired. During a mixed-backend rollout, pause Unibox submissions and queued send dispatch: an old backend still refuses these forwards. Existing clients can already submit forwards, so frontend ordering alone is insufficient. Verify old-replica retirement explicitly rather than relying on release completion or one healthy backend. No worker schema change or mailbox reconnect is required. See [send safety](/development/send-safety/#shared-send-time-admission).
+在所有处理提交、排队发送回调和工作节点/控制平面授权的后端升级完成、旧请求处理完毕、旧副本停用之前，不要使用向禁止发送收件人转发的功能。混合后端发布期间，应暂停统一收件箱提交和排队发送派发，因为旧后端仍会拒绝这些转发。现有客户端已经可以提交转发，因此仅安排前端顺序不够。应明确验证旧副本已停用，不要仅凭发布完成或某个后端健康判断。无需工作节点 Schema 变更或重新连接邮箱。参见[发送安全](/development/send-safety/#shared-send-time-admission)。
 
-### Mailbox sync upgrade order
+### 邮箱同步功能的升级顺序 [#mailbox-sync-upgrade-order]
 
-The mailbox lookup optimization adds concurrent indexes for normalized send Message-IDs and exact IMAP folder generations, without rewriting existing records. Index construction uses temporary disk space and I/O, so confirm database headroom before upgrading a busy instance and wait for migrations to finish. The new batch message-map endpoint needs no configuration: old workers still use single-message reads, and new workers use that route when an old backend does not support batches. Upgrade the backend first to get the performance benefit, then workers. Sync cadence, draft-deletion reconciliation and durable arrival requirements stay unchanged.
+邮箱查找优化为归一化的发送 Message-ID 和精确 IMAP 文件夹代际添加并发索引，不改写现有记录。索引构建需要临时磁盘空间和 I/O，因此升级繁忙实例前，应确认数据库余量并等待迁移完成。新的批量邮件映射端点无需配置：旧工作节点仍使用逐邮件读取；旧后端不支持批量时，新工作节点也回退到原路径。先升级后端以获得性能收益，再升级工作节点。同步频率、草稿删除核对和持久来信要求保持不变。
 
-For durable mailbox arrivals, upgrade the backend, let its migrations complete, then upgrade and start the consumer before upgrading workers. The backend admits each new provider map and its organization-encrypted arrival payload in one database transaction; the consumer delivers pending stages after restart. Workers continue using internal HTTP endpoints and do not need database access. Preserve the instance's organization keys and body storage with the database, as described in [data control](/development/data-control/#mailbox-sync-recovery-data).
+要启用持久邮箱来信，应先升级后端并等待迁移完成，再升级并启动消费者，最后升级工作节点。后端在同一个数据库事务中接纳新的服务商映射和组织加密的来信载荷；消费者重启后继续处理待完成阶段。工作节点继续使用内部 HTTP 端点，无需数据库访问。应将实例的组织密钥和正文存储与数据库一起保留，详见[数据控制](/development/data-control/#mailbox-sync-recovery-data)。
 
-An old worker with a new backend still writes legacy map-only records. A new worker with an old backend falls back only when the durable internal endpoint is absent (HTTP 404 or 405). Neither mixed-version path has the new durable-admission guarantee. A backend failure or an acknowledgement without the durable marker is not treated as success. When a conflicting map has no retained pending payload, the backend fails closed instead of claiming a durable admission; this includes a retry after the pending row has already been delivered and removed. Ordinary map lookup still deduplicates that message.
+旧工作节点配合新后端，仍只写入旧版映射记录。新工作节点配合旧后端，仅在持久内部端点不存在，即 HTTP 404 或 405 时回退。两种混合版本路径都不具备新的持久接纳保证。后端失败或缺少持久标记的确认，不会被视为成功。冲突映射没有保留的待处理载荷时，后端会保守拒绝，不会声称已持久接纳；这也包括待处理行已经投递并移除之后的重试。普通映射查找仍会对该邮件去重。
 
-Existing completed imports and maps are preserved. Pre-upgrade maps contain no replay payload, so an old lost arrival cannot be reconstructed from the map alone. Bounded provider recovery covers supported recent history, not an unlimited historical repair. [Mailbox sync](/guides/mailboxes/#what-gets-synced) explains the provider limits.
+已完成导入和现有映射都保留。升级前映射没有重放载荷，因此不能仅凭映射重建旧的丢失来信。有界服务商恢复仅覆盖支持的近期历史，不提供无限历史修复。[邮箱同步](/guides/mailboxes/#what-gets-synced)说明了各服务商限制。
 
-Keep the upgraded consumer running until all pending arrivals finish before downgrading. The migration refuses to remove the arrival table while any pending row remains. Do not delete queued rows or force a migration version to bypass that refusal. An older consumer cannot drain this queue. Pending arrivals are instance-local and do not move in a workspace export.
+降级前，应保持更新后的消费者运行，直到所有待处理来信完成。只要还存在任何待处理行，迁移就会拒绝移除来信表。不要删除队列行或强制迁移版本来绕过拒绝。旧消费者无法处理此队列。待处理来信仅属于当前实例，不随工作区导出迁移。
 
-Fleet auto-updates select releases no newer than the running backend. Existing fleet and node pins are checked again when answering heartbeats, so an incompatible stored target is not sent to nodes; new incompatible pins are rejected. Newly joined machines fall back to the backend's exact release, not the moving `prod` tag. Main builds use their published commit-SHA image tag. Unstamped custom builds must set `WARMBLY_VERSION` to their published image tag; unknown versions cannot be ordered safely. Upgrade the backend before moving the fleet to a newer release. This protection only takes effect after installing the compatibility release; it cannot change the behavior of an older backend already running.
+节点集群自动更新只选择不晚于当前后端的版本。响应心跳时，会再次检查现有集群和节点固定版本，因此不兼容的已存储目标不会发给节点；新设置的不兼容固定版本会被拒绝。新加入机器回退到后端的精确发布版本，而不是不断变化的 `prod` 标签。主分支构建使用其已发布的提交 SHA 镜像标签。没有版本标记的自定义构建，必须将 `WARMBLY_VERSION` 设置为其已发布镜像标签；未知版本无法安全排序。将节点集群迁移到新版本前，应先升级后端。这项保护只有安装兼容版本后才生效，无法改变正在运行的旧后端行为。
 
-The dashboard discovers a separate realtime origin from the backend's existing public configuration at container startup or static build time. Bring the backend up first; if discovery warns that it is unavailable, restart the dashboard after backend readiness or rebuild the static deployment. See [configuration](/development/configuration/).
+控制台在容器启动或静态构建时，从后端现有公开配置发现独立的实时服务来源。应先启动后端；如果发现过程警告不可用，在后端就绪后重启控制台，或重新构建静态部署。参见[配置](/development/configuration/)。
 
-The version pill in the admin panel, then **Update and restart**. On an install created this way the updater runs in image mode: it writes the new tag into `.env`, pulls, and recreates the containers whose image changed. Nothing is built. See [updates](/development/updates/).
+点击管理面板的版本标记，再选择**更新并重启**。这种安装方式下，更新器以镜像模式运行：将新标签写入 `.env`，拉取镜像，并重新创建镜像发生变化的容器，不进行构建。参见[更新](/development/updates/)。
 
-By hand, from the install directory:
+也可以在安装目录手动执行：
 
 ```bash
 docker compose -p warmbly pull && docker compose -p warmbly up -d
 ```
 
-An update does not cut off work in progress. The generated stack gives each application container 60 seconds to stop (`stop_grace_period`), and in that time the backend finishes a mailbox connect already under way and the import rows it is connecting, and a worker finishes the send it is on. Anything still unfinished after that is picked up again by the new containers: a mailbox a worker was loading on its first heartbeat, and an import row once its 2-minute lease runs out. See [updates without lost work](/development/deployment-guide/#updates-without-lost-work).
+更新不会立即切断正在进行的工作。生成的服务栈为每个应用容器提供 60 秒停止时间，由 `stop_grace_period` 控制；期间后端会完成已开始的邮箱连接及正在连接的导入行，工作节点会完成当前发送。此后仍未完成的工作由新容器继续：工作节点在第一次心跳时重新接手原先加载中的邮箱，导入行则在两分钟租约到期后接手。参见[更新时不丢失工作](/development/deployment-guide/#updates-without-lost-work)。
 
-## Removing it
+## 卸载 [#removing-it]
 
 ```bash
 sh install.sh --uninstall
 ```
 
-Stops and removes the containers and leaves every byte of data where it is. Adding `--purge-data` deletes the data root and the install directory as well, and asks you to type a phrase first, because that also destroys the only keys that could have opened a backup of it.
+这会停止并移除容器，所有数据原样保留。添加 `--purge-data` 还会删除数据根目录和安装目录，操作前要求输入确认短语，因为这也会毁掉唯一能够解开备份的密钥。
 
-## When it goes wrong
+## 出现问题时 [#when-it-goes-wrong]
 
-| Symptom | Cause |
+| 现象 | 原因 |
 |---|---|
-| `Docker is installed but not answering` | The daemon is not running, or your user is not in the `docker` group yet. `sudo systemctl start docker`, then log out and back in |
-| `Something already listens on 3000` | Another self-hosted tool. Change the published port in `docker-compose.yml` before starting |
-| `Could not pull the release images` | The tag does not exist, or this host cannot reach `ghcr.io`. Check [releases](https://github.com/warmbly/warmbly/releases) |
-| `The registry refused to serve the release images` | The images are not readable without an account, which is never how a release is meant to ship. Please [report it](https://github.com/warmbly/warmbly/issues). If you passed `--registry`, check it for a typo first: a namespace that does not exist is refused the same way. To get past it, point `--registry` at a mirror you can read, or `docker login ghcr.io` as someone who already has access to the packages. Logging in does not by itself grant it |
-| The API never answers | The first boot applies every migration. `docker compose -p warmbly logs -f backend` |
-| The consumer waits for backend migrations | Consumers wait up to two minutes for the database version required by their image to be clean, then verify that required warmup tables are visible. Update the backend first, check its migration logs and confirm both services use the same database and search path. A dirty migration needs investigation; do not force its version to make the consumer start. |
-| No claim link printed | The database already has accounts, so there is nothing to claim. See [first run](/development/first-run/) |
+| `Docker is installed but not answering` | Docker 守护进程未运行，或用户尚未加入 `docker` 组。执行 `sudo systemctl start docker`，然后退出并重新登录 |
+| `Something already listens on 3000` | 其他自托管工具占用了端口。启动前修改 `docker-compose.yml` 中发布的端口 |
+| `Could not pull the release images` | 标签不存在，或主机无法访问 `ghcr.io`。检查[发布列表](https://github.com/warmbly/warmbly/releases) |
+| `The registry refused to serve the release images` | 镜像在未登录时不可读，而发布镜像本不应如此。请[报告问题](https://github.com/warmbly/warmbly/issues)。如果传入了 `--registry`，先检查拼写；不存在的命名空间也会得到同样拒绝。可将 `--registry` 指向你能读取的镜像源，或通过 `docker login ghcr.io` 登录一个本来就有包访问权限的账户。登录本身不会授予权限 |
+| API 始终没有响应 | 首次启动会应用全部迁移。使用 `docker compose -p warmbly logs -f backend` 查看 |
+| 消费者等待后端迁移 | 消费者最多等待两分钟，确认数据库达到镜像要求的干净版本，再验证所需预热表可见。先更新后端，检查迁移日志，并确认两个服务使用相同数据库和搜索路径。dirty 迁移需要调查，不要为了启动消费者而强制修改版本 |
+| 没有打印认领链接 | 数据库已有账户，无需再认领。参见[首次运行](/development/first-run/) |
 
-More in [troubleshooting](/development/troubleshooting/) and [instance health](/development/instance-health/).
+更多说明见[故障排查](/development/troubleshooting/)和[实例健康状态](/development/instance-health/)。
 
-## Mail on the same machine
+## 与邮件服务共用一台主机 [#mail-on-the-same-machine]
 
-A self-hosted instance can connect a mailbox that only exists on the machine it runs on. [Proton Bridge](https://proton.me/mail/bridge) is the case that matters: it signs in to Proton Mail locally and re-serves the account as plain IMAP on `127.0.0.1:1143` and SMTP on `127.0.0.1:1025`, speaking no TLS a client can verify because it never listens on a network interface.
+自托管实例可以连接只存在于其所在机器上的邮箱。[Proton Bridge](https://proton.me/mail/bridge) 是典型场景：它在本地登录 Proton Mail，并通过 `127.0.0.1:1143` 的普通 IMAP 和 `127.0.0.1:1025` 的 SMTP 重新提供该账户。因为它从不监听网络接口，所以不提供客户端可验证的 TLS。
 
-Connecting one means choosing the **None** security mode in the connect form, which Warmbly offers only when the host is a loopback literal (`localhost`, `127.0.0.0/8`, `::1`) and only on a self-hosted instance. The credentials never leave the machine, which is the entire reason it is allowed; the worker checks the peer it actually dialled as well, so an edit to the stored host cannot widen it afterwards. Hosted Warmbly runs its workers in our infrastructure and never offers the mode.
+连接时，在表单中选择**无**安全模式。Warmbly 仅在主机是回环字面值，即 `localhost`、`127.0.0.0/8` 或 `::1`，且实例为自托管时提供此模式。允许它的全部理由，就是凭据不会离开机器；工作节点也会检查实际连接的对端，避免后续修改已存储主机扩大范围。托管 Warmbly 的工作节点运行在我们的基础设施上，绝不提供此模式。
 
-The worker has to be the one on that machine. A `docker compose` install puts it there by default; a [dedicated worker](/development/architecture/) on another host cannot reach the Bridge. Full detail in the [mailboxes guide](/guides/mailboxes/#local-mail-relays-proton-bridge).
+工作节点必须位于同一台机器。`docker compose` 安装默认如此；其他主机上的[专用工作节点](/development/architecture/)无法访问 Bridge。完整说明见[邮箱指南](/guides/mailboxes/#local-mail-relays-proton-bridge)。
 
-## Next
+## 下一步 [#next]
 
-- [First run](/development/first-run/): claiming the instance, the first owner, demo data
-- [Data control](/development/data-control/): where every store lives, what each retention window governs, backups, and moving an instance
-- [Configuration](/development/configuration/): every environment variable and every database-backed setting
-- [Whole-domain mailbox connects](/development/whole-domain-connect/): the Google service account and Microsoft app that let a workspace connect a whole Google Workspace domain or Microsoft 365 organization
-- [Self-hosting](/development/deployment-guide/): the full guide, including building from source
+- [首次运行](/development/first-run/)：认领实例、首位所有者和演示数据。
+- [数据控制](/development/data-control/)：各存储位置、保留窗口范围、备份和实例迁移。
+- [配置](/development/configuration/)：所有环境变量和数据库支持的设置。
+- [整域邮箱连接](/development/whole-domain-connect/)：让工作区连接整个 Google Workspace 域或 Microsoft 365 组织所需的 Google 服务账户和 Microsoft 应用。
+- [自托管](/development/deployment-guide/)：完整指南，包括从源码构建。

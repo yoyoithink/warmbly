@@ -1,63 +1,63 @@
 ---
-title: Automations
-description: "A visual flow builder: a trigger event connected to action steps across your integrations."
+title: 自动化流程
+description: 可视化流程编辑器：将触发事件与各项集成中的操作步骤连接起来。
 ---
 
-An automation does work for you when something happens: a reply arrives or a meeting is booked, and Warmbly posts to Slack, pushes to your CRM or labels a contact. You build it on a canvas, with no code.
+自动化流程会在事件发生时替你执行工作：收到回复或会议预约后，Warmbly 可以向 Slack 发消息、推送到 CRM，或为联系人添加标签。你只需在画布上搭建，无需写代码。
 
-![An automation in the builder: a reply trigger, an If / else on intent, then a deal and a task on the Yes branch](/guides/automation-builder.webp)
+![编辑器中的自动化流程：收到回复后，按意图执行 If / else（条件分支）判断，再在“是”分支创建商机与任务](/guides/automation-builder.webp)
 
-## Build an automation
+## 创建自动化流程 [#build-an-automation]
 
 <Steps>
 
 <Step>
 
-Open the **Automations** tab and choose **New automation**.
+打开**自动化流程**标签页，选择**新建自动化流程**。
 
 </Step>
 
 <Step>
 
-Pick the trigger it should run on, such as **Reply received**.
+选择触发事件，例如**收到回复**。
 
 </Step>
 
 <Step>
 
-Press **+** to add actions, and an **If / else** wherever the flow should branch.
+点击 **+** 添加操作，在需要分支的位置添加 **If / else（条件分支）**。
 
 </Step>
 
 <Step>
 
-Press **Test** to dry-run it against sample data.
+点击**测试**，用示例数据模拟运行。
 
 </Step>
 
 <Step>
 
-Press **Save** and make sure the automation is switched on.
+点击**保存**，并确认自动化流程已启用。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Nothing takes effect until you **Save**. **Test** saves first, then dry-runs.
-- An automation that is off never fires, even from a campaign step.
-- A test sends no messages and changes no records, but AI steps run for real and spend credits.
-- One failing step never blocks the rest. The failure is recorded in **History**.
-- Bulk file imports and sheet syncs do not fire **Contact created**.
+- **保存**前，任何修改都不会生效。**测试**会先保存，再模拟运行。
+- 关闭的自动化流程绝不会触发，即使来自营销活动步骤也一样。
+- 测试不会发送消息或修改记录，但 AI 步骤会实际运行并消耗积分。
+- 一个步骤失败不会阻塞其余步骤，失败会记录在**历史记录**中。
+- 批量文件导入和表格同步不会触发**创建联系人**事件。
 
 <Fold>
 
-## What an automation is
+## 什么是自动化流程 [#what-an-automation-is]
 
-An automation is a flow on a canvas: one **trigger** (a reply arrives, a meeting is booked) runs one or more **actions** (post to Slack, push to your CRM, label a contact), with **IF conditions** in between to branch. No code, though an advanced mode accepts a free-form condition.
+自动化流程是在画布上搭建的流程：一个**触发器**（收到回复、会议已预约）执行一个或多个**操作**（发送 Slack 消息、推送到 CRM、标记联系人），中间可以加入 **IF 条件**进行分支。无需代码，不过高级模式也允许直接编写条件表达式。
 
-![The automations list, with starting templates underneath](/guides/automations.webp)
+![自动化流程列表，下方提供可作为起点的模板](/guides/automations.webp)
 
 <Mermaid
   chart={`
@@ -73,210 +73,210 @@ flowchart LR
 
 <Fold>
 
-## The builder
+## 流程编辑器 [#the-builder]
 
-Open the **Automations** tab. Each automation has a name, an on/off toggle, and a canvas. **Off** never fires, even from a campaign step.
+打开**自动化流程**标签页。每个流程都有名称、启用开关和画布。处于**关闭**状态时绝不会运行，即使从营销活动步骤调用也不例外。
 
-The canvas lays itself out: the **Trigger** sits at the top and every step runs top to bottom below it. You never draw lines or arrange cards. Scroll with two fingers or drag empty space to move around; pinch, or hold `Ctrl`/`Cmd` and scroll, to zoom. `Shift+1` fits the whole flow and `Cmd/Ctrl+0` returns to 100%.
+画布自动布局：**触发器**在顶部，其下所有步骤按从上到下的顺序运行。你无需手动画线或排列卡片。双指滚动或拖动画布空白处可以移动视图；捏合，或按住 `Ctrl`/`Cmd` 滚动，可以缩放。`Shift+1` 将整个流程适配到视图中，`Cmd/Ctrl+0` 恢复 100% 缩放。
 
-- Hover any line and press its **+** to insert a step there, or press the **+** at the end of a path to add one after it. The picker is searchable and works from the keyboard (arrows, `Enter`, `Esc`).
-- An **If / else** splits into **Yes** and **No** columns. An **AI switch** gets one column per case. Inserting either one in the middle of a path keeps the steps that were below it on the first branch.
-- **Go to a step** (at the end of a path) continues that path at a step already in the flow, shown as a chip. Hover it to see where it leads. Only steps that cannot loop back are offered.
-- **End here** stops a path explicitly.
-- Click a step to edit it in the side panel. Adding or removing a step moves the rest of the flow into place with a short animation. Its **⋯** menu duplicates it, adds an on-error path, or deletes it. Deleting a step reconnects what was before it to what came after; deleting a branching step also removes the steps only its branches led to, after asking.
-- A step that still needs setup has an amber dot by its name (hover it for what is missing), and the **issues** button in the header lists every one. Save is refused until they are fixed.
-- `Cmd/Ctrl+Z` undoes and `Shift+Cmd+Z` (or `Ctrl+Y`) redoes any edit, `Cmd/Ctrl+S` saves, and `Delete` removes the selected step.
-- The canvas is collaborative: teammates' cursors and their selected steps, outlined in their color. Press `/` to chat. See [Collaboration](/guides/collaboration/).
+- 悬停在任意连接线上，点击 **+** 可在该处插入步骤；点击路径末尾的 **+** 则在其后追加。选择器支持搜索，也支持键盘操作（方向键、`Enter`、`Esc`）。
+- **If / else（条件分支）** 分为**是**与**否**两列。**AI 分支选择**为每个分支提供一列。在路径中间插入任一种分支节点时，原先位于其后的步骤会保留在第一个分支上。
+- 路径末尾的**跳转到步骤**可继续执行流程中已有的步骤，并以标签形式显示。悬停即可查看目标位置，只提供不会形成回环的步骤。
+- **在此结束**用于明确终止路径。
+- 点击步骤可在侧边面板编辑。添加或删除步骤时，其余流程会通过简短动画自动调整位置。步骤的 **⋯** 菜单可以复制、添加错误路径或删除。删除步骤后，前后的节点会重新连接；删除分支节点时，会先询问，再一并删除只由这些分支通往的步骤。
+- 尚未完成设置的步骤，其名称旁有琥珀色圆点，悬停可查看缺少什么；顶部的**问题**按钮列出全部问题。修复之前不能保存。
+- `Cmd/Ctrl+Z` 撤销编辑，`Shift+Cmd+Z`（或 `Ctrl+Y`）重做，`Cmd/Ctrl+S` 保存，`Delete` 删除选中步骤。
+- 画布支持协作，显示同事的光标和选中步骤，使用各自的颜色描边。按 `/` 可以聊天。参见[实时协作](/guides/collaboration/)。
 
-<Callout type="info" title="Save before it runs">
-Triggers, conditions, and actions only take effect after **Save**. **Test** saves first, then dry-runs.
+<Callout type="info" title="运行前先保存">
+触发器、条件和操作只有在**保存**后才会生效。**测试**会先保存，再模拟运行。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Triggers
+## 触发器 [#triggers]
 
-| Trigger | Fires when |
+| 触发器 | 触发时机 |
 | --- | --- |
-| Reply received | A contact replies to a campaign email |
-| Contact created | A new contact is added by hand, through the API, by a form or by an automation (bulk file imports and sheet syncs stay quiet, see below) |
-| Form submitted | A hosted [form](/guides/forms/) receives a submission |
-| Meeting booked / rescheduled / canceled | A Calendly or Cal.com meeting changes |
-| Email bounced | A campaign email bounces |
-| Unsubscribed | A contact unsubscribes |
-| Warmup health changed | A mailbox's warmup health state changes |
-| Deliverability complaint | A spam complaint is recorded |
-| Inbound webhook | An external system POSTs to this automation's unique URL |
-| Campaign action | A campaign sequence reaches a "Run automation" step |
+| 收到回复 | 联系人回复营销活动邮件 |
+| 创建联系人 | 手动、通过 API、表单或自动化流程添加新联系人（批量文件导入和表格同步不触发，见下文） |
+| 提交表单 | 托管的[表单](/guides/forms/)收到提交 |
+| 会议已预约 / 已改期 / 已取消 | Calendly 或 Cal.com 中的会议发生变化 |
+| 邮件退信 | 营销活动邮件退信 |
+| 已退订 | 联系人退订 |
+| 预热健康状态变化 | 邮箱预热健康状态改变 |
+| 垃圾邮件投诉 | 记录到垃圾邮件投诉 |
+| 入站 Webhook | 外部系统向此流程专属 URL 发出 POST 请求 |
+| 营销活动操作 | 营销活动邮件序列运行到“运行自动化流程”步骤 |
 
-Each trigger carries its own event data (a reply carries contact email, reply intent, classifier confidence, and the inbox tagging verdict when tagging is on). Those are the values your conditions test and your action text inserts. Full per-trigger variable list: [Personalization & expressions](/guides/expressions/).
+每种触发器都携带自己的事件数据。例如，回复事件包含联系人邮箱、回复意图、分类器置信度，以及启用收件箱标签时的标签判断结果。这些值用于条件判断，也可插入操作文本。各触发器的完整变量列表见[个性化与表达式](/guides/expressions/)。
 
-**Campaign action** never fires by itself; it runs only from a campaign step, still evaluating your conditions.
+**营销活动操作**不会自行触发，只能由营销活动步骤调用，但仍会检查你设置的条件。
 
-**Contact created** fires once per new contact, with the contact's fields and its first-touch source, so a condition can branch on `source` (a form, the API, an automation) or on any field. A contact that already existed and was only updated does not fire it. Bulk arrivals are deliberately silent: a file import or a Google Sheets sync of ten thousand rows would otherwise run ten thousand flows and flood every webhook, so those paths never raise it, and neither does a single API request adding more than 100 contacts.
+**创建联系人**为每位新联系人触发一次，携带联系人字段及首次接触来源，因此可以按 `source`（表单、API、自动化流程）或其他任意字段分支。已有联系人仅被更新时，不会触发。批量导入刻意保持静默：如果导入文件或 Google Sheets 同步的一万行数据触发一万个流程，就会使所有 Webhook 被大量请求淹没，因此这些方式从不触发该事件；单次 API 请求添加超过 100 位联系人时也不触发。
 
-### Inbound webhook
+### 传入 Webhook [#inbound-webhook]
 
-Pick the trigger and **save**, and the editor shows a unique URL. Anything that can send HTTP `POST`s JSON to it.
+选择触发器并**保存**后，编辑器会显示专属 URL。任何能发起 HTTP 请求的系统，都可以向该地址 `POST` JSON。
 
-- The JSON body becomes the payload: `{"email":"a@b.com"}` gives you `{{.email}}`. A non-object body is exposed as `{{.body}}`.
-- **The URL is the credential.** It carries a high-entropy token, so treat it as a secret, send it over HTTPS, and rotate it (switch the trigger away and back) if it leaks.
-- The request returns immediately and the flow runs in the background, so a slow action never blocks the caller.
-- Keys starting with an underscore are stripped; the body is capped at 1 MB.
+- JSON 请求体成为事件载荷：`{"email":"a@b.com"}` 可通过 `{{.email}}` 读取。非对象请求体通过 `{{.body}}` 提供。
+- **URL 本身就是凭据。** 其中携带高熵令牌，应作为机密保管，通过 HTTPS 发送；泄露后需轮换，可先切换为其他触发器，再切回来。
+- 请求立即返回，流程在后台运行，因此慢操作不会阻塞调用方。
+- 以下划线开头的键会被移除，请求体上限为 1 MB。
 
 </Fold>
 
 <Fold>
 
-## IF conditions
+## IF 条件 [#if-conditions]
 
-An **If / else** splits into a **Yes** column and a **No** column. Only the matching branch runs; an empty branch just ends.
+**If / else（条件分支）** 分为**是**与**否**两列，只有匹配的分支会执行；空分支会直接结束。
 
-Pick a **field**, an **operator**, and a **value**. Fields depend on the trigger, so they are always meaningful.
+选择**字段**、**运算符**和**值**。字段根据触发器提供，因此始终与当前事件有关。
 
-| Field type | Operators |
+| 字段类型 | 运算符 |
 | --- | --- |
-| Text | `is`, `is not`, `contains`, `is present` |
-| Number | `≥`, `≤`, `is`, `is present` |
-| Choice (enum) | `is`, `is not`, `is present` |
-| List | `contains`, `is present` |
+| 文本 | `is`, `is not`, `contains`, `is present` |
+| 数字 | `≥`, `≤`, `is`, `is present` |
+| 选项（枚举） | `is`, `is not`, `is present` |
+| 列表 | `contains`, `is present` |
 
-A list `contains` a value only when one item matches it whole, ignoring case, so a reply labelled "Not interested" does not pass `contains Interested`. A list with no items is not present.
+列表只有在某一项与目标值完整匹配时，才满足 `contains`，匹配不区分大小写。因此，标记为“Not interested”的回复不会通过 `contains Interested`。没有任何元素的列表视为不存在。
 
-### Filtering replies on inbox tagging
+### 根据收件箱标签筛选回复 [#filtering-replies-on-inbox-tagging]
 
-With [inbox tagging](/guides/inbox-tagging/) on, **Reply received** also carries the verdict tagging stored for that message, so a reply automation filters on the same labels the inbox shows:
+启用[收件箱标签](/guides/inbox-tagging/)后，**收到回复**事件还会携带该邮件已保存的标签判断结果，因此回复自动化可以依据收件箱显示的同一组标签筛选：
 
-| Field | What it holds |
+| 字段 | 内容 |
 | --- | --- |
-| `ai_labels` | The labels on the message (Interested, Meeting, Pricing, Question, Wrong person, and your own question labels) |
-| `ai_intent` | What a human reply wants: `agreed`, `scheduling`, `wants_pricing`, `wants_info`, `wrong_person`, `not_now`, `not_interested`, `opt_out`, and the rest. Empty when tagging could not read it confidently |
-| `ai_intent_confidence` | How sure tagging was of `ai_intent`, 0 to 1 |
-| `ai_kind` | What the message is: `human_reply`, `auto_reply_ooo`, `auto_reply_ticket`, `cold_inbound`, `internal`. Empty when tagging was not sure |
-| `ai_relevance` | The 0 to 100 relevance score |
-| `ai_needs_review` | Tagging flagged the message for a person to check |
+| `ai_labels` | 邮件上的标签（Interested、Meeting、Pricing、Question、Wrong person，以及你自定义的问题标签） |
+| `ai_intent` | 真人回复的意图：`agreed`, `scheduling`, `wants_pricing`, `wants_info`, `wrong_person`, `not_now`, `not_interested`, `opt_out` 等。标签功能无法有把握地判断时为空 |
+| `ai_intent_confidence` | 标签功能对 `ai_intent` 的把握程度，范围 0 到 1 |
+| `ai_kind` | 邮件类别：`human_reply`, `auto_reply_ooo`, `auto_reply_ticket`, `cold_inbound`, `internal`。无法确定时为空 |
+| `ai_relevance` | 0 到 100 的相关性评分 |
+| `ai_needs_review` | 标签功能是否将该邮件标记为需要人工检查 |
 
-A reply tagging never judged (tagging off, or a message it skipped) carries none of these keys. Test `ai_needs_review` with `is present` to tell a judged reply from one with no verdict: this key is present even when its value is `false`. Do not use `ai_labels`, `ai_kind` or `ai_intent` for this check, because a judged reply can have an empty list or an empty string. `intent` and `confidence` are still the workspace keyword list's reading, unchanged. To be told about every interested lead, branch on `ai_labels` containing `Interested`, `Meeting`, `Pricing` or `Question`, or use one expression:
+标签功能从未判断过的回复（功能关闭，或邮件被跳过）不会携带上述任何键。检查 `ai_needs_review` 是否满足 `is present`，即可区分已判断的回复与没有结论的回复：即使值为 `false`，这个键也仍然存在。不要使用 `ai_labels`、`ai_kind` 或 `ai_intent` 做这项检查，因为已判断的回复也可能拥有空列表或空字符串。`intent` 和 `confidence` 仍保留工作区关键词列表的判断结果，不受影响。要获知所有感兴趣的潜在客户，可以按 `ai_labels` 是否包含 `Interested`、`Meeting`、`Pricing` 或 `Question` 分支，或使用一个表达式：
 
 ```
 or (has .ai_labels "Interested") (has .ai_labels "Meeting") (has .ai_labels "Pricing")
 ```
 
-The built-in Slack and Discord messages name the labels in their title when a reply has them.
+回复有这些标签时，内置 Slack 和 Discord 消息会在标题中列出标签名称。
 
-Three special conditions work with any trigger:
+以下三种特殊条件可用于任意触发器：
 
-- **Ask AI (yes/no)**: a plain-language question about the event ("Is this reply asking about pricing?") picks the path. Templated, so you can drop in `{{.field}}`. One credit per evaluation; if the model can't answer or you are out of credits, the no path runs and History shows why. See [AI steps in automations](/guides/ai-steps-in-automations/).
-- **Random split**: a set percentage (`1%` to `99%`) down the yes path, deterministic per event so re-deliveries never flip it.
-- **Advanced expression**: a free-form condition, taken when truthy.
+- **询问 AI（是/否）**：用自然语言询问事件，例如“这封回复是在问价格吗？”，根据答案选择路径。支持模板，可以插入 `{{.field}}`。每次判断消耗一个积分；模型无法回答或积分不足时，执行“否”路径，并在历史记录中说明原因。参见[自动化流程中的 AI 步骤](/guides/ai-steps-in-automations/)。
+- **随机分流**：按指定比例（`1%` 到 `99%`）进入“是”路径；同一事件的结果固定，因此重新投递不会改变分支。
+- **高级表达式**：直接编写条件，结果为真值时进入对应路径。
 
 ```
 and (gtf .confidence 0.8) (eq .intent "positive")
 ```
 
-Comparisons (`eq`, `gt`, `lt`), numeric coercion (`gtf`, `ltf`, `add`, `sub`, `mul`, `div`), logic (`and`, `or`, `not`), and text helpers (`contains`, `lower`) are available. A broken or empty expression is **false**, so a malformed condition never silently passes, and it is validated on save.
+可使用比较（`eq`、`gt`、`lt`）、数值转换与计算（`gtf`、`ltf`、`add`、`sub`、`mul`、`div`）、逻辑（`and`、`or`、`not`）以及文本辅助函数（`contains`、`lower`）。格式错误或为空的表达式为**假**，不会悄悄通过；保存时也会进行验证。
 
 </Fold>
 
 <Fold>
 
-## Actions
+## 操作 [#actions]
 
-Each action node picks a **Run** target (an integration, or Warmbly built-in) and an **Action**.
+每个操作节点都需要选择**执行**目标（某个集成或 Warmbly 内置功能）以及**操作**。
 
-| Integration action | What it does |
+| 集成操作 | 作用 |
 | --- | --- |
-| Send a Slack / Discord message | Posts to a channel (Slack needs `#channel`) |
-| Send a webhook | HTTP request to a URL you provide |
-| Create / update HubSpot contact, Pipedrive person, Salesforce record, Close lead | Upserts the record. In [HubSpot mode](/guides/hubspot/) or [Pipedrive mode](/guides/pipedrive/) contacts already sync on their own, so that CRM's action is not needed and steps aside. Salesforce finds the Lead or Contact, or creates one, with the [connection's rules](/guides/salesforce/#how-people-are-matched) |
+| 发送 Slack / Discord 消息 | 发到指定频道（Slack 需要 `#channel`） |
+| 发送 Webhook | 向你提供的 URL 发起 HTTP 请求 |
+| 创建 / 更新 HubSpot 联系人、Pipedrive 人员、Salesforce 记录、Close 潜在客户 | 新建记录或更新已有记录。在 [HubSpot 模式](/guides/hubspot/)或 [Pipedrive 模式](/guides/pipedrive/)下，联系人本就自动同步，因此无需对应 CRM 的此项操作，该操作会让位于自动同步。Salesforce 按[连接规则](/guides/salesforce/#how-people-are-matched)查找 Lead 或 Contact，或创建新记录 |
 
-Slack, Discord, and webhook actions take an optional message template. Slack and Discord arrive as a branded card in Warmbly's accent color with contact and subject fields, not a plain line. Slack shows the text as written: `<`, `>` and `&` are escaped, so a subject or template cannot form a Slack link or mention.
+Slack、Discord 和 Webhook 操作可选择填写消息模板。Slack 和 Discord 消息以 Warmbly 强调色的品牌卡片显示，包含联系人和主题字段，而不是普通的一行文字。Slack 会按原文显示文本：`<`、`>` 和 `&` 会被转义，因此主题或模板不能构成 Slack 链接或提及。
 
-| Built-in action | What it does |
+| 内置操作 | 作用 |
 | --- | --- |
-| Create or update contact | Makes a contact from the event's fields, or enriches the one with that email, then labels it and enrols it in a campaign. See [Lead intake](#lead-intake) |
-| Add to campaign | Enrols the event's contact in a campaign; a finished campaign restarts through the usual launch checks (a refusal is noted in its activity log and the lead waits), one waiting for leads picks up straight away |
+| 创建或更新联系人 | 根据事件字段新建联系人，或补充同邮箱联系人的信息，再为其加标签并加入营销活动。参见[潜在客户接入](#lead-intake) |
+| 添加到营销活动 | 将事件中的联系人加入营销活动；已完成的活动会通过正常启动检查后重新启动（拒绝时会记入活动日志，潜在客户继续等待）；等待新客户的活动会立即接手 |
 
-Saving an automation with either of these actions turns on the picked campaign's **Keep running for new leads** setting, so the campaign waits for the next run instead of finishing between them.
-| Add / remove a label | Adds or removes a label on the contact |
-| Label the conversation | Applies labels to the conversation the contact replied on |
-| Create a task | Assigned to the workspace owner |
-| Create a deal | In a chosen pipeline and stage |
-| Move the deal stage | Moves the contact's most recent open deal in that pipeline |
-| Unsubscribe the contact | Only when the event carries a campaign |
-| Set variables | Computes named values from templates for later steps to reuse as `{{.name}}` |
-| Fire event | Publishes a `CUSTOM_EVENT` to the realtime gateway |
-| AI step / AI switch | An agent or single-shot AI node, and AI-decided routing. See [AI steps](/guides/ai-steps-in-automations/) |
+保存含这两种操作之一的自动化流程时，会启用所选营销活动的**持续等待新潜在客户**设置，使活动在两次运行之间等待，而不是完成退出。
+| 添加 / 移除标签 | 为联系人添加或移除标签 |
+| 为会话添加标签 | 对联系人回复所在的会话应用标签 |
+| 创建任务 | 分配给工作区所有者 |
+| 创建商机 | 在指定销售管道与阶段中创建 |
+| 移动商机阶段 | 移动该联系人在指定管道中最近一笔未关闭商机 |
+| 将联系人退订 | 仅当事件携带营销活动时可用 |
+| 设置变量 | 根据模板计算具名值，供后续步骤以 `{{.name}}` 重用 |
+| 触发事件 | 向实时网关发布 `CUSTOM_EVENT` |
+| AI 步骤 / AI 分支选择 | 智能体或单次调用 AI 节点，以及由 AI 决定的路由。参见 [AI 步骤](/guides/ai-steps-in-automations/) |
 
-Three constraints worth knowing: **Move the deal stage** does nothing if the contact has no open deal in that pipeline, **Unsubscribe** needs an event carrying a campaign, and **Label the conversation** works only on a Reply received automation, since it needs a thread to label.
+需要了解三个约束：联系人在指定管道中没有未关闭商机时，**移动商机阶段**不执行操作；**退订**要求事件携带营销活动；**为会话添加标签**仅适用于“收到回复”自动化，因为它需要一个可标记的会话。
 
-In [HubSpot mode](/guides/hubspot/) or [Pipedrive mode](/guides/pipedrive/), the pipelines these actions pick from are that CRM's pipelines, and the tasks and deals they write are sent on to it through its sync queue. In Pipedrive a task becomes an activity.
+在 [HubSpot 模式](/guides/hubspot/)或 [Pipedrive 模式](/guides/pipedrive/)下，这些操作选择的是相应 CRM 的销售管道，创建的任务与商机也会通过同步队列发送到该 CRM。在 Pipedrive 中，任务会变成活动。
 
-**Add to campaign** and every other contact action need a contact to act on: the event must carry `contact_id` or `contact_email`, which every Warmbly trigger does. On an inbound webhook, put **Create or update contact** first and the contact it writes becomes the event's contact for the steps after it.
+**添加到营销活动**和其他所有联系人操作都需要目标联系人：事件必须携带 `contact_id` 或 `contact_email`，Warmbly 的每种触发器都会提供。在入站 Webhook 中，应先放置**创建或更新联系人**步骤，其写入的联系人会成为后续步骤使用的事件联系人。
 
-### Lead intake
+### 潜在客户接入 [#lead-intake]
 
-Any system that can send an HTTP request can create contacts in Warmbly without an API client: an **Inbound webhook** trigger followed by a **Create or update contact** action.
+任何能发送 HTTP 请求的系统，都可以无需 API 客户端就在 Warmbly 中创建联系人：使用**入站 Webhook**触发器，再接一个**创建或更新联系人**操作。
 
-1. Pick the Inbound webhook trigger, save, and copy the URL.
-2. Add **Create or update contact**. Each field is a template over the JSON the caller sends: an email of `{{.email}}`, a first name of `{{.first_name}}`, a custom field `team_size` set to `{{.answers.team_size}}`. Pick the labels and the campaign the lead lands in.
-3. Point the sender at the URL. Zapier's *Webhooks by Zapier*, Make's *HTTP* module, n8n's *HTTP Request* node, a Typeform or Tally webhook, or your own code.
+1. 选择入站 Webhook 触发器，保存，并复制 URL。
+2. 添加**创建或更新联系人**。每个字段都可基于调用方发送的 JSON 编写模板，例如邮箱 `{{.email}}`、名字 `{{.first_name}}`，以及将自定义字段 `team_size` 设为 `{{.answers.team_size}}`。再选择标签和潜在客户将加入的营销活动。
+3. 将发送方指向该 URL。可以使用 Zapier 的 *Webhooks by Zapier*、Make 的 *HTTP* 模块、n8n 的 *HTTP Request* 节点、Typeform 或 Tally Webhook，也可以使用自己的代码。
 
-The action matches an existing contact by email, so re-sending the same lead updates it instead of duplicating it. A blank rendered value never erases a field the contact already has. **If the contact already exists** decides whether an existing contact is enriched and enrolled (the default) or left alone. New contacts carry `automation` as their first-touch source, with the automation's name as the detail.
+操作通过邮箱匹配已有联系人，因此重复发送同一潜在客户会更新记录，而不是重复创建。渲染为空的值不会抹去联系人已有字段。**联系人已存在时**设置决定是补充信息并加入活动（默认），还是不做改动。新联系人的首次接触来源记为 `automation`，详情记录自动化流程名称。
 
-<Callout type="info" title="Facebook, Instagram, LinkedIn and TikTok lead forms">
-Meta, LinkedIn and TikTok deliver lead-form submissions to Zapier, Make and n8n in real time. Either route them through the Warmbly app there with its **Create or Update Contact** and **Add to Campaign** actions, or send them to an inbound webhook automation as above. Both end the same way: a contact with the ad's answers as custom fields, tagged and enrolled in the campaign that follows up from your mailbox. See [Zapier](/guides/zapier/#lead-forms-and-other-lead-sources), [Make](/guides/make/#lead-forms-and-other-lead-sources) and [n8n](/guides/n8n/).
+<Callout type="info" title="Facebook、Instagram、LinkedIn 和 TikTok 潜在客户表单">
+Meta、LinkedIn 和 TikTok 会将潜在客户表单提交实时发送到 Zapier、Make 和 n8n。你可以通过这些平台的 Warmbly 应用，使用其**创建或更新联系人**和**添加到营销活动**操作；也可以按上面的方法，发送到入站 Webhook 自动化流程。两种方式结果相同：创建联系人，将广告表单答案保存为自定义字段，添加标签，再加入通过你的邮箱发送跟进邮件的营销活动。参见 [Zapier](/guides/zapier/#lead-forms-and-other-lead-sources)、[Make](/guides/make/#lead-forms-and-other-lead-sources) 和 [n8n](/guides/n8n/)。
 </Callout>
 
-Lead-form campaigns produce leads in bursts, and the follow-up still goes out from your mailboxes under their daily caps and spacing. A day of two hundred leads on one mailbox capped at fifty is a four-day send; the campaign's recipients-versus-capacity estimate shows it. Add mailboxes rather than raising caps.
+潜在客户表单广告可能集中产生大量线索，而跟进仍由你的邮箱在每日上限与间隔限制下发送。若一个邮箱每天上限 50 封，一天收到 200 条线索，就需要四天发送；营销活动的“收件人数与发送容量”估算会显示这一点。应增加邮箱数量，而不是提高单个邮箱上限。
 
-A flow that creates a contact can be the reason a **Contact created** flow runs. That is allowed, and bounded: an event raised by an automation's own action carries how many hops led to it, and after five hops no further automation runs, so two flows cannot feed each other forever.
+创建联系人的流程可能进一步触发**创建联系人**流程。这种行为允许存在，但有边界：自动化操作产生的事件会携带已经经过的跳转次数，达到五跳后不再运行后续自动化，避免两个流程无限互相触发。
 
-**Fire event** is the inverse of the inbound webhook: your app subscribes over the websocket with an API key holding `REALTIME_SUBSCRIBE` and receives `{ name, payload }`, so you get events without hosting a public URL. See [Realtime events](/api/realtime/).
+**触发事件**与入站 Webhook 方向相反：你的应用使用具有 `REALTIME_SUBSCRIBE` 权限的 API 密钥，通过 WebSocket 订阅并接收 `{ name, payload }`，无需托管公开 URL 就能获得事件。参见[实时事件](/api/realtime/)。
 
-### The on-error branch
+### 出错分支 [#the-on-error-branch]
 
-Choose **Add an error path** from an action's **⋯** menu to handle failures (a rejected Slack message, a CRM timeout). The action then splits into a **Then** column and an **On error** column.
+在操作的 **⋯** 菜单中选择**添加错误路径**，处理 Slack 消息被拒、CRM 超时等失败。操作随后会分成**然后**和**发生错误时**两列。
 
-- **With** an on-error branch connected, a failure follows it and the run is **not** marked failed, like a try/catch. The normal path is skipped.
-- **Without** one, the failure is recorded in History and the run is marked errored, but the flow continues down the normal path best-effort, so one bad step never blocks the rest.
-- A dry run never fails an action, so **Test** always shows the normal path.
+- **已连接**错误分支时，失败后沿该分支运行，整次运行**不会**被标记为失败，类似 try/catch；正常路径会跳过。
+- **没有**错误分支时，历史记录会记录失败，整次运行标为出错，但仍尽力沿正常路径继续，因此一个步骤出错不会阻塞其余步骤。
+- 模拟运行不会让操作失败，因此**测试**始终显示正常路径。
 
-### Templating
+### 模板 [#templating]
 
-Text fields (messages, webhook URLs, deal names, task titles) accept trigger variables as `{{.key}}`, with clickable chips in the builder to insert them:
+文本字段（消息、Webhook URL、商机名称、任务标题）接受 `{{.key}}` 形式的触发器变量，编辑器提供可点击的标签插入：
 
 ```
 New reply from {{.contact_email}} on {{.campaign_name}}
 ```
 
-Unknown tokens render empty rather than failing.
+未知标记会渲染为空，而不是导致失败。
 
 </Fold>
 
 <Fold>
 
-## Testing and history
+## 测试与历史记录 [#testing-and-history]
 
-**Test** saves the canvas and dry-runs it against sample data: no messages sent, no records changed. It shows the exact path taken, on the canvas (each step it reached is marked, the rest fade back) and as a list with a preview of each action. AI steps are the exception, running for real so you see actual output, which spends one credit per AI step.
+**测试**会保存画布，并用示例数据模拟运行：不发送消息、不修改记录。它会在画布上标出实际经过的步骤，淡化其余步骤，并以列表形式预览每个操作，展示准确的执行路径。AI 步骤是例外，会实际运行以展示真实输出，每个 AI 步骤消耗一个积分。
 
-**History** shows recent real runs: success or error, start time, and per-step results (error text on failure, a short summary on success). It updates live as the automation fires.
+**历史记录**显示最近的真实运行：成功或出错、开始时间，以及各步骤结果（失败时显示错误文本，成功时显示简短摘要）。自动化触发时会实时更新。
 
-<Callout type="info" title="Best-effort by design">
-Runs are best-effort and bounded against loops, so one failing step won't block the rest. The run is still recorded as errored so you can see what went wrong.
+<Callout type="info" title="尽力执行的设计">
+流程采用尽力执行方式，并设有防循环边界，因此一个步骤失败不会阻塞其余步骤。整次运行仍会记录为出错，便于查看哪里发生了问题。
 </Callout>
 
 </Fold>
 
-## Related guides
+## 相关指南 [#related-guides]
 
 <Cards>
-  <Card title="Personalization & expressions" href="/guides/expressions/">
-    The condition and templating language shared by automations and campaigns.
+  <Card title="个性化与表达式" href="/guides/expressions/">
+    自动化流程与营销活动共用的条件和模板语言。
   </Card>
-  <Card title="Deliverability" href="/guides/deliverability/">
-    Warmup health and complaint signals that several triggers fire on.
+  <Card title="邮件送达能力" href="/guides/deliverability/">
+    多种触发器所依据的预热健康状态与投诉信号。
   </Card>
 </Cards>

@@ -1,298 +1,298 @@
 ---
-title: "Deliverability"
-description: "Bounce, complaint, and spam-placement health, with the thresholds Warmbly acts on."
+title: "邮件送达能力"
+description: "了解退信、投诉和垃圾邮件投递位置相关的健康状态，以及 Warmbly 采取措施时使用的阈值。"
 ---
 
-Deliverability is whether your mail reaches the inbox instead of bouncing, getting marked as spam, or landing in junk. Warmbly tracks it per mailbox and per campaign, and acts automatically when a mailbox looks risky.
+邮件送达能力衡量邮件能否进入收件箱，而不是退信、被标记为垃圾邮件，或落入垃圾邮件文件夹。Warmbly 按邮箱和营销活动跟踪这些情况，并在邮箱出现风险时自动采取行动。
 
-![The deliverability dashboard: score, bounce and complaint rates over time, and where warmup mail lands](/guides/deliverability.webp)
+![邮件送达能力控制台：评分、退信率和投诉率的时间趋势，以及预热邮件的投递位置](/guides/deliverability.webp)
 
-## Read the dashboard
+## 查看仪表盘 [#read-the-dashboard]
 
 <Steps>
 
 <Step>
 
-Pick a window with the `7d`, `30d` or `90d` range tabs.
+通过 `7d`、`30d` 或 `90d` 标签选择时间范围。
 
 </Step>
 
 <Step>
 
-Start with the headline rates: bounce at `5%` and complaints at `0.1%` are the highlighted danger lines.
+先看主要比率：退信率 `5%` 和投诉率 `0.1%` 是突出显示的危险阈值。
 
 </Step>
 
 <Step>
 
-If a rate looks off, switch the chart to that metric and find the day it spiked.
+如果某项异常，将图表切换到该指标，找到突然升高的日期。
 
 </Step>
 
 <Step>
 
-Read the at-risk lists to see which mailboxes and campaigns Warmbly is already acting on.
+查看风险列表，了解 Warmbly 已对哪些邮箱和营销活动采取措施。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Each mailbox sits in a health band (Healthy, Watch, Throttled, Quarantine or Blocked) that controls how Warmbly treats it.
-- Spam placement never goes past Throttled. It slows the mailbox down and lifts on its own.
-- A complaint rate of `0.10%` or a bounce rate of `5%` quarantines a mailbox: out of the shared paid warmup pool for `7 days`, with cold sending paused.
-- Warmbly suppresses a recipient automatically on a bounce, a spam complaint, or an unsubscribe, and no campaign emails them again.
-- A domain that stays Failing on SPF or DMARC past the grace period (`72 hours` by default) stops cold campaign and warmup sending. Your own replies always go out.
+- 每个邮箱都有健康等级：健康、观察、限流、隔离或封禁，决定 Warmbly 如何处理它。
+- 仅因垃圾邮件占比升高，等级最多到限流。它会降低邮箱速度，并在恢复后自动解除。
+- 投诉率达到 `0.10%` 或退信率达到 `5%`，会使邮箱隔离：移出共享付费预热池 `7 days`，并暂停冷邮件发送。
+- 出现退信、垃圾邮件投诉或退订时，Warmbly 会自动将收件人加入禁止发送名单，之后任何营销活动都不再向其发信。
+- 域名的 SPF 或 DMARC 在宽限期后仍失败，默认宽限期为 `72 hours`，会停止冷邮件营销活动和预热发送。你自己的回复始终可以发出。
 
 <Fold>
 
-## What deliverability covers
+## 送达能力功能的覆盖范围 [#what-deliverability-covers]
 
-Browsing filters, searches and view choices are [remembered in your browser tab](/guides/browsing/) across refreshes and navigation, separately for each user and workspace.
+浏览时使用的筛选、搜索和视图选项会[保存在浏览器标签页中](/guides/browsing/)，刷新页面或切换页面后仍然保留，并按用户和工作区分别保存。
 
-Deliverability is whether your mail reaches the inbox instead of bouncing, getting marked as spam, or landing in junk. Warmbly tracks it per mailbox and per campaign, and acts automatically when a mailbox looks risky.
+邮件送达能力衡量邮件能否进入收件箱，而不是退信、被标记为垃圾邮件，或落入垃圾邮件文件夹。Warmbly 按邮箱和营销活动跟踪这些情况，并在邮箱出现风险时自动采取行动。
 
-These defaults are deliberately stricter than the point where Google or Microsoft start penalizing senders, so action happens before provider enforcement hits your reputation.
+这些默认阈值刻意严于 Google 或 Microsoft 开始处罚发件人的水平，以便在服务商执法影响信誉之前先采取措施。
 
 </Fold>
 
 <Fold>
 
-## The dashboard
+## 仪表盘 [#the-dashboard]
 
-Scope everything to `7d`, `30d`, or `90d` with the range tabs. It updates live, so no refreshing.
+通过范围标签将所有数据限定为 `7d`、`30d` 或 `90d`。页面实时更新，无需刷新。
 
-| Section | What it shows |
+| 区域 | 显示内容 |
 |---------|---------------|
-| Headline rates | Deliverability score, bounce rate, complaint rate, spam placement, suppressed count |
-| Over time | One metric per day: bounces, complaints, opens, replies, or sent. Use it to find the day something spiked |
-| Window totals | Raw counts behind the rates |
-| Seed inbox placement | Inbox vs spam share across your [placement tests](/guides/placement-tests/) in the window, with the number of copies behind it |
-| Warmup inbox placement | Where warmup mail landed each day (inbox, Gmail tabs, spam), the inbox rate over time, the split per recipient provider and each mail host inside it, and every mailbox ranked by its seven-day inbox rate |
-| Seed test placement by provider | Where placement test copies landed per provider family (Gmail, Google Workspace, Outlook.com, Microsoft 365, Yahoo Mail and the rest): inbox, Promotions, other Gmail tabs, spam, and copies that never arrived |
-| At risk | Mailboxes and campaigns with bounce or complaint activity, worst first |
+| 主要指标 | 送达能力评分、退信率、投诉率、垃圾邮件占比、禁止发送数量 |
+| 时间趋势 | 按日显示一项指标：退信、投诉、打开、回复或发送。用于找出突增日期 |
+| 范围内总量 | 各比率背后的原始计数 |
+| 种子收件箱投递位置 | 所选范围内[投递位置测试](/guides/placement-tests/)的收件箱与垃圾邮件占比，以及对应副本数量 |
+| 预热收件箱投递位置 | 每日预热邮件落点：收件箱、Gmail 标签页和垃圾邮件；收件箱到达率趋势；按收件服务商及其内部邮件主机细分；以及按七天收件箱到达率排列的所有邮箱 |
+| 按服务商的种子测试投递位置 | 各服务商类别的测试副本落点，包括 Gmail、Google Workspace、Outlook.com、Microsoft 365、Yahoo Mail 等：收件箱、推广、其他 Gmail 标签页、垃圾邮件和始终未到达 |
+| 存在风险 | 出现退信或投诉的邮箱和营销活动，最严重的排在前面 |
 
-The **score** is a `0-100` composite starting at `100`: bounce rate subtracts up to `40` points (maxed at `10%`), complaint rate up to `30` (maxed at `0.30%`), spam placement up to `40` (maxed at `40%`). Bounce rate is highlighted at `5%`, complaint rate at `0.1%`.
+**评分**是 `0-100` 的综合分数，从 `100` 开始：退信率最多扣 `40` 分，在 `10%` 时扣满；投诉率最多扣 `30` 分，在 `0.30%` 时扣满；垃圾邮件占比最多扣 `40` 分，在 `40%` 时扣满。退信率达到 `5%`、投诉率达到 `0.1%` 时突出显示。
 
-Use **Customize** to pick which sections show. Your choices and time window persist per browser.
+使用**自定义**选择显示哪些区域。选择和时间范围会按浏览器保存。
 
-<Callout type="info" title="Placement needs a sample">
-Seed placement figures only appear once a placement test has results in the window, and a small sample is a hint rather than a verdict. Warmbly waits for a meaningful sample before acting.
+<Callout type="info" title="投递位置判断需要足够样本">
+只有所选范围内的投递位置测试已有结果时，才显示种子投递位置数据。小样本只能提供线索，不能直接下结论。Warmbly 会等到样本具有参考意义后再采取行动。
 </Callout>
 
-**Inspect seed placement by provider before scaling a campaign.** An aggregate can hide differences between Gmail and Outlook.com. Those differences warrant investigation, but do not establish a cause. Historical fractional rates include copies not observed by the timeout in their denominator; a timeout does not prove refusal, deferral, or non-arrival. Run a test from **Placement tests**, or let a campaign's monitor run one on a schedule; see [inbox placement tests](/guides/placement-tests/) for how copies are sent, found and classified, and how to read one test against several.
+**扩大营销活动规模前，请按服务商检查种子投递位置。** 汇总结果可能掩盖 Gmail 与 Outlook.com 的差异。差异值得调查，但本身不能证明原因。历史比例指标的分母包含超时前未观察到的副本；超时并不能证明邮件被拒收、延迟或没有到达。可以从**投递位置测试**运行一次测试，或让活动监控器定期测试。有关副本的发送、查找和分类方式，以及如何结合多次测试解读单次结果，参见[收件箱投递位置测试](/guides/placement-tests/)。
 
-**Warmup placement is a controlled observation.** Seed tests and partner mailboxes measure those test recipients, not real-customer inbox probability. Connector acceptance records a submission, not receipt or inbox placement. Click a mailbox in **Warmup inbox placement** to inspect its history.
+**预热投递位置是受控环境下的观察。** 种子测试和合作邮箱衡量的是这些测试收件人的情况，不能等同于真实客户收件箱的到达概率。连接器接受邮件仅记录了一次提交，不代表收件方已收到，更不代表进入收件箱。点击**预热收件箱投递位置**中的邮箱，可查看其历史。
 
-### Observation scope and missingness
+### 观测范围与缺失数据 [#observation-scope-and-missingness]
 
-New receipts preserve the first recorded folder before later actions. Inbox and spam require explicit folder or spam evidence. Empty and unclassified folders remain **unknown**; archive and custom folders are shown separately and are not counted as inbox. A copy **not observed by timeout** can be delayed or unreported; it is not proof of a bounce. A late seed observation is recorded separately without rewriting the timeout verdict.
+新回执会保留后续操作之前首次记录到的文件夹。判定为收件箱或垃圾邮件，必须有明确的文件夹或垃圾邮件证据。空文件夹信息和未分类文件夹保持**未知**；归档和自定义文件夹单独展示，不算收件箱。**超时前未观察到**的副本可能是延迟或未上报，并不能证明退信。较晚到达的种子观察会单独记录，不改写原超时判定。
 
-Warmup's non-spam share includes inbox and category tabs among classified receipts. Seed tests retain the historical `delivered` field and fractional rates, whose denominator includes timeouts. Additive `observed_receipts`, `classified_receipts`, `unresolved`, and metric metadata expose the different evidence bases. Missing rates are null, not zero. Historical classification counts remain intact and are labelled uninstrumented; upgrades do not manufacture first folders or authentication passes for earlier messages.
+预热的非垃圾邮件占比，在已分类回执中计入收件箱和分类标签页。种子测试保留历史 `delivered` 字段和比例指标，其分母包含超时项。新增的 `observed_receipts`、`classified_receipts`、`unresolved` 及指标元数据，展示不同的证据基础。缺失的比率为 null，而非零。历史分类计数保持完整，并标记为未采集此类观测；升级不会为过去的邮件凭空补造首个文件夹或身份验证通过结果。
 
-Metric metadata specifies the population, numerator, denominator, missingness, unit, source, and classification policy. Warmup reports include their date range; the headline rate uses a seven-day window. The optional 95% Wilson interval assumes independent observations. Repeated mailboxes, seeds, routes, and timing violate that assumption, so this interval is not an efficacy claim or calibrated real-recipient inbox probability.
+指标元数据说明总体、分子、分母、缺失情况、单位、来源和分类策略。预热报表包含日期范围，主要比率使用七天窗口。可选的 95% Wilson 区间假定观察相互独立；重复邮箱、种子、路由和时间安排会违反这一假设，因此该区间不能证明效果，也不是经过校准的真实收件人收件箱到达概率。
 
-Google, Microsoft, and Yahoo family totals are not interchangeable with their consumer and business services. Inspect the host-level breakdown when Gmail versus Google Workspace or Outlook.com versus Microsoft 365 matters. Hosts that cannot be distinguished remain unknown. Pool placement, organic recipient activity, opens, bounces, and complaints stay separate. A **rescue request** is an action attempt, not confirmed movement or proof that reputation recovered.
+Google、Microsoft 和 Yahoo 家族汇总不能与其个人版、企业版服务互换使用。需要区分 Gmail 与 Google Workspace，或 Outlook.com 与 Microsoft 365 时，请查看主机级明细。无法区分的主机保留为未知。预热池投递位置、自然收件人活动、打开、退信和投诉分别保留。**垃圾邮件救回请求**只是一次操作尝试，不代表已确认移动，更不证明信誉恢复。
 
 </Fold>
 
 <Fold>
 
-## Health bands
+## 健康等级 [#health-bands]
 
-Each mailbox sits in a band, shown as a colored chip. The band controls how Warmbly treats it. Watch and throttled are amber warnings on Emails, not red errors, unless a separate account problem is present. A warming mailbox in either band still counts under **Warming** in the summary (shown as slowed), not under **Needs attention**, because it keeps warming and the band lifts on its own; the same goes for a warming mailbox whose only warning is a low inbox rate. They do not apply a flat health-score deduction on top of the inbox-rate cap. Mailbox health is a score out of 100, not an inbox percentage.
+每个邮箱都处于一个健康等级，以彩色标签显示。等级决定 Warmbly 的处理方式。“观察”和“限流”在邮箱页面显示为琥珀色警告，而非红色错误，除非还存在独立账户问题。处于这两个等级、且正在预热的邮箱，在概览中仍计入**预热中**，标注已减速，而不计入**需要处理**，因为预热仍在继续，等级也会自行解除；仅因收件箱到达率低而警告的预热邮箱同样如此。这些状态不会在收件箱到达率造成的评分上限之外，再额外扣固定分数。邮箱健康度是满分 100 的评分，不是收件箱百分比。
 
-| Band | Spam placement | Complaint rate | Bounce rate | Other triggers |
+| 等级 | 垃圾邮件占比 | 投诉率 | 退信率 | 其他触发条件 |
 | --- | --- | --- | --- | --- |
-| Watch | `>= 10%` | `>= 0.03%` | n/a | n/a |
-| Throttled | `>= 20%` | n/a | n/a | n/a |
-| Quarantine | n/a | `>= 0.10%` | `>= 5%` | Repeated tampering with received warmup mail |
-| Blocked | n/a | `>= 0.30%` | `>= 10%` | Clear abuse signals (four or more deletions or spam moves of received warmup mail in 7 days) |
+| 观察 | `>= 10%` | `>= 0.03%` | 不适用 | 不适用 |
+| 限流 | `>= 20%` | 不适用 | 不适用 | 不适用 |
+| 隔离 | 不适用 | `>= 0.10%` | `>= 5%` | 反复篡改收到的预热邮件 |
+| 封禁 | 不适用 | `>= 0.30%` | `>= 10%` | 明确滥用信号，例如七天内至少四次删除收到的预热邮件或将其移入垃圾邮件 |
 
-A mailbox enters a band by crossing any single threshold. What each band does:
+任何单项达到阈值，邮箱都会进入对应等级。各等级的处理如下：
 
-- **Healthy**: sending normally, nothing to do.
-- **Watch**: warmup keeps its volume and pace while the pool replies to and rescues more of its mail ([recovery engagement](/guides/warmup/#recovery-engagement)), because warming is how placement recovers. Cold volume is eased to `70%`, since cold mail is what costs reputation. Lifts once spam placement is back below `7.5%`.
-- **Throttled**: warmup keeps running at half volume with double spacing, because warming is how placement recovers, and cold volume is halved. Steps down to watch once spam placement is back below `15%`, then returns to healthy below `7.5%`. Separate [early-signal ramp limits](/guides/warmup/#holding-the-ramp-on-an-early-signal) still apply to fresh spam landings.
-- **Quarantine**: out of the shared paid warmup pool for `7 days`, as neither sender nor recipient. Cold sending is paused.
-- **Blocked**: out of the shared pool for `30 days`.
+- **健康**：正常发送，无需处理。
+- **观察**：预热保持原发送量和节奏，同时池中会对更多邮件进行回复和救回，参见[恢复互动](/guides/warmup/#recovery-engagement)，因为预热正是恢复投递位置的途径。冷邮件量降低至 `70%`，因为冷邮件会消耗信誉。垃圾邮件占比回到 `7.5%` 以下后解除。
+- **限流**：预热继续运行，发送量减半、间隔加倍，冷邮件量也减半。垃圾邮件占比降到 `15%` 以下时退回观察，降到 `7.5%` 以下时恢复健康。对于新近落入垃圾邮件的情况，独立的[早期信号递增限制](/guides/warmup/#holding-the-ramp-on-an-early-signal)仍然适用。
+- **隔离**：移出共享付费预热池 `7 days`，既不作为发件人，也不作为收件人，冷邮件发送暂停。
+- **封禁**：移出共享池 `30 days`。
 
-Spam placement never goes past throttled. It is a reading of reputation, and warming is how a mailbox recovers, so it slows the mailbox down and lifts on its own; there is nothing to appeal.
+仅由垃圾邮件占比引起的等级最多到限流。它反映信誉，而预热是邮箱恢复的方式，因此会降速并在恢复后自行解除，无需申诉。
 
-Placement decisions and the headline inbox rate use the same seven UTC dates: today and the preceding six days. This date boundary does not shorten the rolling complaint or tampering windows.
+投递位置决策与主要收件箱到达率使用相同的七个 UTC 日期：今天及此前六天。此日期边界不会缩短投诉或篡改行为的滚动窗口。
 
-**Sample floors** stop one bad event flipping a new mailbox: spam placement needs `20+` verified warmup deliveries in `7 days`, complaints need `100+` delivered emails in `30 days`.
+**最低样本量**避免一次坏事件让新邮箱骤然变级：垃圾邮件占比需要 `20+` 次已验证预热投递，范围为 `7 days`；投诉需要 `100+` 封已投递邮件，范围为 `30 days`。
 
-Spam placement is judged at Google, Microsoft and Yahoo only. Other mail hosts run their own filters, so their spam folders are shown and never held against a mailbox; see [how spam placement is judged](/guides/warmup/#how-spam-placement-is-judged).
+垃圾邮件占比只对 Google、Microsoft 和 Yahoo 作判断。其他邮件主机使用自己的过滤器，因此会展示其垃圾文件夹情况，但绝不据此处罚邮箱；参见[如何判断垃圾邮件占比](/guides/warmup/#how-spam-placement-is-judged)。
 
-<Callout type="info" title="Different metrics, different failure modes">
-Warmbly never acts on the composite score alone. Complaint rate, spam placement, and bounce rate are tracked separately because they fail for different reasons, so any one can move a mailbox even while the score still looks fine.
+<Callout type="info" title="不同指标对应不同的失败类型">
+Warmbly 绝不只凭综合评分采取行动。投诉率、垃圾邮件占比和退信率分别跟踪，因为成因不同；即使综合评分仍然不错，任一项也可以使邮箱进入其他等级。
 </Callout>
 
-### Re-entry after a block
+### 封禁后重新加入 [#re-entry-after-a-block]
 
-Time elapsing is not enough. A blocked mailbox must requalify: SPF, DKIM, and DMARC still healthy; no recent complaints or hard-bounce spikes; no recent tampering with received warmup mail; spam placement back under `10%` on a fresh probation sample. Re-entry then starts low, around `5-10/day` of warmup.
+仅仅等时间过去还不够。被封禁邮箱必须重新满足条件：SPF、DKIM 和 DMARC 仍健康；近期没有投诉或硬退信突增；没有近期篡改收到的预热邮件；在新的观察期样本中，垃圾邮件占比回到 `10%` 以下。重新进入后从较低量开始，预热约为 `5-10/day`。
 
 </Fold>
 
 <Fold>
 
-## Domain authentication
+## 域名身份验证 [#domain-authentication]
 
-SPF, DKIM, and DMARC requirements depend on the provider and sending context. Warmbly checks DNS records about once a day and on demand from the mailbox. This is record discovery, not actual-route alignment.
+SPF、DKIM 和 DMARC 要求取决于服务商和发送场景。Warmbly 大约每天检查一次 DNS 记录，也可从邮箱中按需检查。这是记录发现，不是对实际投递路由的身份对齐验证。
 
-- **Passing**: SPF and DMARC both present, the two records readable authoritatively from DNS.
-- **Failing**: SPF or DMARC missing.
-- **Unknown**: not checked yet, or the lookup could not complete. A DNS hiccup never looks like a misconfiguration.
+- **通过**：SPF 和 DMARC 均存在，并可通过权威 DNS 读取两条记录。
+- **失败**：缺少 SPF 或 DMARC。
+- **未知**：尚未检查，或查询未能完成。DNS 短暂故障不会被当作配置错误。
 
-A record is only reported missing once the domain's own nameservers agree. When the instance's resolver does not return SPF or DMARC, the check asks the nameservers the domain delegates to directly, and their answer stands. That covers a resolver still caching a "no such record" from before you published it, one that drops `TXT` answers, and one that fails: none of them can mark a correctly configured domain as Failing. Lookups use the domain's fully qualified name, so a failure is never retried under the host's search domains and turned into a "not found".
+只有域名自身的权威名称服务器确认不存在时，才会报告记录缺失。如果实例的解析器未返回 SPF 或 DMARC，检查会直接查询域名委派的名称服务器，并以其答案为准。这覆盖了解析器仍缓存发布前“无此记录”的结果、丢弃 `TXT` 响应或自身失败的情况；这些都不能把配置正确的域名标记为失败。查询使用域名的完全限定名称，因此失败时不会追加主机搜索域重试，再被误判为“未找到”。
 
-DKIM is reported separately as **Found** or **Not verified**, never as missing. A DKIM key lives at a selector its owner chose, and DNS has no way to list the selectors under a domain, so nothing answering proves nothing. The check does better than guessing blindly: it reads the domain's own SPF and MX records, which name the provider handling its mail, and probes the selectors that provider publishes, on top of a default set covering the common ones. Providers that mint a random per-account selector, Amazon SES among them, stay unverifiable by design.
+DKIM 单独显示为**已找到**或**未验证**，绝不显示“缺失”。DKIM 密钥位于所有者选择的 selector 下，DNS 没有办法列出域名下全部 selector，因此某处没有响应不能证明没有配置。检查并非盲猜：它会读取域名自身的 SPF 和 MX 记录，从中识别邮件服务商，除常见默认 selector 外，还会探测该服务商公布的 selector。Amazon SES 等为每个账户随机生成 selector 的服务商，按设计可能无法通过这种方式验证。
 
-So DNS discovery can be Passing with DKIM unverified. Missing selector discovery does not prevent sending. Confirm signing in your provider's console and inspect the receiving provider's own trusted message-authentication diagnostics. A copied header or arbitrary `Authentication-Results` value is not proof of authentication.
+因此，DNS 发现可以显示通过，同时 DKIM 未验证。未发现 selector 不会阻止发送。请在服务商控制台确认签名，并检查接收服务商自身可信的邮件身份验证诊断。复制来的邮件头或任意 `Authentication-Results` 值，不能证明身份验证通过。
 
-The readiness explanation lists DNS discovery, receiver authentication, delivery TLS, and eligible bulk-mail one-click unsubscribe separately. Retrieved message headers provide bounded diagnostic claims for visible From, envelope domain, and signing domain/selector when available, with source and observation time. They are unverified claims: actual SPF/DKIM/DMARC verdicts, alignment, and TLS remain **unknown** without a trusted receiving-boundary evaluation. Unknown message evidence does not add a new sending prerequisite for existing mailboxes.
+就绪状态说明会分别列出 DNS 发现、接收方身份验证、投递 TLS，以及符合条件的批量邮件一键退订。获取到的邮件头只对可见 From、信封域名、签名域名和 selector（若存在）提供有限诊断信息，并注明来源和观察时间。这些仍是未经验证的声明：没有可信的接收边界评估，实际 SPF/DKIM/DMARC 判定、对齐和 TLS 都保持**未知**。未知的邮件证据不会为现有邮箱增加新的发送前提。
 
-A DMARC record on the parent domain covers its subdomains, so a dedicated sending subdomain like `mail.yourdomain.com` passes on the record published at `yourdomain.com`. Where the parent sets `sp=`, that is the policy shown, because `sp=` is what the parent publishes for its subdomains. SPF works the other way: it never inherits, so every sending subdomain needs its own SPF record.
+父域名上的 DMARC 记录覆盖其子域名，因此 `mail.yourdomain.com` 这样的专用发件子域名，可以通过发布在 `yourdomain.com` 的记录通过检查。如果父域名设置了 `sp=`，界面显示该策略，因为 `sp=` 正是父域名针对子域名发布的策略。SPF 则相反，不会继承，因此每个发件子域名都需要自己的 SPF 记录。
 
-Only the two records that DNS can answer for decide the state. A DMARC policy of `p=none` is Passing, because Google's bulk sender rules ask for a DMARC record at `p=none` or stronger, and stopping mail from a compliant sender would help nobody.
+只有 DNS 能够确定的这两类记录决定状态。DMARC 策略为 `p=none` 也算通过，因为 Google 批量发件人规则要求 `p=none` 或更强的 DMARC 记录，阻止合规发件人并没有益处。
 
-### What a Failing domain stops
+### 域名验证失败时会停止哪些操作 [#what-a-failing-domain-stops]
 
-A domain that stays Failing past the grace period stops **cold campaign sending** and **warmup sending** from every mailbox on it. The mailbox stays connected, keeps syncing, and keeps receiving warmup mail, so it holds its place in the pool and its inbound capacity. It just stops adding unauthenticated volume to a reputation everyone in the pool shares.
+域名超过宽限期仍失败，会停止该域名下所有邮箱的**冷邮件营销活动发送**和**预热发送**。邮箱继续保持连接、同步并接收预热邮件，因此保留池中的位置和入站容量。它只是停止向池内共同依赖的信誉增加未经验证的发送量。
 
-The grace period is set per instance and defaults to `72 hours`, measured from the moment the check first saw the failure, not from when you connected the mailbox. Nothing stops the day a record breaks. You are notified when the clock starts, the mailbox drawer shows the state, and the Advisor card counts down to the date sending stops.
+宽限期按实例设置，默认为 `72 hours`，从检查首次发现失败时开始计算，不是从连接邮箱时算起。记录刚出现问题的当天不会立刻停止发送。计时开始时会通知你，邮箱抽屉显示状态，顾问卡片则倒计时到停止发送日期。
 
-<Callout type="info" title="Your own replies are never blocked">
-The gate covers cold campaigns and warmup only. Manual sends and replies from the unibox always go out, whatever the domain state, because stopping a human mid-conversation is worse than the reputation risk of one message. The mailbox picker still ranks an unauthenticated mailbox last and labels it.
+<Callout type="info" title="你手动发送的回复不会被阻止">
+这项限制只覆盖冷邮件营销活动和预热。无论域名状态如何，统一收件箱中的手动发送和回复始终可以发出，因为中断人工对话比一封邮件带来的信誉风险更糟。邮箱选择器仍会将未经验证的邮箱排在最后并加以标记。
 </Callout>
 
-### Getting sending back
+### 恢复发送 [#getting-sending-back]
 
-Add the missing records at your registrar, then open the mailbox and press **Check** (or **Re-check**) under Domain authentication. For anyone who can manage mailboxes, that records the new verdict immediately and sending resumes on the next scheduled send. A teammate without that permission sees the live result, and the banner tells them when the records already check out. Waiting for the background check works too, it is just slower: it reaches each domain about once a day.
+在域名注册商处补上缺失记录，然后打开邮箱，在域名身份验证下点击**检查**或**重新检查**。具有管理邮箱权限的人执行后，会立即保存新判定，并在下一次计划发送时恢复。没有该权限的队友也能看到实时结果；记录已经正确时，横幅会告诉他们。等待后台检查也可以，只是更慢，大约每天检查每个域名一次。
 
-Re-check is also worth pressing after reconnecting a mailbox that was disconnected while Failing, since its stored state is refreshed from scratch when it comes back.
+如果邮箱在失败状态下曾断开连接，重新连接后也建议点击重新检查，因为恢复连接时会重新刷新其存储状态。
 
-If a campaign has already been paused because every one of its mailboxes was gated, the activity log says so, and you restart the campaign yourself once the domain reads Passing.
-
-</Fold>
-
-<Fold>
-
-## Built-in protections
-
-**An opt-out in every email.** Each campaign email ends with a way to stop hearing from you: by default a plain "just reply and let me know" sentence, whose replies are detected and honoured automatically, or an unsubscribe link. Eligible marketing/bulk messages can attach one-click unsubscribe headers. RFC 8058 requires an HTTPS URI, `List-Unsubscribe-Post: List-Unsubscribe=One-Click`, and a valid DKIM signature covering both headers. The endpoint must process the POST without cookies, authorization context, or a redirect. Header presence and claimed signing coverage alone do not establish compliance; the delivered signature and endpoint must be checked. This requirement does not turn an ordinary personal reply into bulk marketing mail. See [unsubscribe and suppression](/guides/unsubscribe/).
-
-**Pre-send verification** checks every address before a campaign sends to it and skips the undeliverable ones, keeping bad addresses from becoming the hard bounces that drive the `5%` and `10%` thresholds above. There is nothing to run: new contacts are checked in the background within a minute of being added, each contact carries its verdict (a small mark next to the email), and Settings > Sending shows the whole workspace at a glance. See [address verification](#address-verification) below for how verdicts are produced and what to do when one is wrong.
-
-**Suppression** is the safety net: a suppressed recipient is never emailed again by any campaign. Warmbly suppresses automatically on a bounce, a spam complaint, or an unsubscribe, because once someone has bounced or complained the safest response is to stop, not to keep collecting negative signals. When the operator has configured TypeSafe (`TYPESAFE_API_KEY`), a bounce whose reason does not name the recipient is classified first, and the bounce reason text is sent to TypeSafe for this. A reputation or policy block, a full mailbox, or a temporary failure at 80% confidence or more still records the bounce, and still counts toward the campaign breaker and mailbox health, but does not suppress the address and does not drop the lead from its campaign, because the address is not what failed. The list, with anything you add by hand (addresses or whole domains), is under **Contacts > Suppression list**.
-
-The list is held per workspace, and the check runs against the sending campaign's workspace before every send. If a campaign somehow has no workspace, that check cannot be applied, so the campaign is paused with the reason in its activity feed instead of sending unchecked.
-
-Bounces are detected from the delivery-status report the recipient's server sends back. That includes the internationalized form (RFC 6533, `message/global-delivery-status`) that servers such as Postfix write for mail with non-ASCII addresses or headers. Only permanent failures (`5.x.x`, such as a nonexistent address) record a bounce and suppress; temporary ones (`4.x.x`, such as a full mailbox or greylisting) never do. This works the same for Gmail and Microsoft Graph mailboxes, where the send reports success and the bounce arrives later. Some failure notices carry no status code at all, such as Gmail's notice when a Google Group refuses a post. Those are read from the failed-recipient header the notice carries, and count as permanent unless the notice says delivery is still being retried.
-
-**Spam complaints** arrive the same way. When a recipient presses "mark as spam", their provider mails an abuse report back to the sending mailbox. Warmbly reads those reports, resolves them to the campaign send they name, and records a complaint: the recipient is suppressed and the number reaches your complaint rate. Providers that redact who complained still identify the message, so the right lead is suppressed anyway. Only genuine abuse reports count. A "not spam" report, where someone rescued your email from junk, is not recorded as a complaint. Who gets suppressed is always taken from the send the report names, never from an address written in the report, so a forged report cannot reach a contact that send never went to. This works for IMAP, Gmail and Microsoft Graph mailboxes. Graph syncs only a report's rendered notice, so for a message that looks like a report, the worker reads its raw message from Graph to find the parts that name the send. Temporary Graph failures leave the message pending for a later sync rather than losing the complaint. A missing or oversized raw message does not prevent other mail from syncing. The raw fetch is limited to 1 MiB and 15 seconds; parsing is limited to 16 nesting levels, 64 parts and 1 MiB of decoded report content. Malformed or over-limit reports are not counted as complaints.
-
-**Domain authentication refusals** are separated from ordinary failures. When a receiving server refuses a message because your sending domain failed its checks (Microsoft's `5.7.515`, Gmail's `5.7.26`), that is not a bad recipient and not an outage: every send from that domain fails the same way until its DNS is fixed. Warmbly says so in the campaign's activity feed rather than blaming the address, does not suppress the recipient, and brings that domain's authentication check forward so the [domain authentication](/guides/deliverability/#domain-authentication) state reflects it.
+如果营销活动因为所有发件邮箱都受限而已经暂停，活动日志会说明原因；域名显示通过后，需要你手动重新启动营销活动。
 
 </Fold>
 
 <Fold>
 
-## Address verification
+## 内置保护机制 [#built-in-protections]
 
-Every address gets one of four verdicts. **Deliverable** and **unverified** are always sent to. **Undeliverable** is never sent to. **Risky** (a catch-all domain, a shared inbox such as `info@`) is sent to only when the campaign's **send to risky addresses** setting allows it.
+**每封邮件都提供退出方式。** 每封营销活动邮件末尾都有停止联系的方法：默认是一句“直接回复告诉我即可”的普通文字，相关回复会自动识别并执行；也可以使用退订链接。符合条件的营销/批量邮件可以附加一键退订邮件头。RFC 8058 要求 HTTPS URI、`List-Unsubscribe-Post: List-Unsubscribe=One-Click`，以及覆盖这两个邮件头的有效 DKIM 签名。端点必须在不依赖 Cookie、授权上下文或重定向的情况下处理 POST。仅有邮件头和声称的签名覆盖范围，并不能证明合规，必须检查实际投递的签名和端点。这项要求不会把普通个人回复变成批量营销邮件。参见[退订与禁止发送](/guides/unsubscribe/)。
 
-Verdicts come from the following sources, and the source is shown on the contact:
+**发送前验证**会在营销活动发信前检查每个地址，跳过不可投递地址，避免坏地址形成硬退信并触发上面的 `5%` 和 `10%` 阈值。无需手动运行：新联系人添加后一分钟内会在后台检查，每位联系人都显示判定，在邮箱地址旁以小标记呈现；设置 > 发送可总览整个工作区。有关判定如何产生、错误时如何处理，参见下文[地址验证](#address-verification)。
 
-- **The built-in check**, included on every plan: syntax, the domain's mail server, known disposable domains, and a mailbox probe against the recipient's server. It only records an address as undeliverable when that server rejects the address itself; a server that rejects the check for its own reasons (a policy block, a rate limit, a greeting it does not accept) leaves the address unverified. Microsoft 365 and Yahoo answer every probe the same way, so their addresses stay unverified rather than being called deliverable. The check also watches itself: when it starts rejecting an unusual share of addresses, its rejections are filed as unverified for an hour instead of being trusted, because a real list is never mostly dead. Self-hosted instances should set `EMAIL_VERIFY_HELO_HOST`, described in the [configuration reference](/development/configuration/#pre-send-verification).
-- **MillionVerifier**: connect it once under Integrations with your own API key, and every check from then on uses your MillionVerifier credits (one per address) instead of the built-in probe. Pay-as-you-go credits and a subscription's renewing allowance both count. Its verdicts cover the catch-all and Microsoft cases the probe cannot. When the balance runs out or the key stops working, the connection is marked and the built-in check takes over until it is fixed. Nothing else changes.
-- **CleanMyList**: connect a workspace API key under Integrations to verify new contacts and re-check existing ones through your CleanMyList account. Checks use plan allowance first, then credits. The built-in check takes over when verification fails. The balance stays in CleanMyList because its API does not expose it. See [setup instructions](/guides/integrations/#connect-cleanmylist).
+**禁止发送**是最后一道保护：被禁止发送的收件人绝不会再收到任何营销活动邮件。Warmbly 在退信、垃圾邮件投诉或退订时自动禁止发送，因为一旦对方退信或投诉，最稳妥的方式是停止，而不是继续积累负面信号。运维人员配置 TypeSafe（`TYPESAFE_API_KEY`）后，退信原因未明确指向收件地址时，会先分类，并将退信原因文字发送到 TypeSafe。若以至少 80% 置信度判定为信誉或政策封锁、邮箱已满或临时故障，仍会记录退信，仍计入活动熔断和邮箱健康度，但不禁止该地址，也不将潜在客户移出活动，因为故障并非地址本身。名单与手动添加的地址或整个域名都位于**联系人 > 禁止发送名单**。
 
-A workspace uses one of these at a time. Connecting a second service is refused until the first is disconnected, so a check never moves to a different bill on its own.
-- **Results you already have.** A list verified with another service (ZeroBounce, MillionVerifier, CleanMyList, NeverBounce, Bouncer, Kickbox, Emailable, DeBounce, Clearout, EmailListVerify, or a Warmbly export) can bring its status column along. The import recognises the column from its header or its values, maps it to **Verification status**, and reads each service's own words (`catch-all`, `do_not_mail`, `ok_for_all`, and so on). Those verdicts are kept as they are; the built-in check leaves them alone. The same field is accepted when [creating contacts through the API](/api/reference/contacts/#create-contacts).
+名单按工作区维护，每次发送前，都针对发送活动所属工作区检查。如果营销活动因某种原因没有工作区，就无法应用检查，因此会暂停活动并在动态中说明，不会未经检查就发送。
 
-### What real mail teaches the check
+退信通过收件服务器返回的投递状态报告检测，包括国际化形式 RFC 6533 的 `message/global-delivery-status`；Postfix 等服务器会为包含非 ASCII 地址或邮件头的邮件使用这种格式。只有永久失败，例如 `5.x.x`、地址不存在，才记录退信并禁止发送；临时失败，例如 `4.x.x`、邮箱已满或灰名单，绝不会这样处理。Gmail 和 Microsoft Graph 邮箱也遵循相同规则：发送时报告成功，退信稍后到达。有些失败通知完全没有状态码，例如 Google 群组拒绝发帖时 Gmail 的通知。系统会读取通知携带的失败收件人邮件头，默认视为永久失败，除非通知说明仍在重试投递。
 
-A check sees an address once. The platform sees what happens after every send, and that evidence outranks any check:
+**垃圾邮件投诉**以同样方式到达。收件人点击“标记为垃圾邮件”时，服务商会向发件邮箱发送滥用报告。Warmbly 读取报告，将其关联到指定的营销活动发送并记录投诉：收件人被禁止发送，投诉计入投诉率。即使服务商隐去了投诉者身份，仍会标识邮件，因此正确的潜在客户仍可被禁止发送。只有真实的滥用报告才计入。收件人将邮件从垃圾邮件中救回产生的“非垃圾邮件”报告，不算投诉。被禁止发送的对象始终取自报告指向的实际发送记录，绝不取自报告正文中的地址，因此伪造报告不能影响原邮件从未发送给的联系人。IMAP、Gmail 和 Microsoft Graph 邮箱均支持。Graph 只同步报告渲染后的通知，因此遇到疑似报告的邮件时，工作节点会从 Graph 读取原始邮件，查找标识发送记录的部分。临时 Graph 故障会让邮件保持待处理，留待之后同步，不会丢失投诉。原始邮件缺失或过大，不会阻止其他邮件同步。原始抓取限制为 1 MiB 和 15 秒；解析限制为 16 层嵌套、64 个部分，以及 1 MiB 解码后的报告内容。格式错误或超限报告不计为投诉。
 
-- **Proof the mailbox is live**: a reply (an automatic one too, since a machine answered from it), a click, an open by a person (mail-client prefetches do not count), and a delivery the recipient's server kept without bouncing for three days. A reply, a click, a human open, or two clean deliveries make an address deliverable whatever a probe said about it.
-- **Proof it is not**: a bounce whose text names the recipient (`5.1.1`, "user unknown"). A full mailbox, a policy block, or a reputation rejection says nothing about the address and is recorded as such.
-- **Nothing at all**: a contact who never opens or replies. Silence is not evidence; there is no input for it and nothing in the ledger can say "did not open". A lead that ignored one campaign is exactly as deliverable as it was.
-
-Every contact carries a **confidence** (0 to 100) next to its verdict, and the contact drawer's Deliverability card lists the reasons in plain words with the observations behind them. Newer evidence outranks older: a bounce after a reply makes the address undeliverable, a reply after a bounce makes it deliverable again, and old observations fade over months rather than switching off.
-
-A paid verifier's answer is newer evidence too. When MillionVerifier or CleanMyList says an address is deliverable or undeliverable more than 30 days after the last real mail to it, its answer stands, because mailboxes get closed and a fresh check about one outranks a stale sign of life. Inside those 30 days, real mail still wins. The built-in probe never outranks real mail.
-
-Verdicts age: an address is checked again after 90 days (30 for an inconclusive verdict), because mailboxes get created and closed, but one that real mail reached in the last six months is left alone. A verdict a teammate set by hand never expires and is never outvoted by evidence.
-
-### When verification is wrong
-
-Open a contact and press **Re-verify** on its Deliverability card, or select several and choose **Verify** in the selection bar: **Re-verify** queues a fresh check through the verifier the workspace uses, and **Mark deliverable** overrides the verdict for a list you know is good. Both are also available on a campaign's Leads tab.
-
-A re-verify runs ahead of every other check, whatever the contact's history: a recent verdict, recent mail, or a verdict a teammate set by hand. The current verdict stays in force until the new one lands, so campaigns keep routing on it meanwhile, and the card shows **Re-verifying with MillionVerifier** until the result appears on its own. If the connected verifier cannot be used at that moment (no credits left, a rejected key), the toast and the card say so and the built-in check runs instead.
-
-The Deliverability card always says who produced the verdict and when: **Verified with MillionVerifier**, **Checked by Warmbly's built-in check**, **Imported from ZeroBounce**, or **Marked by a teammate**. When real mail decided otherwise, it also says what the check itself answered.
-
-A campaign never quietly finishes because of verification. When every remaining lead has been refused, the campaign shows **needs verification** and pauses, with two buttons on it: **Re-verify leads** checks them again and resumes sending automatically as soon as any pass, and **Send anyway** marks them deliverable and resumes at once. The [launch check](/guides/campaigns/#adding-leads) likewise offers **Launch anyway** when a list is refused for its projected bounce rate, for a list verified elsewhere.
+**域名身份验证拒收**与普通失败分开处理。接收服务器因发件域名检查失败而拒收时，例如 Microsoft 的 `5.7.515`、Gmail 的 `5.7.26`，问题既不是坏收件地址，也不是服务中断：DNS 修复之前，该域名的所有发送都会以相同方式失败。Warmbly 会在活动动态中说明，不会归咎于地址，也不会禁止收件人，并提前安排该域名的身份验证检查，使[域名身份验证](/guides/deliverability/#domain-authentication)状态反映这一情况。
 
 </Fold>
 
 <Fold>
 
-## Workspace sending posture
+## 邮箱地址验证 [#address-verification]
 
-Individual protections each watch one thing: a rate limit watches one user, warmup health watches one mailbox, verification watches one address. A workspace that is slightly wrong on several of those at once sits under every individual threshold and is never noticed. The workspace posture is the view that sees all of them together.
+每个地址获得四种判定之一。**可投递**和**未验证**始终允许发送，**不可投递**绝不发送。**有风险**，例如全收域名或 `info@` 这样的共享邮箱，只有活动的**向有风险地址发送**设置允许时才发送。
 
-| Posture | What it means | What changes |
+判定来自以下来源，联系人上会显示来源：
+
+- **内置检查**，所有套餐均包含：检查语法、域名邮件服务器、已知一次性域名，并向收件服务器探测邮箱。只有服务器拒绝地址本身时，才记录为不可投递；如果服务器出于自身原因拒绝检查，例如政策封锁、频率限制或不接受问候信息，地址保持未验证。Microsoft 365 和 Yahoo 对所有探测给出相同响应，因此其地址保持未验证，不会直接判为可投递。检查还会监控自身：如果开始拒绝异常高比例的地址，会在一小时内将拒绝结果记为未验证，而非直接相信，因为真实名单不应大部分都失效。自托管实例应设置 `EMAIL_VERIFY_HELO_HOST`，详见[配置参考](/development/configuration/#pre-send-verification)。
+- **MillionVerifier**：在集成中用自己的 API 密钥连接一次，此后每次检查都使用 MillionVerifier 积分，每个地址一个，替代内置探测。按量购买的积分和订阅定期补充的额度均可使用。它能覆盖内置探测无法处理的全收域名和 Microsoft 情况。余额耗尽或密钥失效时，连接会被标记，在修复之前由内置检查接替。其他行为保持不变。
+- **CleanMyList**：在集成中连接工作区 API 密钥，通过自己的 CleanMyList 账户验证新联系人和复查已有联系人。先消耗套餐额度，再消耗积分。验证失败时由内置检查接替。余额只在 CleanMyList 显示，因为其 API 不提供余额。参见[设置说明](/guides/integrations/#connect-cleanmylist)。
+
+一个工作区同一时间只使用其中一种。现有服务断开之前，连接第二项服务会被拒绝，避免检查自行转到另一份账单。
+- **已有结果。** 通过其他服务验证的名单，可以连同状态列一起导入，支持 ZeroBounce、MillionVerifier、CleanMyList、NeverBounce、Bouncer、Kickbox、Emailable、DeBounce、Clearout、EmailListVerify 或 Warmbly 导出。导入根据列名或值识别该列，映射为**验证状态**，并理解各服务自己的状态词，例如 `catch-all`、`do_not_mail`、`ok_for_all` 等。这些判定原样保留，内置检查不会覆盖。[通过 API 创建联系人](/api/reference/contacts/#create-contacts)时也接受同一字段。
+
+### 真实邮件如何改进验证结果 [#what-real-mail-teaches-the-check]
+
+一次检查只观察地址一次，而平台会看到每次发送后的实际情况，这些证据优先于任何检查：
+
+- **邮箱仍可用的证据**：回复，包括自动回复，因为确实有系统从该邮箱回应；点击；人工打开，不包括客户端预取；以及收件服务器接收后连续三天未退信的投递。一次回复、点击、人工打开，或两次无退信投递，就能将地址判为可投递，不论探测之前怎么说。
+- **邮箱不可用的证据**：文字明确指出收件地址错误的退信，例如 `5.1.1`、“user unknown”。邮箱已满、政策封锁或信誉拒收不能说明地址有问题，会按实际原因记录。
+- **没有证据**：联系人从不打开或回复。沉默不是证据，没有对应输入，证据账本也不会声称“未打开”。忽略某次活动的潜在客户，其可投递性与之前相同。
+
+每位联系人在判定旁都有 **0 至 100 的置信度**。联系人抽屉中的送达能力卡片用直白语言列出原因和支持观察。新证据优先于旧证据：回复之后的退信会使地址变为不可投递，退信之后的回复会让它重新可投递；旧观察随数月时间逐渐衰减，而非突然失效。
+
+付费验证服务的答案也属于新证据。如果 MillionVerifier 或 CleanMyList 在距上次真实邮件超过 30 天后，将地址判为可投递或不可投递，就采用其答案，因为邮箱可能被关闭，新检查比陈旧的活跃迹象更有价值。30 天内，真实邮件仍优先。内置探测永远不能覆盖真实邮件证据。
+
+判定也会老化：90 天后重新检查，不确定判定则 30 天后，因为邮箱会创建和关闭；但最近六个月被真实邮件触达的地址保持不动。队友手动设置的判定永不过期，也绝不会被证据推翻。
+
+### 验证结果有误时 [#when-verification-is-wrong]
+
+打开联系人，在送达能力卡片上点击**重新验证**，或选择多位联系人，在底部操作栏选择**验证**。**重新验证**通过工作区当前使用的验证器排队发起新检查；**标记为可投递**则覆盖你已确认有效名单的判定。营销活动的潜在客户标签页也提供这两项操作。
+
+重新验证优先于其他所有检查，不受联系人历史限制，包括近期判定、近期邮件或队友手动设置的判定。新结果到达之前，当前判定继续有效，营销活动仍据此决定发送；卡片显示**正在使用 MillionVerifier 重新验证**，结果到达后自动更新。如果当时无法使用已连接验证器，例如积分耗尽或密钥被拒绝，提示消息和卡片会说明，并改用内置检查。
+
+送达能力卡片始终说明判定来自谁以及时间，例如**已通过 MillionVerifier 验证**、**由 Warmbly 内置检查验证**、**从 ZeroBounce 导入**或**由队友标记**。如果真实邮件证据得出了不同结论，也会显示原检查答案。
+
+营销活动绝不会因为验证问题默默结束。所有剩余潜在客户都被拒绝时，活动会显示**需要验证**并暂停，提供两个按钮：**重新验证潜在客户**再次检查，任意一个通过后自动恢复发送；**仍然发送**将其标记为可投递，并立即恢复。[启动检查](/guides/campaigns/#adding-leads)也会在名单因预计退信率被拒绝时提供**仍然启动**，供已在其他地方验证的名单使用。
+
+</Fold>
+
+<Fold>
+
+## 工作区发送控制状态 [#workspace-sending-posture]
+
+各项独立保护只观察一个对象：频率限制看一个用户，预热健康度看一个邮箱，验证看一个地址。如果工作区在多个方面都略有问题，却每项都未达到阈值，就可能始终不被发现。工作区发送风险状况将这些信号合并观察。
+
+| 风险状态 | 含义 | 影响 |
 |---------|---------------|--------------|
-| `trusted` | The default | Nothing |
-| `watch` | Enough signal to keep an eye on | Nothing you can feel. It exists so evidence builds before anything is taken away |
-| `restricted` | Evidence of what the workspace sent, not only how it looks | Daily volume per mailbox drops to a quarter, and warmup moves to the shared free pool |
-| `suspended` | Serious or confirmed abuse | Sending stops, pending review |
+| `trusted` | 默认状态 | 无变化 |
+| `watch` | 已有足够信号，值得关注 | 没有可感知的限制，用于在收紧权限之前积累证据 |
+| `restricted` | 存在实际发送行为的证据，而非仅外观特征 | 每个邮箱的每日量降为四分之一，预热转到共享免费池 |
+| `suspended` | 严重或已确认的滥用 | 停止发送，等待审查 |
 
-When a workspace is restricted or suspended, a banner across the top of the dashboard says so and why. Nothing is ever taken away silently.
+工作区受限或暂停时，控制台顶部会显示横幅并说明原因。绝不会无声地收回能力。
 
-Signals come in two kinds, and only one of them can cost you volume.
+信号分为两类，只有其中一类可能降低你的发送量。
 
-**How a workspace looks** is evidence, not a verdict. Several workspaces opened from one office address, one person opening all of them, or a batch of mailboxes connected in an afternoon are exactly what an agency onboarding clients looks like, so on their own these can only reach `watch`. They are recorded, they show up in review, and they change nothing you can feel.
+**工作区看起来如何**属于证据，不是结论。从同一办公室地址创建多个工作区、由同一人创建全部工作区，或一下午连接大量邮箱，恰好也符合代理机构为客户入驻的正常模式。因此，单独这些信号最多只能达到 `watch`。它们会记录并在审查中出现，但不会带来可感知变化。
 
-**What a workspace does to recipients** is what a posture acts on: an import that is mostly unusable addresses, a bounce rate at or above `5%`, or a complaint rate at or above `0.1%`. Rates are measured over at least `100` sends in the last `30 days`, because below that a percentage is noise. A rate past the point providers themselves act on, `10%` bounces or `0.3%` complaints, is enough to restrict a workspace on its own.
+**工作区对收件人做了什么**才是风险状态采取行动的依据：导入名单大部分地址不可用、退信率达到 `5%`，或投诉率达到 `0.1%`。比率需要至少 `100` 次发送，观察范围为最近 `30 days`，因为更小样本的百分比只是噪声。超过服务商自身采取行动的水平，即 `10%` 退信或 `0.3%` 投诉，单独就足以限制工作区。
 
-### How a posture lifts
+### 发送限制如何解除 [#how-a-posture-lifts]
 
-No posture is permanent, and there are three ways out of one.
+风险状态并非永久，有三种解除途径。
 
-**The evidence stops holding.** Postures are re-derived nightly, so a posture lifts on its own once the findings behind it no longer stand. A finding that is re-checked on a schedule, such as being part of a cluster of workspaces opened from one address, is withdrawn the moment it stops being true. Import quality is measured across everything a workspace has imported rather than per file, so one clean upload does not erase a bad list that is still stored, and the finding fades as good data outweighs it.
+**证据不再成立。** 每晚都会重新计算风险状态，因此支撑它的发现不再成立后，状态会自行解除。定期重新检查的发现，例如属于同一地址创建的工作区群组，一旦不再符合就会撤回。导入质量按工作区所有已导入数据衡量，而非逐文件计算，因此上传一份干净名单不会抹去仍存储的坏名单；随着优质数据占比增加，相关信号会减弱。
 
-**A one-off finding ages out.** A detector that fires once and has nothing that would ever re-check it, such as the score of the address a workspace signed up with or a run of sign-ins from implausible places, files its finding with a 30-day expiry. After that it is retired and the score falls without anyone doing anything.
+**一次性发现到期。** 只触发一次、之后没有任何机制重新检查的检测，例如注册邮箱地址的评分，或一连串地理位置不合理的登录，会以 30 天有效期存档。到期后自动退役，分数随之下降，无需人工操作。
 
-**Review.** A platform operator can read every finding on file, retract any one of them, and set the posture directly. A posture set by review holds against the detectors until an operator lifts it, so a workspace cleared by a human is not put back by evidence that is still on file, and a workspace an operator suspended is not released by a detector retracting.
+**人工审查。** 平台运维人员可以查看全部发现，撤销其中任意一项，并直接设置风险状态。人工设置的状态优先于检测器，直到运维人员解除。因此，人工放行的工作区不会被仍留在记录中的证据再次限制；人工暂停的工作区也不会因为检测器撤回某项发现就自行释放。
 
-If your workspace is restricted or suspended and you believe it is wrong, reply to the notice or contact your platform operator and ask for a review. The banner's reason is the same sentence they see.
+如果工作区受限或暂停，而你认为有误，请回复通知或联系平台运维人员申请审查。横幅中的原因，与他们看到的是同一句说明。
 
 </Fold>
 
 <Fold>
 
-## How to read it
+## 如何解读 [#how-to-read-it]
 
-1. Start with the headline numbers. Bounce at `5%` and complaints at `0.1%` are the highlighted danger lines.
-2. If a rate looks off, switch the chart to that metric and find the spike day. It usually points at one campaign or one imported list.
-3. Check placement by provider, and the hosts inside each one, to see whether mail actually reaches inboxes.
-4. Read the at-risk lists. The chips show which senders Warmbly is already acting on.
-5. Slow down anything in Watch and let it recover. Leave Quarantine and Blocked out of sending until they requalify.
+1. 先看主要指标。退信率 `5%` 和投诉率 `0.1%` 是突出显示的危险阈值。
+2. 某项异常时，将图表切换到该指标，找到突增日期。通常会指向一个营销活动或一份导入名单。
+3. 按服务商及其内部主机查看投递位置，判断邮件是否实际进入收件箱。
+4. 阅读风险列表。状态标签显示 Warmbly 已对哪些发件邮箱采取措施。
+5. 降低处于观察状态邮箱的发送速度，让它恢复。隔离和封禁邮箱在重新满足条件之前，不参与发送。
 
-The habit that matters: keep complaint rate and spam placement low. A clean reputation at modest volume beats high volume with rising complaints every time.
+应长期保持的习惯是：降低投诉率和垃圾邮件占比。适度发送量下的良好信誉，始终优于伴随投诉增长的高发送量。
 
 </Fold>
 
-## Related guides
+## 相关指南 [#related-guides]
 
 <Cards>
-  <Card title="Warmup" href="/guides/warmup/" />
-  <Card title="Inbox placement tests" href="/guides/placement-tests/" />
-  <Card title="Personalization & expressions" href="/guides/expressions/" />
-  <Card title="Error codes" href="/api/error-codes/" />
+  <Card title="邮箱预热" href="/guides/warmup/" />
+  <Card title="收件箱投递位置测试" href="/guides/placement-tests/" />
+  <Card title="个性化与表达式" href="/guides/expressions/" />
+  <Card title="错误码" href="/api/error-codes/" />
 </Cards>

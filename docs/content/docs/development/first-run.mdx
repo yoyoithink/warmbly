@@ -1,24 +1,24 @@
 ---
-title: First run
-description: Claiming a fresh Warmbly instance, provisioning the owner without a browser, and what to do when the claim link is gone or the database already has accounts.
+title: 首次运行
+description: 认领全新的 Warmbly 实例，在不使用浏览器的情况下创建所有者，以及认领链接丢失或数据库已有账户时的处理方法。
 ---
 
-A fresh instance has no accounts and is described as **unclaimed**. Claiming it is the one moment where a stranger is allowed to create the first account, and everything on this page is about getting through that moment cleanly, including the two cases where the obvious path is already closed.
+全新实例中尚无账户，处于**未认领**状态。认领是系统唯一允许陌生访问者创建首个账户的阶段。本页说明如何顺利完成这一过程，也介绍常规入口已经关闭时的两种处理方式。
 
-## Claim the instance
+## 认领实例 [#claim-the-instance]
 
 ```bash
 curl -fsSL https://warmbly.com/install.sh | sh
 ```
 
-The [installer](/development/install/) starts the stack and prints the claim link when it finishes. From a clone it is the same two steps and a build:
+[安装程序](/development/install/)启动整套服务，并在完成后打印认领链接。如果通过克隆仓库安装，则执行以下两步，其中包含构建过程：
 
 ```bash
 git clone https://github.com/warmbly/warmbly && cd warmbly
 make up
 ```
 
-Both print a single-use link when they finish. `make claim`, or `warmblyctl setup-link` inside the backend container, prints a fresh one at any time while the instance is still unclaimed:
+两种方式都会在完成后打印一次性链接。只要实例仍未认领，随时运行 `make claim`，或在后端容器内运行 `warmblyctl setup-link`，都能生成并打印新链接：
 
 ```
   No accounts exist yet. Open this link to claim the instance and
@@ -30,24 +30,24 @@ Both print a single-use link when they finish. `make claim`, or `warmblyctl setu
     docker compose -p warmbly exec backend warmblyctl setup-link
 ```
 
-Open it, pick a password, and you are the owner and platform admin of the instance.
+打开链接并设置密码后，你就成为实例所有者和平台管理员。
 
-If no link is in the logs yet, `make claim` mints a fresh one instead of printing nothing, which retires any outstanding link.
+如果日志中还没有链接，`make claim` 会生成一个新链接，而不是不输出任何内容；此前尚未使用的链接也会随之失效。
 
-The link is derived from `APP_URL`, so outside compose set `APP_URL` before the first boot or the printed link points at the hosted service instead of at your deployment. Only the hash of the token is stored, so reading the database does not yield a working link, and it is invalidated the moment it is used.
+链接根据 `APP_URL` 生成。因此，不通过 Compose 部署时，应在首次启动前设置 `APP_URL`，否则打印出的链接会指向托管服务，而非你的部署。系统只存储令牌的哈希值，读取数据库无法得到可用链接；链接使用后立即失效。
 
-Opening the dashboard without a token also works: while the instance is unclaimed, every unauthenticated route funnels to `/setup`, which tells you how to print a link rather than showing a sign-in form that cannot succeed.
+不带令牌打开控制台也可以：实例尚未认领时，所有未登录访问都会跳转到 `/setup`。该页面会说明如何打印认领链接，而不是显示一个当前无法登录的表单。
 
-## If the link is gone
+## 认领链接丢失时 [#if-the-link-is-gone]
 
-Four things make a claim link disappear, and all four have the same answer:
+以下四种情况会导致你无法再使用原认领链接，处理方式都相同：
 
-- the logs rotated, or the container was recreated
-- 24 hours passed
-- Redis was flushed or restarted without persistence
-- you are on Kubernetes or a bare binary and never saw a compose log at all
+- 日志已轮转，或容器已重新创建。
+- 已过去 24 小时。
+- Redis 已被清空，或在未启用持久化的情况下重启。
+- 使用 Kubernetes 或直接运行二进制程序，从未看到 Compose 日志。
 
-Print a new one. The previous link, if any, stops working:
+重新打印链接即可。此前的链接如果存在，会停止生效：
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl setup-link   # docker compose
@@ -56,19 +56,19 @@ kubectl exec -it deploy/warmbly-backend -- warmblyctl setup-link
 warmblyctl setup-link                                          # bare binary
 ```
 
-`make claim` does the same thing for a compose install and prints the result.
+对于 Compose 安装，`make claim` 执行相同操作并打印结果。
 
-The command refuses on a claimed instance, by design: there is no second owner to mint. If you get that refusal, read the next section.
+已认领的实例会拒绝这条命令，这是预期行为：系统不会再创建第二位初始所有者。如果看到该拒绝提示，请继续阅读下一节。
 
-## If the instance already has accounts
+## 实例已有账户时 [#if-the-instance-already-has-accounts]
 
-This is the case that catches people, and it usually has one cause.
+这种情况经常让人困惑，通常原因如下。
 
-<Callout type="warn" title="make dev and make up share one database">
-Both pin the same compose project (`-p warmbly`), the same `warmbly_postgres_data` volume and the same `warmbly_dev` database. `make dev` seeds fixture accounts by default. Once those rows exist the instance is claimed, no setup link is ever issued, and `DISABLE_REGISTRATION=invite_only` refuses the sign-up form. If you ran `make dev` before `make up`, this is what happened.
+<Callout type="warn" title="make dev 和 make up 共用同一个数据库">
+两者固定使用相同的 Compose 项目（`-p warmbly`）、相同的 `warmbly_postgres_data` 卷以及相同的 `warmbly_dev` 数据库。`make dev` 默认会写入测试账户。一旦这些记录存在，实例便被视为已认领，系统不会再生成设置链接，而 `DISABLE_REGISTRATION=invite_only` 又会拒绝通过注册表单创建账户。如果先运行了 `make dev`，再运行 `make up`，遇到的就是这种情况。
 </Callout>
 
-`make claim` tells you so, and ends on the command that fixes it:
+`make claim` 会说明当前状态，并在最后给出解决问题的命令：
 
 ```
   This instance already has 9 account(s), so no claim link is issued.
@@ -84,23 +84,23 @@ Both pin the same compose project (`-p warmbly`), the same `warmbly_postgres_dat
   Why:                      https://docs.warmbly.com/development/first-run/
 ```
 
-That command creates the account, an organization and a trial, and grants every platform admin bit. The password is the one you type: it prompts for it twice on a terminal, and refuses on a non-TTY rather than creating a passwordless account, so pass `--password-stdin` from a script. Then sign in at `APP_URL` with that password. See [user create](/development/warmblyctl/#user-create).
+该命令会创建账户、组织和试用记录，并授予全部平台管理员权限位。密码由你输入：在终端中需要输入两次；在非 TTY 环境中，命令会拒绝执行，而不会创建无密码账户。因此，从脚本调用时应传入 `--password-stdin`。之后即可在 `APP_URL` 使用该密码登录。参见 [user create](/development/warmblyctl/#user-create)。
 
-If one of the existing accounts is yours and you only lost the password, use `warmblyctl user reset-password` instead. Every recovery command is listed under [recovering access](/development/accounts-and-access/#recovering-access).
+如果已有账户中包含你的账户，只是忘记了密码，请改用 `warmblyctl user reset-password`。全部恢复命令见[恢复访问权限](/development/accounts-and-access/#recovering-access)。
 
-The destructive alternative is to start over:
+另一种具有破坏性的做法是从头开始：
 
 ```bash
 make reset && make up
 ```
 
-<Callout type="warn" title="make reset destroys the encryption volume">
-It removes the volumes, which hold the per-organization data keys. Every sealed mailbox credential and every stored message body becomes permanently undecryptable, even if you restore a database dump afterwards. Only do this on an instance you are willing to lose.
+<Callout type="warn" title="make reset 会销毁加密卷">
+此操作会删除存储各组织数据密钥的卷。所有已加密的邮箱凭据和已存储的邮件正文都将永久无法解密，即使之后恢复数据库备份也无济于事。只有在可以接受失去整个实例时才执行此操作。
 </Callout>
 
-## Unattended provisioning
+## 无人值守初始化 [#unattended-provisioning]
 
-Set the owner before the first start and no link is issued at all:
+在首次启动前设置所有者信息，系统便不会生成认领链接：
 
 ```bash
 WARMBLY_BOOTSTRAP_EMAIL=you@example.com
@@ -108,39 +108,39 @@ WARMBLY_BOOTSTRAP_PASSWORD_HASH=$argon2id$v=19$m=65536,t=3,p=2$...
 WARMBLY_BOOTSTRAP_ORG=Acme
 ```
 
-Produce the hash without putting a plaintext password anywhere. It prompts on a terminal and reads the pipe when there is not one, so the same command works by hand and in a provisioning script:
+可以直接生成哈希，避免将明文密码写入存储位置。在终端中，命令会提示输入；没有终端时则读取管道，因此手动操作和自动配置脚本都可以使用同一命令：
 
 ```bash
 warmblyctl hash-password
 printf '%s' 'your password' | warmblyctl hash-password
 ```
 
-<Callout type="warn" title="Quote the hash">
-An argon2 PHC string contains `$` characters. Docker Compose reads those as interpolation, so a bare hash in `.env` silently loses part of itself and the bootstrap fails with no useful message. Wrap it in single quotes in `.env`, and double every `$` if you paste it directly into `docker-compose.yml`.
+<Callout type="warn" title="为哈希值加上引号">
+Argon2 PHC 字符串包含 `$` 字符。Docker Compose 会将其视为变量插值，因此直接在 `.env` 中写入未加引号的哈希，会悄然丢失部分内容，并导致初始化失败，且没有有用的提示。在 `.env` 中用单引号包住哈希；如果直接粘贴到 `docker-compose.yml` 中，则将每个 `$` 写成两个。
 </Callout>
 
-`WARMBLY_BOOTSTRAP_PASSWORD` accepts a plaintext password instead, held to the same password rules as sign-up. It works, it warns at boot, and it leaves the password readable in your process environment through `docker inspect` and `/proc`. Prefer the hash, and remove either variable once the owner exists.
+也可以使用 `WARMBLY_BOOTSTRAP_PASSWORD` 接收明文密码，密码须符合与注册时相同的规则。这种方式可以使用，但启动时会出现警告，而且可通过 `docker inspect` 和 `/proc` 读取进程环境中的密码。建议使用哈希，并在所有者账户创建后移除所用的密码变量。
 
-All of these are read **only while the users table is empty**, so they are a no-op on every later restart. That also means they cannot be used to fix a lockout: an instance that already has accounts ignores them entirely.
+这些配置**仅在 users 表为空时读取**，之后每次重启都不会再生效。因此，它们也无法用于恢复被锁定的访问：只要实例已有账户，就会完全忽略这些配置。
 
-## What the first account gets
+## 首个账户获得的权限 [#what-the-first-account-gets]
 
-| It gets | Detail |
+| 获得的内容 | 说明 |
 |---|---|
-| An owner account | Owner of a new organization, which is a membership status rather than a role |
-| An organization | Named from `WARMBLY_BOOTSTRAP_ORG` when it is a valid workspace name, otherwise derived from the owner's name |
-| A trial | Irrelevant when `BILLING_PROVIDER=none`, which is the self-host default and unlocks everything. The dashboard header shows a `Self-hosted` badge instead of a plan or trial, and the billing and referral settings pages are hidden |
-| Every platform admin bit | So the same account signs in to the dashboard on `:5173` and the admin panel on `:5174` |
+| 所有者账户 | 成为新组织的所有者；这是一种成员身份状态，而不是角色 |
+| 组织 | 如果 `WARMBLY_BOOTSTRAP_ORG` 是有效的工作区名称，则使用该名称；否则根据所有者姓名生成 |
+| 试用记录 | 自托管默认使用 `BILLING_PROVIDER=none`，全部功能均已解锁，因此试用记录不影响使用。控制台顶部显示 `Self-hosted` 标记，而非套餐或试用状态，计费及推荐奖励设置页面会隐藏 |
+| 全部平台管理员权限位 | 同一账户可以登录 `:5173` 上的控制台和 `:5174` 上的管理面板 |
 
-Signing in never depends on mail. The emailed login code is off on a self-hosted install, because a relay you have not configured should not stand between you and your own instance.
+登录不依赖邮件。自托管安装默认关闭邮件登录验证码，因为尚未配置的邮件中继不应阻止你访问自己的实例。
 
-## Checking where you stand
+## 检查当前状态 [#checking-where-you-stand]
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl status
 ```
 
-It prints four blocks: the instance state, the platform admins, what to run next, and the health checks. Roughly, on an instance that already has accounts:
+命令会输出四部分内容：实例状态、平台管理员、下一步应执行的操作，以及健康检查。在已有账户的实例上，输出大致如下：
 
 ```
 Instance
@@ -165,15 +165,15 @@ Checks
   ...one line per finding, grouped by severity...
 ```
 
-The exact wording moves with the state: an unclaimed instance says so and tells you to print a setup link instead. `--json` prints the same facts as a machine-readable document, which is what `make claim` reads.
+具体文字会随状态变化：未认领的实例会明确说明这一状态，并提示打印设置链接。`--json` 会以机器可读的文档格式输出相同信息，`make claim` 读取的就是这一输出。
 
-The **Checks** section holds the same findings the admin panel's Setup and health page shows, and `warmblyctl status` exits non-zero when any of them is at error severity, which makes `make doctor` usable as a post-deploy gate. Every check is documented on [Instance health](/development/instance-health/).
+**检查**部分与管理面板“设置与健康状态”页面中的结果相同。只要其中任何一项达到错误级别，`warmblyctl status` 就会以非零状态退出，因此可以将 `make doctor` 作为部署后的检查关卡。每项检查的说明见[实例健康状态](/development/instance-health/)。
 
-## Before anyone else can reach it
+## 其他人能够访问之前 [#before-anyone-else-can-reach-it]
 
-The compose file ships a working default for every secret so a fresh clone boots with no configuration. All five defaults are published in this repository, so they protect nothing: anyone can forge a session token or unwrap every organization key.
+Compose 文件为每项密钥提供了可用的默认值，使全新克隆的项目无需配置即可启动。但这五个默认值都已公开在仓库中，无法提供保护：任何人都能伪造会话令牌或解开各组织的密钥。
 
-Append real values to `.env`, generating each one as you go:
+逐一生成真实密钥，并追加到 `.env`：
 
 ```bash
 cat >> .env <<EOF
@@ -186,40 +186,40 @@ APP_ENV=prod
 EOF
 ```
 
-Then `make up` to recreate the containers. `make gen-key` prints a single fresh `KMS_LOCAL_MASTER_KEY` if that is all you need.
+然后运行 `make up` 重新创建容器。如果只需要一个新的 `KMS_LOCAL_MASTER_KEY`，可运行 `make gen-key` 打印该密钥。
 
-Set `APP_ENV=prod` last, and only once the other five hold real values. That is the switch that turns a published default from a logged warning into a refusal to start, so setting it first leaves you with a backend that will not boot.
+最后再设置 `APP_ENV=prod`，且必须先确认另外五项已经使用真实密钥。启用生产环境后，已公开的默认值会从日志警告升级为拒绝启动；如果先启用生产环境，后端就无法启动。
 
-<Callout type="warn" title="Compose reads an empty value as no value">
-`docker-compose.yml` reads `.env` as `${VAR:-default}`, and Compose treats an empty assignment exactly like a missing one. `AUTH_SECRET=` does not blank the secret, it substitutes the published default. Comment a line out rather than emptying it.
+<Callout type="warn" title="Compose 会将空值视为未设置">
+`docker-compose.yml` 按 `${VAR:-default}` 的方式读取 `.env`，Compose 会将空赋值与缺少变量同等处理。`AUTH_SECRET=` 不会把密钥设为空，而是会使用已公开的默认值。需要停用某行配置时，请将其注释掉，而不是清空值。
 </Callout>
 
-<Callout type="warn" title="Back up the last two keys before you store a single mailbox">
-`KMS_LOCAL_MASTER_KEY` and `CREDENTIALS_ENCRYPTION_KEY` seal every stored credential and message body. Losing them is unrecoverable, and a database backup without them cannot be decrypted.
+<Callout type="warn" title="存储任何邮箱之前，先备份最后两项密钥">
+`KMS_LOCAL_MASTER_KEY` 和 `CREDENTIALS_ENCRYPTION_KEY` 用于加密所有已存储的凭据和邮件正文。密钥丢失后无法恢复，缺少它们的数据库备份也无法解密。
 </Callout>
 
-Full detail, including which values must be identical across services: [secrets](/development/configuration/#secrets).
+完整说明以及哪些值必须在各服务之间保持一致，见[密钥](/development/configuration/#secrets)。
 
-## Demo data
+## 演示数据 [#demo-data]
 
 ```bash
 make seed-demo
 ```
 
-Loads the showcase workspace: mailboxes, campaigns, contacts and two weeks of history, with `dev@warmbly.com` / `password123` as the everyday login.
+加载演示工作区，其中包含邮箱、营销活动、联系人和两周的历史记录。日常演示登录使用 `dev@warmbly.com` / `password123`。
 
-<Callout type="warn" title="The demo seed plants a published super-admin credential">
-`make seed-demo` runs with `SEED_FULL=true`, which also inserts `admin@warmbly.local` with the password `Test1234!`, **every platform admin permission**, and a full-access API key whose secret is a constant in this repository. All three values are public. Never run it on an instance anyone else can reach, and if you already did, delete that account and revoke the key before you expose the instance.
+<Callout type="warn" title="演示数据会写入公开的超级管理员凭据">
+`make seed-demo` 使用 `SEED_FULL=true` 运行，还会插入账户 `admin@warmbly.local`，密码为 `Test1234!`，授予**全部平台管理员权限**，并创建一枚拥有完整权限的 API 密钥，其密钥值是仓库中的常量。这三项值均已公开。切勿在他人可以访问的实例上执行；如果已经执行，务必在开放实例访问之前删除该账户并撤销密钥。
 </Callout>
 
-Seeding also spends the first-launch exemption, so a seeded instance never issues a claim link again. That is fine when you seeded on purpose; it is the surprise described in [if the instance already has accounts](#if-the-instance-already-has-accounts) when you did not.
+写入种子数据也会用掉首次启动的特殊权限，因此之后实例不会再生成认领链接。如果是主动加载演示数据，这符合预期；如果不是，就会遇到[实例已有账户](#if-the-instance-already-has-accounts)一节所述的意外情况。
 
-For a demo where mail actually flows end to end, with sends, replies, opens and clicks, see the [sandbox](/development/sandbox/).
+如果需要完整演示实际邮件收发、回复、打开和点击流程，请参见[沙盒环境](/development/sandbox/)。
 
-## See also
+## 另请参阅 [#see-also]
 
-- [Accounts and access](/development/accounts-and-access/) for registration modes, invitations and recovery
-- [warmblyctl](/development/warmblyctl/) for every command and flag on this page
-- [Configuration reference](/development/configuration/) for every environment variable
-- [Instance health](/development/instance-health/) for the checks that run against a new install
-- [Self-hosting](/development/deployment-guide/) for the full deployment walkthrough
+- [账户与访问](/development/accounts-and-access/)：注册模式、邀请和恢复访问。
+- [warmblyctl](/development/warmblyctl/)：本页涉及的全部命令和选项。
+- [配置参考](/development/configuration/)：全部环境变量。
+- [实例健康状态](/development/instance-health/)：新安装实例的各项检查。
+- [自托管](/development/deployment-guide/)：完整部署流程。

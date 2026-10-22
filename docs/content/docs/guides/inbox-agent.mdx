@@ -1,62 +1,62 @@
 ---
-title: Inbox agent
-description: When someone replies, the inbox agent drafts a suggested reply in your voice and holds it in the unibox for you to approve, edit, or discard. It never sends on its own.
+title: "收件箱智能体"
+description: "收到回复时，收件箱智能体会按你的语气起草建议回复，并保存在统一收件箱中供你批准、编辑或丢弃；它不会自行发送。"
 ---
 
-The inbox agent watches your replies. When a real person replies to one of your campaigns, it reads the thread, drafts a suggested reply in your [voice](/guides/unibox/#ai-reply-drafts), and attaches it to the conversation for you to review. You approve and send it, edit it first, or discard it. Nothing is ever sent because the agent wrote it: a person decides every time.
+收件箱智能体会关注收到的回复。当真人回复某个营销活动时，它会阅读整个会话，按你的[表达风格](/guides/unibox/#ai-reply-drafts)起草建议回复，并附在会话中供你审阅。你可以批准并发送、先编辑再发送，或直接丢弃。智能体写好草稿并不意味着会自动发送，每次都由人决定。
 
-This is a paid feature and it is off until you turn it on.
+这是付费功能，在你主动开启之前保持关闭。
 
-## Turning it on
+## 启用 [#turning-it-on]
 
-Open **Settings, Workspace** and find **Inbox agent** (it needs the **Manage settings** permission). Toggle **Draft replies for me** on. From then on, every inbound human reply to a campaign gets a draft.
+打开**设置、工作区**，找到**收件箱智能体**，需要**管理设置**权限。开启**为我起草回复**后，每封针对营销活动的真人回复都会生成草稿。
 
-<Callout type="info" title="Paid and opt-in">
-The inbox agent is available on paid plans and is off by default. Turning it on is an explicit choice, and each reply it drafts costs 5 AI credits. See [AI credits](/guides/ai-credits/).
+<Callout type="info" title="付费功能，需主动启用">
+收件箱智能体适用于付费套餐，默认关闭，开启需要你明确选择。每次起草回复消耗 5 个 AI 积分。参见 [AI 积分](/guides/ai-credits/)。
 </Callout>
 
-## What triggers a draft
+## 触发草稿生成的条件 [#what-triggers-a-draft]
 
-A draft is created when all of these are true:
+只有以下条件全部满足，才会生成草稿：
 
-- A person replies to one of your campaign emails (automated replies like out-of-office and bounces never trigger it).
-- Your workspace is on a paid plan and has the inbox agent turned on.
-- You have at least 5 AI credits.
-- The reply has enough substance to answer. A one-line acknowledgement ("thanks", "got it") is skipped, so you are never charged to draft a reply to a throwaway line.
+- 真人回复了某封营销活动邮件；外出自动回复、退信等自动邮件不会触发。
+- 工作区使用付费套餐，并已启用收件箱智能体。
+- 至少有 5 个 AI 积分。
+- 回复包含足够的实质内容，值得回应。仅有一句确认，例如“thanks”或“got it”，会被跳过，不会为了回应一句简单确认而扣费。
 
-The agent does not start new conversations and never messages a new recipient. It only ever drafts a reply to someone who already replied to you.
+智能体不会主动开启新会话，也不会向新的收件人发消息。它只会为已经回复过你的人起草回复。
 
-## Reviewing a draft
+## 审阅草稿 [#reviewing-a-draft]
 
-A new draft shows up two ways:
+新草稿会出现在两个位置：
 
-- In the conversation itself: open the thread in the unibox and the draft appears below the messages, in an editable box, with **Approve and send**, and **Discard**.
-- In the scope rail: the **Agent drafts** filter lists every conversation with a draft waiting, with a live count next to it. The count and list update the moment a new draft lands, no refresh needed.
+- 会话本身：在统一收件箱中打开会话，草稿会显示在邮件下方的可编辑文本框内，并带有**批准并发送**和**丢弃**按钮。
+- 范围侧栏：**智能体草稿**筛选列出所有有待处理草稿的会话，旁边显示实时数量。新草稿生成后，数量和列表立即更新，无需刷新。
 
-From the draft box you can:
+可在草稿框中执行：
 
-- **Edit** the text right there. The box is editable, so tweak a line, fix a detail, or rewrite it before sending.
-- **Approve and send.** Sends the text as it stands (with your edits) through the normal reply path, from the same mailbox, threaded to their reply. A reply in a [shared reply inbox](/guides/mailboxes/#a-shared-reply-inbox) is answered from the mailbox that emailed them instead. This is the only action that sends.
-- **Discard.** Dismisses the draft without sending. Use it when the reply is better handled by hand.
+- **编辑**：直接修改文本框中的内容。可以调整一句话、修正细节，或在发送前重新编写。
+- **批准并发送**：通过常规回复流程发送当前文本，包括你的修改；使用同一邮箱，并接入对方回复所在的邮件会话。如果回复出现在[共享回复收件箱](/guides/mailboxes/#a-shared-reply-inbox)，则改由最初向对方发信的邮箱作答。只有这一操作会发送邮件。
+- **丢弃**：取消草稿但不发送。若回复更适合手动处理，可以使用此选项。
 
-Each thread holds at most one pending draft at a time, and once you approve or discard it the draft is resolved.
+每个会话同时最多保留一个待处理草稿；批准或丢弃后，该草稿即处理完成。
 
-## What the draft is grounded in
+## 草稿生成的依据 [#what-the-draft-is-grounded-in]
 
-The agent writes with the same context as an [AI reply draft](/guides/unibox/#ai-reply-drafts): the full thread so far, read as the messages themselves rather than their preview lines, what Warmbly knows about the contact (their name, company, and any custom fields on their record), your workspace [voice profile](/guides/unibox/#ai-reply-drafts) (what you sell, who you sell to, your house voice), and any [enabled skills](/guides/ai-skills/). The more you fill in your voice profile and keep contact records complete, the more the drafts sound like you and speak to the person.
+智能体使用与 [AI 回复草稿](/guides/unibox/#ai-reply-drafts)相同的上下文：截至目前的完整会话，读取的是邮件原文而非预览行；Warmbly 保存的联系人信息，包括姓名、公司及记录上的所有自定义字段；工作区的[表达风格资料](/guides/unibox/#ai-reply-drafts)，包括销售的产品、目标客户和团队惯用语气；以及所有[已启用的技能](/guides/ai-skills/)。表达风格资料越详细、联系人记录越完整，草稿就越贴近你的表达，也越能针对具体收件人。
 
-## Credits and failures
+## 积分与失败处理 [#credits-and-failures]
 
-- **5 credits per handled reply**, charged when a draft is created. If the model is unavailable, no draft is created and nothing is charged.
-- **Out of credits.** When your balance is below 5, the agent simply does not draft that reply. Your inbox and campaigns are unaffected; you just handle that one by hand. Top up under **Settings, Billing**.
-- **No auto-send, ever.** There is no setting that lets the agent send for you. Approving is always a person's explicit action.
+- **每次处理回复消耗 5 个积分**，在生成草稿时扣除。如果模型不可用，不会生成草稿，也不会扣费。
+- **积分不足。** 余额低于 5 时，智能体不会为该回复起草内容。收件箱和营销活动不受影响，你只需手动处理这一封。可在 **设置、账单** 中充值。
+- **始终不会自动发送。** 没有任何设置允许智能体替你直接发送。批准始终必须由人明确操作。
 
-## Turning it off
+## 关闭 [#turning-it-off]
 
-Toggle **Draft replies for me** off under **Settings, Workspace**. New replies stop getting drafts immediately. Any drafts already waiting stay until you approve or discard them.
+在**设置、工作区**中关闭**为我起草回复**，新收到的回复会立即停止生成草稿。已经待处理的草稿会保留，直到你批准或丢弃。
 
-## See also
+## 另请参阅 [#see-also]
 
-- [Unified inbox](/guides/unibox/) for the inbox and the manual AI reply draft.
-- [AI credits](/guides/ai-credits/) for costs and the balance.
-- [AI skills](/guides/ai-skills/) for playbooks the agent follows.
+- [统一收件箱](/guides/unibox/)：收件箱和手动生成 AI 回复草稿的功能。
+- [AI 积分](/guides/ai-credits/)：费用与余额。
+- [AI 技能](/guides/ai-skills/)：智能体遵循的操作指南。

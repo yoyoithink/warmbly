@@ -1,92 +1,92 @@
 ---
-title: Apollo
-description: "Import saved Apollo lists into Warmbly, keep them in sync every hour, and enrich contacts from Apollo's people database with your own API key."
+title: "Apollo"
+description: "将 Apollo 中保存的名单导入 Warmbly，每小时保持同步，并使用自己的 API 密钥从 Apollo 人员数据库补全联系人信息。"
 ---
 
-The Apollo integration brings people from your Apollo account into Warmbly and fills in what your contacts are missing. It acts with your own Apollo API key, so it uses your Apollo plan and credits.
+Apollo 集成可将 Apollo 账户中的人员导入 Warmbly，并补全联系人缺失的信息。集成使用你自己的 Apollo API 密钥，因此消耗的是你的 Apollo 套餐额度和积分。
 
-## Connect Apollo
-
-<Steps>
-
-<Step>
-
-In Apollo, open **Settings > Integrations > API** and create a key. A master key works. A restricted key needs access to lists, contact search and people enrichment.
-
-</Step>
-
-<Step>
-
-In Warmbly, open **Integrations > Apollo > Connect** and paste the key.
-
-</Step>
-
-<Step>
-
-Warmbly checks the key against everything the integration uses before saving it, and shows which Apollo account it acts as. A key that cannot read lists or search contacts is refused with the reason.
-
-</Step>
-
-</Steps>
-
-## Good to know
-
-- Reading a list spends no Apollo credits. Enrichment spends one credit for each person Apollo finds.
-- An import never creates a duplicate. Someone already in Warmbly is updated, and an update never blanks a field.
-- People on your suppression list are never imported.
-- The key is encrypted with your workspace's key and never shown again.
-
-## Import a list
-
-Save people to a list in Apollo, then on the Apollo page choose **Imports > New import**.
+## 连接 Apollo [#connect-apollo]
 
 <Steps>
 
 <Step>
 
-**List.** Pick one of your saved lists of people. Leave **Verified addresses only** on to skip people whose Apollo email status is guessed, unavailable or anything other than verified: unverified addresses bounce more and hurt your mailboxes.
+在 Apollo 中打开**设置 > 集成 > API**并创建密钥。主密钥可以直接使用；受限密钥需要具备读取名单、搜索联系人和补全人员信息的权限。
 
 </Step>
 
 <Step>
 
-**Preview.** See how many people the list holds and a sample of them, with who is already a Warmbly contact and who will be left out (no address, unverified, or suppressed).
+在 Warmbly 中打开**集成 > Apollo > 连接**，粘贴密钥。
 
 </Step>
 
 <Step>
 
-**Options.** Name the import, optionally add everyone to a campaign and give them labels, and choose whether to keep the list in sync.
+Warmbly 会在保存前验证密钥是否具备集成所需的全部权限，并显示该密钥对应的 Apollo 账户。无法读取名单或搜索联系人的密钥会被拒绝，同时显示原因。
 
 </Step>
 
 </Steps>
 
-Each contact gets the source **Apollo**, so a [segment](/guides/segments/) can select them. Besides name, company and phone, an import fills these custom fields: `title`, `seniority`, `linkedin_url`, `city`, `state`, `country`, `website`, `company_domain`, `industry`, `apollo_id` and `apollo_email_status`. They are usable as [variables](/guides/sequences/) in your emails.
+## 使用须知 [#good-to-know]
 
-### Keep in sync
+- 读取名单不消耗 Apollo 积分。信息补全会对 Apollo 找到的每个人消耗一个积分。
+- 导入不会创建重复联系人。已存在于 Warmbly 的人员会被更新，更新也不会将字段清空。
+- 禁止发送名单中的人员不会被导入。
+- 密钥使用工作区密钥加密保存，此后不会再次显示。
 
-A synced import checks its list every hour and brings in people added since the last run. Each person is imported once per import, so someone you remove from Warmbly is not brought back by the next run.
+## 导入名单 [#import-a-list]
 
-One run reads at most 10,000 people and imports at most 5,000. A longer list continues where it stopped on the next run, and the import shows that it stopped at the limit.
+在 Apollo 中将人员保存到名单，然后在 Apollo 页面选择**导入 > 新建导入**。
 
-From an import's menu you can run it now, pause or resume it, edit where people land, or delete it. Deleting an import keeps the contacts it brought in.
+<Steps>
 
-## Enrich contacts
+<Step>
 
-Select contacts on the [Contacts](/guides/contacts-crm/) page and choose **Enrich** in the selection bar:
+**名单。** 选择一个已保存的人员名单。建议保持 **仅导入已验证地址** 开启，跳过 Apollo 邮箱状态为推测、不可用或其他非已验证状态的人员；未验证地址更容易退信，并损害邮箱信誉。
 
-- **Fill empty fields** writes only what a contact is missing.
-- **Replace with Apollo data** overwrites the fields Apollo has an answer for.
+</Step>
 
-Apollo matches each contact by address and name. Enrichment fills title, seniority, company, LinkedIn, location, website and industry. It never changes a contact's email address.
+<Step>
 
-A run takes up to 5,000 contacts and works in the background. Its progress, how many were enriched, how many Apollo did not find, and the credits used are on the Apollo page under **Enrichment**. Starting a run needs both the **Use integrations** and **Manage contacts** permissions, because it spends credits and writes contacts.
+**预览。** 查看名单人数和部分示例，了解哪些人员已是 Warmbly 联系人，以及哪些人员会因没有邮箱地址、未验证或被禁止发送而排除。
 
-## When the key stops working
+</Step>
 
-If Apollo refuses the key (it was deleted, or the plan changed), the connection shows **Reconnect required**, imports and enrichment pause, and the Apollo page asks for a new key under **API key**. A run that hits Apollo's rate limit stops and keeps what it already did; the next run continues from there.
+<Step>
 
-## What moves with a workspace export
+**选项。** 为导入命名，可选择将所有人员加入某个营销活动并添加标签，再决定是否保持名单同步。
 
-Saved imports move with a [workspace export](/guides/workspace-export-import/), along with the record of who each one already imported, so a moved import does not import the same people again. They arrive idle. The API key travels only in an archive that includes credentials; otherwise paste it again on the Apollo page before the imports run. Enrichment runs do not move: they are a history of work already done, and the contacts they enriched move with your contacts.
+</Step>
+
+</Steps>
+
+每个联系人的来源均设为 **Apollo**，因此可通过[联系人分群](/guides/segments/)筛选。除姓名、公司和电话外，导入还会填充以下自定义字段：`title`、`seniority`、`linkedin_url`、`city`、`state`、`country`、`website`、`company_domain`、`industry`、`apollo_id` 和 `apollo_email_status`。这些字段可作为邮件中的[变量](/guides/sequences/)使用。
+
+### 保持同步 [#keep-in-sync]
+
+启用同步的导入每小时检查一次名单，导入上次运行后新增的人员。每项导入只会导入同一人员一次，因此从 Warmbly 移除的人不会在下次运行时重新导入。
+
+每次运行最多读取 10,000 人并导入 5,000 人。更长的名单会在下次运行时从中断位置继续，导入状态会说明已达到限制。
+
+可从导入菜单立即运行、暂停或恢复、编辑人员的导入目标，或删除导入任务。删除导入任务会保留其已经导入的联系人。
+
+## 补全联系人信息 [#enrich-contacts]
+
+在[联系人](/guides/contacts-crm/)页面选中联系人，然后在选择工具栏中点击**补全信息**：
+
+- **填充空字段**：仅写入联系人缺失的信息。
+- **使用 Apollo 数据替换**：对于 Apollo 能提供信息的字段，覆盖现有内容。
+
+Apollo 按邮箱地址和姓名匹配联系人，补全职位、职级、公司、LinkedIn、地理位置、网站及行业，不会更改联系人的邮箱地址。
+
+每次最多处理 5,000 个联系人，并在后台运行。可在 Apollo 页面的**信息补全**中查看进度、已补全人数、Apollo 未找到的人数及积分消耗。启动任务同时需要**使用集成**和**管理联系人**权限，因为它既消耗积分，也写入联系人数据。
+
+## 密钥失效时的处理 [#when-the-key-stops-working]
+
+如果密钥被删除或套餐变化导致 Apollo 拒绝密钥，连接会显示**需要重新连接**，导入和信息补全暂停，Apollo 页面会要求在 **API 密钥**下提供新密钥。触发 Apollo 速率限制时，本次任务会停止并保留已完成的工作，下次运行从该位置继续。
+
+## 工作区导出时一并迁移的内容 [#what-moves-with-a-workspace-export]
+
+已保存的导入任务会随[工作区导出](/guides/workspace-export-import/)迁移，同时带上各任务已经导入人员的记录，因此迁移后不会重复导入同一批人员。导入后任务处于空闲状态。仅当归档包含凭据时，API 密钥才会一同迁移；否则，需先在 Apollo 页面重新粘贴密钥，再运行导入。信息补全任务本身不会迁移，因为它们只是已完成工作的历史记录；被补全的联系人会随联系人数据一同迁移。

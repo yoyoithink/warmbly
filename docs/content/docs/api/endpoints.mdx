@@ -1,42 +1,42 @@
 ---
-title: Endpoint scope map
-description: Every endpoint, which auth types it accepts, and which permission it requires.
+title: "端点权限范围表"
+description: "列出所有端点、各端点接受的身份验证类型，以及所需权限。"
 ---
 
-This page is the source of truth for what an API key can and cannot reach. Every route in the backend falls into one of three buckets:
+本页是判断 API 密钥可访问和不可访问哪些内容的权威依据。后端的所有路由均属于以下三类之一：
 
-- **API key accepted**: works with both a JWT (dashboard user) and an API key with the listed permission.
-- **JWT only**: never reachable via an API key. Used for billing, governance, websocket bootstrap, danger-zone destruction, the OAuth onboarding flow, and admin tools.
-- **Public**: no auth required (webhooks with signature verification, health check, OAuth bouncer pages).
+- **支持 API 密钥**：既可使用 JWT（控制台用户），也可使用具有所列权限的 API 密钥。
+- **仅支持 JWT**：API 密钥永远无法访问。用于计费、治理、WebSocket 初始化、危险区域中的销毁操作、OAuth 接入流程及管理工具。
+- **公开端点**：无需身份验证（带签名验证的 Webhook、健康检查、OAuth 跳转页面）。
 
-When an endpoint says "JWT permission: X / API permission: Y", the dual-auth middleware checks the relevant one based on which credential the caller used.
+端点标注“JWT permission: X / API permission: Y”时，同时支持 JWT 和 API 密钥的身份验证中间件会根据调用者使用的凭据检查相应权限。
 
-A member restricted to [selected resources](/guides/team-roles/#access-scope) is held to a short list of read routes whatever credential they use, and those routes filter to their grants: `GET /campaigns`, `/campaigns-overview`, `/campaigns/:id` with its `/logs`, `/steps` and `/ab-variants`, `GET /analytics/dashboard` (whose `campaign_ids` and `folder_ids` filters must name granted campaigns and folders), `/analytics/campaigns/compare`, `/analytics/campaigns/:id` with `/daily` and `/hourly`, `GET /analytics/accounts` and `/analytics/accounts/:id`, `GET /emails` and `/emails/:id`, and the unibox reads `GET /unibox`, `/unibox/count`, `/unibox/overview`, `/unibox/thread`, `/unibox/thread/labels`, `/unibox/scheduled` and `/unibox/:id` (which, for them, does not mark the message read). Their own account routes under `/auth/*`, `/me/*`, `GET /organization`, `/organization/current`, `/organization/switch/:id`, `/invitations`, `GET /subscription`, `/subscription/features`, `GET /timezones` and `POST /getaway` keep working. Every other route answers `403` `member_access_restricted`, and a campaign or mailbox outside their grants answers `404`. An API key's own mailbox allowlist still applies on top: the key reaches the mailboxes on both lists.
+仅限访问 [选定资源](/guides/team-roles/#access-scope) 的成员，无论使用何种凭据，都只能访问少量读取路由，且结果仅限于获授权资源：`GET /campaigns`、`/campaigns-overview`、`/campaigns/:id` 及其 `/logs`、`/steps` 和 `/ab-variants`、`GET /analytics/dashboard`（其 `campaign_ids` 和 `folder_ids` 筛选条件必须指向获授权的营销活动和文件夹）、`/analytics/campaigns/compare`、`/analytics/campaigns/:id` 及其 `/daily` 和 `/hourly`、`GET /analytics/accounts` 和 `/analytics/accounts/:id`、`GET /emails` 和 `/emails/:id`，以及统一收件箱读取路由 `GET /unibox`、`/unibox/count`、`/unibox/overview`、`/unibox/thread`、`/unibox/thread/labels`、`/unibox/scheduled` 和 `/unibox/:id`（对这些成员而言，该路由不会将邮件标记为已读）。其自身账户相关路由 `/auth/*`、`/me/*`、`GET /organization`、`/organization/current`、`/organization/switch/:id`、`/invitations`、`GET /subscription`、`/subscription/features`、`GET /timezones` 和 `POST /getaway` 仍可使用。其他所有路由均返回 `403` `member_access_restricted`，未获授权的营销活动或邮箱返回 `404`。API 密钥自身的邮箱允许列表还会叠加生效：密钥只能访问同时出现在两份列表中的邮箱。
 
-All paths below are relative to the versioned base URL `https://api.warmbly.com/v1` (for example `/campaigns` is `https://api.warmbly.com/v1/campaigns`). See [versioning](/api/) for details.
+下方所有路径均相对于带版本的基础 URL `https://api.warmbly.com/v1`（例如 `/campaigns` 表示 `https://api.warmbly.com/v1/campaigns`）。详见 [版本管理](/api/)。
 
-### Restricted response data and workspace policies
+### 受限响应数据与工作区策略 [#restricted-response-data-and-workspace-policies]
 
-- `GET /organization/current` returns a restricted summary: `total_campaigns` and `active_campaigns` count granted campaigns; `total_contacts` counts distinct contacts in those campaigns; `email_accounts` counts granted mailboxes; and `emails_sent_today` counts confirmed campaign sends in both granted campaigns and granted mailboxes. `member_count`, `product_description`, `icp_notes` and `voice_profile` are omitted. Unrestricted responses keep their workspace-wide shape.
-- `GET /analytics/dashboard` intersects campaign and folder filters with grants before returning `scope.campaign_count`.
-- `GET /campaigns/:id/logs` keeps pagination and campaign activity, but restricted responses use safe messages and explicitly selected metadata. Mailbox addresses, caps, cross-campaign sending state, warmup health and account IDs outside mailbox grants are removed. Tracking domains, raw provider errors, unknown fields and nested metadata are not exposed. Granting a campaign alone does not grant its senders.
-- `GET /auth/me` and `/unibox/overview` include only categories applied to messages in accessible mailboxes for restricted members. Unrestricted members keep the workspace category registry. Inbox access is mailbox-based: granting a shared mailbox exposes its conversations from other campaigns too.
-- `GET /unibox/thread/labels` checks for a message in the selected organization and effective mailbox allowlist before listing labels. Unknown, cross-workspace and inaccessible threads have the same `404`. An accessible thread with no labels returns an empty list.
-- `GET /emails` resolves a pagination cursor only inside the selected organization and effective mailbox allowlist. A cursor outside either boundary does not supply a timestamp for pagination.
+- `GET /organization/current` 返回受限摘要：`total_campaigns` 和 `active_campaigns` 统计获授权营销活动；`total_contacts` 统计这些活动中的去重联系人；`email_accounts` 统计获授权邮箱；`emails_sent_today` 统计同时属于获授权营销活动和获授权邮箱的已确认营销活动发送。`member_count`、`product_description`、`icp_notes` 和 `voice_profile` 会省略。非受限响应保持原有工作区整体结构。
+- `GET /analytics/dashboard` 在返回 `scope.campaign_count` 前，会将营销活动和文件夹筛选条件与授权范围取交集。
+- `GET /campaigns/:id/logs` 保留分页和营销活动动态，但受限响应使用安全消息及显式选定的元数据。未获邮箱授权范围内的邮箱地址、上限、跨营销活动发送状态、预热健康信息及账户 ID 均被移除。不暴露跟踪域名、原始服务商错误、未知字段或嵌套元数据。仅授予营销活动访问权，并不意味着授予其发件邮箱访问权。
+- 对于受限成员，`GET /auth/me` 和 `/unibox/overview` 仅包含应用于可访问邮箱内邮件的分类。非受限成员仍获得工作区分类登记表。收件箱访问基于邮箱：授予共享邮箱访问权，也会开放其中其他营销活动的会话。
+- `GET /unibox/thread/labels` 在列出标签之前，会检查所选组织及实际生效的邮箱允许列表中是否存在相应邮件。未知、跨工作区和不可访问的会话均返回相同的 `404`。可访问但没有标签的会话返回空列表。
+- `GET /emails` 仅在所选组织及实际生效的邮箱允许列表范围内解析分页游标。超出任一边界的游标不会为分页提供时间戳。
 
-Workspace creation and limit-request routes are exceptions to the route-wide refusal described above: they authorize the account or target workspace in the service. `POST /organization` refuses accounts whose memberships are all restricted with `403` `member_access_restricted`, unless they are instance administrators. Accounts with no memberships or at least one unrestricted membership remain subject to the existing creation limits. Submitting or listing `/organization/:orgId/limit-requests`, and deleting `/limit-requests/:id`, requires an unrestricted membership in the request's target organization. Switching the selected workspace does not bypass these checks.
+工作区创建和限额申请路由是上述路由级拒绝规则的例外：它们在服务层验证账户或目标工作区的权限。`POST /organization` 对所有成员关系均受限的账户返回 `403` `member_access_restricted`，实例管理员除外。没有成员关系，或至少有一个非受限成员关系的账户，仍受现有创建限制约束。提交或列出 `/organization/:orgId/limit-requests`，以及删除 `/limit-requests/:id`，要求在请求的目标组织中拥有非受限成员关系。切换当前选定工作区无法绕过这些检查。
 
-Workspace notifications and owner-addressed realtime delivery also check current organization membership. Resource ownership alone does not authorize a workspace-wide event. Restricted, removed and unaccepted members are excluded from workspace notifications, including persisted feeds and deferred email/push delivery. Personal sign-in security notices remain available. See [realtime authorization and revocation](/api/realtime/#channels) for the 30-second refresh bound on open resource channels.
+工作区通知和按资源所有者寻址的实时投递也会检查当前组织成员关系。仅拥有资源并不足以授权接收工作区级事件。受限、已移除和尚未接受邀请的成员不会收到工作区通知，包括持久化动态和延迟邮件/推送投递。个人登录安全通知仍可接收。已打开资源通道的 30 秒刷新上限，参见 [实时授权与撤销](/api/realtime/#channels)。
 
-These checks use existing grants on hosted and self-hosted instances and need no new migration or configuration. Existing unrestricted behavior is preserved.
+这些检查在托管和自托管实例上均使用现有授权，无需新增迁移或配置。现有非受限访问行为保持不变。
 
-## API key accepted
+## 支持 API 密钥 [#api-key-accepted]
 
-### Emails
+### 邮箱 [#emails]
 
-`PATCH /emails/:id` validates `warmup_start_time` and `warmup_end_time` together: the end must be later than the start on the same day. A partial time patch uses the other stored endpoint; an invalid pair returns `400`. Unrelated patches do not rewrite existing invalid hours. See [warmup hours](/guides/warmup/).
+`PATCH /emails/:id` 联合验证 `warmup_start_time` 和 `warmup_end_time`：结束时间必须晚于同一天的开始时间。仅更新一端时，会使用另一端已保存的时间；无效组合返回 `400`。无关字段的更新不会重写已有的无效时段。参见 [预热时段](/guides/warmup/)。
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | GET | `/emails` | `READ_EMAILS` |
 | GET | `/emails/:id` | `READ_EMAILS` |
@@ -61,11 +61,11 @@ These checks use existing grants on hosted and self-hosted instances and need no
 | DELETE | `/emails/:id` | `WRITE_EMAILS` |
 | POST | `/emails/:id/send` | `SEND_CAMPAIGNS` |
 
-### Campaigns and sequences
+### 营销活动与邮件序列 [#campaigns-and-sequences]
 
-Campaigns, steps and activity logs are scoped to the selected organization for session callers and the key's organization for API-key callers. Access depends on the permissions below, regardless of who created the campaign. Step updates and deletes also require the step to belong to the campaign in the URL. Campaign analytics, including daily, hourly and comparison endpoints, use this same organization boundary and require `READ_ANALYTICS` (or **View analytics** for session callers).
+对于会话调用者，营销活动、步骤和活动日志限定在所选组织内；对于 API 密钥调用者，则限定在密钥所属组织内。访问取决于下方权限，与活动由谁创建无关。更新和删除步骤还要求步骤属于 URL 中的营销活动。营销活动分析（包括每日、每小时和对比端点）采用相同组织边界，并要求 `READ_ANALYTICS`（会话调用者则需 **查看分析**）。
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | GET | `/campaigns` | `READ_CAMPAIGNS` |
 | GET | `/campaigns-overview` | `READ_CAMPAIGNS` |
@@ -103,7 +103,7 @@ Campaigns, steps and activity logs are scoped to the selected organization for s
 | GET | `/campaigns/:id/logs` | `READ_CAMPAIGNS` |
 | GET | `/campaigns/:id/send-plan` | `READ_CAMPAIGNS` |
 | GET | `/campaigns/:id/forms` | `READ_CAMPAIGNS` |
-| GET/POST/PATCH/DELETE | `/campaigns/:id/steps[/:sid]` | `READ_CAMPAIGNS` for GET, `WRITE_CAMPAIGNS` otherwise |
+| GET/POST/PATCH/DELETE | `/campaigns/:id/steps[/:sid]` | GET 需要 `READ_CAMPAIGNS`，其他方法需要 `WRITE_CAMPAIGNS` |
 | PATCH | `/campaigns/:id/step-layout` | `WRITE_CAMPAIGNS` |
 | POST | `/generation/write` | `WRITE_CAMPAIGNS` |
 | POST | `/generation/edit` | `WRITE_CAMPAIGNS` |
@@ -112,23 +112,23 @@ Campaigns, steps and activity logs are scoped to the selected organization for s
 | POST | `/email-images` | `WRITE_CAMPAIGNS` |
 | DELETE | `/email-images/:id` | `WRITE_CAMPAIGNS` |
 
-The `hold`, `pause` and `resume` calls under `/campaigns/:id/leads/:contactId/` hold one contact's flow inside one campaign: an out-of-office auto-reply writes one automatically, and a member can write one by hand. The contact stays subscribed and stays a lead, so this is not an unsubscribe and not a suppression. Both writes state an absolute hold rather than applying a delta, and replacing a live hold keeps its original start, so a retry lands on the same row and neither needs an `Idempotency-Key`. See [pause a lead](/api/reference/campaigns/#pause-a-lead).
+`/campaigns/:id/leads/:contactId/` 下的 `hold`、`pause` 和 `resume` 调用控制某个联系人在单个营销活动中的流程暂停：外出自动回复会自动写入暂停，成员也可手动写入。联系人保持订阅状态并继续作为潜在客户，因此这既不是退订，也不是禁止发送。两项写入操作均声明完整暂停状态，而非增量更改；替换有效暂停时保留原始开始时间，因此重试会作用于同一记录，两者均不需要 `Idempotency-Key`。参见 [暂停潜在客户](/api/reference/campaigns/#pause-a-lead)。
 
-The `cc` calls under the same path set the contacts copied on every email to one lead. Their answers carry contact names and addresses, so they need contact read access as well as the campaign scope. `PUT` sends the whole list, so a retry lands on the same state and needs no `Idempotency-Key`. See [set a lead's CC](/api/reference/campaigns/#set-a-leads-cc).
+同一路径下的 `cc` 调用设置每封发给某位潜在客户的邮件都会抄送的联系人。响应携带联系人姓名和地址，因此除营销活动权限范围外，还需要联系人读取权限。`PUT` 发送完整列表，因此重试会得到相同状态，无需 `Idempotency-Key`。参见 [设置潜在客户的抄送地址](/api/reference/campaigns/#set-a-leads-cc)。
 
-`GET /campaigns/:id/forms` reports the forms this campaign links to and what its recipients did with them: personalized links handed out, who opened one, who started filling it in and who submitted. See the [forms guide](/guides/forms/).
+`GET /campaigns/:id/forms` 报告此营销活动链接到的表单，以及收件人对表单的操作：发出的个性化链接、谁打开了链接、谁开始填写、谁已提交。参见 [表单指南](/guides/forms/)。
 
-`GET /campaigns/:id/send-plan` returns today's sending plan: what the campaign is expected to send, and every limit that decided the number. For an active campaign the plan is computed in the background and served from a stored snapshot, so the read stays fast on a campaign of any size. `computed_at` is when that snapshot was walked, and `stale` is `true` when the campaign has since been edited, started, stopped, or has crossed into a new budget day and a refreshed plan is already being computed: the figures are the last good ones and a current plan follows within moments. A campaign that has no snapshot yet (a brand-new one) is computed on the request instead. See the [send plan guide](/guides/campaigns/#todays-sending-plan).
+`GET /campaigns/:id/send-plan` 返回今天的发送计划：营销活动预计发送多少封邮件，以及决定数量的每项限制。活跃营销活动的计划在后台计算，并从已保存的快照返回，因此无论活动规模多大，读取都保持快速。`computed_at` 是遍历计算该快照的时间；若此后活动被编辑、启动、停止，或已进入新的额度日期，且正在计算新计划，则 `stale` 为 `true`：当前数字是最近一次有效结果，最新计划会很快跟上。尚无快照的活动（新创建的活动）则在请求时计算。参见 [发送计划指南](/guides/campaigns/#todays-sending-plan)。
 
-`/email-images` is the workspace's image library for email bodies. `POST` takes a multipart `file` field (PNG, JPG, GIF or WebP, up to 5 MB) and returns the row with the public `url` you put in an `<img src>`; those bytes count against the same storage quota as campaign attachments. `GET` is keyset-paginated newest first (`?limit=` 1 to 100, `?cursor=` the opaque `pagination.next_cursor`). `DELETE` removes the object before the row and refuses with a `503` if storage will not take the delete, so a failed call changes nothing and can be retried; once it succeeds, an image in mail already sent stops loading.
+`/email-images` 是工作区用于邮件正文的图片库。`POST` 接受 multipart `file` 字段（PNG、JPG、GIF 或 WebP，最大 5 MB），并返回记录及可放入 `<img src>` 的公开 `url`；这些文件大小与营销活动附件共用同一存储配额。`GET` 采用键集分页，最新在前（`?limit=` 为 1 至 100，`?cursor=` 为不透明的 `pagination.next_cursor`）。`DELETE` 先删除存储对象，再删除记录；若存储拒绝删除，则返回 `503`，因此失败调用不会改变任何内容，可安全重试；删除成功后，已发送邮件中的该图片将无法加载。
 
-### Contacts
+### 联系人 [#contacts]
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | POST | `/contacts/search` | `READ_CONTACTS` |
 | GET | `/contacts/custom-fields` | `READ_CONTACTS` |
-| GET | `/contacts/lookup` | `READ_CONTACTS` (plus `READ_UNIBOX` with `thread_id`) |
+| GET | `/contacts/lookup` | `READ_CONTACTS`（提供 `thread_id` 时还需 `READ_UNIBOX`） |
 | POST | `/contacts` | `WRITE_CONTACTS` |
 | DELETE | `/contacts` | `BULK_CONTACTS` |
 | PATCH | `/contacts` | `BULK_CONTACTS` |
@@ -162,15 +162,15 @@ The `cc` calls under the same path set the contacts copied on every email to one
 | GET | `/contacts/:id/research` | `AI_RESEARCH` |
 | POST | `/contacts/research/batch` | `AI_RESEARCH` |
 
-`GET /contacts/custom-fields` lists the distinct custom-field keys used across your contacts (frequency-ranked), for building personalization pickers and import column mappers. It returns a flat string array under `data`, capped at 200 keys.
+`GET /contacts/custom-fields` 列出联系人中使用的不同自定义字段键（按频率排序），用于构建个性化字段选择器和导入列映射器。在 `data` 下返回扁平字符串数组，最多 200 个键。
 
-The import pair is two steps over the same file: preview parses it and suggests a column mapping (matching headers to your existing custom fields), commit applies the mapping you chose. Commit takes the stricter `BULK_CONTACTS` scope because one call writes up to 50,000 rows. A mapping problem, an unusable custom-field name or no `email` column, is a `400` on the whole request; see [contacts](/api/reference/contacts/).
+导入由针对同一文件的两个步骤组成：预览解析文件并建议列映射（将标题匹配到现有自定义字段），提交则应用您选定的映射。提交需要更严格的 `BULK_CONTACTS` 权限范围，因为一次调用最多写入 50,000 行。映射问题、不可用的自定义字段名称或缺少 `email` 列，均使整个请求返回 `400`；参见 [联系人](/api/reference/contacts/)。
 
-AI contact research charges credits (2 per run, billable even when it finds nothing) and only saves cited findings. See the [AI contact research](/guides/ai-contact-research/) guide. The batch endpoint accepts up to 500 contact ids and drains in the background.
+AI 联系人调研消耗积分（每次运行 2 积分，即使没有发现结果也计费），且仅保存有引用依据的发现。参见 [AI 联系人调研](/guides/ai-contact-research/) 指南。批量端点最多接受 500 个联系人 ID，并在后台逐步处理。
 
-### Segments
+### 联系人分群 [#segments]
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | GET | `/segments` | `READ_CONTACTS` |
 | GET | `/segments/fields` | `READ_CONTACTS` |
@@ -184,11 +184,11 @@ AI contact research charges credits (2 per run, billable even when it finds noth
 | GET | `/segments/:id/overrides` | `READ_CONTACTS` |
 | POST | `/segments/:id/add-to-campaign` | `WRITE_CAMPAIGNS` |
 
-Segments are saved contact audiences: a condition list plus per-contact manual overrides, evaluated live. Contact scopes cover them because a segment is a view over contacts; enrolling one into a campaign writes leads, so that call takes the campaign write scope, as does managing a campaign's linked segments (`/campaigns/:id/segments` above). `POST /contacts/search` and `POST /contacts/export` accept `segment_ids` to scope any contact query to a segment. See [contacts](/api/reference/contacts/#segments) for the condition format.
+分群是保存的联系人受众：由条件列表和逐联系人的手动覆盖组成，实时求值。分群由联系人权限范围覆盖，因为它本质上是联系人的一种视图；将分群加入营销活动会写入潜在客户，因此需要营销活动写入权限范围，管理营销活动关联分群（上方的 `/campaigns/:id/segments`）也同样如此。`POST /contacts/search` 和 `POST /contacts/export` 接受 `segment_ids`，可将任何联系人查询限定到分群。条件格式参见 [联系人](/api/reference/contacts/#segments)。
 
-### Forms
+### 表单 [#forms]
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | GET | `/forms` | `READ_CONTACTS` |
 | GET | `/forms/config` | `READ_CONTACTS` |
@@ -206,13 +206,13 @@ Segments are saved contact audiences: a condition list plus per-contact manual o
 | POST | `/forms/:id/assets/:kind` | `WRITE_CONTACTS` |
 | DELETE | `/forms/:id/assets/:kind` | `WRITE_CONTACTS` |
 
-Hosted lead-capture forms; see the [forms guide](/guides/forms/). Contact scopes cover them because a form exists to create contacts. Minting a personalized link is a `GET` on top of an upsert, so retries always return the same token. The `/forms/domain` routes are the workspace-wide custom forms domain and additionally need the `manage_settings` organization permission for JWT callers; `PUT` resolves the record as part of saving, and only a verified domain is ever used to build a URL. The public page (`/f/:public_id`), its submit endpoint and the embed loader (`/forms.js`) are served by the standalone forms service on its own host (`FORMS_DOMAIN`), not the API origin, and take no authentication; the unguessable public id is the capability, and the JSON endpoints additionally require the render token the page shell carries.
+托管的潜在客户收集表单；参见 [表单指南](/guides/forms/)。表单用于创建联系人，因此由联系人权限范围覆盖。生成个性化链接是在 upsert 之上的 `GET` 操作，因此重试始终返回相同令牌。`/forms/domain` 路由管理工作区全局自定义表单域名，JWT 调用者还需 `manage_settings` 组织权限；`PUT` 在保存时解析记录，构建 URL 时仅使用已验证的域名。公开页面（`/f/:public_id`）、其提交端点和嵌入加载器（`/forms.js`）由独立表单服务在自己的主机（`FORMS_DOMAIN`）上提供，而非 API 源站，且无需身份验证；不可猜测的公开 ID 即为访问凭据，JSON 端点还要求页面外壳携带的渲染令牌。
 
-### Lead sync
+### 潜在客户同步 [#lead-sync]
 
-Saved Google Sheets sources that upsert contacts on demand. Gated under the contact write scope because a sync ultimately writes contacts. Nothing syncs on a timer: a source only runs when `/lead-sync/sources/:id/sync` is called.
+保存的 Google Sheets 数据源，可按需对联系人执行 upsert。由于同步最终会写入联系人，因此受联系人写入权限范围控制。没有定时同步：仅调用 `/lead-sync/sources/:id/sync` 时才运行数据源。
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | GET | `/lead-sync/google/connection` | `WRITE_CONTACTS` |
 | POST | `/lead-sync/google/spreadsheet` | `WRITE_CONTACTS` |
@@ -223,11 +223,11 @@ Saved Google Sheets sources that upsert contacts on demand. Gated under the cont
 | DELETE | `/lead-sync/sources/:id` | `WRITE_CONTACTS` |
 | POST | `/lead-sync/sources/:id/sync` | `WRITE_CONTACTS` |
 
-A source's `column_mapping` is validated when the source is written, not on its next sync, so a mapping with no `email` column or an unusable custom-field name is a `400` on create or update. See [integrations](/api/reference/integrations/).
+数据源的 `column_mapping` 在写入数据源时验证，而不是等到下次同步，因此缺少 `email` 列或自定义字段名称不可用的映射，会在创建或更新时返回 `400`。参见 [集成](/api/reference/integrations/)。
 
-### Unibox
+### 统一收件箱 [#unibox]
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | GET | `/unibox` | `READ_UNIBOX` |
 | GET | `/unibox/count` | `READ_UNIBOX` |
@@ -235,7 +235,7 @@ A source's `column_mapping` is validated when the source is written, not on its 
 | GET | `/unibox/:id` | `READ_UNIBOX` |
 | PATCH | `/unibox/seen` | `WRITE_UNIBOX` |
 | PATCH | `/unibox/folder` | `WRITE_UNIBOX` |
-| POST | `/unibox/reply` | `WRITE_UNIBOX` (plus `READ_UNIBOX` with `forward_message_id`) |
+| POST | `/unibox/reply` | `WRITE_UNIBOX`（提供 `forward_message_id` 时还需 `READ_UNIBOX`） |
 | POST | `/unibox/reply/draft` | `READ_UNIBOX` |
 | GET | `/unibox/compose/candidates` | `READ_UNIBOX` |
 | POST | `/unibox/compose` | `WRITE_UNIBOX` |
@@ -247,57 +247,57 @@ A source's `column_mapping` is validated when the source is written, not on its 
 | POST | `/unibox/agent-drafts/:id/approve` | `WRITE_UNIBOX` |
 | POST | `/unibox/agent-drafts/:id/discard` | `WRITE_UNIBOX` |
 
-`PATCH /unibox/folder` re-files into `inbox`, `archive` or `trash`. Name the messages with `email_ids`, the conversations with `thread_ids`, or both; up to 500 of each. Prefer `thread_ids` when you have one: filing part of a conversation leaves it listed, because a thread shows wherever any message of it still sits. The move is then relayed to each mailbox with `relay_folder_moves` on (the default): the provider's copy is archived, moved to its trash, or put back in its inbox, after the response and best-effort, and the next sync will not undo a filing either way, because the provider's placement is tracked separately and followed only when the provider itself moves the message. `sent`, `drafts` and `spam` are placements a provider reaches rather than somewhere a person files mail, so they are rejected with a `400`. See [filing a conversation](/guides/unibox/#filing-a-conversation).
+`PATCH /unibox/folder` 将邮件移到 `inbox`、`archive` 或 `trash`。通过 `email_ids` 指定邮件，通过 `thread_ids` 指定会话，也可同时指定，两者各最多 500 项。有会话 ID 时优先使用 `thread_ids`：只移动会话中的部分邮件，会让该会话继续显示，因为只要任一邮件仍位于某处，会话就会显示在那里。随后，移动操作会传递到启用了 `relay_folder_moves`（默认启用）的每个邮箱：在响应返回后尽力将服务商副本归档、移到垃圾箱或放回收件箱；下一次同步不会撤销任一侧的整理操作，因为服务商端位置独立跟踪，只有服务商自身移动邮件时才跟随。`sent`、`drafts` 和 `spam` 是由服务商决定的投递位置，不是用户手动归档邮件的目标，因此以 `400` 拒绝。参见 [整理会话](/guides/unibox/#filing-a-conversation)。
 
-`PATCH /unibox/seen` takes the same two forms: `email_ids` for individual messages, `thread_ids` for whole conversations. `folder` sweeps one folder instead and cannot be combined with either. Unread by conversation marks only its newest received message (preferring one outside spam and trash), or its newest sent copy if it has no received message; otherwise sent copies stay read. Drafts are never marked unread. Explicit `email_ids` and `folder` sweeps never mark sent or draft copies unread.
+`PATCH /unibox/seen` 接受相同的两种形式：`email_ids` 指定单封邮件，`thread_ids` 指定整个会话。`folder` 则批量处理一个文件夹，不能与前两者组合。按会话标记未读时，仅标记最新收到的邮件（优先选择不在垃圾邮件和垃圾箱中的邮件）；若没有收到的邮件，则标记最新发件副本；其他情况下发件副本保持已读。草稿永不标记为未读。显式 `email_ids` 和 `folder` 批量操作也不会将发件或草稿副本标记为未读。
 
-`GET /unibox` lists every working folder by default. Spam, trash and archive stay out, so a conversation you file leaves every view rather than only the Inbox folder; pass `include_archived=true` for the All mail behaviour, or `folder=archive` to read the folder itself.
+`GET /unibox` 默认列出所有工作文件夹，排除垃圾邮件、垃圾箱和归档，因此整理后的会话会从所有视图移出，而不仅是收件箱文件夹。传入 `include_archived=true` 可采用“所有邮件”行为，或传入 `folder=archive` 直接读取归档文件夹。
 
-`POST /unibox/snooze` accepts `thread_id` for one conversation or `thread_ids` for up to 500. The single form answers with the snooze row, as before; the bulk form answers with `data`. `DELETE /unibox/snooze?thread_id=` accepts a comma-separated list.
+`POST /unibox/snooze` 接受 `thread_id` 指定一个会话，或 `thread_ids` 指定最多 500 个。单个形式仍返回稍后处理记录；批量形式返回 `data`。`DELETE /unibox/snooze?thread_id=` 接受逗号分隔列表。
 
-`POST /unibox/reply` with `forward_message_id` forwards a stored message, which discloses it, so the key also needs `READ_UNIBOX` and, when it is restricted to certain mailboxes, the mailbox the message belongs to. See [Forwarding a message](/api/reference/unibox/#forwarding-a-message).
+带有 `forward_message_id` 的 `POST /unibox/reply` 会转发已存储的邮件，涉及披露邮件内容，因此密钥还需 `READ_UNIBOX`；若密钥限定了邮箱范围，还必须允许访问原邮件所属邮箱。参见 [转发邮件](/api/reference/unibox/#forwarding-a-message)。
 
-`POST /unibox/reply/draft` returns an AI-drafted reply (it never sends) grounded in the thread, the contact, and your [voice profile](/guides/unibox/#ai-reply-drafts). It charges AI credits; see [AI credits](/guides/ai-credits/).
+`POST /unibox/reply/draft` 根据会话、联系人和您的 [写作风格档案](/guides/unibox/#ai-reply-drafts) 返回 AI 回复草稿（绝不发送）。消耗 AI 积分；参见 [AI 积分](/guides/ai-credits/)。
 
-`POST /unibox/compose/draft` returns a grounded AI draft for a new email (it never sends): the recipient's contact record, correspondence history, and the workspace voice profile feed the prompt, and the response carries either `text` or a clarifying `question` plus a `grounding` report. Charges AI credits like the reply draft; see [AI credits](/guides/ai-credits/).
+`POST /unibox/compose/draft` 为新邮件返回有依据的 AI 草稿（绝不发送）：收件人联系人记录、往来历史和工作区写作风格档案会作为提示词的上下文，响应包含 `text` 或用于澄清的 `question`，并附上 `grounding` 报告。与回复草稿一样消耗 AI 积分；参见 [AI 积分](/guides/ai-credits/)。
 
-`POST /unibox/compose` sends a brand-new outbound email (not a reply). `body_html` goes out as written; with `body_plain` left empty, the plain-text part is rendered from it, which `POST /unibox/reply` does too. Omit `email_account_id` (or pass `"auto"`) and the backend picks the best mailbox for the first recipient; the response reports `account_id`, `account_email`, `auto`, and a `picked_reason`. Recipients on the workspace suppression list are rejected with a `400` before anything queues. `GET /unibox/compose/candidates?to=<address>` returns every active mailbox scored for that recipient (conversation history, remaining daily budget, domain-auth health) plus the resolved contact and suppression state; see [composing email](/guides/unibox/#composing-a-new-email).
+`POST /unibox/compose` 发送全新的外发邮件（非回复）。`body_html` 按原样发送；`body_plain` 留空时，根据它生成纯文本部分，`POST /unibox/reply` 也采用同样行为。省略 `email_account_id`（或传入 `"auto"`）时，后端为第一位收件人选择最合适的邮箱；响应报告 `account_id`、`account_email`、`auto` 和 `picked_reason`。位于工作区禁止发送名单上的收件人会在任务入队前以 `400` 拒绝。`GET /unibox/compose/candidates?to=<address>` 返回针对该收件人评分的所有活跃邮箱（依据会话历史、剩余每日额度、域名身份验证健康状况），以及解析到的联系人和禁止发送状态；参见 [撰写邮件](/guides/unibox/#composing-a-new-email)。
 
-The `/unibox/drafts` endpoints hold autosaved compose drafts, scoped to the calling user within the organization. The draft id is client-generated, so `PUT` is idempotent (safe for debounced autosave and retries); deleting a missing draft is a no-op. A draft carries `body` (the plain text) and `body_html`, which is empty for a plain-text draft; each is capped at 100,000 characters.
+`/unibox/drafts` 端点保存自动保存的撰写草稿，作用域为组织内的调用用户。草稿 ID 由客户端生成，因此 `PUT` 具有幂等性（适合防抖自动保存和重试）；删除不存在的草稿不作任何操作。草稿携带 `body`（纯文本）和 `body_html`（纯文本草稿中为空）；各自最多 100,000 个字符。
 
-`GET /emails/:id/auth-check` runs a live SPF/DKIM/DMARC lookup on the mailbox's sending domain and reports it without changing anything. `POST /emails/:id/auth-check` runs the same lookup and records the verdict against every active mailbox on that domain, which is what clears the send gate after a DNS fix, so it needs `WRITE_EMAILS` rather than `READ_EMAILS`. The write takes no `Idempotency-Key`: it is derived entirely from public DNS with no request body, so repeating it converges on the same result. See [domain authentication](/guides/deliverability/#domain-authentication).
+`GET /emails/:id/auth-check` 对邮箱发件域名实时执行 SPF/DKIM/DMARC 查询并报告结果，不更改任何内容。`POST /emails/:id/auth-check` 执行相同查询，并为该域名下的所有活跃邮箱记录结论；DNS 修复后正是此操作解除发送限制，因此需要 `WRITE_EMAILS` 而非 `READ_EMAILS`。写入无需 `Idempotency-Key`：结果完全来自公开 DNS，没有请求体，重复执行会收敛到相同结果。参见 [域名身份验证](/guides/deliverability/#domain-authentication)。
 
-`GET /emails/:id/track` reports the mailbox's stored tracking domain plus the `CNAME` value this deployment expects (`cname_target`, taken from its `TRACKING_DOMAIN`), and does no DNS work. `PATCH /emails/:id/track` sets the domain and resolves it once; `POST /emails/:id/track/verify` re-resolves the saved one and records the verdict, which is what makes a record that has finished propagating start being used. Both writes are derived from public DNS with no request body, so they take no `Idempotency-Key`. Only a verified domain is used at send time; until then opens and clicks go through the shared tracking host. See [custom tracking domain](/guides/mailboxes/#custom-tracking-domain).
+`GET /emails/:id/track` 报告邮箱已保存的跟踪域名，以及此部署预期的 `CNAME` 值（`cname_target`，取自其 `TRACKING_DOMAIN`），不执行 DNS 查询。`PATCH /emails/:id/track` 设置域名并解析一次；`POST /emails/:id/track/verify` 重新解析已保存域名并记录结论，使已完成传播的记录开始生效。两项写入均基于公开 DNS，且无请求体，因此无需 `Idempotency-Key`。发送时仅使用已验证域名；在此之前，打开和点击经过共用跟踪主机。参见 [自定义跟踪域名](/guides/mailboxes/#custom-tracking-domain)。
 
-`POST /emails/:id/hold` keeps a mailbox out of campaign sending until `POST /emails/:id/release` puts it back; warmup is unaffected and the automatic rest logic never releases a hold. `release` is also the manual exit for a mailbox that is `resting` automatically. Both are bodyless and idempotent, so they take no `Idempotency-Key`. See [holding a mailbox yourself](/guides/mailboxes/#holding-a-mailbox-yourself).
+`POST /emails/:id/hold` 阻止邮箱发送营销活动邮件，直到 `POST /emails/:id/release` 将其恢复；预热不受影响，自动休息逻辑也不会解除手动暂停。`release` 还是邮箱自动进入 `resting` 后的手动退出方式。两项操作均无请求体且具有幂等性，因此无需 `Idempotency-Key`。参见 [手动暂停邮箱](/guides/mailboxes/#holding-a-mailbox-yourself)。
 
-`GET /emails/allowance` reports how many mailboxes the workspace holds (`used`), how many it may hold (`allowance`, `null` for unlimited), `remaining`, and the `basis` of the number: `fair_use` (the plan's daily sends divided by `sends_per_mailbox`), `plan`, `override` (an approved request), `free`, or `unlimited`. `pending_request` is the open limit-increase request for mailboxes, if any. Every connect path refuses with `mailbox_allowance_reached` once `remaining` is `0`. See [mailbox allowance](/guides/mailboxes/#mailbox-allowance).
+`GET /emails/allowance` 报告工作区当前邮箱数量（`used`）、允许持有的数量（`allowance`，无限制时为 `null`）、`remaining`，以及该数量的 `basis`：`fair_use`（套餐每日发送量除以 `sends_per_mailbox`）、`plan`、`override`（已获批申请）、`free` 或 `unlimited`。`pending_request` 是尚在处理的邮箱增额申请（若有）。`remaining` 为 `0` 后，所有连接途径均以 `mailbox_allowance_reached` 拒绝。参见 [邮箱数量额度](/guides/mailboxes/#mailbox-allowance)。
 
-`GET /emails/:id/identity` reports which addresses the mailbox's provider will let it send as, which one it uses, and whether its signature was imported or written here; it contacts no provider. `POST /emails/:id/identity/refresh` re-reads that list from the provider and stores it, and with `import_signature` also replaces the stored signature with the one configured at the provider. Storing the list is what a `send_as_email` choice is validated against, so the refresh needs `WRITE_EMAILS` rather than `READ_EMAILS`; it takes no `Idempotency-Key` because it writes exactly what the provider currently says. Gmail only. See [sending identity](/guides/mailboxes/#sending-identity).
+`GET /emails/:id/identity` 报告邮箱服务商允许使用哪些发件地址、当前使用哪个地址，以及签名是导入的还是在此处编写的；不会联系服务商。`POST /emails/:id/identity/refresh` 从服务商重新读取该列表并保存；提供 `import_signature` 时，还会用服务商配置的签名替换已保存签名。系统依据已保存列表验证 `send_as_email` 选择，因此刷新需要 `WRITE_EMAILS` 而非 `READ_EMAILS`；无需 `Idempotency-Key`，因为它精确写入服务商当前提供的信息。仅限 Gmail。参见 [发件身份](/guides/mailboxes/#sending-identity)。
 
-`GET /emails/:id/sync` reports, alongside the import state and budget, `skip_folders` (the folders the mailbox's sync leaves alone) and `folders` (what the worker last listed on the server, each with its `name` and the canonical `folder` it files under, INBOX first; empty for Gmail and Outlook). `PUT /emails/:id/sync` takes `{"skip_folders": [...]}` and replaces the list: names as the server lists them, matched without regard to case, each covering its subfolders. Mail already stored from a newly skipped folder is removed, the mailbox is re-shipped to its worker so the change applies on the next pass, and the response is the list as stored. It refuses `INBOX` and any sent, drafts, spam, trash or archive folder with `400 invalid_sync_folder`, as it does a list of more than `50` names or a mailbox that is not IMAP. The body is the desired state, so it takes no `Idempotency-Key`. See [folders you do not want synced](/guides/mailboxes/#folders-you-do-not-want-synced).
+`GET /emails/:id/sync` 除导入状态和额度外，还报告 `skip_folders`（邮箱同步忽略的文件夹）及 `folders`（工作节点上次从服务器列出的文件夹，每项包含 `name` 及其归属的标准 `folder`，INBOX 在前；Gmail 和 Outlook 为空）。`PUT /emails/:id/sync` 接受 `{"skip_folders": [...]}` 并替换列表：使用服务器列出的名称，匹配时忽略大小写，每项涵盖其子文件夹。新设为跳过的文件夹中已存储邮件会被移除，邮箱会重新发送给工作节点，使变更在下一轮处理时生效，响应返回保存后的列表。`INBOX` 以及任何已发送、草稿、垃圾邮件、垃圾箱或归档文件夹均以 `400 invalid_sync_folder` 拒绝；名称超过 `50` 个或邮箱不是 IMAP 时也同样拒绝。请求体描述目标状态，因此无需 `Idempotency-Key`。参见 [不希望同步的文件夹](/guides/mailboxes/#folders-you-do-not-want-synced)。
 
-`PATCH /emails/:id` accepts `save_to_sent` (boolean) on SMTP/IMAP mailboxes: when true, which is the default, the worker files a copy of each outbound message in the mailbox's Sent folder. It has no effect on Gmail and Outlook mailboxes, whose APIs file their own copy. See [keeping a copy of sent mail](/guides/mailboxes/#keeping-a-copy-of-sent-mail).
+对于 SMTP/IMAP 邮箱，`PATCH /emails/:id` 接受 `save_to_sent`（boolean）：为 true（默认值）时，工作节点会将每封外发邮件的副本保存到邮箱的“已发送”文件夹。对 Gmail 和 Outlook 邮箱无效，因为其 API 会自行保存副本。参见 [保留已发送邮件副本](/guides/mailboxes/#keeping-a-copy-of-sent-mail)。
 
-`PATCH /emails/:id` also accepts `relay_folder_moves` (boolean, default true), on every provider: when true, filing a conversation with `PATCH /unibox/folder` moves it in the mailbox too. See [filing in the mailbox](/guides/mailboxes/#filing-in-the-mailbox).
+对于所有服务商，`PATCH /emails/:id` 还接受 `relay_folder_moves`（boolean，默认为 true）：为 true 时，通过 `PATCH /unibox/folder` 整理会话也会在邮箱中移动会话。参见 [在邮箱中整理邮件](/guides/mailboxes/#filing-in-the-mailbox)。
 
-The same `WRITE_EMAILS` mailbox PATCH accepts `test_mode` (`diagnostic`, `off`, `legacy`), independent `test_send_enabled`/`test_receive_enabled`, positive `shared_daily_limit`/`rolling_recipient_limit`, and `send_recovery_resolution`. Repair resolution binds `held_task_id`/`held_reason` and requires either `authentication_repaired` with a newer definitive successful same-mailbox outbound `evidence_task_id`, or `operator_provider_confirmation` with a same-mailbox definitive applied `evidence_task_id` and non-empty `confirmation_reference`. Fresh inbox sync alone is not evidence. For `held_reason: "unknown"`, explicit provider confirmation accepts `operator_confirmed_sent` (requires `message_id`, optional `provider_msg_id`/`thread_id`) or `operator_confirmed_not_sent` (no message/thread handles), with a non-empty `confirmation_reference` and no `evidence_task_id`. This queues an audited normal send result, not an immediate hold reset. The consumer reconciles it before reopening admission; other unknown tasks remain held. A timeout or missing Sent copy never permits automatic retry. Existing NULL participation remains legacy; new mailboxes default off. See [send safety and exact resolution requirements](/development/send-safety/).
+同一个需要 `WRITE_EMAILS` 的邮箱 PATCH 接受 `test_mode`（`diagnostic`、`off`、`legacy`）、独立的 `test_send_enabled`/`test_receive_enabled`、正数 `shared_daily_limit`/`rolling_recipient_limit`，以及 `send_recovery_resolution`。修复解除绑定 `held_task_id`/`held_reason`，并要求满足以下之一：`authentication_repaired`，附带同一邮箱中时间更新、明确成功的外发 `evidence_task_id`；或 `operator_provider_confirmation`，附带同一邮箱中已明确应用结果的 `evidence_task_id` 和非空 `confirmation_reference`。仅有新的收件箱同步不能作为证据。对于 `held_reason: "unknown"`，显式服务商确认接受 `operator_confirmed_sent`（要求 `message_id`，可选 `provider_msg_id`/`thread_id`）或 `operator_confirmed_not_sent`（不含邮件/会话句柄），同时要求非空 `confirmation_reference` 且不得提供 `evidence_task_id`。这会将经过审计的正常发送结果加入队列，而不是立即重置暂停。消费者进程先对账处理，再重新开放发送准入；其他结果未知的任务仍保持暂停。超时或缺少已发送副本绝不允许自动重试。现有参与状态为 NULL 的邮箱保持旧版行为；新邮箱默认关闭。参见 [发送安全及精确解除要求](/development/send-safety/)。
 
-`DELETE /emails/:id` releases the mailbox on Warmbly Cloud before removing the local mailbox. An enrolled mailbox's stored credential comes out of the pool, and a cloud-managed mirror's claim is released so the mailbox returns to the cloud workspace and can be adopted again. If the cloud cannot confirm the release, the delete returns `409 mailbox_cloud_unenroll_failed` and keeps the mailbox record so the request can be retried safely. Warmbly attempts to restore the mailbox onto its worker immediately, and the worker reconciler may restore it later if that attempt fails. See [mailboxes](/guides/mailboxes/).
+`DELETE /emails/:id` 先在 Warmbly Cloud 释放邮箱，再删除本地邮箱。已加入预热池的邮箱所保存的凭据会从池中移除；云端托管镜像的认领状态会被释放，使邮箱返回云端工作区并可再次接管。若云端无法确认释放，删除返回 `409 mailbox_cloud_unenroll_failed` 并保留邮箱记录，以便安全重试。Warmbly 会立即尝试将邮箱恢复到工作节点；若失败，工作节点协调器可能在之后恢复。参见 [邮箱](/guides/mailboxes/)。
 
-`GET /unibox` and `GET /unibox/thread` return message previews: each row carries `snippet`, a one-line summary, not the message body. Read a full message with `GET /unibox/:id`, which returns `body_plain` plus `body_html`. The HTML is sanitized before it leaves the API (scripts, event handlers, embedded frames, and unsafe URL schemes are removed), so it is safe to render, and links carry `target="_blank"` with `rel="noopener"`. Warmbly open-tracking pixels are also removed from this display copy, including quoted history, so rendering it does not record a campaign open. Stored and delivered copies keep their pixels. `body_truncated` is `true` on the rare message whose stored body could not be read, where `body_plain` falls back to the snippet. The same response carries the full envelope (`from`, `to`, `cc`, `bcc`, `ReplyTo`, `date`, `internal_date`, `message_id`, `in_reply_to`, `size`), the mailbox it belongs to (`email_id`) and its canonical `folder`.
+`GET /unibox` 和 `GET /unibox/thread` 返回邮件预览：每行携带 `snippet`，即单行摘要，而非邮件正文。通过 `GET /unibox/:id` 读取完整邮件，它返回 `body_plain` 及 `body_html`。HTML 在离开 API 前已清理（移除脚本、事件处理程序、嵌入框架及不安全 URL 协议），因此可安全渲染；链接带有 `target="_blank"` 和 `rel="noopener"`。此显示副本也会移除 Warmbly 打开跟踪像素，包括引用历史中的像素，因此渲染不会记录营销活动打开。存储和实际投递的副本仍保留像素。少数无法读取已存储正文的邮件，其 `body_truncated` 为 `true`，此时 `body_plain` 回退到摘要。同一响应还包含完整邮件信封信息（`from`、`to`、`cc`、`bcc`、`ReplyTo`、`date`、`internal_date`、`message_id`、`in_reply_to`、`size`）、所属邮箱（`email_id`）及其标准 `folder`。
 
-`GET /unibox` also accepts `address=<value>` (matches sender or recipient, for "every conversation with this person") and `direction=sent|received` (resolved against your own mailbox addresses).
+`GET /unibox` 还接受 `address=<value>`（匹配发件人或收件人，用于查询“与此人的所有会话”）及 `direction=sent|received`（根据您自己的邮箱地址确定方向）。
 
-The `agent-drafts` endpoints back the [inbox agent](/guides/inbox-agent/): the agent drafts a suggested reply on an inbound human reply and holds it here for review. `GET` lists the pending drafts; `approve` sends one (optionally with an edited `body`) through the normal reply path and is safe to retry with an `Idempotency-Key`; `discard` dismisses it. Approving is the only path that sends.
+`agent-drafts` 端点为 [收件箱智能体](/guides/inbox-agent/) 提供支持：智能体针对收到的真人回复起草建议回复，并保存在此处供审核。`GET` 列出待审核草稿；`approve` 经正常回复流程发送一份草稿（可提供编辑后的 `body`），并可使用 `Idempotency-Key` 安全重试；`discard` 则将其丢弃。只有批准操作会发送邮件。
 
-### Templates and CRM
+### 模板与 CRM [#templates-and-crm]
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | GET | `/templates`, `/templates/:id` | `READ_TEMPLATES` |
 | POST | `/templates/score` | `READ_TEMPLATES` |
-| POST | `/templates/analyze` | `WRITE_TEMPLATES` (it spends AI credits) |
+| POST | `/templates/analyze` | `WRITE_TEMPLATES`（会消耗 AI 积分） |
 | POST/PATCH/DELETE | `/templates[/:id]` | `WRITE_TEMPLATES` |
 | GET | `/crm/pipelines`, `/crm/pipelines/:id` | `READ_CRM` |
 | POST/PATCH/DELETE | `/crm/pipelines[/:id][/stages[/:stageId]]` | `WRITE_CRM` |
@@ -305,7 +305,7 @@ The `agent-drafts` endpoints back the [inbox agent](/guides/inbox-agent/): the a
 | POST/PATCH/DELETE | `/crm/deals[/:id]` | `WRITE_CRM` |
 | GET | `/crm/tasks`, `/crm/tasks/:id` | `READ_CRM` |
 | POST/PATCH/DELETE | `/crm/tasks[/:id]` | `WRITE_CRM` |
-| PATCH/DELETE | `/crm/tasks` (bulk, over an id list or a whole filter) | `WRITE_CRM` |
+| PATCH/DELETE | `/crm/tasks`（批量，针对 ID 列表或完整筛选结果） | `WRITE_CRM` |
 | GET | `/crm/task-types` | `READ_CRM` |
 | POST/PATCH/DELETE | `/crm/task-types[/:id]` | `WRITE_CRM` |
 | GET | `/crm/settings`, `/crm/metadata`, `/crm/owners`, `/crm/sync` | `READ_CRM` |
@@ -320,30 +320,30 @@ The `agent-drafts` endpoints back the [inbox agent](/guides/inbox-agent/): the a
 | GET | `/crm/lists` | `READ_CRM` |
 | POST | `/crm/lists/preview`, `/crm/lists/import` | `WRITE_CONTACTS` |
 
-The `/crm/settings` through `/crm/lists` routes are CRM provider mode ([HubSpot](/guides/hubspot/) or [Pipedrive](/guides/pipedrive/)), and act on the CRM the workspace runs on. For a dashboard session they gate on `view_contacts` to read, `manage_contacts` to edit a contact's CRM record or import a list, and `manage_settings` to change the mode, match owners, run a sync or copy records. `POST /crm/sync/retry`, `POST /crm/sync/discard` and `POST /crm/backfill` are naturally safe to retry: a requeued job is not queued twice and a copied record is never copied again. While HubSpot or Pipedrive is the workspace's CRM, writes to pipelines, stages and task types answer `409 crm_managed_externally`. See [CRM](/api/reference/crm/#crm-provider-mode).
+从 `/crm/settings` 到 `/crm/lists` 的路由用于 CRM 服务商模式（[HubSpot](/guides/hubspot/) 或 [Pipedrive](/guides/pipedrive/)），操作工作区实际使用的 CRM。对于控制台会话，读取需要 `view_contacts`，编辑联系人的 CRM 记录或导入名单需要 `manage_contacts`，更改模式、匹配负责人、运行同步或复制记录需要 `manage_settings`。`POST /crm/sync/retry`、`POST /crm/sync/discard` 和 `POST /crm/backfill` 天然可安全重试：重新入队的任务不会重复排队，已复制记录不会再次复制。工作区使用 HubSpot 或 Pipedrive 作为 CRM 时，对销售管道、阶段和任务类型的写入返回 `409 crm_managed_externally`。参见 [CRM](/api/reference/crm/#crm-provider-mode)。
 
-### Analytics and audit
+### 分析与审计 [#analytics-and-audit]
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
-| GET | `/analytics/*` (dashboard, direct, inbox-tagging, deliverability, warmup, warmup/placement, campaigns, accounts, usage) | `READ_ANALYTICS` |
+| GET | `/analytics/*`（dashboard、direct、inbox-tagging、deliverability、warmup、warmup/placement、campaigns、accounts、usage） | `READ_ANALYTICS` |
 | GET | `/audit-logs` | `READ_AUDIT_LOGS` |
 
-Analytics reads use the selected workspace for JWT callers and the key's workspace for API-key callers. This includes warmup and usage totals, so teammates see the same workspace history regardless of which member connected a mailbox or created a campaign.
+分析读取对 JWT 调用者使用所选工作区，对 API 密钥调用者使用密钥所属工作区。预热及用量总数也遵循此规则，因此无论哪位成员连接邮箱或创建活动，团队成员看到的都是同一工作区历史。
 
-`GET /analytics/warmup` and `GET /analytics/warmup/placement` include detailed Cloud warmup reports for enrolled mailboxes on a linked self-hosted instance, alongside local warmup history. The optional `email_id` is always the local mailbox ID; workspace reports request only that workspace's enrollments. Cloud failures are returned as errors, not empty or partial reports. Daily warmup stats include `active`, whether that date had a warmup plan, so combining sources counts each active UTC date once.
+`GET /analytics/warmup` 和 `GET /analytics/warmup/placement` 除本地预热历史外，还包含已关联自托管实例中已加入云端预热池邮箱的详细 Cloud 预热报告。可选 `email_id` 始终是本地邮箱 ID；工作区报告仅请求该工作区已加入预热池的邮箱。Cloud 失败以错误返回，而非空报告或部分报告。每日预热统计包含 `active`，表示该日期是否有预热计划，因此合并来源时，每个活跃 UTC 日期只计数一次。
 
-Cloud exposes `POST /pool-link/instance/analytics/warmup` and `POST /pool-link/instance/analytics/warmup/placement` for instance tokens only, not API keys. Both accept `{ "remote_ids": ["uuid"], "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" }`, with 1 to 100 enrolled remote IDs and up to 366 inclusive UTC days. Invalid ranges or batch sizes return `400`; any ID not enrolled by the calling instance refuses the whole request with `pool_link_mailbox_not_found`. The first returns daily counts, including `active`; the second returns raw `daily`, `hosts`, `sent`, `unconfirmed` and `windows` counts with instance-side remote IDs. Daily placement includes the lookback before `from` needed for rolling rates, hosts and send counts cover the requested range, and windows cover the current trailing window.
+Cloud 提供 `POST /pool-link/instance/analytics/warmup` 和 `POST /pool-link/instance/analytics/warmup/placement`，仅供实例令牌使用，不接受 API 密钥。两者均接受 `{ "remote_ids": ["uuid"], "from": "YYYY-MM-DD", "to": "YYYY-MM-DD" }`，包含 1 至 100 个已加入预热池的远端 ID，以及最多 366 个 UTC 日期（含首尾）。范围或批量大小无效时返回 `400`；任一 ID 未由调用实例加入时，整个请求以 `pool_link_mailbox_not_found` 拒绝。第一个端点返回每日计数，包括 `active`；第二个返回带有实例侧远端 ID 的原始 `daily`、`hosts`、`sent`、`unconfirmed` 和 `windows` 计数。每日投递位置包含计算滚动比例所需的 `from` 之前回溯数据；托管服务商和发送计数覆盖请求范围，窗口数据则覆盖当前向前回溯的时间窗口。
 
-`GET /analytics/inbox-tagging` accepts `limit`, opaque `cursor`, and `needs_review` query parameters and returns `data`, aggregate `summary`, and `pagination`. Each row carries `actions`, the list of what the verdict was allowed to do (`hold`, `stop`, `task`, `suppress`), and `summary.acted` counts the rows that did anything. `return_date` (`YYYY-MM-DD`, or `null`) is the out-of-office return date the model was asked to confirm, with its answer under `answers.return_date`. Invalid cursors, limits, or booleans return `400`.
+`GET /analytics/inbox-tagging` 接受 `limit`、不透明的 `cursor` 及 `needs_review` 查询参数，返回 `data`、汇总 `summary` 和 `pagination`。每行携带 `actions`，列出该判定被允许执行的操作（`hold`、`stop`、`task`、`suppress`），`summary.acted` 统计实际执行过操作的行数。`return_date`（`YYYY-MM-DD` 或 `null`）是要求模型确认的外出返回日期，模型答案位于 `answers.return_date`。游标、条数或布尔值无效时返回 `400`。
 
-`GET /analytics/accounts` returns account health and usage in the standard `data` plus `pagination` envelope with an opaque `cursor`. Pass `email_ids` (comma-separated, up to 200) to ask only for the mailboxes a page shows, or `limit` (`1`-`1000`, default `1000`) and `cursor` to walk the whole inventory. Per-mailbox reads are batched across the page, so a page's cost does not grow with the total inventory, and a workspace with more mailboxes than one page reaches the rest through `next_cursor` instead of having them silently dropped. Invalid cursors, limits, or ids return `400`.
+`GET /analytics/accounts` 以标准 `data` 加 `pagination` 分页结构返回账户健康和用量，使用不透明 `cursor`。传入 `email_ids`（逗号分隔，最多 200 个）可仅请求当前页面显示的邮箱；或使用 `limit`（`1`–`1000`，默认 `1000`）和 `cursor` 遍历完整邮箱清单。每页中的单邮箱读取按批处理，因此单页开销不会随总邮箱数量增长；工作区邮箱超过一页时，可通过 `next_cursor` 访问剩余邮箱，而不会被静默丢弃。游标、条数或 ID 无效时返回 `400`。
 
-### Inbox placement tests
+### 收件箱投递位置测试 [#inbox-placement-tests]
 
-A [placement test](/guides/placement-tests/) sends real mail from one of the workspace's mailboxes, so starting and cancelling one takes the same permission as starting a campaign, while reading results is an analytics read. Everything here is scoped to the workspace: a test, a sending mailbox, a campaign, a step and a contact are each checked to belong to it before anything is sent.
+[投递位置测试](/guides/placement-tests/) 会通过工作区某个邮箱实际发送邮件，因此启动和取消测试与启动营销活动需要相同权限，而读取结果属于分析读取。这里所有资源均限定在工作区内：发送前会分别检查测试、发件邮箱、营销活动、步骤和联系人是否属于该工作区。
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | GET | `/placement/overview` | `READ_ANALYTICS` |
 | GET | `/placement/tests` | `READ_ANALYTICS` |
@@ -360,19 +360,19 @@ A [placement test](/guides/placement-tests/) sends real mail from one of the wor
 | POST | `/placement/batches/:id/cancel` | `SEND_CAMPAIGNS` |
 | GET | `/placement/coverage` | `READ_ANALYTICS` |
 
-For session callers the matching organization permissions are **View analytics** for the reads (tests, batches, a batch's senders and coverage), **Send campaigns** for starting, previewing and cancelling a test or a batch, **View campaigns** for listing seed inboxes and **Manage mailboxes** for marking one. The campaign's placement monitor (`/campaigns/:id/placement-monitor`, listed under campaigns above) is read with **View campaigns** and changed with **Send campaigns**.
+对于会话调用者，对应组织权限如下：读取（测试、批次、批次发件邮箱和覆盖情况）需要 **查看分析**，启动、预览和取消测试或批次需要 **发送营销活动**，列出种子收件箱需要 **查看营销活动**，标记种子收件箱需要 **管理邮箱**。营销活动的投递位置监控（`/campaigns/:id/placement-monitor`，列于上方营销活动部分）读取需要 **查看营销活动**，更改需要 **发送营销活动**。
 
-A key restricted to certain mailboxes can only start a test from one of them and only sees and marks those mailboxes as seeds. `POST /placement/tests` accepts an `Idempotency-Key`; `PUT /placement/seeds/:email_account_id` and `PUT /campaigns/:id/placement-monitor` state an absolute value, so a retry lands on the same state. `GET /placement/tests` takes `limit` (`1` to `100`, default `25`), an opaque `cursor` and an optional `campaign_id`, and returns `data` plus `pagination`; an invalid cursor or limit is a `400`. It leaves out the tests a batch started, which are read through their batch.
+限定了邮箱范围的密钥只能通过其中一个邮箱启动测试，也只能查看这些邮箱或将其标记为种子邮箱。`POST /placement/tests` 接受 `Idempotency-Key`；`PUT /placement/seeds/:email_account_id` 和 `PUT /campaigns/:id/placement-monitor` 声明绝对值，因此重试会得到相同状态。`GET /placement/tests` 接受 `limit`（`1` 至 `100`，默认 `25`）、不透明 `cursor` 及可选 `campaign_id`，返回 `data` 加 `pagination`；游标或条数无效时返回 `400`。列表排除由批次启动的测试，这些测试应通过所属批次读取。
 
-A [placement batch](/guides/placement-tests/#testing-a-fleet-with-batches) runs the same test from many mailboxes. `POST /placement/batches` takes the copy, panel, tracking and pace a single test takes, plus exactly one of `sender_account_ids` or `sender_scope` (`{"type": "campaign", "campaign_id": ...}` or `{"type": "workspace"}`, with optional `providers`, `domains`, `tag_ids`, `include_inactive` and `untested_days`), an optional `sample`, `on_unavailable` (`defer` or `skip`) and `max_credits` for the whole batch. It answers `201` with the batch `queued` as soon as the senders are written down; the backend starts them a few at a time. `POST /placement/batches/preview` takes the same body and returns the counts it would come to (senders, tests, the most copies sent, free and paid tests, credits) without starting anything or writing a row. A key restricted to certain mailboxes can only name those in `sender_account_ids` (another is a `403`), and a server-side scope resolves to those alone. `POST /placement/batches` accepts an `Idempotency-Key`; cancelling states an end state, so a retry answers `placement_batch_not_running` and changes nothing. `GET /placement/batches` and `GET /placement/batches/:id/senders` take `limit` and `cursor` like the tests list; the senders list also takes `sort` (`worst`, the default, `best`, `email` or `status`), `status` and `q` (a substring of the address), and an unknown value of any of them is a `400`. See the [placement endpoint reference](/api/reference/placement/).
+[投递位置测试批次](/guides/placement-tests/#testing-a-fleet-with-batches) 从多个邮箱运行相同测试。`POST /placement/batches` 接受单次测试所需的邮件内容、种子邮箱组、跟踪和节奏设置，另须在 `sender_account_ids` 或 `sender_scope` 中二选一（`{"type": "campaign", "campaign_id": ...}` 或 `{"type": "workspace"}`，可附带 `providers`、`domains`、`tag_ids`、`include_inactive` 和 `untested_days`），以及可选 `sample`、`on_unavailable`（`defer` 或 `skip`）和整个批次的 `max_credits`。发件邮箱记录写入后，立即以 `201` 返回状态为 `queued` 的批次；后端每次启动少量邮箱。`POST /placement/batches/preview` 接受相同请求体，返回预计计数（发件邮箱、测试、最大发送副本数、免费及付费测试、积分），不启动任何内容也不写入记录。限定了邮箱范围的密钥只能在 `sender_account_ids` 中指定允许的邮箱（其他邮箱返回 `403`），服务端范围也仅解析到这些邮箱。`POST /placement/batches` 接受 `Idempotency-Key`；取消操作声明终止状态，因此重试返回 `placement_batch_not_running` 且不作更改。`GET /placement/batches` 和 `GET /placement/batches/:id/senders` 与测试列表一样接受 `limit` 和 `cursor`；发件邮箱列表还接受 `sort`（`worst`，默认值，或 `best`、`email`、`status`）、`status` 及 `q`（地址子字符串），任一参数使用未知值均返回 `400`。参见 [投递位置端点参考](/api/reference/placement/)。
 
-### Advisor
+### 优化顾问 [#advisor]
 
-Recommendations about deliverability, mailbox configuration, warmup, campaign performance, copy, and list quality. See the [Advisor guide](/guides/advisor/).
+提供有关邮件送达能力、邮箱配置、预热、营销活动效果、邮件内容和名单质量的建议。参见 [优化顾问指南](/guides/advisor/)。
 
-Reads are an analytics read of the workspace's sending posture. Applying or undoing a fix has no scope of its own: the change runs through the tool the fix actually uses and is refused if the caller lacks that tool's permission, so a key that can read recommendations cannot use them to make changes it could not make directly.
+读取属于对工作区发送状况的分析读取。应用或撤销修复没有独立权限范围：更改通过修复实际使用的工具执行，若调用者缺少该工具权限则被拒绝，因此能读取建议的密钥不能借助建议执行本来无权直接进行的更改。
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | GET | `/advisor/recommendations` | `READ_ANALYTICS` |
 | GET | `/advisor/summary` | `READ_ANALYTICS` |
@@ -381,37 +381,37 @@ Reads are an analytics read of the workspace's sending posture. Applying or undo
 | POST | `/advisor/recommendations/:id/snooze` | `READ_ANALYTICS` |
 | POST | `/advisor/recommendations/:id/dismiss` | `READ_ANALYTICS` |
 | POST | `/advisor/recommendations/:id/feedback` | `READ_ANALYTICS` |
-| POST | `/advisor/recommendations/:id/apply` | `READ_ANALYTICS`, plus the permission of the underlying change |
-| POST | `/advisor/recommendations/:id/undo` | `READ_ANALYTICS`, plus the permission of the underlying change |
+| POST | `/advisor/recommendations/:id/apply` | `READ_ANALYTICS`，以及底层更改所需的权限 |
+| POST | `/advisor/recommendations/:id/undo` | `READ_ANALYTICS`，以及底层更改所需的权限 |
 
-Apply and undo run the fix under the key's own scopes, and a key limited to certain mailboxes can only apply or undo a fix for one of them (`403` otherwise). Changing Advisor settings (`PATCH /advisor/settings`) is JWT only, alongside the rest of organization settings. Silencing checks for a whole workspace is governance, and no read scope should be able to do it. The same applies to `POST /advisor/recommendations/:id/agent-fix`, which is JWT only and needs `USE_AI`: it acts as a named member and spends credits, and no API scope should let a key rewrite a workspace's campaigns unattended.
+应用和撤销在密钥自身权限范围内执行修复，限定了邮箱范围的密钥只能对其中的邮箱应用或撤销修复（否则返回 `403`）。更改 优化顾问设置（`PATCH /advisor/settings`）与其他组织设置一样仅接受 JWT。关闭整个工作区的检查属于治理行为，任何读取权限范围都不应允许执行。`POST /advisor/recommendations/:id/agent-fix` 也同样仅接受 JWT，并要求 `USE_AI`：它以具名成员身份执行并消耗积分，不应有任何 API 权限范围允许密钥无人审核地改写工作区营销活动。
 
-### API key self-service
+### API 密钥自助管理 [#api-key-self-service]
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | GET | `/api-keys` | `API_KEYS` |
-| POST | `/api-keys` | `API_KEYS`, not OAuth tokens |
+| POST | `/api-keys` | `API_KEYS`，不接受 OAuth 令牌 |
 | GET | `/api-keys/permissions` | `API_KEYS` |
 | GET | `/api-keys/:id` | `API_KEYS` |
-| PATCH | `/api-keys/:id` | `API_KEYS`, not OAuth tokens |
-| DELETE | `/api-keys/:id` | `API_KEYS`, not OAuth tokens |
-| DELETE | `/api-keys/:id/permanent` | `API_KEYS`, not OAuth tokens |
-| DELETE | `/api-keys/self` | none |
+| PATCH | `/api-keys/:id` | `API_KEYS`，不接受 OAuth 令牌 |
+| DELETE | `/api-keys/:id` | `API_KEYS`，不接受 OAuth 令牌 |
+| DELETE | `/api-keys/:id/permanent` | `API_KEYS`，不接受 OAuth 令牌 |
+| DELETE | `/api-keys/self` | 无 |
 
-`DELETE /api-keys/:id/permanent` deletes a key that has already been revoked or has expired, taking its usage logs with it. A key that could still authenticate gets a `409`, because revoking is what records that a credential was ended and why. See [Ending a key](/api/authentication/).
+`DELETE /api-keys/:id/permanent` 删除已撤销或已过期的密钥，同时删除其使用日志。仍可用于身份验证的密钥返回 `409`，因为撤销操作负责记录凭据何时、为何终止。参见 [撤销与删除密钥](/api/authentication/)。
 
-`POST /api-keys` requires a recent confirmation (`POST /auth/reauth`) when called from a signed-in session, because a key outlives the session that made it and a stolen browser token should not be able to leave one behind. An API key calling it is unaffected: it has no session and no second factor to present, it was itself minted from a confirmed session, and the `API_KEYS` scope is the explicit grant that governs it. Automation and the CLI keep working.
+通过已登录会话调用 `POST /api-keys` 时，要求近期确认（`POST /auth/reauth`），因为密钥的有效期可能长于创建它的会话，被盗浏览器令牌不应能够留下长期凭据。API 密钥调用不受影响：它没有会话，也无法提供第二因素；它自身已由确认过的会话签发，并由 `API_KEYS` 权限范围显式授权管理。因此自动化和 CLI 仍可正常使用。
 
-Creating, editing, revoking and deleting keys is for a signed-in member or an API key; an OAuth app token gets `403` `oauth_token_not_allowed`. A new or edited key stays within its creator: a member cannot give it a permission their role does not cover, and an API key cannot give it a permission, mailbox or IP address the calling key does not have (`403` `api_key_permissions_exceed_caller`). See [what a role can delegate](/api/permissions/#what-a-role-can-delegate). `GET /api-keys/permissions` reports the caller's bound as `grantable`.
+创建、编辑、撤销和删除密钥仅允许已登录成员或 API 密钥执行；OAuth 应用令牌返回 `403` `oauth_token_not_allowed`。新建或编辑的密钥始终受创建者边界限制：成员不能赋予角色未覆盖的权限，API 密钥也不能赋予调用密钥本身没有的权限、邮箱或 IP 地址（`403` `api_key_permissions_exceed_caller`）。参见 [角色可委派的权限](/api/permissions/#what-a-role-can-delegate)。`GET /api-keys/permissions` 通过 `grantable` 报告调用者的边界。
 
-`DELETE /api-keys/self` revokes the key the request was made with, and is the one route here that needs no scope. A credential must always be able to end itself: requiring `API_KEYS` to sign out would leave a read-only key on a laptop someone is handing back live, which is what [`warmbly auth logout`](/api/cli/) promises to prevent. A JWT caller gets a `400`: there is no key in that request to end, only a session, which `POST /auth/logout` ends.
+`DELETE /api-keys/self` 撤销本次请求所使用的密钥，是这里唯一不要求权限范围的路由。凭据必须始终能够终止自身：如果退出要求 `API_KEYS`，用户归还笔记本电脑时，设备上的只读密钥可能仍有效，而 [`warmbly auth logout`](/api/cli/) 正是为防止这种情况。JWT 调用者会收到 `400`：该请求中没有可终止的密钥，只有会话，会话通过 `POST /auth/logout` 结束。
 
-### OAuth apps
+### OAuth 应用 [#oauth-apps]
 
-Registering and managing the OAuth apps your workspace owns. The flow itself (authorize, token, revoke) is listed under JWT only and Public below. Every route here, and `POST /oauth/application-logo`, refuses an OAuth app token with `403` `oauth_token_not_allowed`.
+注册和管理工作区拥有的 OAuth 应用。流程本身（授权、获取令牌、撤销）列于下方“仅限 JWT”和“公开”部分。此处所有路由，以及 `POST /oauth/application-logo`，均以 `403` `oauth_token_not_allowed` 拒绝 OAuth 应用令牌。
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | GET | `/oauth/applications` | `API_KEYS` |
 | POST | `/oauth/applications` | `API_KEYS` |
@@ -429,11 +429,11 @@ Registering and managing the OAuth apps your workspace owns. The flow itself (au
 | PUT | `/oauth/applications/:id/listing` | `API_KEYS` |
 | DELETE | `/oauth/applications/:id/listing` | `API_KEYS` |
 
-The `listing` routes publish an app to the [community directory](/api/oauth/#publish-to-the-community-directory). `PUT` replaces the whole listing and `DELETE` succeeds when there is nothing to remove, so both are safe to retry. Browsing the directory is `GET /integrations/community` and `GET /integrations/community/:slug`, under `/integrations/*` below.
+`listing` 路由将应用发布到 [社区目录](/api/oauth/#publish-to-the-community-directory)。`PUT` 替换整个目录条目，`DELETE` 在没有可移除内容时也成功，因此两者均可安全重试。浏览目录使用 `GET /integrations/community` 和 `GET /integrations/community/:slug`，位于下方 `/integrations/*` 部分。
 
-### Operations
+### 运维操作 [#operations]
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | GET/PATCH | `/outreach/settings` | `WRITE_CAMPAIGNS` |
 | POST | `/deliverability/events` | `WRITE_CAMPAIGNS` |
@@ -450,7 +450,7 @@ The `listing` routes publish an app to the [community directory](/api/oauth/#pub
 | GET | `/webhooks/:id/deliveries` | `WEBHOOKS` |
 | POST | `/webhooks/deliveries/:deliveryId/redeliver` | `WEBHOOKS` |
 | GET | `/webhooks/throttle-drops` | `WEBHOOKS` |
-| GET/POST/DELETE | `/integrations/*` (except `/integrations/slack/*`, which is [JWT only](#slack), and `/integrations/bookings`) | `INTEGRATIONS` |
+| GET/POST/DELETE | `/integrations/*`（`/integrations/slack/*` 除外，它 [仅支持 JWT](#slack)；另排除 `/integrations/bookings`） | `INTEGRATIONS` |
 | GET | `/integrations/bookings` | `READ_CONTACTS` |
 | GET/PUT | `/integrations/salesforce/:id/settings` | `INTEGRATIONS` |
 | GET | `/integrations/salesforce/:id/overview`, `/metadata`, `/users`, `/list-views`, `/campaigns`, `/activity` | `INTEGRATIONS` |
@@ -467,35 +467,35 @@ The `listing` routes publish an app to the [community directory](/api/oauth/#pub
 | GET/POST/PATCH/DELETE | `/integrations/apollo/:id/import-sources[/:sourceId]` | `INTEGRATIONS` |
 | POST | `/integrations/apollo/:id/import-sources/:sourceId/run` | `INTEGRATIONS` |
 | GET | `/integrations/apollo/:id/enrichments[/:runId]` | `INTEGRATIONS` |
-| POST | `/integrations/apollo/:id/enrichments` | `INTEGRATIONS` and `BULK_CONTACTS` |
+| POST | `/integrations/apollo/:id/enrichments` | `INTEGRATIONS` 和 `BULK_CONTACTS` |
 | GET/PATCH | `/integrations/clay/:id` | `INTEGRATIONS` |
 | GET/POST/PATCH/DELETE | `/automations[/:id]` | `INTEGRATIONS` |
 | PATCH | `/automations/:id/layout` | `INTEGRATIONS` |
 
-A signed-in member needs `manage_settings` to create, edit, enable or delete an automation, because a flow runs as the workspace; `use_integrations` is enough to list, open, test and read the run history.
+已登录成员创建、编辑、启用或删除自动化流程需要 `manage_settings`，因为流程以工作区身份运行；列出、打开、测试和读取运行历史只需 `use_integrations`。
 
-Starting an [Apollo](/guides/apollo/) enrichment writes contacts and spends the workspace's Apollo credits, so it needs `BULK_CONTACTS` as well as `INTEGRATIONS` (for a member, `use_integrations` and `manage_contacts`). Saving the key, imports and Clay settings need `manage_settings`; previewing and running an import need `use_integrations`. `POST /integrations/inbound/clay/:secret` is the URL a [Clay](/guides/clay/) table posts rows to. It takes no API key, because the secret in its path is the credential.
+启动 [Apollo](/guides/apollo/) 数据补全会写入联系人，并消耗工作区的 Apollo 积分，因此除 `INTEGRATIONS` 外还需 `BULK_CONTACTS`（对于成员，即 `use_integrations` 和 `manage_contacts`）。保存密钥、导入配置和 Clay 设置需要 `manage_settings`；预览和运行导入需要 `use_integrations`。`POST /integrations/inbound/clay/:secret` 是 [Clay](/guides/clay/) 表格发送行数据的 URL。它不需要 API 密钥，因为路径中的密钥就是凭据。
 | GET/POST/PATCH/DELETE | `/warmup/routing[/:id]` | `WARMUP_ROUTING` |
 
-### Retry safety
+### 重试安全性 [#retry-safety]
 
-Mutating API requests may include an `Idempotency-Key` header. Warmbly stores the completed response for 24 hours per organization and key. Reusing the same key with the same method, route, query, and body replays the original response with `X-Idempotent-Replayed: true`; reusing the key with a different request returns `409 Conflict`.
+更改数据的 API 请求可包含 `Idempotency-Key` 请求头。Warmbly 按组织和幂等键保存已完成响应 24 小时。对相同方法、路由、查询及请求体复用同一幂等键时，重放原始响应，并带有 `X-Idempotent-Replayed: true`；将同一键用于不同请求时，返回 `409 Conflict`。
 
-### Identity
+### 身份 [#identity]
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
-| GET | `/me` | (any authenticated key) |
+| GET | `/me` | （任意已通过身份验证的密钥） |
 
-`GET /me` returns who the active credential belongs to: `user_id`, `email`, `name`, `organization_id`, `organization_name`, `auth_type` (`api_key`, `oauth`, or `jwt`), and the granted `scopes`. It requires no specific permission, so it is the right call for validating a connection and rendering a human-readable label. Unlike `/auth/me` (JWT only), it is reachable by API keys and OAuth tokens.
+`GET /me` 返回当前凭据所属身份：`user_id`、`email`、`name`、`organization_id`、`organization_name`、`auth_type`（`api_key`、`oauth` 或 `jwt`）以及授予的 `scopes`。它不要求特定权限，因此适合用于验证连接并显示可读标签。与 `/auth/me`（仅限 JWT）不同，API 密钥和 OAuth 令牌均可访问此端点。
 
-### Labels
+### 标签 [#labels]
 
-Folders (on campaigns), tags (on mailboxes) and labels (on contacts, inbox conversations and forms, managed through the `/categories` endpoints) are three registries with the same shape. Each belongs to the **workspace**, not to whoever created it. Every member sees the same set, whoever created it, and reads it from `GET /auth/me`, which returns `folders`, `tags` and `categories` for the session's selected workspace; there is no separate list endpoint and no read scope of its own. Changing a registry is gated like the records it labels, so it takes the API permission in the table below, or the matching JWT permission `MANAGE_CAMPAIGNS`, `MANAGE_EMAILS` or `MANAGE_CONTACTS`. Membership alone is read-only.
+文件夹（用于营销活动）、标签（用于邮箱）和分类标签（用于联系人、收件箱会话及表单，通过 `/categories` 端点管理）是三个结构相同的登记表。它们均属于 **工作区**，不属于创建者。无论由谁创建，所有成员都看到相同集合，并通过 `GET /auth/me` 读取，该端点返回会话所选工作区的 `folders`、`tags` 和 `categories`；没有独立列表端点，也没有单独的读取权限范围。更改登记表采用与其所标注记录相同的权限控制，因此需要下表中的 API 权限，或对应 JWT 权限 `MANAGE_CAMPAIGNS`、`MANAGE_EMAILS`、`MANAGE_CONTACTS`。仅有成员身份时为只读。
 
-`position` is the order within its own registry, `0`-based and contiguous. A move returns the full new ordering. A registry holds at most `100` entries.
+`position` 是各自登记表内的顺序，从 `0` 开始且连续。移动操作返回完整的新顺序。每个登记表最多包含 `100` 项。
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
 | POST | `/folders` | `WRITE_CAMPAIGNS` |
 | PATCH | `/folders/:id` | `WRITE_CAMPAIGNS` |
@@ -510,55 +510,55 @@ Folders (on campaigns), tags (on mailboxes) and labels (on contacts, inbox conve
 | PATCH | `/categories/:id/move` | `WRITE_CONTACTS` |
 | DELETE | `/categories/:id` | `WRITE_CONTACTS` |
 
-### Reference data
+### 参考数据 [#reference-data]
 
-| Method | Path | API Permission |
+| 方法 | 路径 | API 权限 |
 |--------|------|----------------|
-| GET | `/plans` | (any authenticated key) |
-| GET | `/timezones` | (any authenticated key) |
+| GET | `/plans` | （任意已通过身份验证的密钥） |
+| GET | `/timezones` | （任意已通过身份验证的密钥） |
 
-## JWT only
+## 仅支持 JWT [#jwt-only]
 
-These never accept an API key. They depend on a human-bound session: billing flows, governance, OAuth onboarding, websocket bootstrap, and operational destruction.
+这些端点永远不接受 API 密钥。它们依赖绑定到真人的会话：计费流程、治理、OAuth 接入、WebSocket 初始化及运维销毁操作。
 
-With [multiple dashboards sharing a backend](/development/configuration/#google-sign-in-per-dashboard-deployment), password-reset and invitation emails, referral links and billing returns use the initiating browser's exact configured dashboard origin. Without a trusted origin they use the primary dashboard. Mailbox, administrator-grant, integration and Slack identity OAuth callbacks recover their target from live server-side state, never from callback query parameters. Expired or consumed routing state is not forwarded to another dashboard.
+采用 [多个控制台共用后端](/development/configuration/#google-sign-in-per-dashboard-deployment) 时，密码重置和邀请邮件、推荐链接及计费返回地址使用发起浏览器所对应的、已明确配置的控制台源地址。没有可信源时，使用主控制台。邮箱、管理员授权、集成和 Slack 身份 OAuth 回调从仍有效的服务端状态恢复目标，绝不使用回调查询参数。已过期或已消费的路由状态不会被转发到其他控制台。
 
 - `POST /auth/login`, `/auth/login/confirm`, `/auth/register`, `/auth/register/confirm`, `/auth/refresh`, `/auth/reset-password`, `/auth/reset-password/confirm`
-- `POST /auth/reauth` (re-prove the account holder behind a live session, for the changes that require a recent confirmation)
-- `GET /auth/reauth/methods` (which ways this account can confirm: password, two-factor code, passkey, and the linked sign-in providers it can re-verify)
-- `POST /auth/reauth/passkey/begin`, `/auth/reauth/passkey/finish` (confirm with one of the account's own passkeys)
-- `POST /auth/reauth/sso/begin`, `/auth/reauth/sso/finish` (confirm through the Google, Apple or single sign-on identity linked to the account, in a browser window)
-- `POST /auth/reauth/native/begin`, `/auth/reauth/native` (confirm with a native Sign in with Apple or Google ID token carrying the session's nonce)
-- `GET /auth/config` (public deployment capabilities: which sign-in methods this backend has enabled, whether a login code step follows, whether signups are open, whether the instance still needs claiming)
-- `POST /auth/app-attest/challenge`, `/auth/app-attest/keys` (the native app's [App Attest](/api/reference/account-org/#app-attest-native-apps) challenge and one-time key registration, on their own per-IP budget `APP_ATTEST_IP_RATE_LIMIT`)
-- `GET /auth/instance` (JWT only: the running Warmbly version of a self-hosted instance and whether a newer release exists, for the dashboard's version pill; a hosted deployment answers `self_hosted: false` and nothing else)
+- `POST /auth/reauth`（对仍有效的会话重新验证账户持有人，用于需要近期确认的更改）
+- `GET /auth/reauth/methods`（此账户可用的确认方式：密码、双重验证代码、通行密钥，以及可重新验证的关联登录服务商）
+- `POST /auth/reauth/passkey/begin`、`/auth/reauth/passkey/finish`（使用此账户自己的某个通行密钥确认）
+- `POST /auth/reauth/sso/begin`、`/auth/reauth/sso/finish`（在浏览器窗口中通过关联到此账户的 Google、Apple 或单点登录身份确认）
+- `POST /auth/reauth/native/begin`、`/auth/reauth/native`（使用携带会话 nonce 的原生“通过 Apple 登录”或 Google ID 令牌确认）
+- `GET /auth/config`（公开部署能力：后端启用了哪些登录方式、之后是否有登录验证码步骤、注册是否开放、实例是否仍待认领）
+- `POST /auth/app-attest/challenge`、`/auth/app-attest/keys`（原生应用的 [App Attest](/api/reference/account-org/#app-attest-native-apps) 质询和一次性密钥注册，采用独立的每 IP 额度 `APP_ATTEST_IP_RATE_LIMIT`）
+- `GET /auth/instance`（仅限 JWT：自托管实例当前运行的 Warmbly 版本，以及是否存在更新版本，供控制台版本标记使用；托管部署仅返回 `self_hosted: false`）
 
-`POST /auth/register` accepts an optional `invite` field carrying an invitation token. On a deployment running `DISABLE_REGISTRATION=invite_only` it is what permits the signup, and the account is created inside the inviting organization rather than in a new one. The token must resolve to a live invitation whose email equals the submitted address, otherwise the request is refused with `invitation_invalid`. Omitting it on a closed deployment returns `registration_invite_only` or `registration_closed`. See [error codes](/api/error-codes/#registration-and-invitation-refusals).
+`POST /auth/register` 接受可选 `invite` 字段，携带邀请令牌。在采用 `DISABLE_REGISTRATION=invite_only` 的部署中，此令牌用于许可注册，账户会在发出邀请的组织中创建，而不是新建组织。令牌必须对应有效邀请，且邀请邮箱与提交地址相同，否则请求以 `invitation_invalid` 拒绝。在关闭注册的部署中省略此字段，会返回 `registration_invite_only` 或 `registration_closed`。参见 [错误码](/api/error-codes/#registration-and-invitation-refusals)。
 
-### Actions that need a recent confirmation
+### 需要近期再次确认身份的操作 [#actions-that-need-a-recent-confirmation]
 
-These changes require the session to have confirmed the account holder within the last five minutes, over and above the permission they already need:
+以下更改除原有所需权限外，还要求会话在最近五分钟内确认过账户持有人：
 
-| Action | Route |
+| 操作 | 路由 |
 |--------|-------|
-| Create an API key | `POST /api-keys` |
-| Approve an app on the OAuth consent screen | `POST /oauth/authorize` |
-| Approve a CLI sign-in | `POST /auth/cli/codes/:code/approve` |
-| Add a passkey | `POST /auth/passkey/register/begin`, `/finish` |
-| Remove a passkey | `DELETE /auth/passkey/credentials/:id` |
-| Turn on two-factor authentication | `POST /auth/2fa/enroll/start`, `/confirm` (see below for accounts with no password) |
-| Transfer a workspace | `POST /organization/transfer-ownership` |
-| Invite a member, change a member's role or change their access scope | `POST /organization/members/invite`, `PATCH /organization/members/:id`, `PUT /organization/members/:id/access` |
-| Export or import a whole workspace | `POST /organization/current/export`, `POST /organization/current/import` |
-| Schedule a workspace or account for deletion | `POST /organization/current/danger-zone/delete`, `POST /me/danger-zone/delete` |
-| Approve a self-hosted instance's warmup pool link | `POST /pool-link/codes/:code/approve` |
-| Reveal or rotate a signing secret | `POST /webhooks/:id/rotate-secret`, `GET /integrations/connections/:id/webhook-secret`, `POST /oauth/applications/:id/rotate-secret`, `GET /oauth/applications/:id/webhook-secret`, `POST /oauth/applications/:id/webhook-secret/rotate` |
-| Record, use or remove an admin grant over a whole domain | `POST /emails/grants/google/finish`, `POST /emails/grants/microsoft/finish`, `POST /emails/grants/:id/connect`, `DELETE /emails/grants/:id` |
-| Admin panel: issue a fleet join token, grant admin permissions, export or import any workspace | `POST /admin/fleet/join-token`, `POST /admin/admins/:userId/grant`, `POST /admin/organizations/:id/exports`, `POST /admin/organizations/:id/imports` |
+| 创建 API 密钥 | `POST /api-keys` |
+| 在 OAuth 同意页面批准应用 | `POST /oauth/authorize` |
+| 批准 CLI 登录 | `POST /auth/cli/codes/:code/approve` |
+| 添加通行密钥 | `POST /auth/passkey/register/begin`, `/finish` |
+| 移除通行密钥 | `DELETE /auth/passkey/credentials/:id` |
+| 启用双重身份验证 | `POST /auth/2fa/enroll/start`、`/confirm`（无密码账户见下方说明） |
+| 转移工作区 | `POST /organization/transfer-ownership` |
+| 邀请成员、更改成员角色或访问范围 | `POST /organization/members/invite`, `PATCH /organization/members/:id`, `PUT /organization/members/:id/access` |
+| 导出或导入整个工作区 | `POST /organization/current/export`, `POST /organization/current/import` |
+| 计划删除工作区或账户 | `POST /organization/current/danger-zone/delete`, `POST /me/danger-zone/delete` |
+| 批准自托管实例的预热池关联 | `POST /pool-link/codes/:code/approve` |
+| 查看或轮换签名密钥 | `POST /webhooks/:id/rotate-secret`, `GET /integrations/connections/:id/webhook-secret`, `POST /oauth/applications/:id/rotate-secret`, `GET /oauth/applications/:id/webhook-secret`, `POST /oauth/applications/:id/webhook-secret/rotate` |
+| 记录、使用或移除整个域的管理员授权 | `POST /emails/grants/google/finish`, `POST /emails/grants/microsoft/finish`, `POST /emails/grants/:id/connect`, `DELETE /emails/grants/:id` |
+| 管理面板：签发节点集群加入令牌、授予管理员权限、导出或导入任意工作区 | `POST /admin/fleet/join-token`, `POST /admin/admins/:userId/grant`, `POST /admin/organizations/:id/exports`, `POST /admin/organizations/:id/imports` |
 
-Each either hands out a credential that outlives the session that created it, reveals a secret, changes who can get in, cannot be reversed by the person it was done to, or reaches a whole domain's mail. Without a confirmation they answer `403` with code `reauth_required`; confirm and retry. See [error codes](/api/error-codes/#confirmation-required).
+这些操作至少涉及以下情况之一：发放有效期长于创建会话的凭据、披露密钥、更改谁可访问、被操作对象本人无法撤销，或访问整个域的邮件。未经确认时返回 `403`，错误码为 `reauth_required`；请确认后重试。参见 [错误码](/api/error-codes/#confirmation-required)。
 
-`GET /auth/reauth/methods` says which ways the account can confirm, so a client offers only those:
+`GET /auth/reauth/methods` 返回账户可用的确认方式，客户端应只提供这些方式：
 
 ```json
 {
@@ -571,146 +571,146 @@ Each either hands out a credential that outlives the session that created it, re
 }
 ```
 
-- **Password or code:** `POST /auth/reauth` with `password` or a current two-factor or recovery `code`.
-- **Passkey:** `POST /auth/reauth/passkey/begin` returns WebAuthn request `options` limited to the account's own passkeys; pass `options.publicKey` to the browser and send the assertion to `POST /auth/reauth/passkey/finish` as `credential`. The authenticator must verify the user.
-- **Linked identity in a browser:** `POST /auth/reauth/sso/begin` with `provider` (one of `providers[].id`) returns `url` and `binding`. Open `url` in a window and keep `binding`. The provider returns that window to the dashboard's `/reauth/complete` with a single-use `code`, which only the session that began the flow can redeem: `POST /auth/reauth/sso/finish` with `code` and `binding`. The identity the provider verifies must already be linked to the account; another account is refused with `reauth_identity_mismatch`, never matched by email address.
-- **Native app:** `POST /auth/reauth/native/begin` returns a `nonce`. Pass it unchanged as the Sign in with Apple request nonce or the Google authorization `nonce`, then send the ID token to `POST /auth/reauth/native` with `provider` (`apple` or `google`). The nonce is single-use and bound to the session.
+- **密码或验证码：** 调用 `POST /auth/reauth`，提供 `password`，或当前双重验证代码或恢复 `code`。
+- **通行密钥：** `POST /auth/reauth/passkey/begin` 返回仅限此账户自身通行密钥的 WebAuthn 请求 `options`；将 `options.publicKey` 传给浏览器，再将断言以 `credential` 发送到 `POST /auth/reauth/passkey/finish`。认证器必须验证用户。
+- **浏览器中的关联身份：** 向 `POST /auth/reauth/sso/begin` 提供 `provider`（`providers[].id` 之一），返回 `url` 和 `binding`。在窗口中打开 `url`，并保留 `binding`。服务商会将该窗口返回控制台的 `/reauth/complete`，附带一次性 `code`，只有发起流程的会话可以兑换：调用 `POST /auth/reauth/sso/finish`，提供 `code` 和 `binding`。服务商验证的身份必须已关联到该账户；其他账户以 `reauth_identity_mismatch` 拒绝，绝不会按邮箱地址匹配。
+- **原生应用：** `POST /auth/reauth/native/begin` 返回 `nonce`。将其原样用作“通过 Apple 登录”请求的 nonce，或 Google 授权的 `nonce`，然后将 ID 令牌发送到 `POST /auth/reauth/native`，并提供 `provider`（`apple` 或 `google`）。nonce 仅可使用一次，并绑定到会话。
 
-Each succeeds with `{ "valid_for_seconds": 300 }` and confirms only the session that made the call.
+各方式成功时均返回 `{ "valid_for_seconds": 300 }`，且仅确认发起调用的会话。
 
-This applies to session callers. An API key or OAuth token has no session to confirm and is not the threat here, so it passes straight through to the route's permission gate.
+此规则适用于会话调用者。API 密钥或 OAuth 令牌没有可供确认的会话，也不是此处针对的威胁，因此直接进入路由的权限检查。
 
-A completed sign-in counts as a confirmation for the first five minutes of the session. `POST /auth/reauth` answers an account with neither a password nor two-factor authentication `400` with code `reauth_no_factor`; it confirms with a passkey or its linked identity instead. An account with none of those signs in again.
+完成登录后的前五分钟视为会话已确认。对于既无密码也未启用双重验证的账户，`POST /auth/reauth` 返回 `400`，错误码为 `reauth_no_factor`；应改用通行密钥或关联身份确认。如果这些方式都没有，则重新登录。
 
-`GET /auth/config` gained two fields: `invites_required` (boolean, true when an invitation token is needed to create an account) and `docs_url` (string, the deployment's link to the accounts and access documentation, for a client to surface next to a refusal).
+`GET /auth/config` 新增两个字段：`invites_required`（boolean，创建账户需要邀请令牌时为 true）及 `docs_url`（string，部署提供的账户和访问文档链接，供客户端在拒绝消息旁展示）。
 
-`GET /auth/config` also carries `websocket_url` and `app_url` (both strings, each omitted when the instance has none). They are the realtime gateway a developer client connects to and the dashboard origin a client sends someone to. Both are served here because on a self-hosted instance the host layout is whatever the operator chose, and there is no other way to discover it: the [CLI](/api/cli/) reads them for `warmbly events tail` and `warmbly browse`.
+`GET /auth/config` 还携带 `websocket_url` 和 `app_url`（均为字符串，实例未配置相应值时各自省略）。它们分别是开发者客户端连接的实时网关，以及客户端将用户引导至的控制台源地址。两者在这里提供，是因为自托管实例的主机布局由运维人员决定，无法通过其他方式发现：[CLI](/api/cli/) 通过读取它们支持 `warmbly events tail` 和 `warmbly browse`。
 
-`POST /getaway` is session-only and mints a ten-minute WebSocket ticket. Its `url` remains the direct gateway; the optional `proxy_path` is resolved against `/v1` for browser connections. `GET /realtime/socket/websocket` upgrades a connection using that ticket, preserving the configured realtime service's origin checks and connection limits. It accepts no ordinary access tokens, API keys or OAuth tokens. See [Realtime WebSocket](/api/realtime/).
+`POST /getaway` 仅限会话调用，并签发十分钟有效的 WebSocket 票据。其 `url` 仍为直连网关；可选 `proxy_path` 相对于 `/v1` 解析，用于浏览器连接。`GET /realtime/socket/websocket` 使用该票据升级连接，同时保留已配置实时服务的源检查和连接限制。不接受普通访问令牌、API 密钥或 OAuth 令牌。参见 [实时 WebSocket](/api/realtime/)。
 
-Alongside them, `api_url` is this API's own public base (for a copyable example that names the right server), and `brand` is who the deployment says it is: `name`, and `website_url`, `website_label`, `terms_url`, `privacy_url` and `support_email`, each omitted when unset. On a self-hosted instance that configured no `EMAIL_BRAND_*` only `name` is present, and a client should render no link at all rather than substituting one of its own. See [configuration](/development/configuration/).
+此外，`api_url` 是此 API 自身的公开基础地址（供可复制示例指向正确服务器），`brand` 表示部署声明的品牌身份：`name`，以及 `website_url`、`website_label`、`terms_url`、`privacy_url`、`support_email`，未设置时分别省略。未配置任何 `EMAIL_BRAND_*` 的自托管实例仅提供 `name`；客户端应完全不显示链接，而不是替换成自行选择的链接。参见 [配置](/development/configuration/)。
 
-`GET /auth/config` also carries `gmail_oauth_connect` (boolean): whether a new Gmail mailbox may be connected with Google sign-in. Both `BOX_GOOGLE_CLIENT_ID` and `BOX_GOOGLE_CLIENT_SECRET` are required. With them set, the capability defaults to `true`; explicit `BOX_GOOGLE_OAUTH_CONNECT=false` or an invalid value disables it. When `false`, offer the app-password route (`POST /emails/onboarding/smtp-imap` against Gmail's servers) rather than start an OAuth round trip that returns `mailbox_gmail_oauth_disabled`. The dashboard additionally requires its deployment-local [frontend opt-in](/development/configuration/#google-sign-in-per-dashboard-deployment) to show Google sign-in. Existing Google sign-in mailboxes are unaffected either way.
+`GET /auth/config` 还携带 `gmail_oauth_connect`（boolean）：是否允许通过 Google 登录连接新的 Gmail 邮箱。`BOX_GOOGLE_CLIENT_ID` 和 `BOX_GOOGLE_CLIENT_SECRET` 均为必需。两者设置后，该能力默认为 `true`；显式设置 `BOX_GOOGLE_OAUTH_CONNECT=false` 或无效值会禁用它。为 `false` 时，应提供应用密码途径（对 Gmail 服务器调用 `POST /emails/onboarding/smtp-imap`），而不是发起最终返回 `mailbox_gmail_oauth_disabled` 的 OAuth 流程。控制台还要求部署本地的 [前端启用设置](/development/configuration/#google-sign-in-per-dashboard-deployment) 才会显示 Google 登录。无论如何，现有通过 Google 登录连接的邮箱均不受影响。
 
-`GET /auth/config` also carries `app_attest` (boolean): whether this server accepts an [App Attest proof](/api/reference/account-org/#app-attest-native-apps) from the native app in place of a Turnstile token on `POST /auth/login`, `/auth/register`, `/auth/reset-password` and `/auth/reset-password/confirm`. Read it with `captcha`: no captcha means nothing to send, a captcha with `app_attest` means the app sends a proof, and a captcha without it means email and password sign-in is unavailable in the app.
+`GET /auth/config` 还携带 `app_attest`（boolean）：服务器是否在 `POST /auth/login`、`/auth/register`、`/auth/reset-password` 和 `/auth/reset-password/confirm` 上接受原生应用的 [App Attest 证明](/api/reference/account-org/#app-attest-native-apps)，以替代 Turnstile 令牌。结合 `captcha` 读取：没有验证码要求时，无需发送任何内容；需要验证码且有 `app_attest` 时，应用发送证明；需要验证码但没有此能力时，应用内无法使用邮箱和密码登录。
 
-`GET /auth/config` also carries `billing_enabled` (boolean). It is `false` when the deployment runs with `BILLING_PROVIDER=none`, which is the self-host default: every feature is unlocked server-side, so the dashboard shows the workspace as self-hosted instead of on a free trial and hides the billing and referral pages. `self_hosted` alone does not imply this, because a self-hosted install may still run Stripe.
-- `POST /auth/setup` (first-run claim: exchanges the one-time token printed at boot for the owner account. Refused once any account exists)
-- `GET /auth/providers`, `POST /auth/apple`, `POST /auth/google` (native-app social sign-in)
-- `POST /auth/oidc/begin`, `GET /auth/oidc/callback` (generic OpenID Connect sign-in)
-- `POST /auth/google/begin`, `GET /auth/google/callback`, `POST /auth/apple/begin`, `POST /auth/apple/callback` (browser Sign in with Google and Sign in with Apple)
-- `POST /auth/sso/exchange` (swaps the single-use handoff code from any of those callbacks for the session; `POST /auth/oidc/exchange` is the older name for the same endpoint)
-- `POST /auth/sso/link` (completes a provider sign-in that resolved to an existing password account: takes that account's password, attaches the identity and returns the session)
+`GET /auth/config` 还携带 `billing_enabled`（boolean）。部署使用 `BILLING_PROVIDER=none`（自托管默认值）运行时，它为 `false`：服务端解锁所有功能，因此控制台将工作区显示为自托管而非免费试用，并隐藏计费及推荐页面。仅有 `self_hosted` 并不意味着如此，因为自托管安装仍可运行 Stripe。
+- `POST /auth/setup`（首次运行认领：将启动时输出的一次性令牌兑换为所有者账户。已有任何账户时拒绝）
+- `GET /auth/providers`、`POST /auth/apple`、`POST /auth/google`（原生应用社交登录）
+- `POST /auth/oidc/begin`、`GET /auth/oidc/callback`（通用 OpenID Connect 登录）
+- `POST /auth/google/begin`、`GET /auth/google/callback`、`POST /auth/apple/begin`、`POST /auth/apple/callback`（浏览器中的“通过 Google 登录”和“通过 Apple 登录”）
+- `POST /auth/sso/exchange`（将上述任一回调的一次性交接代码兑换为会话；`POST /auth/oidc/exchange` 是同一端点的旧名称）
+- `POST /auth/sso/link`（完成解析到现有密码账户的服务商登录：接受该账户密码、关联身份并返回会话）
 - `POST /auth/logout`, `POST /auth/logout-all`, `GET /auth/me`, `PATCH /auth/me/onboarding`
-- `PUT /auth/me/product-tour` (records that the signed-in user finished or skipped the dashboard's product tour, answering `product_tour_completed_at`, which `GET /auth/me` also carries. Naturally retry-safe: a repeat keeps the first time, so it takes no `Idempotency-Key`)
+- `PUT /auth/me/product-tour`（记录已登录用户已完成或跳过控制台产品导览，返回 `product_tour_completed_at`，`GET /auth/me` 也携带此字段。天然可安全重试：重复调用保留首次时间，因此无需 `Idempotency-Key`）
 - `POST /auth/me/avatar`, `DELETE /auth/me/avatar`
-- `POST /emails/onboarding/oauth/start`, `POST /emails/onboarding/oauth/finish`, `POST /emails/onboarding/smtp-imap`. `oauth/start` accepts an optional `login_hint` (an email address) that preselects that mailbox in the provider's sign-in, which is how an import's **Sign in** rows open. For Google and Microsoft dashboard flows (`return: "web"`), the browser's `Origin` is validated against exact configured dashboard origins and bound to the OAuth state; an untrusted origin answers `400` `mailbox_oauth_return_origin`. Requests without an `Origin` retain primary-dashboard routing while their state is live
-- `POST /emails/onboarding/smtp-imap/bulk` (up to `50` SMTP/IMAP rows in `accounts`, answered `200` with a per-row `status` of `connected`, `skipped` or `failed` and a `code`; rows past the workspace's [mailbox allowance](/guides/mailboxes/#mailbox-allowance) fail with `mailbox_allowance_reached` before any credential is dialled. Naturally retry-safe: an already connected mailbox is `skipped`, so it takes no `Idempotency-Key`)
-- The [mailbox import](/guides/mailbox-import/) routes under `/emails/imports`, all with JWT permission `MANAGE_EMAILS`. They carry passwords, so like onboarding they never accept an API key:
-  - `POST /emails/imports/preview`: what an import of this input would do, row by row and domain by domain, without doing any of it
-  - `POST /emails/imports`: store the rows and connect them in the background; answers `201` with the import
-  - `GET /emails/imports`: the workspace's imports, newest first
-  - `GET /emails/imports/:id`: one import with its counts and its failures grouped by `cause`
-  - `GET /emails/imports/:id/rows`: an import's rows by line, filtered by `status` (comma-separated) and `cause`
-  - `PATCH /emails/imports/:id/rows/:line`: correct one failed row (`password`, `app_password`, `username`, `smtp`, `imap`) and queue it again
-  - `POST /emails/imports/:id/retry`: requeue failed rows, all of them or those with one `cause` or the listed `lines`, optionally with one new `password` for all
-  - `POST /emails/imports/:id/cancel`: stop the rows not yet started; rows already connecting finish
-  - `POST /emails/imports/:id/dismiss`: hide the import from `GET /emails/imports` for the workspace, stopping it first when it is still running. Its rows and history stay, and `GET /emails/imports/:id` still reads it. Answers `204`; a repeat changes nothing
-  - `GET /emails/imports/:id/failed.csv`: every row that did not connect, as uploaded minus passwords, with `status`, `problem` and `how_to_fix`
+- `POST /emails/onboarding/oauth/start`、`POST /emails/onboarding/oauth/finish`、`POST /emails/onboarding/smtp-imap`。`oauth/start` 接受可选 `login_hint`（邮箱地址），在服务商登录中预先选择该邮箱，导入中的 **登录** 行即通过此方式打开。对于 Google 和 Microsoft 控制台流程（`return: "web"`），浏览器的 `Origin` 会与精确配置的控制台源地址核验，并绑定到 OAuth 状态；不可信源返回 `400` `mailbox_oauth_return_origin`。没有 `Origin` 的请求在状态仍有效时继续路由到主控制台
+- `POST /emails/onboarding/smtp-imap/bulk`（在 `accounts` 中最多提供 `50` 行 SMTP/IMAP 配置；返回 `200`，每行包含 `status`，其值为 `connected`、`skipped` 或 `failed`，以及 `code`。超出工作区 [邮箱数量额度](/guides/mailboxes/#mailbox-allowance) 的行会在尝试连接任何凭据之前以 `mailbox_allowance_reached` 失败。天然可安全重试：已连接邮箱为 `skipped`，因此无需 `Idempotency-Key`）
+- `/emails/imports` 下的 [邮箱导入](/guides/mailbox-import/) 路由均要求 JWT 权限 `MANAGE_EMAILS`。它们携带密码，因此与接入流程一样，永不接受 API 密钥：
+  - `POST /emails/imports/preview`：逐行、逐域名预览导入此输入将执行的操作，不实际执行
+  - `POST /emails/imports`：保存各行并在后台连接；以 `201` 返回导入对象
+  - `GET /emails/imports`：工作区的导入，最新在前
+  - `GET /emails/imports/:id`：单个导入及其计数，失败项按 `cause` 分组
+  - `GET /emails/imports/:id/rows`：按行号返回导入记录，可按 `status`（逗号分隔）和 `cause` 筛选
+  - `PATCH /emails/imports/:id/rows/:line`：修正一个失败行（`password`、`app_password`、`username`、`smtp`、`imap`）并重新排队
+  - `POST /emails/imports/:id/retry`：重新排队失败行，可选择全部、某一 `cause` 的行，或指定 `lines`；可选提供一个新的 `password` 应用于全部所选行
+  - `POST /emails/imports/:id/cancel`：停止尚未开始的行；已经连接中的行会继续完成
+  - `POST /emails/imports/:id/dismiss`：在工作区的 `GET /emails/imports` 中隐藏此导入；若仍在运行，先停止。其行数据和历史保留，`GET /emails/imports/:id` 仍可读取。返回 `204`；重复调用不作更改
+  - `GET /emails/imports/:id/failed.csv`：返回所有未连接成功的行，保留上传内容但去除密码，附带 `status`、`problem` 和 `how_to_fix`
 
-  Preview and create take `multipart/form-data`: `file` (CSV, TSV or XLSX up to 10 MB) or `text` (a pasted list), `mapping` (a JSON object of column index to field, such as `{"0":"email","1":"password"}`; omit it to use the automatic mapping) and `options` (JSON: `has_header`, `shared_password`, `on_existing` of `update` or `skip`, `save_mapping`, and `settings` applied to every mailbox). One import takes up to 5,000 rows. The two lists answer `data` plus `pagination` with `next_cursor` and `has_more`; `limit` is at most `100` for imports and `200` for rows, and a cursor that is not one this API issued returns `400` with `invalid_cursor`. None of these takes an `Idempotency-Key`. Repeating a create makes a second import, whose rows find the first one's mailboxes already connected and update (or skip) them, so nothing is connected twice. A retry only requeues rows that failed, and a fix is refused for a row that is not failed, so repeating either connects nothing twice. Cancelling an import twice is a no-op. Progress is published as the realtime event `MAILBOX_IMPORT_PROGRESS`; see [realtime](/api/realtime/). Error codes are under [mailbox import refusals](/api/error-codes/#mailbox-import-refusals)
-- [Inbox vendor](/guides/mailbox-import/#import-from-an-inbox-vendor) connections under `/emails/vendors`, JWT permission `MANAGE_EMAILS`. The key is sealed on the server and no response ever returns it:
-  - `GET /emails/vendors/catalog`: the supported vendors, with each one's `fields` (key, label, secret, required, help) and `key_help_url`
-  - `GET /emails/vendors`: the workspace's vendor connections with `status`, `last_error` and mailbox count
-  - `POST /emails/vendors`: `vendor`, `label` and `fields`; the key is checked with the vendor first, answers `201`. Repeating it makes a second connection
-  - `PATCH /emails/vendors/:id`: rename, or replace `fields` after checking the new key with the vendor. Safe to repeat
-  - `DELETE /emails/vendors/:id`: forget the key; the mailboxes it brought in stay connected. A repeat is a `404`
-  - `GET /emails/vendors/:id/mailboxes`: the vendor account's mailboxes, each marked `connected` when already in the workspace
-  - `POST /emails/vendors/:id/import`: `mailbox_ids` or `all`, plus the same `options` as a file import; answers `201` with the import. Each call creates a new import; a repeat finds the first run's mailboxes connected and updates (or skips) them
-- [Admin grants](/guides/mailbox-import/#connect-a-whole-google-workspace-domain) under `/emails/grants`, JWT permission `MANAGE_EMAILS`. The four routes that record, use or remove a grant also need a [recent confirmation](#actions-that-need-a-recent-confirmation):
-  - `GET /emails/grants/config`: whether this instance takes Google and Microsoft grants, the Google `google_client_id` and `google_scopes` an administrator authorizes, and `google_missing` and `microsoft_missing`, the names of the instance settings still unset (empty when that provider is ready)
-  - `GET /emails/grants`, `GET /emails/grants/:id`: grants with their `provider`, `tenant`, covered `domains`, `status` and mailbox count
-  - `GET /emails/grants/migration`: the workspace's mailboxes on per-mailbox Google sign-in that can [optionally switch connection methods](/guides/mailboxes/#moving-off-per-mailbox-google-sign-in), grouped by domain: `data` is a list of `domain`, `kind` (`workspace`, which moves onto an admin grant, or `personal`, a shared address such as `gmail.com`, which moves to an app password), `grant_id` when the workspace has an active Google grant covering the domain, and `mailboxes` (`id`, `email`, `name`, `status`); `total` counts the mailboxes. Mailboxes whose sign-in Warmbly Cloud holds are not listed. Read only
-  - `POST /emails/grants/google/start`: `domain` and `admin_email` (on that domain). Answers how this workspace proves it controls the domain: `method` `signin` with a Google sign-in `url` and `state` (valid for 15 minutes) when the instance has a Google sign-in app, else `method` `dns`. Both carry `txt_name` (`_warmbly.<domain>`) and `txt_value` (`warmbly-verify=...`, unique to the workspace and domain), because the DNS proof always works. Safe to repeat
-  - `POST /emails/grants/google/finish` (recent confirmation): either `state` and `code` from the Google sign-in, which must be `admin_email` itself on that domain, or `domain` and `admin_email` once the `TXT` record is published. The directory must list `admin_email` as a super administrator. Answers `201`. A `state` is single-use; repeating a DNS finish re-verifies and updates the same grant, one per domain
-  - `POST /emails/grants/microsoft/start`: the admin consent `url` and `state` for a Global Administrator, valid for 15 minutes
-  - `POST /emails/grants/microsoft/finish` (recent confirmation): `state` and `code` from the consent callback; answers `201`. The organization recorded is the one the administrator consented for, as the redeemed sign-in reports it. The `state` is single-use, so a repeat is refused with `mailbox_grant_state_invalid`. One grant per tenant: consenting again updates the same grant
-  - `POST /emails/grants/:id/check`: verify now, and restart the grant's stopped mailboxes when it passes. Safe to repeat
-  - `DELETE /emails/grants/:id` (recent confirmation): remove the grant; every mailbox it connected stops. A repeat is a `404`
-  - `GET /emails/grants/:id/users`: the granted directory, each user marked `enabled` and `connected`, with `email_account_id` when connected. `upgrade` is `true` for a user whose mailbox is already here on its own sign-in with the same provider (Google or Microsoft, not held by Warmbly Cloud): connecting it moves that mailbox onto the grant in place
-  - `POST /emails/grants/:id/connect` (recent confirmation): `user_ids` or `all` (every enabled user not yet connected, plus every user marked `upgrade`), plus import `options`; answers `201` with the import. Each call creates a new import; a repeat finds the first run's mailboxes connected and updates (or skips) them. A user whose mailbox is already here as a delegated mailbox is relinked to this grant, and one on its own sign-in is converted onto the grant in place, keeping its history, campaigns and warmup, without counting against the mailbox allowance
-- [Sending domains](/guides/sending-domains/) under `/emails/domains`, JWT permission `MANAGE_EMAILS`. `:domain` is the bare domain:
-  - `GET /emails/domains`: every domain the workspace sends from, with mailbox count, mail hosts, SPF, DKIM and DMARC, tracking hosts in use and the redirect. When a connected [inbox vendor](/guides/sending-domains/#domains-held-by-an-inbox-vendor) account holds the domain, `vendor_domain` carries `vendor`, `connection_id`, the current `forwarding` when the vendor reports it, `can_forward`, `can_unforward`, `forwarding_reviewed` (a change is applied later by the vendor's staff), `can_dns` and `dns_types`
-  - `POST /emails/domains/bulk`: `domains` (1 to 100), `tracking_label` (one DNS label, such as `link`; each domain gets `<label>.<domain>`) and/or `redirect_url`, plus optional `tracking_hosts` and `redirect_urls` objects keyed by domain that give a listed domain its own host or website in place of the shared one. Each domain takes its vendor's path when the vendor's API can (writing the `CNAME`, forwarding the root) and is saved to wait for DNS otherwise. Optional `served_by` (`instance` or `cloud`) picks where a redirect no vendor forwards is served from; omitted keeps each domain's current choice. Answers `data`, one row per domain with `tracking` (`host`, `via` of `vendor` or `dns`, `verified`, `mailboxes`, `cname_target`, `note` when the vendor refused the record) and `redirect` (`target_url`, `via` of `vendor`, `dns` or `cloud`, `verified`, `reviewed`); a refused domain carries `error` and `code` on its row and never stops the others. Safe to retry: each setting is set, not added
-  - `GET /emails/domains/:domain/tracking-suggestion`: the tracking `host` to offer, its `status` (`active`, `found` or `suggested`), the `cname_target`, and `vendor_domain` when a connected vendor account holds the domain
-  - `PUT /emails/domains/:domain/tracking`: `host` for every mailbox on the domain (empty clears it); answers the verification result and the number of `mailboxes` changed. Idempotent
-  - `PUT /emails/domains/:domain/redirect`: `target_url`, optional `include_www` (default `true`) and optional `served_by` (`instance`, or `cloud` on a self-hosted instance [linked to Warmbly Cloud](/guides/sending-domains/#serve-it-from-warmbly-cloud); omitted keeps the current choice, and a new redirect is served by this instance). Checks it once and answers the redirect with its `records`, `served_by`, `serve_host` (the tracking host that answers, which a proxy routes the domain to) and, once DNS verifies, `reach`: the last visit to the domain, with `status` (`ok`, `not_reaching`, `https_error` or `unreachable`), `hint` (`not_routed`, `host_header`, `wrong_target`, `certificate`, `no_listener`, or `settling` while the tracking service picks up a redirect that has just verified), a `detail` sentence, the `proxy` that answered when it named itself, and `checked_at`. Idempotent: a repeat keeps the same ownership value, so the `TXT` record stays valid
-  - `POST /emails/domains/:domain/redirect/verify`: check DNS and visit the domain now; for a redirect Warmbly Cloud serves, Cloud checks and the answer is its verdict. Safe to repeat
-  - `DELETE /emails/domains/:domain/redirect`: stop serving it, on Warmbly Cloud too when Cloud serves it. A repeat is a `404`
-  - `PUT /emails/domains/:domain/vendor-forwarding`: `url`; the vendor account holding the domain forwards its root there. An empty `url` removes the forwarding where `can_unforward`. Answers the updated `vendor_domain`. Idempotent
-  - `POST /emails/domains/:domain/vendor-tracking`: `host`, a subdomain of the domain; the vendor writes its `CNAME` to this instance's tracking host, then every mailbox on the domain uses the host. Answers like `PUT .../tracking`. Safe to retry: the record is replaced, not added
+  预览和创建接受 `multipart/form-data`：`file`（CSV、TSV 或 XLSX，最大 10 MB）或 `text`（粘贴的列表）、`mapping`（列索引到字段的 JSON 对象，例如 `{"0":"email","1":"password"}`；省略时自动映射）以及 `options`（JSON：`has_header`、`shared_password`、值为 `update` 或 `skip` 的 `on_existing`、`save_mapping`，以及应用于每个邮箱的 `settings`）。一次导入最多 5,000 行。两个列表端点返回 `data` 及包含 `next_cursor`、`has_more` 的 `pagination`；`limit` 对导入最多为 `100`，对行最多为 `200`；非此 API 签发的游标返回 `400` 和 `invalid_cursor`。这些操作均不接受 `Idempotency-Key`。重复创建会生成第二个导入，其行数据会发现第一次导入的邮箱已连接，继而更新（或跳过），因此不会重复连接。重试仅重新排队失败行，修正操作会拒绝非失败行，因此重复执行两者均不会重复连接。重复取消导入不作操作。进度通过实时事件 `MAILBOX_IMPORT_PROGRESS` 发布；参见 [实时通信](/api/realtime/)。错误码见 [邮箱导入拒绝原因](/api/error-codes/#mailbox-import-refusals)
+- `/emails/vendors` 下的 [邮箱供应商](/guides/mailbox-import/#import-from-an-inbox-vendor) 连接要求 JWT 权限 `MANAGE_EMAILS`。密钥在服务端密封保存，任何响应都不会返回它：
+  - `GET /emails/vendors/catalog`：支持的供应商，以及各自的 `fields`（key、label、secret、required、help）和 `key_help_url`
+  - `GET /emails/vendors`：工作区的供应商连接，包含 `status`、`last_error` 和邮箱数量
+  - `POST /emails/vendors`：`vendor`、`label` 和 `fields`；先向供应商验证密钥，返回 `201`。重复调用会创建第二个连接
+  - `PATCH /emails/vendors/:id`：重命名，或在向供应商验证新密钥后替换 `fields`。可安全重复调用
+  - `DELETE /emails/vendors/:id`：删除保存的密钥；由其导入的邮箱保持连接。重复调用返回 `404`
+  - `GET /emails/vendors/:id/mailboxes`：供应商账户的邮箱，已存在于工作区的邮箱标记为 `connected`
+  - `POST /emails/vendors/:id/import`：`mailbox_ids` 或 `all`，加上与文件导入相同的 `options`；以 `201` 返回导入对象。每次调用创建一个新导入；重复调用会发现前一次的邮箱已连接，继而更新（或跳过）
+- `/emails/grants` 下的 [管理员授权](/guides/mailbox-import/#connect-a-whole-google-workspace-domain) 要求 JWT 权限 `MANAGE_EMAILS`。记录、使用或移除授权的四个路由还需要 [近期身份确认](#actions-that-need-a-recent-confirmation)：
+  - `GET /emails/grants/config`：此实例是否接受 Google 和 Microsoft 授权、管理员需授权的 Google `google_client_id` 和 `google_scopes`，以及 `google_missing` 和 `microsoft_missing`（仍未设置的实例配置名称，该服务商已就绪时为空）
+  - `GET /emails/grants`、`GET /emails/grants/:id`：授权列表及其 `provider`、`tenant`、覆盖的 `domains`、`status` 和邮箱数量
+  - `GET /emails/grants/migration`：工作区中采用逐邮箱 Google 登录且可以 [选择切换连接方式](/guides/mailboxes/#moving-off-per-mailbox-google-sign-in) 的邮箱，按域名分组：`data` 为列表，各项包含 `domain`、`kind`（`workspace` 表示转为管理员授权，或 `personal`，即 `gmail.com` 这样的公共邮箱地址，转为应用密码）、`grant_id`（工作区有覆盖该域名的有效 Google 授权时）以及 `mailboxes`（`id`、`email`、`name`、`status`）；`total` 统计邮箱数。登录凭据由 Warmbly Cloud 持有的邮箱不在列表中。只读
+  - `POST /emails/grants/google/start`：`domain` 和 `admin_email`（属于该域名）。返回工作区证明域名控制权的方式：实例有 Google 登录应用时，`method` 为 `signin`，附带 Google 登录 `url` 和 `state`（有效期 15 分钟）；否则 `method` 为 `dns`。两者均包含 `txt_name`（`_warmbly.<domain>`）和 `txt_value`（`warmbly-verify=...`，对工作区和域名唯一），因为 DNS 证明始终可用。可安全重复调用
+  - `POST /emails/grants/google/finish`（近期确认）：提供 Google 登录返回的 `state` 和 `code`，登录身份必须是该域名的 `admin_email` 本人；或在发布 `TXT` 记录后提供 `domain` 和 `admin_email`。目录必须将 `admin_email` 列为超级管理员。返回 `201`。`state` 仅可使用一次；重复完成 DNS 验证会重新验证并更新同一授权，每个域名一个授权
+  - `POST /emails/grants/microsoft/start`：供全局管理员使用的管理员同意 `url` 和 `state`，有效期 15 分钟
+  - `POST /emails/grants/microsoft/finish`（近期确认）：同意回调中的 `state` 和 `code`；返回 `201`。记录的组织是管理员同意授权的组织，以兑换登录结果报告的组织为准。`state` 仅可使用一次，因此重复调用以 `mailbox_grant_state_invalid` 拒绝。每个租户一个授权：再次同意会更新同一授权
+  - `POST /emails/grants/:id/check`：立即验证，通过时重新启动该授权下已停止的邮箱。可安全重复调用
+  - `DELETE /emails/grants/:id`（近期确认）：移除授权；由其连接的所有邮箱都会停止。重复调用返回 `404`
+  - `GET /emails/grants/:id/users`：获授权目录，各用户标明 `enabled` 和 `connected`，已连接时还包含 `email_account_id`。若用户邮箱已经通过同一服务商的独立登录连接到此处（Google 或 Microsoft，且非由 Warmbly Cloud 持有），则 `upgrade` 为 `true`；连接操作会原地将该邮箱转为使用此授权
+  - `POST /emails/grants/:id/connect`（近期确认）：`user_ids` 或 `all`（所有已启用但尚未连接的用户，加上所有标记为 `upgrade` 的用户），以及导入 `options`；以 `201` 返回导入对象。每次调用创建一个新导入；重复调用会发现前一次的邮箱已连接，继而更新（或跳过）。若用户邮箱已作为委派邮箱存在，则重新关联到此授权；使用独立登录的邮箱则原地转换为授权方式，保留历史、营销活动和预热，且不额外占用邮箱数量额度
+- `/emails/domains` 下的 [发件域名](/guides/sending-domains/) 要求 JWT 权限 `MANAGE_EMAILS`。`:domain` 是不含协议或路径的域名：
+  - `GET /emails/domains`：工作区用于发送的所有域名，包含邮箱数量、邮件托管方、SPF、DKIM 和 DMARC、使用中的跟踪主机及重定向。若已连接的 [邮箱供应商](/guides/sending-domains/#domains-held-by-an-inbox-vendor) 账户持有域名，`vendor_domain` 包含 `vendor`、`connection_id`、当前 `forwarding`（供应商报告时）、`can_forward`、`can_unforward`、`forwarding_reviewed`（更改由供应商工作人员稍后应用）、`can_dns` 和 `dns_types`
+  - `POST /emails/domains/bulk`：`domains`（1 至 100 个）、`tracking_label`（单个 DNS 标签，如 `link`；每个域名获得 `<label>.<domain>`）和/或 `redirect_url`，还可提供按域名为键的 `tracking_hosts` 和 `redirect_urls` 对象，为所列域名单独指定主机或网站，以替代共用值。供应商 API 支持时，各域名使用供应商途径（写入 `CNAME`、转发根域名），否则保存并等待 DNS。可选 `served_by`（`instance` 或 `cloud`）指定无供应商转发时由何处提供重定向服务；省略则保留各域名当前选择。返回 `data`，每个域名一行，包含 `tracking`（`host`、值为 `vendor` 或 `dns` 的 `via`、`verified`、`mailboxes`、`cname_target`，以及供应商拒绝记录时的 `note`）和 `redirect`（`target_url`、值为 `vendor`、`dns` 或 `cloud` 的 `via`、`verified`、`reviewed`）；遭拒域名的行携带 `error` 和 `code`，不会阻止其他域名处理。可安全重试：各设置均为赋值，而非追加
+  - `GET /emails/domains/:domain/tracking-suggestion`：建议使用的跟踪 `host`、其 `status`（`active`、`found` 或 `suggested`）、`cname_target`，以及已连接供应商账户持有该域名时的 `vendor_domain`
+  - `PUT /emails/domains/:domain/tracking`：为域名下所有邮箱设置 `host`（为空则清除）；返回验证结果及更改的 `mailboxes` 数量。具有幂等性
+  - `PUT /emails/domains/:domain/redirect`：`target_url`，可选 `include_www`（默认 `true`），以及可选 `served_by`（`instance`；或在 [已关联 Warmbly Cloud](/guides/sending-domains/#serve-it-from-warmbly-cloud) 的自托管实例上使用 `cloud`；省略时保留当前选择，新重定向由本实例提供服务）。检查一次后返回重定向及其 `records`、`served_by`、`serve_host`（实际响应的跟踪主机，代理将域名路由至此）；DNS 验证后还返回 `reach`：最近一次访问域名的结果，包括 `status`（`ok`、`not_reaching`、`https_error` 或 `unreachable`）、`hint`（`not_routed`、`host_header`、`wrong_target`、`certificate`、`no_listener`，或跟踪服务正在加载刚验证重定向时的 `settling`）、一句 `detail`、响应方自报身份时的 `proxy`，以及 `checked_at`。具有幂等性：重复调用保留相同所有权值，因此 `TXT` 记录持续有效
+  - `POST /emails/domains/:domain/redirect/verify`：立即检查 DNS 并访问域名；由 Warmbly Cloud 提供服务的重定向，由 Cloud 检查并返回其结论。可安全重复调用
+  - `DELETE /emails/domains/:domain/redirect`：停止提供重定向服务；由 Warmbly Cloud 提供时也会在 Cloud 停止。重复调用返回 `404`
+  - `PUT /emails/domains/:domain/vendor-forwarding`：`url`；持有域名的供应商账户将根域名转发至此。`can_unforward` 为真时，空 `url` 会移除转发。返回更新后的 `vendor_domain`。具有幂等性
+  - `POST /emails/domains/:domain/vendor-tracking`：`host`，必须是该域名的子域名；供应商将其 `CNAME` 写为本实例的跟踪主机，然后域名下所有邮箱使用此主机。响应与 `PUT .../tracking` 相同。可安全重试：记录是替换，而非新增
 
-  None of these takes an `Idempotency-Key`; the retry behavior of each is stated above. Changes to vendor connections, grants and redirects publish `AUDIT_CREATED` with `entity_type` `mailbox_vendor`, `mailbox_grant` or `domain_redirect`. Error codes are under [mailbox source refusals](/api/error-codes/#mailbox-source-refusals)
-- `POST /emails/onboarding/oauth/reauth/:id`, `PUT /emails/onboarding/smtp-imap/:id` (reconnect an existing mailbox after a credential change; JWT permission `MANAGE_EMAILS`)
-- `POST /emails/onboarding/app-password/:id` (JWT permission `MANAGE_EMAILS`): move a mailbox off per-mailbox Google sign-in onto Gmail's IMAP and SMTP with `app_password`, a 16-letter Google app password (spaces are ignored). The password is checked against Gmail's servers before anything is stored, with the same refusals as an SMTP/IMAP connect; on success the mailbox becomes `smtp_imap` in place, keeps its imported mail, campaigns and warmup, and answers `200` with the mailbox. `409` `mailbox_not_google_signin` for any other mailbox, including one already switched, so a repeat changes nothing and takes no `Idempotency-Key`; `400` `app_password_invalid` when the value is not 16 letters. Publishes `AUDIT_CREATED` with `entity_type` `email_account`
-- `GET /oauth/authorize/details`, `POST /oauth/authorize` (the consent flow: a human approves a third-party app, and the grant carries only the scopes the member's role covers). `POST /oauth/authorize` requires a recent confirmation (`POST /auth/reauth`), like creating an API key
-- `GET /oauth/authorized-apps`, `DELETE /oauth/authorized-apps/:id` (apps the user has authorized)
-- `GET /oauth/workspace-authorizations`, `DELETE /oauth/workspace-authorizations/:id/members/:userId` (every member's authorized apps, and revoking one; JWT permission `MANAGE_API_KEYS` or `MANAGE_SETTINGS`). A revoke succeeds when there is nothing to revoke and publishes `AUDIT_CREATED` with `entity_type` `oauth_authorization`
-- `POST /getaway` (websocket bootstrap)
+  以上操作均不接受 `Idempotency-Key`；各自的重试行为已在上方说明。供应商连接、管理员授权和重定向发生更改时，发布 `AUDIT_CREATED`，其中 `entity_type` 为 `mailbox_vendor`、`mailbox_grant` 或 `domain_redirect`。错误码见 [邮箱来源拒绝原因](/api/error-codes/#mailbox-source-refusals)
+- `POST /emails/onboarding/oauth/reauth/:id`、`PUT /emails/onboarding/smtp-imap/:id`（凭据更改后重新连接现有邮箱；JWT 权限 `MANAGE_EMAILS`）
+- `POST /emails/onboarding/app-password/:id`（JWT 权限 `MANAGE_EMAILS`）：通过 `app_password`（16 个字母的 Google 应用密码，忽略空格），将邮箱从逐邮箱 Google 登录转为 Gmail IMAP 和 SMTP。保存任何内容前，会向 Gmail 服务器验证密码，拒绝原因与 SMTP/IMAP 连接相同；成功后邮箱原地变为 `smtp_imap`，保留已导入邮件、营销活动和预热，并以 `200` 返回邮箱。对其他邮箱（包括已切换的邮箱）返回 `409` `mailbox_not_google_signin`，因此重复调用不作更改，也无需 `Idempotency-Key`；值不是 16 个字母时返回 `400` `app_password_invalid`。发布 `AUDIT_CREATED`，其中 `entity_type` 为 `email_account`
+- `GET /oauth/authorize/details`、`POST /oauth/authorize`（同意流程：由用户批准第三方应用，授权仅包含成员角色所覆盖的权限范围）。`POST /oauth/authorize` 与创建 API 密钥一样，要求近期确认（`POST /auth/reauth`）
+- `GET /oauth/authorized-apps`、`DELETE /oauth/authorized-apps/:id`（用户已授权的应用）
+- `GET /oauth/workspace-authorizations`、`DELETE /oauth/workspace-authorizations/:id/members/:userId`（所有成员已授权的应用，以及撤销单个授权；JWT 权限 `MANAGE_API_KEYS` 或 `MANAGE_SETTINGS`）。没有可撤销内容时也成功，并发布 `AUDIT_CREATED`，其中 `entity_type` 为 `oauth_authorization`
+- `POST /getaway`（WebSocket 初始化）
 - `GET /realtime/info`
 - `GET /me/danger-zone`, `POST /me/danger-zone/delete`, `DELETE /me/danger-zone/delete`
-- `GET /me/views/:view`, `PUT /me/views/:view`, `DELETE /me/views/:view` (the signed-in member's own column layout and sort for a dashboard list in the current workspace; `view` is `contacts` or `campaign_leads`, or `unibox_rail` for the unibox scope rail, which saves a `layout` of `favorites`, `hidden`, `order` and `section_order` instead of columns. Personal to the session, so no API scope reaches it)
+- `GET /me/views/:view`、`PUT /me/views/:view`、`DELETE /me/views/:view`（已登录成员在当前工作区中为控制台列表设置的个人列布局及排序；`view` 为 `contacts` 或 `campaign_leads`，或为统一收件箱范围侧栏使用 `unibox_rail`；后者保存包含 `favorites`、`hidden`、`order` 和 `section_order` 的 `layout`，而非列设置。属于会话个人配置，任何 API 权限范围均无法访问）
 - `GET /invitations`, `POST /invitations/accept`
-- All of `/organization/*` (create, switch, members, invitations, transfer ownership, avatar, danger zone)
-  - `GET /organization/members` includes each member's `access_scope` (`workspace` or `restricted`) and `access` (`scope`, `campaign_folder_ids`, `campaign_ids`, `email_account_ids`); `GET /organization` carries the caller's own `access_scope` per workspace. `GET /organization/invitations` carries each invitation's `access`
-  - `GET /organization/members/:id/access` and `PUT /organization/members/:id/access` (JWT permission `MANAGE_TEAM`; the `PUT` also needs a recent confirmation). `:id` is the member's user id. The body is the whole scope, `{"scope": "restricted", "campaign_folder_ids": [], "campaign_ids": [], "email_account_ids": []}`, and replaces what was there, so a retry lands on the same state and takes no `Idempotency-Key`. `scope: "workspace"` clears the grants. Every id must belong to the workspace (`400` `invalid_access_resource`), at most 500 per list, the owner cannot be restricted (`403` `owner_access_unrestricted`), nobody can change their own access, and the caller must hold every permission the member's roles grant. Answers the member with `access`, and publishes `AUDIT_CREATED` with `entity_type` `organization_member`
-  - `POST /organization/members/invite` accepts the same object as `access`, so an invitee joins already restricted. Ids are checked on invite and again on acceptance, which drops grants on anything deleted in between
-  - `GET /organization/access/suggested-senders?campaign_ids=&campaign_folder_ids=` (JWT permission `MANAGE_TEAM`): the mailboxes those campaigns, and the campaigns in those folders, send from (explicit senders and sending-tag matches), each with the `campaign_ids` it sends for. A suggestion grants nothing
-- `GET /website-tracking/settings`, `PATCH /website-tracking/settings`, `POST /website-tracking/settings/rotate-key` (the [website tracking](/guides/website-tracking/) snippet's consent mode, location precision, allowed hosts and retention; JWT permission `MANAGE_SETTINGS`. The rotate is bodyless and safe to repeat, each call issues a new key)
-- All of `/subscription/*` (checkout, portal, cancel, change-plan, preview-change, enterprise-inquiry, discounts, referrals, etc.)
-- All of `/auth/cli/*` except the two handshake routes below (`GET /auth/cli/codes/:code`, `POST /auth/cli/codes/:code/approve`, `POST /auth/cli/codes/:code/deny`: the browser half of `warmbly auth login`, where a signed-in member reviews the code a CLI is showing and authorizes it. Approving mints an ordinary API key, so it requires the `MANAGE_API_KEYS` organization permission and a fresh authentication, is session-only (an API key must not be able to mint another one this way), and caps the key to the scopes the approver's role allows. `GET /auth/cli/codes/:code?organization_id=` adds `granted_scopes` and `granted_scope_names`: what approving into that workspace would grant)
-- All of `/pool-link/*` and `/cloud-link/*` (the self-hosted warmup pool link: approving an instance's code, listing and unlinking instances, reading the pool plan's price and opening its checkout, and on a self-hosted instance the connect flow and mailbox enrollment). `/cloud-link/*` exists only on a self-hosted instance. Connections belong to the selected local workspace, but linking and unlinking them (`/connect`, `/connect/poll`, `DELETE /cloud-link`) and the linked cloud workspace's mailboxes (`/workspace-mailboxes`, `.../adopt`) take a platform admin holding `manage_settings` whose session presented a second factor (`admin_mfa_required` otherwise). Reading the link and putting a workspace's own mailboxes on it (`GET /cloud-link`, `/mailboxes`, enroll, pause, resume and the Google and Microsoft sign-in under `/oauth/*`) take the workspace's `MANAGE_EMAILS`. `GET /cloud-link` includes `legacy_connected`; mailbox rows include `legacy` when they still use the old connection. A normal `DELETE /cloud-link` only disconnects the selected workspace's scoped link. `DELETE /cloud-link?legacy=true` explicitly disconnects the legacy link across all workspaces and uses the same platform-admin permission. New connections and enrollments require workspace scope, and a Cloud workspace accepts only one active link (legacy links count). `POST /pool-link/codes` requires `remote_organization_id` and returns `workspace_scoped: true` for supported clients. `POST /pool-link/codes` and `POST /pool-link/poll` are public and per-IP rate limited: they are the device-code handshake an instance uses before it has a token, and `/pool-link/instance/*` accepts only an instance token. `/pool-link/instance/oauth/*`, `/pool-link/instance/mailboxes/:id/token`, `/pool-link/instance/workspace-mailboxes` and `/pool-link/instance/mailboxes/adopt` are the cloud-managed mailbox surface (Google and Microsoft sign-in on Warmbly's OAuth apps, brokered access tokens); their instance-side counterparts are `/cloud-link/oauth/*` and `/cloud-link/workspace-mailboxes/*`. `/pool-link/instance/redirects` (list), and `GET`, `PUT`, `DELETE` and `POST .../verify` on `/pool-link/instance/redirects/:domain`, are the root redirects Warmbly Cloud serves for the calling instance; the instance drives them through `PUT /emails/domains/:domain/redirect` with `served_by: "cloud"`, and `GET /pool-link/instance` carries `redirects` (`available`, `host`, `limit`, `used`)
-- All of `/admin/*`. `DELETE /admin/instance/invitations/expired` requires platform admin `manage_organizations` and an MFA-verified session. It removes only expired invitation records across all workspaces, leaves active invitations and membership unchanged, records an admin audit entry, and returns `{ "cleaned": true }`. The admin panel confirms before calling it.
-  - `GET /admin/instance/health` requires `view_analytics` and an MFA-verified admin session. Returns configuration `checks`, `summary`, additive `execution_coverage` (currently `unreported`) and `operational_monitoring_path`. Empty findings do not establish execution coverage or operational health.
-  - Aggregate PostgreSQL monitoring sources, including sync and worker health samples, use one database reference for SQL thresholds, windows and source/metric observation clocks. That observation can be later than the snapshot's collection-start `checked_at`; cached snapshots keep their original clocks. Database observation is not provider recovery evidence.
-  - `GET /admin/instance/monitoring` requires `view_analytics` and an MFA-verified admin session, not an organization API-key scope. Returns the read-only version `"1"` snapshot with `checked_at`, `refresh_after`, `coverage` and permission-shaped `sources`; HTTP responses use `Cache-Control: no-store`, while the backend shares a bounded one-minute collection cache. Each source has availability, coverage, nullable observation/scope measurements and metrics with nullable counts, affected mailboxes/organizations, evidence clocks, conditions and optional investigation paths. Missing permissions return unavailable source placeholders with `permission_denied`, not private metrics. Source bits and interpretation are listed under [operational monitoring](/development/instance-health/#operational-monitoring). Unavailable is not zero or an outage; a positive broker lag/pending observation remains `unknown`/`info`, not proof of failed throughput. This route never subscribes, replays, reconnects, clears holds or changes broker offsets/assignments.
-  - `GET /admin/analytics/overview` requires `view_analytics`. `total_emails_sent` and `emails_sent_today` count confirmed warmup and other outbound sends, not dispatches. Today uses the UTC calendar day. A send-count database error fails the request instead of returning zero counters. See [platform admin send counters](/guides/analytics/#platform-admin-send-counters).
-  - `GET /admin/organizations` and `GET /admin/organizations/:id` require `view_organizations`. Their acquisition fields include the nullable `referrer_host` saved at signup, alongside UTM source, medium, campaign and landing path. The list accepts an exact `referrer_host` filter as well as its existing acquisition filters. An absent source is unknown, not proof of a direct visit. See [signup source attribution](/guides/analytics/#signup-source-attribution-platform-admins).
-  - `GET /admin/warmup-content/overview` includes effective generation controls and requires `view_warmup_pool`; `PUT /admin/warmup-content/settings` writes effective controls with `manage_settings`. These are platform-admin routes, not organization API-key scopes. See [effective generation policy and stopping](/development/warmup-generation/).
-  - `POST /admin/organizations/:id/sample-data`: `manage_testers` and an MFA-verified admin session. Adds the [reviewer sample dataset](/development/accounts-and-access/#adding-sample-data) only to an active dedicated Test workspace. No request body. Returns `200` with `organization_id`, `created` (false when already seeded) and `seeded_at`; retries preserve edits and deletions. An ordinary workspace, revoked or expired tester, or missing/expired managed Test grant returns `400`. Inserts and the admin audit marker commit together. No mailbox connection, email delivery, external request or credit spend occurs.
-  - `GET /admin/testers`: `view_users` and an MFA-verified admin session. Each tester in `data` may include `test_workspace_id` for its owned dedicated Test workspace and `sample_data_seeded_at` when populated. These fields are absent for a tester merely attached to an ordinary workspace.
-  - `PUT /admin/users/:id/login-code-exempt`: `manage_testers`, an MFA-verified admin session and a recent confirmation. Body `{"exempt": true, "reason": "..."}` excuses that account from the [emailed login code](/development/accounts-and-access/#excusing-one-account); the reason is required (at most 500 characters) and the acting admin is recorded as the grantor. `{"exempt": false}` ends the exemption, clears a handed-out tester password and signs out every session the account holds. Both write the admin audit log, and setting the same state again is safe. An unknown account returns `404`. `GET /admin/users/:id` and `/preview` carry `login_code_exempt`, `login_code_exempt_reason` and `login_code_exempt_at`
-  - `GET /admin/mailboxes`: `view_users` and an MFA-verified admin session. Optional `mailbox_id` filters by exact UUID; `status=all` includes inactive mailboxes. Node evidence links use `/mailboxes?mailbox_id=UUID`, regardless of loaded worker assignments or earlier browse filters. Deleted identities return an empty result, not a substitute mailbox.
+- 全部 `/organization/*`（创建、切换、成员、邀请、转移所有权、头像、危险区域）
+  - `GET /organization/members` 包含各成员的 `access_scope`（`workspace` 或 `restricted`）和 `access`（`scope`、`campaign_folder_ids`、`campaign_ids`、`email_account_ids`）；`GET /organization` 携带调用者在各工作区自身的 `access_scope`。`GET /organization/invitations` 携带各邀请的 `access`
+  - `GET /organization/members/:id/access` 和 `PUT /organization/members/:id/access`（JWT 权限 `MANAGE_TEAM`；`PUT` 还要求近期确认）。`:id` 是成员用户 ID。请求体是完整范围 `{"scope": "restricted", "campaign_folder_ids": [], "campaign_ids": [], "email_account_ids": []}`，会替换已有设置，因此重试得到相同状态，无需 `Idempotency-Key`。`scope: "workspace"` 清除资源授权。每个 ID 都必须属于工作区（否则返回 `400` `invalid_access_resource`），每个列表最多 500 项；不能限制所有者（`403` `owner_access_unrestricted`）；任何人都不能更改自己的访问权限，且调用者必须持有该成员角色授予的全部权限。返回带有 `access` 的成员，并发布 `AUDIT_CREATED`，其中 `entity_type` 为 `organization_member`
+  - `POST /organization/members/invite` 接受相同对象作为 `access`，使受邀者加入时即受限制。邀请和接受时均检查 ID；接受时会移除对期间已删除资源的授权
+  - `GET /organization/access/suggested-senders?campaign_ids=&campaign_folder_ids=`（JWT 权限 `MANAGE_TEAM`）：返回这些营销活动及这些文件夹内营销活动所使用的发件邮箱（显式发件邮箱和发送标签匹配项），每项包含其服务的 `campaign_ids`。建议本身不授予任何权限
+- `GET /website-tracking/settings`、`PATCH /website-tracking/settings`、`POST /website-tracking/settings/rotate-key`（[网站跟踪](/guides/website-tracking/) 代码片段的同意模式、位置精度、允许主机及保留期限；JWT 权限 `MANAGE_SETTINGS`。轮换无请求体，可安全重复，每次调用签发新密钥）
+- 全部 `/subscription/*`（checkout、portal、cancel、change-plan、preview-change、enterprise-inquiry、discounts、referrals 等）
+- 全部 `/auth/cli/*`，下方两个握手路由除外（`GET /auth/cli/codes/:code`、`POST /auth/cli/codes/:code/approve`、`POST /auth/cli/codes/:code/deny`：即 `warmbly auth login` 的浏览器部分，已登录成员在这里核对 CLI 显示的代码并授权。批准会签发普通 API 密钥，因此要求 `MANAGE_API_KEYS` 组织权限及近期身份验证，仅限会话调用（API 密钥不得以此方式签发另一密钥），且新密钥权限范围限定在批准者角色允许的范围内。`GET /auth/cli/codes/:code?organization_id=` 增加 `granted_scopes` 和 `granted_scope_names`，说明批准到该工作区将授予的权限）
+- 全部 `/pool-link/*` 和 `/cloud-link/*`（自托管预热池关联：批准实例代码、列出和解除实例关联、读取预热池套餐价格并打开结账页面，以及自托管实例上的连接流程和邮箱加入操作）。`/cloud-link/*` 仅存在于自托管实例。连接属于所选本地工作区，但建立和解除连接（`/connect`、`/connect/poll`、`DELETE /cloud-link`）及操作关联云端工作区的邮箱（`/workspace-mailboxes`、`.../adopt`），要求持有 `manage_settings` 的平台管理员，且其会话已提供第二因素（否则返回 `admin_mfa_required`）。读取关联及将工作区自己的邮箱加入其中（`GET /cloud-link`、`/mailboxes`、加入、暂停、恢复，以及 `/oauth/*` 下的 Google 和 Microsoft 登录）需要工作区的 `MANAGE_EMAILS`。`GET /cloud-link` 包含 `legacy_connected`；仍使用旧连接的邮箱行包含 `legacy`。普通 `DELETE /cloud-link` 只断开所选工作区范围的关联。`DELETE /cloud-link?legacy=true` 显式断开跨所有工作区的旧版关联，采用相同平台管理员权限。新连接和邮箱加入要求工作区范围，Cloud 工作区只接受一个活跃关联（旧版关联也计入）。`POST /pool-link/codes` 要求 `remote_organization_id`，并为支持的客户端返回 `workspace_scoped: true`。`POST /pool-link/codes` 和 `POST /pool-link/poll` 公开且按 IP 限流：它们是实例尚未获得令牌时使用的设备代码握手；`/pool-link/instance/*` 只接受实例令牌。`/pool-link/instance/oauth/*`、`/pool-link/instance/mailboxes/:id/token`、`/pool-link/instance/workspace-mailboxes` 和 `/pool-link/instance/mailboxes/adopt` 是云端托管邮箱接口（通过 Warmbly 的 OAuth 应用进行 Google 和 Microsoft 登录，以及代理获取访问令牌）；实例侧对应接口为 `/cloud-link/oauth/*` 和 `/cloud-link/workspace-mailboxes/*`。`/pool-link/instance/redirects`（列表），以及 `/pool-link/instance/redirects/:domain` 上的 `GET`、`PUT`、`DELETE`、`POST .../verify`，用于 Warmbly Cloud 为调用实例提供的根域名重定向；实例通过带有 `served_by: "cloud"` 的 `PUT /emails/domains/:domain/redirect` 驱动这些接口，`GET /pool-link/instance` 携带 `redirects`（`available`、`host`、`limit`、`used`）
+- 全部 `/admin/*`。`DELETE /admin/instance/invitations/expired` 要求平台管理员权限 `manage_organizations` 及已通过 MFA 的会话。它仅清除所有工作区中过期的邀请记录，不更改有效邀请和成员关系，写入管理员审计记录，并返回 `{ "cleaned": true }`。管理面板会在调用前要求确认。
+  - `GET /admin/instance/health` 要求 `view_analytics` 及已通过 MFA 的管理员会话。返回配置 `checks`、`summary`、新增的 `execution_coverage`（当前为 `unreported`）和 `operational_monitoring_path`。没有发现问题并不能证明执行覆盖完整或运行健康。
+  - 聚合 PostgreSQL 监控来源（包括同步及工作节点健康样本）统一使用数据库时间基准计算 SQL 阈值、时间窗口及来源/指标观测时间。该观测时间可能晚于快照采集开始的 `checked_at`；缓存快照保留原始时间。数据库观测不是服务商恢复证据。
+  - `GET /admin/instance/monitoring` 要求 `view_analytics` 及已通过 MFA 的管理员会话，而非组织 API 密钥权限范围。返回版本 `"1"` 的只读快照，包含 `checked_at`、`refresh_after`、`coverage` 和按权限裁剪的 `sources`；HTTP 响应使用 `Cache-Control: no-store`，后端则共用有效期受限为一分钟的采集缓存。各来源包含可用性、覆盖范围、可为空的观测/范围度量，以及具有可空计数的指标、受影响邮箱/组织、证据时间、条件和可选调查路径。缺少权限时返回带有 `permission_denied` 的不可用来源占位项，不返回私有指标。来源权限位及解读见 [运行监控](/development/instance-health/#operational-monitoring)。不可用不等于零或故障；消息代理的滞后/待处理观测值为正，仍属于 `unknown`/`info`，并不能证明吞吐失败。此路由绝不订阅、重放、重连、清除暂停或更改消息代理偏移量/分配。
+  - `GET /admin/analytics/overview` 要求 `view_analytics`。`total_emails_sent` 和 `emails_sent_today` 统计已确认的预热及其他外发邮件，不统计分发。今天按 UTC 自然日计算。发送计数数据库错误会使请求失败，而不是返回零计数。参见 [平台管理员发送计数器](/guides/analytics/#platform-admin-send-counters)。
+  - `GET /admin/organizations` 和 `GET /admin/organizations/:id` 要求 `view_organizations`。其获客来源字段包含注册时保存的可空 `referrer_host`，以及 UTM 来源、媒介、活动和着陆路径。列表除现有获客筛选条件外，还接受精确 `referrer_host` 筛选。来源缺失表示未知，不能证明是直接访问。参见 [注册来源归因](/guides/analytics/#signup-source-attribution-platform-admins)。
+  - `GET /admin/warmup-content/overview` 包含实际生效的生成控制，要求 `view_warmup_pool`；`PUT /admin/warmup-content/settings` 使用 `manage_settings` 写入实际生效的控制。这些属于平台管理员路由，而非组织 API 密钥权限范围。参见 [实际生效的生成策略与停止](/development/warmup-generation/)。
+  - `POST /admin/organizations/:id/sample-data`：要求 `manage_testers` 及已通过 MFA 的管理员会话。仅向活跃的专用 Test 工作区添加 [审核者示例数据集](/development/accounts-and-access/#adding-sample-data)。无请求体。返回 `200`，包含 `organization_id`、`created`（已填充时为 false）和 `seeded_at`；重试保留已有编辑及删除。普通工作区、已撤销或过期的测试员，或缺少/过期的托管 Test 授权，均返回 `400`。插入和管理员审计标记一同提交。不连接邮箱、投递邮件、发起外部请求或消耗积分。
+  - `GET /admin/testers`：要求 `view_users` 及已通过 MFA 的管理员会话。`data` 中每位测试员可包含其拥有的专用 Test 工作区 `test_workspace_id`，已填充数据时还包含 `sample_data_seeded_at`。仅附属于普通工作区的测试员没有这些字段。
+  - `PUT /admin/users/:id/login-code-exempt`：要求 `manage_testers`、已通过 MFA 的管理员会话及近期确认。请求体 `{"exempt": true, "reason": "..."}` 豁免该账户的 [邮件登录验证码](/development/accounts-and-access/#excusing-one-account)；原因必填（最多 500 个字符），操作管理员记录为授权者。`{"exempt": false}` 结束豁免、清除已发放的测试员密码，并退出该账户的所有会话。两者均写入管理员审计日志，重复设置相同状态是安全的。未知账户返回 `404`。`GET /admin/users/:id` 和 `/preview` 携带 `login_code_exempt`、`login_code_exempt_reason` 和 `login_code_exempt_at`
+  - `GET /admin/mailboxes`：要求 `view_users` 及已通过 MFA 的管理员会话。可选 `mailbox_id` 按精确 UUID 筛选；`status=all` 包含非活跃邮箱。节点证据链接使用 `/mailboxes?mailbox_id=UUID`，不受已加载的工作节点分配或之前浏览筛选条件影响。已删除身份返回空结果，而非替代邮箱。
 
-`POST /subscription/checkout`, `POST /subscription/portal`, `POST /subscription/cancel`, `POST /subscription/change-plan` and `GET /subscription/preview-change` require the `MANAGE_BILLING` organization permission; reading the subscription, its limits, trial and features needs only membership. `POST /subscription/portal` requires an existing Stripe billing customer. A workspace without one receives `400` with code `bad_request` and a message to complete checkout first; free and operator-granted plans alone do not create a billing customer.
+`POST /subscription/checkout`、`POST /subscription/portal`、`POST /subscription/cancel`、`POST /subscription/change-plan` 和 `GET /subscription/preview-change` 要求 `MANAGE_BILLING` 组织权限；读取订阅、限制、试用和功能仅需成员身份。`POST /subscription/portal` 要求已有 Stripe 计费客户。没有计费客户的工作区会收到 `400`，错误码为 `bad_request`，消息提示先完成结账；仅有免费或运维人员授予的套餐不会创建计费客户。
 
-### Internal execution and managed consent
+### 内部执行与托管授权 [#internal-execution-and-managed-consent]
 
-`POST /api/v1/internal/email-message-map/lookup` is a node-token-only read endpoint for mailbox synchronization, not a customer API-key scope. The JSON body carries `user_id`, `email_id` and at most 200 `message_ids` (at most 1 MiB in total). A successful response is `200` with `{"mappings": [...]}`; missing IDs are omitted and an empty result is an empty array, not `404`. Each returned mapping carries `user_id`, `email_id`, `message_id`, `id` and `thread_id`. Updated IMAP workers batch one envelope window at a time, without caching missing mappings across passes. Older workers keep using the single-message GET endpoint. Updated workers fall back to it only when the batch route returns `404` or `405`, and recheck batch support after ten minutes, so an existing self-host keeps working through a rolling upgrade. Authentication failures, database errors and malformed successful responses remain failures, not evidence that mail is absent. No sync interval, arrival acknowledgment or send authority changes.
+`POST /api/v1/internal/email-message-map/lookup` 是仅接受节点令牌的邮箱同步读取端点，不属于客户 API 密钥权限范围。JSON 请求体携带 `user_id`、`email_id` 和最多 200 个 `message_ids`（总大小最多 1 MiB）。成功响应为 `200`，包含 `{"mappings": [...]}`；缺失 ID 被省略，空结果为空数组，而非 `404`。每项返回映射携带 `user_id`、`email_id`、`message_id`、`id` 和 `thread_id`。更新后的 IMAP 工作节点每次批量处理一个邮件信封窗口，不跨处理轮次缓存缺失映射。旧工作节点继续使用单邮件 GET 端点。新工作节点仅在批量路由返回 `404` 或 `405` 时回退，并在十分钟后重新检查批量支持，使现有自托管实例在滚动升级期间继续工作。身份验证失败、数据库错误及格式无效的成功响应仍视为失败，不能作为邮件不存在的证据。不更改同步间隔、到达确认或发送授权。
 
-`DELETE /cloud-link/mailboxes/:id` removes the selected workspace's enrollment. On Cloud, instance-token-only `DELETE /pool-link/instance/mailboxes/:remoteId` stops both diagnostic send and receive participation for a managed mailbox before releasing its link, retaining its Cloud mailbox, sign-in and history. A failed stop retains the link for retry; a failed unlink does not restart participation. Unmanaged enrollments delete their Cloud mailbox as before. Whole-instance `DELETE /pool-link/instance` and workspace-authorized instance unlinking preserve managed Cloud participation while releasing links. These removals are naturally retryable; a missing remote enrollment returns `pool_link_mailbox_not_found`, which the self-hosted client treats as already released.
+`DELETE /cloud-link/mailboxes/:id` 移除所选工作区的邮箱加入记录。在 Cloud 上，仅接受实例令牌的 `DELETE /pool-link/instance/mailboxes/:remoteId` 会先停止托管邮箱参与诊断发送和接收，再释放关联，同时保留其 Cloud 邮箱、登录和历史。停止失败时保留关联以供重试；解除关联失败不会重新启用参与。非托管加入仍按原行为删除其 Cloud 邮箱。整个实例的 `DELETE /pool-link/instance` 和经工作区授权的实例解绑，在释放关联时保留托管 Cloud 参与状态。这些移除操作天然可重试；远端加入记录不存在时返回 `pool_link_mailbox_not_found`，自托管客户端将其视为已经释放。
 
-`PATCH /cloud-link/mailboxes/:id/participation` is self-hosted JWT-only with `MANAGE_EMAILS` and organization ownership. It accepts typed `mode` (`diagnostic` or `off`), `send`, `receive` and optional positive shared/rolling limits. `receive` also authorizes probabilistic spam rescue, reads, importance and stars or flags on verified warmup messages where supported; it does not authorize replies or guarantee reputation improvement. Cloud mirrors it through instance-token-only `PATCH /pool-link/instance/mailboxes/:remoteId/participation`, scoped to the calling instance. These dedicated routes prevent an old Cloud silently ignoring additive consent fields; old state without participation is not explicit diagnostic consent. The existing native lifecycle routes select diagnostic send/receive on start/resume and complete off on stop while retaining history. See [participation and send safety](/development/send-safety/).
+`PATCH /cloud-link/mailboxes/:id/participation` 仅用于自托管、仅接受 JWT，并要求 `MANAGE_EMAILS` 和组织所有权。接受类型明确的 `mode`（`diagnostic` 或 `off`）、`send`、`receive` 及可选的正数共用/滚动限制。`receive` 还授权在支持时，对已验证的预热邮件按概率执行移出垃圾邮件、已读、重要标记、加星或旗标操作；不授权回复，也不保证信誉改善。Cloud 通过仅接受实例令牌、限定在调用实例内的 `PATCH /pool-link/instance/mailboxes/:remoteId/participation` 提供对应操作。这些专用路由防止旧 Cloud 静默忽略新增同意字段；没有参与设置的旧状态不构成显式诊断同意。现有原生生命周期路由在启动/恢复时选择诊断发送和接收，在停止时完全关闭并保留历史。参见 [参与设置与发送安全](/development/send-safety/)。
 
-For a mailbox Warmbly Cloud warms, `PATCH /emails/:id` sends `warmup_base`, `warmup_max`, `warmup_increase`, `warmup_reply_rate`, `warmup_start_time`, `warmup_end_time`, `warmup_days` and `warmup` (as pause or resume) to Warmbly Cloud through instance-token-only `PATCH /pool-link/instance/mailboxes/:remoteId`, then stores the values Cloud reports. The rest of the patch is written locally only once Cloud has applied its part, and the timezone travels with it. `test_mode`, `test_send_enabled`, `test_receive_enabled`, `shared_daily_limit` and `rolling_recipient_limit` return `409 cloud_warmup_managed`; use the participation route above. `POST /emails/:id/warmup/start` and `/resume` resume the mailbox on Cloud, `/pause` pauses it there, and `/stop` returns `409 cloud_warmup_managed`. `GET /cloud-link/mailboxes` rows carry `settings_observed_at`, when the local copy last matched Cloud. See [warmup settings](/guides/warmbly-cloud/#warmup-settings) and [the refusals](/api/error-codes/#warmbly-cloud-warmup-refusals).
+对于由 Warmbly Cloud 预热的邮箱，`PATCH /emails/:id` 通过仅接受实例令牌的 `PATCH /pool-link/instance/mailboxes/:remoteId` 将 `warmup_base`、`warmup_max`、`warmup_increase`、`warmup_reply_rate`、`warmup_start_time`、`warmup_end_time`、`warmup_days` 和 `warmup`（作为暂停或恢复）发送给 Warmbly Cloud，再保存 Cloud 报告的值。仅在 Cloud 应用其部分之后，才在本地写入其余更新，时区也随之一并发送。`test_mode`、`test_send_enabled`、`test_receive_enabled`、`shared_daily_limit` 和 `rolling_recipient_limit` 返回 `409 cloud_warmup_managed`；请使用上方参与设置路由。`POST /emails/:id/warmup/start` 和 `/resume` 在 Cloud 恢复邮箱，`/pause` 在 Cloud 暂停，`/stop` 返回 `409 cloud_warmup_managed`。`GET /cloud-link/mailboxes` 的行携带 `settings_observed_at`，表示本地副本上次与 Cloud 一致的时间。参见 [预热设置](/guides/warmbly-cloud/#warmup-settings) 和 [拒绝原因](/api/error-codes/#warmbly-cloud-warmup-refusals)。
 
-Cloud-managed OAuth additionally exposes `POST /pool-link/instance/oauth/start-correlated`, `POST /pool-link/instance/oauth/finish-correlated` and `POST /pool-link/instance/mailboxes/adopt-correlated`, all instance-token only and requiring `protocol: 1`. The authenticated instance response advertises `managed_consent_protocol: 1`. Legacy routes remain unchanged; absence of the capability cannot be bypassed with fields an old replica might ignore. See [the Cloud route and recovery contract](/guides/warmbly-cloud/).
+云端托管 OAuth 另提供 `POST /pool-link/instance/oauth/start-correlated`、`POST /pool-link/instance/oauth/finish-correlated` 和 `POST /pool-link/instance/mailboxes/adopt-correlated`，均仅接受实例令牌，并要求 `protocol: 1`。已验证实例的响应会声明 `managed_consent_protocol: 1`。旧版路由保持不变；能力缺失时，不得利用旧副本可能忽略的字段绕过检查。参见 [Cloud 路由与恢复约定](/guides/warmbly-cloud/)。
 
-`POST /internal/worker/warmup-dispatch` is an execution-plane internal-token route, not a public JWT/API-key scope. It inspects, begins and durably finishes a task/mailbox/worker/nonce-bound command. Start repeats authoritative policy checks; unknown or denied authority cannot permit native execution. Receipt/header/model text supplies no authorization.
+`POST /internal/worker/warmup-dispatch` 是执行平面内部令牌路由，不属于公开 JWT/API 密钥权限范围。它检查、启动并持久化完成绑定到任务/邮箱/工作节点/nonce 的命令。启动时重新执行权威策略检查；授权未知或被拒绝时，不得执行原生操作。回执、邮件头或模型文本均不提供授权。
 
-`POST /internal/email-message-map/arrival` uses the existing internal node token. Only `204` with `X-Warmbly-Arrival-Durable: 1` acknowledges durable admission. Authoritative absence of the exact mailbox/user ownership returns `503` with `X-Warmbly-Arrival-Ownership-Lost` containing the requested mailbox UUID and no durable acknowledgment. Updated workers retire only that mailbox generation; the failed arrival remains unacknowledged, its stored body is retained and its provider cursor is not advanced. Ordinary `503` responses, transport failures, database failures and encryption failures remain retryable. Older workers ignore the new marker and continue holding the arrival; an upgraded backend and worker are both required for retirement. This does not clear send holds, resend messages or alter Kafka offsets.
+`POST /internal/email-message-map/arrival` 使用现有内部节点令牌。只有带有 `X-Warmbly-Arrival-Durable: 1` 的 `204` 才确认已持久化接纳。若权威检查确认所请求的精确邮箱/用户所有权不存在，则返回 `503`，并通过 `X-Warmbly-Arrival-Ownership-Lost` 携带请求的邮箱 UUID，不提供持久化确认。更新后的工作节点仅终止该邮箱这一代实例的处理；失败的到达记录保持未确认，保留已存储正文，且不推进服务商游标。普通 `503` 响应、传输失败、数据库失败和加密失败仍可重试。旧工作节点忽略新标记，继续保留该到达记录；只有后端和工作节点都升级后才能执行此终止处理。这不会清除发送暂停、重发邮件或更改 Kafka 偏移量。
 
-`POST /internal/worker/outbound-dispatch`, `/internal/worker/warmup-actions`, and `/internal/worker/diagnostic-auth` use the existing execution-plane internal token, never customer API keys. They bind the current mailbox/worker and require protocol 2. Outbound start additionally rechecks task/organization/provider/nonce/recipients and current campaign or diagnostic policy. Diagnostic authorization/result submission binds one exact already-owned warmup receipt and short-lived nonce; it neither ingests unrelated inbox messages nor trusts event/header claims. No public scope or permission was added. Details and limits: [send safety](/development/send-safety/).
+`POST /internal/worker/outbound-dispatch`、`/internal/worker/warmup-actions` 和 `/internal/worker/diagnostic-auth` 使用现有执行平面内部令牌，绝不接受客户 API 密钥。它们绑定当前邮箱/工作节点，并要求协议 2。外发启动还会重新检查任务/组织/服务商/nonce/收件人及当前营销活动或诊断策略。诊断授权和结果提交绑定一个精确、已归属的预热回执及短期 nonce；既不接收无关收件箱邮件，也不信任事件/邮件头声明。未新增任何公开权限范围或权限。详情及限制见 [发送安全](/development/send-safety/)。
 
-Warmup actions for a deleted, unassigned or no-longer-authorized mailbox return no permitted actions. The worker treats that authoritative denial as a no-op without touching the provider. Database or authority failures still return `503` and retry; denial does not authorize a send, clear a send hold, or acknowledge an arrival.
+对于已删除、未分配或不再获授权的邮箱，预热操作不返回任何允许的动作。工作节点将这种权威拒绝视为无操作，不接触服务商。数据库或授权服务失败仍返回 `503` 并重试；拒绝不会授权发送、清除发送暂停或确认到达。
 
-`POST /internal/worker/warmup-actions` optionally accepts `filing_id` for a filing-only action. `filing_pending: true` is returned only for permitted, pure filing work still durably queued for that exact mailbox and its current worker. On a failed filing, this proof lets an updated worker finish the command without a `WarmupFiled` completion event; the durable recovery queue remains responsible for retrying it. Missing proof or an older backend retains the existing command retries. Deploy the backend before workers to enable this behavior. Successful filing still requires a completion event, and publication failures remain retryable. No send, arrival or retention-delete authority is added.
+`POST /internal/worker/warmup-actions` 可接受 `filing_id`，用于仅整理邮件的操作。只有已获许可、仍在持久化队列中、且精确对应该邮箱及当前工作节点的纯整理工作，才返回 `filing_pending: true`。整理失败时，此证明允许更新后的工作节点在没有 `WarmupFiled` 完成事件的情况下结束命令；持久化恢复队列仍负责重试。缺少证明或后端较旧时，保留现有命令重试行为。先部署后端，再部署工作节点以启用此行为。整理成功仍要求完成事件，发布失败仍可重试。没有增加任何发送、到达或按保留策略删除的授权。
 
-### Referrals and discounts
+### 推荐奖励与折扣 [#referrals-and-discounts]
 
-The referral program and billing discount history are part of `/subscription/*`, so they are JWT only and never accept an API key. There is no API permission scope for them; browser callers are gated by the org permission below. The discount validation and checkout endpoints are listed under [Subscription and billing](/api/reference/account-org/) in the reference.
+推荐计划及计费折扣历史属于 `/subscription/*`，因此仅接受 JWT，永不接受 API 密钥。它们没有 API 权限范围；浏览器调用者受下方组织权限控制。折扣验证和结账端点列于参考文档的 [订阅与计费](/api/reference/account-org/) 部分。
 
-| Method | Path | JWT permission |
+| 方法 | 路径 | JWT 权限 |
 |--------|------|----------------|
 | GET | `/subscription/referral` | `manage_billing` |
 | POST | `/subscription/referral` | `manage_billing` |
@@ -718,61 +718,61 @@ The referral program and billing discount history are part of `/subscription/*`,
 | GET | `/subscription/referral/earnings` | `manage_billing` |
 | GET | `/subscription/discounts` | `manage_billing` |
 
-### AI credits
+### AI 积分 [#ai-credits]
 
-Credit balance, top-up purchases, and the transaction log are part of `/subscription/*`, so they are JWT only and never accept an API key. Purchases are fulfilled only in the Stripe webhook, never in the checkout call. See the [AI credits](/guides/ai-credits/) guide for what each action costs and the pack and reset rules. `GET /subscription/credits` carries `unlimited` (boolean): `true` on a deployment with `BILLING_PROVIDER=none`, where the ledger is bypassed and every balance and allowance field is zero and meaningless.
+积分余额、充值购买及交易日志属于 `/subscription/*`，因此仅接受 JWT，永不接受 API 密钥。购买仅由 Stripe Webhook 完成入账，结账调用本身不会入账。各操作费用、积分包和重置规则，参见 [AI 积分](/guides/ai-credits/) 指南。`GET /subscription/credits` 携带 `unlimited`（boolean）：在采用 `BILLING_PROVIDER=none` 的部署上为 `true`，此时绕过积分账本，所有余额及额度字段均为零且无实际含义。
 
-| Method | Path | JWT permission |
+| 方法 | 路径 | JWT 权限 |
 |--------|------|----------------|
 | GET | `/subscription/credits` | `manage_billing` |
 | GET | `/subscription/credits/transactions` | `manage_billing` |
 | POST | `/subscription/credits/checkout` | `manage_billing` |
 
-### AI assistant
+### AI 助手 [#ai-assistant]
 
-Remie, the dashboard AI assistant, is JWT only: sessions are private to the member who started them. The message and approval runs stream over Server-Sent Events. Each tool Remie runs is gated by the member's own organization permission bits, so Remie can never do more than the member could by hand. See the [Remie](/guides/ai-assistant/) guide. (API-key and OAuth callers reach the same tools through the [MCP server](/api/mcp/) or the [REST agent-tools surface](/api/agent-tools/), each tool gated by its own scope.)
+控制台 AI 助手 Remie 仅接受 JWT：会话仅供发起成员本人使用。消息和批准后的运行通过 Server-Sent Events 流式传输。Remie 执行的每个工具均受成员自身组织权限位控制，因此它绝不会超出成员手动操作的权限。参见 [Remie](/guides/ai-assistant/) 指南。（API 密钥和 OAuth 调用者可通过 [MCP 服务器](/api/mcp/) 或 [REST 智能体工具接口](/api/agent-tools/) 访问相同工具，各工具受自身权限范围控制。）
 
-| Method | Path | JWT permission |
+| 方法 | 路径 | JWT 权限 |
 |--------|------|----------------|
-| POST | `/ai/sessions` | organization member (use AI) |
-| GET | `/ai/sessions` | organization member (use AI) |
-| DELETE | `/ai/sessions` | organization member (use AI) |
-| DELETE | `/ai/sessions/:id` | organization member (use AI) |
-| GET | `/ai/sessions/:id/messages` | organization member (use AI) |
-| POST | `/ai/sessions/:id/messages` | organization member (use AI, SSE) |
-| POST | `/ai/sessions/:id/approve` | organization member (use AI, SSE) |
+| POST | `/ai/sessions` | 组织成员（使用 AI） |
+| GET | `/ai/sessions` | 组织成员（使用 AI） |
+| DELETE | `/ai/sessions` | 组织成员（使用 AI） |
+| DELETE | `/ai/sessions/:id` | 组织成员（使用 AI） |
+| GET | `/ai/sessions/:id/messages` | 组织成员（使用 AI） |
+| POST | `/ai/sessions/:id/messages` | 组织成员（使用 AI，SSE） |
+| POST | `/ai/sessions/:id/approve` | 组织成员（使用 AI，SSE） |
 | GET | `/ai/tool-policies` | `manage_settings` |
 | DELETE | `/ai/tool-policies/:tool` | `manage_settings` |
 
-`POST /ai/sessions/:id/approve` takes `{"decision": "approve" | "deny" | "always_allow", "tool_call_id": "..."}`. `tool_call_id` is required and must be the call the session is waiting on (the `tool_call_id` of its `approval_required` event, or `pending.tool_call_id` from `GET /ai/sessions/:id/messages`); any other answers `409` `approval_not_pending`, and so does a second decision on the same call. `always_allow` saves a workspace policy only for a member with `manage_settings` and only for a tool that may be always allowed; otherwise it approves this one call. The `approval_required` event and `pending` carry `arguments` (every argument as indented JSON with sorted keys, capped at 16 KiB, with `arguments_truncated`), `preview` for a send (`from`, `to`, `subject`, `body`, `body_html`), and `always_allow_offered`.
+`POST /ai/sessions/:id/approve` 接受 `{"decision": "approve" | "deny" | "always_allow", "tool_call_id": "..."}`。`tool_call_id` 必填，且必须对应会话正在等待的调用（其 `approval_required` 事件中的 `tool_call_id`，或 `GET /ai/sessions/:id/messages` 返回的 `pending.tool_call_id`）；其他值返回 `409` `approval_not_pending`，对同一调用作出第二次决定也如此。`always_allow` 仅在成员具有 `manage_settings` 且工具允许设置为始终允许时保存工作区策略，否则只批准本次调用。`approval_required` 事件和 `pending` 携带 `arguments`（所有参数以缩进 JSON 展示，键排序，最多 16 KiB，附带 `arguments_truncated`）、发送操作的 `preview`（`from`、`to`、`subject`、`body`、`body_html`），以及 `always_allow_offered`。
 
-`GET /ai/tool-policies` lists the tools the assistant runs without asking (`tool_name`, `created_by`, `created_by_name`, `created_at`); `DELETE /ai/tool-policies/:tool` revokes one. Both audit as `ai_tool_policy`.
+`GET /ai/tool-policies` 列出助手无需询问即可运行的工具（`tool_name`、`created_by`、`created_by_name`、`created_at`）；`DELETE /ai/tool-policies/:tool` 撤销其中一个。两者的审计类型均为 `ai_tool_policy`。
 
-### AI skills
+### AI 技能 [#ai-skills]
 
-Org playbooks the AI features follow (see the [AI skills](/guides/ai-skills/) guide). Gated on `manage_settings` for JWT callers, or the `AI_AGENT` scope for API keys. Creating, editing or deleting one with an API key also needs the member who created the key to hold `manage_settings`.
+AI 功能遵循的组织操作指南（参见 [AI 技能](/guides/ai-skills/) 指南）。JWT 调用者需要 `manage_settings`，API 密钥需要 `AI_AGENT` 权限范围。通过 API 密钥创建、编辑或删除操作指南，还要求密钥创建成员持有 `manage_settings`。
 
-| Method | Path | Permission |
+| 方法 | 路径 | 权限 |
 |--------|------|------------|
 | GET | `/ai/skills` | `manage_settings` / `AI_AGENT` |
 | POST | `/ai/skills` | `manage_settings` / `AI_AGENT` |
 | PATCH | `/ai/skills/:id` | `manage_settings` / `AI_AGENT` |
 | DELETE | `/ai/skills/:id` | `manage_settings` / `AI_AGENT` |
 
-### Agent tools (REST)
+### 智能体工具（REST） [#agent-tools-rest]
 
-The AI tool registry over plain HTTP for function-calling agents that do not speak MCP (see [Agent tools](/api/agent-tools/)). Like the MCP endpoint, it needs `AI_AGENT` (or `use_ai` for JWT callers); each tool then enforces its own permission, the list reflects only what the caller may use, and send-class tools are never exposed.
+通过普通 HTTP 提供 AI 工具登记表，供不支持 MCP 的函数调用智能体使用（参见 [智能体工具](/api/agent-tools/)）。与 MCP 端点一样，需要 `AI_AGENT`（JWT 调用者为 `use_ai`）；随后各工具检查自身权限，列表仅显示调用者可用的工具，且永不暴露发送类工具。
 
-| Method | Path | Permission |
+| 方法 | 路径 | 权限 |
 |--------|------|------------|
-| GET | `/ai/tools` | `use_ai` / `AI_AGENT`, then the permission of each listed tool |
-| POST | `/ai/tools/:name/call` | `use_ai` / `AI_AGENT`, then the permission of the tool being called |
+| GET | `/ai/tools` | `use_ai` / `AI_AGENT`，然后检查各列出工具的权限 |
+| POST | `/ai/tools/:name/call` | `use_ai` / `AI_AGENT`，然后检查所调用工具的权限 |
 
-### Connected MCP servers
+### 已连接的 MCP 服务器 [#connected-mcp-servers]
 
-External MCP servers whose tools the assistant can use (see [Connect MCP tools](/guides/connect-mcp-tools/)). JWT-only and `manage_settings`-gated; bearer tokens are sealed with the org key and never returned.
+助手可使用其工具的外部 MCP 服务器（参见 [连接 MCP 工具](/guides/connect-mcp-tools/)）。仅接受 JWT，并要求 `manage_settings`；Bearer 令牌使用组织密钥密封保存，绝不返回。
 
-| Method | Path | JWT permission |
+| 方法 | 路径 | JWT 权限 |
 |--------|------|----------------|
 | GET | `/ai/connections` | `manage_settings` |
 | POST | `/ai/connections` | `manage_settings` |
@@ -780,106 +780,83 @@ External MCP servers whose tools the assistant can use (see [Connect MCP tools](
 | DELETE | `/ai/connections/:id` | `manage_settings` |
 | POST | `/ai/connections/:id/refresh` | `manage_settings` |
 
-### Slack
+### Slack [#slack]
 
-The [Slack](/guides/slack/) panel's routes. They are session-only: linking binds a Slack account to the signed-in person, and an API key has no person to bind. Settings changes and link removals publish `AUDIT_CREATED` with `entity_type` `integration`.
+[Slack](/guides/slack/) 面板的路由。仅限会话调用：关联操作将 Slack 账户绑定到已登录用户，而 API 密钥没有可供绑定的用户身份。设置变更和移除关联会发布 `AUDIT_CREATED`，其中 `entity_type` 为 `integration`。
 
-| Method | Path | JWT permission |
+| 方法 | 路径 | JWT 权限 |
 |--------|------|----------------|
-| GET | `/integrations/slack/status` | organization member. `app_configured`, `interactive_configured` and `my_link` (always the caller's own) for everyone; `connection`, `settings` and `missing_scopes` only for `manage_settings` or `use_integrations` (otherwise absent, `{}` and `[]`); `links` (every member's link) only for `manage_settings` |
-| GET | `/integrations/slack/channels` | `manage_settings` or `use_integrations`. Public channels and the private channels the bot is in, filtered by `q`, at most 200, as `data` plus `pagination` |
-| PUT | `/integrations/slack/settings` | `manage_settings`. Default `channel`, per-category `routes`, `assistant_disabled`, `assistant_dm_only`, `inbox_channel` (a channel id from the list; empty turns the [inbox channel](/guides/slack/#inbox-in-slack) off) and `inbox_scope` (`replies`, the default, or `all`). The inbox channel must be one the bot can see and not a Slack Connect channel, else `400`. Idempotent: the whole settings object is replaced |
-| GET | `/integrations/slack/link/:code` | signed in, any workspace. Previews the link a bot button carries: `organization_id`, `organization_name`, `is_member`, `slack_team_id`, `slack_team_name`, `slack_user_id`, `slack_user_name` and `slack_user_avatar` (as Slack reports them now; either may be empty), `user_email` (the caller's Warmbly email), `email_matches` (the Slack account's email is the caller's Warmbly email), `verify_available` (Sign in with Slack can confirm the link) and `expires_at`. An unknown or expired code is `404` `slack_link_invalid` |
-| POST | `/integrations/slack/link/verify` | signed in, member of the code's workspace (else `403` `forbidden`). `code` from the bot's button; answers `200` with `url`, a Sign in with Slack page for the code's Slack workspace. Slack returns to the integrations OAuth callback, which hands `code` and `state` to the opener. `503` `slack_verify_unavailable` when the Slack app has no client credentials |
-| POST | `/integrations/slack/link` | signed in, member of the code's workspace (else `403` `forbidden`). `code` from the bot's button, plus `slack_code` and `state` from Sign in with Slack when the caller's Warmbly email is not the email on the code's Slack account (without them that is `403` `slack_link_email_mismatch`, and the code stays usable). A Sign in with Slack result must be this caller's, for this code, and for the code's Slack account (`403` `slack_verify_failed` or `slack_verify_wrong_account`). Answers `201` with the link and replaces any earlier link of that Slack account. The code is single-use, so a repeat is refused with `404` `slack_link_invalid` |
-| PATCH | `/integrations/slack/link` | organization member, own link. `dm_notifications`. `404` `slack_not_linked` when the caller has no link in this workspace |
-| DELETE | `/integrations/slack/link` | organization member, own link. Answers `204`, also when there was no link, so a repeat is safe |
-| DELETE | `/integrations/slack/links/:id` | `manage_settings`. Removes any member's link. Answers `204` |
+| GET | `/integrations/slack/status` | 组织成员。所有人可获取 `app_configured`、`interactive_configured` 和 `my_link`（始终为调用者自身的关联）；`connection`、`settings` 和 `missing_scopes` 仅提供给具有 `manage_settings` 或 `use_integrations` 的成员（否则分别省略、为 `{}` 和 `[]`）；`links`（所有成员的关联）仅提供给具有 `manage_settings` 的成员 |
+| GET | `/integrations/slack/channels` | `manage_settings` 或 `use_integrations`。返回公开频道及机器人所在的私有频道，按 `q` 筛选，最多 200 项，采用 `data` 加 `pagination` 的结构 |
+| PUT | `/integrations/slack/settings` | `manage_settings`。默认 `channel`、按分类的 `routes`、`assistant_disabled`、`assistant_dm_only`、`inbox_channel`（列表中的频道 ID；为空时关闭 [收件箱频道](/guides/slack/#inbox-in-slack)），以及 `inbox_scope`（`replies`，默认值，或 `all`）。收件箱频道必须对机器人可见，且不能是 Slack Connect 频道，否则返回 `400`。具有幂等性：替换整个设置对象 |
+| GET | `/integrations/slack/link/:code` | 已登录，可处于任意工作区。预览机器人按钮携带的关联信息：`organization_id`、`organization_name`、`is_member`、`slack_team_id`、`slack_team_name`、`slack_user_id`、`slack_user_name` 和 `slack_user_avatar`（以 Slack 当前报告为准，后两者均可能为空）、`user_email`（调用者 Warmbly 邮箱）、`email_matches`（Slack 账户邮箱是否与调用者 Warmbly 邮箱相同）、`verify_available`（是否可通过 Slack 登录确认关联）及 `expires_at`。未知或过期代码返回 `404` `slack_link_invalid` |
+| POST | `/integrations/slack/link/verify` | 已登录，且为代码所属工作区的成员（否则返回 `403` `forbidden`）。提交机器人按钮中的 `code`；以 `200` 返回 `url`，指向代码所属 Slack 工作区的“通过 Slack 登录”页面。Slack 返回集成 OAuth 回调，再将 `code` 和 `state` 传给打开窗口的页面。Slack 应用没有客户端凭据时返回 `503` `slack_verify_unavailable` |
+| POST | `/integrations/slack/link` | 已登录，且为代码所属工作区的成员（否则返回 `403` `forbidden`）。提交机器人按钮中的 `code`；调用者 Warmbly 邮箱与代码中 Slack 账户邮箱不同时，还需提供 Slack 登录返回的 `slack_code` 和 `state`（缺少时返回 `403` `slack_link_email_mismatch`，代码仍可继续使用）。Slack 登录结果必须属于此调用者、对应此代码及代码中的 Slack 账户（否则返回 `403` `slack_verify_failed` 或 `slack_verify_wrong_account`）。以 `201` 返回关联，并替换该 Slack 账户先前的关联。代码仅可使用一次，因此重复调用以 `404` `slack_link_invalid` 拒绝 |
+| PATCH | `/integrations/slack/link` | 组织成员，自身关联。`dm_notifications`。调用者在此工作区没有关联时返回 `404` `slack_not_linked` |
+| DELETE | `/integrations/slack/link` | 组织成员，自身关联。返回 `204`，没有关联时也如此，因此可安全重复调用 |
+| DELETE | `/integrations/slack/links/:id` | `manage_settings`。移除任意成员的关联。返回 `204` |
 
-The two `/integrations/slack/link` routes that take a code do not need a workspace selected, because the code names one. `GET /integrations/slack/status` reports `app_configured` (the instance has a Slack app) and `interactive_configured` (it also has the signing secret, so the assistant and buttons work), so a client can tell what is available before calling anything else. The settings and channel routes answer `404` `slack_not_connected` until the workspace connects Slack. Error codes are under [404](/api/error-codes/#404-not-found) and [503](/api/error-codes/#slack_not_configured).
+接受代码的两个 `/integrations/slack/link` 路由无需选定工作区，因为代码已指明工作区。`GET /integrations/slack/status` 报告 `app_configured`（实例有 Slack 应用）和 `interactive_configured`（还具有签名密钥，因此助手和按钮可用），使客户端在调用其他接口前了解可用能力。工作区尚未连接 Slack 时，设置和频道路由返回 `404` `slack_not_connected`。错误码见 [404](/api/error-codes/#404-not-found) 和 [503](/api/error-codes/#slack_not_configured)。
 
-## MCP server
+## MCP 服务器 [#mcp-server]
 
-`POST /v1/mcp` exposes the tool registry over the [Model Context Protocol](/api/mcp/) streamable-HTTP transport. It accepts an API key or an OAuth 2.1 access token holding `AI_AGENT` (an unauthenticated request gets the RFC 9728 discovery challenge). Each tool is gated by its scope, `tools/list` reflects only what the credential allows, and send-class tools are never exposed. Per-key rate limits apply.
+`POST /v1/mcp` 通过 [模型上下文协议（Model Context Protocol）](/api/mcp/) 的流式 HTTP 传输提供工具登记表。接受具有 `AI_AGENT` 的 API 密钥或 OAuth 2.1 访问令牌（未认证请求获得 RFC 9728 发现质询）。各工具按自身权限范围控制，`tools/list` 仅反映凭据允许的内容，且永不暴露发送类工具。适用每密钥限流。
 
-## Public
+## 公开端点 [#public]
 
-The dashboard's display-only `POST /v1/dashboard-image` endpoint accepts a session JWT and `{"url":"https://..."}` and returns image bytes. It is not API-key-capable. It reads owned public blobs through the active store, or fetches a public HTTPS image without forwarding browser credentials, cookies or referrer. The read rate limit applies; the body is limited to 16 KiB, the URL to 8,192 characters, the image to 5 MiB, and the request to ten seconds. Non-images, non-public destinations, unsafe redirects and unsupported ports are refused. Nothing is stored or changed, so retries need no idempotency key. Saved and sent emails retain the original URLs.
+控制台仅用于显示的 `POST /v1/dashboard-image` 端点接受会话 JWT 和 `{"url":"https://..."}`，返回图片字节。不支持 API 密钥。它通过当前存储读取本实例拥有的公开对象，或获取公开 HTTPS 图片，不转发浏览器凭据、Cookie 或来源信息。适用读取速率限制；请求体最多 16 KiB，URL 最多 8,192 个字符，图片最多 5 MiB，请求最多十秒。非图片、非公开目标、不安全重定向及不支持的端口均拒绝。不存储或更改任何内容，因此重试无需幂等键。保存和发送的邮件保留原始 URL。
 
-`POST /v1/dashboard-image/public` has the same body and image limits but accepts only this instance's owned public objects and the Slack sign-in avatar providers (`avatars.slack-edge.com` and `secure.gravatar.com/avatar/`). It is per-IP rate limited and cannot fetch arbitrary customer URLs anonymously.
+`POST /v1/dashboard-image/public` 采用相同请求体及图片限制，但只接受本实例拥有的公开对象和 Slack 登录头像服务商（`avatars.slack-edge.com` 和 `secure.gravatar.com/avatar/`）。按 IP 限流，不能匿名获取任意客户 URL。
 
 - `GET /health`
-- `POST /auth/cli/code`, `POST /auth/cli/poll` (the [CLI](/api/cli/) device-code handshake, per-IP rate limited. Public by necessity: the CLI has no credential until the flow completes. `POST /auth/cli/code` returns `device_code`, `user_code`, `verification_uri`, `verification_uri_complete`, `expires_in` and `interval`; polling returns `{"status":"pending"}` until a member decides, then `{"status":"approved"}` carrying the minted key exactly once, or `{"status":"denied"}`. An unknown or expired `device_code` is a `404`, so a poller cannot probe for live handshakes)
-- `POST /webhook/stripe` (Stripe signature)
-- `POST /api/v1/integrations/hubspot/webhooks` (HubSpot app webhooks, verified with the `X-HubSpot-Signature-v3` signature over the app's client secret and refused when older than five minutes. A delivery only makes the next read of the named record come sooner; see [HubSpot](/guides/hubspot/#self-hosting))
-- `POST /api/v1/integrations/pipedrive/webhooks/:connectionId` (Pipedrive webhooks Warmbly registers for one connection when a workspace switches to Pipedrive. Authenticated by HTTP Basic auth with a password derived from the connection and the app's client secret. A delivery only makes the next read of the named record come sooner; a connection no workspace runs its CRM on answers `410`. See [Pipedrive](/guides/pipedrive/#self-hosting))
-- `GET` and `POST /api/v1/integrations/pipedrive/app/panel`, `/app/enroll` and `/app/pause` (the Warmbly JSON panel on Pipedrive person and deal pages and its two JSON modals). Pipedrive signs each call with a JWT over the app's client secret, passed as the `token` query value and pinned to HS256; the user and company it names must match the `userId` and `companyId` query values, and a repeated value is refused. The company selects the one workspace in Pipedrive mode with a live connection to it, and each call acts as the member matched to that Pipedrive user, with its permissions. See [working from inside Pipedrive](/guides/pipedrive/#working-from-inside-pipedrive)
-- `POST /api/v1/integrations/hubspot/app/card`, `/app/enroll`, `/app/pause` (the Warmbly card on HubSpot contact records) and `POST /api/v1/integrations/hubspot/actions/enroll`, `/actions/campaigns` (the "Add to Warmbly campaign" workflow action). HubSpot signs each request with the app's client secret (`X-HubSpot-Signature-v3`, over the public backend URL). The card routes take the portal and HubSpot user from the query values HubSpot appends, exactly one of each, and act as that user's matched member with its permissions; the webhook and workflow action routes refuse a request carrying those values. The portal selects the one workspace in HubSpot mode with a live connection to it. See [working from inside HubSpot](/guides/hubspot/#working-from-inside-hubspot)
-- `POST /webhook/campaign`, `/webhook/email`, `/webhook/user-email` (Google OIDC token from Cloud Tasks)
-- `GET /addresses/google/callback`, `GET /addresses/outlook/callback` (OAuth bouncer pages)
-- `POST /oauth/token`, `POST /oauth/revoke` (OAuth token endpoints, authenticated by the client's id and secret, or PKCE for public clients)
-- `POST /oauth/register` (OAuth dynamic client registration, RFC 7591; open and per-IP rate-limited)
-- `GET /.well-known/oauth-authorization-server`, `GET /.well-known/oauth-protected-resource` (OAuth discovery metadata)
+- `POST /auth/cli/code`、`POST /auth/cli/poll`（[CLI](/api/cli/) 设备代码握手，按 IP 限流。必须公开，因为 CLI 在流程完成前没有凭据。`POST /auth/cli/code` 返回 `device_code`、`user_code`、`verification_uri`、`verification_uri_complete`、`expires_in` 和 `interval`；成员作出决定前，轮询返回 `{"status":"pending"}`，之后返回 `{"status":"approved"}` 并且仅一次携带签发的密钥，或返回 `{"status":"denied"}`。未知或过期的 `device_code` 返回 `404`，防止轮询方探测有效握手）
+- `POST /webhook/stripe`（Stripe 签名）
+- `POST /api/v1/integrations/hubspot/webhooks`（HubSpot 应用 Webhook，使用应用客户端密钥生成的 `X-HubSpot-Signature-v3` 签名验证，超过五分钟则拒绝。投递只会提前对指定记录的下一次读取；参见 [HubSpot](/guides/hubspot/#self-hosting)）
+- `POST /api/v1/integrations/pipedrive/webhooks/:connectionId`（工作区切换到 Pipedrive 时，Warmbly 为单个连接注册的 Pipedrive Webhook。通过 HTTP Basic 身份验证，密码由连接及应用客户端密钥派生。投递只会提前对指定记录的下一次读取；若没有工作区使用该连接作为 CRM，则返回 `410`。参见 [Pipedrive](/guides/pipedrive/#self-hosting)）
+- `GET` 和 `POST /api/v1/integrations/pipedrive/app/panel`、`/app/enroll` 和 `/app/pause`（Pipedrive 联系人和商机页面中的 Warmbly JSON 面板及两个 JSON 弹窗）。Pipedrive 使用应用客户端密钥为每次调用签发 JWT，通过 `token` 查询值传递，并固定为 HS256；其中指定的用户和公司必须与 `userId` 和 `companyId` 查询值匹配，重复参数值会被拒绝。公司标识选中唯一一个处于 Pipedrive 模式、且与其有有效连接的工作区，每次调用均以匹配该 Pipedrive 用户的成员身份及权限执行。参见 [在 Pipedrive 中工作](/guides/pipedrive/#working-from-inside-pipedrive)
+- `POST /api/v1/integrations/hubspot/app/card`、`/app/enroll`、`/app/pause`（HubSpot 联系人记录上的 Warmbly 卡片），以及 `POST /api/v1/integrations/hubspot/actions/enroll`、`/actions/campaigns`（“添加到 Warmbly 营销活动”工作流操作）。HubSpot 使用应用客户端密钥为每个请求签名（`X-HubSpot-Signature-v3`，基于公开后端 URL）。卡片路由从 HubSpot 追加的查询值获取门户和 HubSpot 用户，每项必须恰好出现一次，并以该用户匹配到的成员身份及权限执行；Webhook 和工作流操作路由拒绝携带这些值的请求。门户标识选中唯一一个处于 HubSpot 模式、且与其有有效连接的工作区。参见 [在 HubSpot 中工作](/guides/hubspot/#working-from-inside-hubspot)
+- `POST /webhook/campaign`、`/webhook/email`、`/webhook/user-email`（来自 Cloud Tasks 的 Google OIDC 令牌）
+- `GET /addresses/google/callback`、`GET /addresses/outlook/callback`（OAuth 跳转页面）
+- `POST /oauth/token`、`POST /oauth/revoke`（OAuth 令牌端点，通过客户端 ID 和密钥验证，公开客户端则使用 PKCE）
+- `POST /oauth/register`（OAuth 动态客户端注册，RFC 7591；公开且按 IP 限流）
+- `GET /.well-known/oauth-authorization-server`、`GET /.well-known/oauth-protected-resource`（OAuth 发现元数据）
 
-On the backend's host but outside `/v1`, called by Slack and never by an API key or a session:
+位于后端主机上，但在 `/v1` 之外，由 Slack 调用，绝不由 API 密钥或会话调用：
 
-- `POST /api/v1/integrations/slack/events`, `POST /api/v1/integrations/slack/interactivity` (Slack signature). Each request must carry a valid Slack `X-Slack-Signature` made with the instance's signing secret over a timestamp within five minutes, and its body is capped at 1 MiB. A bad signature is `401` `unauthorized`, and nothing in the body is parsed before the signature checks out. With no `SLACK_SIGNING_SECRET` set they answer `503` `slack_not_configured`. They answer Slack within its three-second limit and do the work afterwards. See [Slack app](/development/slack-app/)
+- `POST /api/v1/integrations/slack/events`、`POST /api/v1/integrations/slack/interactivity`（Slack 签名）。每个请求必须携带有效的 Slack `X-Slack-Signature`，使用实例签名密钥及五分钟内的时间戳生成，请求体最多 1 MiB。签名无效返回 `401` `unauthorized`，在签名验证通过前不解析请求体中的任何内容。未设置 `SLACK_SIGNING_SECRET` 时返回 `503` `slack_not_configured`。端点在 Slack 的三秒时限内响应，之后再处理工作。参见 [Slack 应用](/development/slack-app/)
 
-On the tracking service (the `TRACKING_DOMAIN` host, not the API), also public and rate-limited per source:
+位于跟踪服务（`TRACKING_DOMAIN` 主机，而非 API），同样公开并按来源限流：
 
-- `GET /t/o/:task_id.png` (open pixel), `GET /c/:link_id` (click redirect)
-- `GET /tracking.js` (the website tracking snippet), `POST /p` (page-view ingest; JSON body up to 8 KB, `429` over budget, `204` otherwise. Nothing in the request can name a contact)
-- A visit to a [sending domain's root](/guides/sending-domains/#root-redirects) (or its `www`) that a workspace pointed here. On a verified domain every path except `/health` answers `302` to its website with `Cache-Control: public, max-age=300`, before any route above; an unknown host is a `404`. The forms service answers a verified redirect domain the same way
+- `GET /t/o/:task_id.png`（打开跟踪像素）、`GET /c/:link_id`（点击重定向）
+- `GET /tracking.js`（网站跟踪代码片段）、`POST /p`（页面浏览接收；JSON 请求体最多 8 KB，超过额度返回 `429`，否则返回 `204`。请求中的任何内容均不能指定联系人）
+- 访问工作区指向此服务的 [发件域名根地址](/guides/sending-domains/#root-redirects)（或其 `www`）。对于已验证域名，除 `/health` 外的所有路径均在上述路由之前，以 `302` 重定向到其网站，并带有 `Cache-Control: public, max-age=300`；未知主机返回 `404`。表单服务对已验证重定向域名采用相同响应方式
 
-## Scheduled jobs
+## 定时任务 [#scheduled-jobs]
 
-`GET /admin/jobs` requires admin `view_analytics` and returns registered loops
-and retained retired records in `data`. Each row includes its service, interval,
-last recorded status and error, execution counters and recorded schedule.
-`retired_at`, when present, is the timestamp of explicit retirement
-classification, not proof of when the last process stopped. Retired records
-remain visible in Jobs with their historical values; they are not current
-running, overdue, failed or successful jobs in operational monitoring.
+`GET /admin/jobs` 要求管理员权限 `view_analytics`，在 `data` 中返回已注册循环任务及保留的已停用记录。每行包含服务、间隔、最近记录的状态和错误、执行计数器及记录的时间安排。`retired_at` 出现时，表示显式归类为停用的时间戳，不能证明最后一个进程何时停止。停用记录及其历史值仍显示在 Jobs 中；在运行监控中，它们不属于当前运行、逾期、失败或成功的任务。
 
-`POST /admin/jobs/:name/run` requires admin `manage_settings`. It requests a
-registered loop to run at its next poll; it does not execute the job itself.
-Missing and explicitly retired records return `404 not_found`. Retired loops
-cannot claim new scheduled slots or take manual requests. Retirement does not
-interrupt an already admitted run or erase its completion evidence.
+`POST /admin/jobs/:name/run` 要求管理员权限 `manage_settings`。它请求已注册循环任务在下一次轮询时运行，不直接执行任务本身。不存在和已显式停用的记录返回 `404 not_found`。停用循环不能认领新的计划时段，也不能接收手动请求。停用不会中断已经获准运行的任务，也不会删除其完成证据。
 
-Migration 286 classifies only the backend `fleet_quarantine` loop, which was
-removed from the application, as retired. Other old or stalled jobs remain
-active and retain their monitoring warnings. There is no age-based automatic
-retirement. Registering a loop again reactivates its record and clears any
-old pending run request, without resetting its execution counters or errors.
+迁移 286 仅将已从应用移除的后端 `fleet_quarantine` 循环归类为停用。其他旧任务或停滞任务仍保持活跃，并保留监控警告。不按任务年龄自动停用。重新注册循环会重新激活记录，并清除旧的待运行请求，但不重置执行计数器或错误。
 
-## Platform node diagnostics
+## 平台节点诊断 [#platform-node-diagnostics]
 
-Backend-origin routes outside `/v1` require a normal bearer session, live admin
-permissions and session MFA. Workspace API keys/OAuth API tokens cannot use them.
+位于后端源站、`/v1` 之外的路由要求普通 Bearer 会话、当前有效的管理员权限及会话 MFA。工作区 API 密钥/OAuth API 令牌无法使用。
 
-| Method and path | Existing admin permissions |
+| 方法及路径 | 现有管理员权限 |
 | --- | --- |
-| `POST /admin/auth/device/describe` | Any nonzero admin permission |
-| `POST /admin/auth/device/decide` | Any nonzero admin permission + fresh auth |
+| `POST /admin/auth/device/describe` | 任意非零管理员权限 |
+| `POST /admin/auth/device/decide` | 任意非零管理员权限 + 近期身份验证 |
 | `GET /admin/fleet/nodes/:id/logs` | `VIEW_WORKERS` |
-| `GET /admin/fleet/nodes/:id/broker` | `VIEW_WORKERS` and `VIEW_ANALYTICS` |
+| `GET /admin/fleet/nodes/:id/broker` | `VIEW_WORKERS` 和 `VIEW_ANALYTICS` |
 
-Public device starts/polls are `POST /v1/auth/cli/admin/code` and `/poll`.
-See [exact auth schemas](/api/authentication/#platform-admin-device-sessions).
-There is no remote shell, arbitrary execution endpoint or admin API key.
-Mutations stay on existing permission-gated admin endpoints and audit trails.
+公开设备启动/轮询端点为 `POST /v1/auth/cli/admin/code` 和 `/poll`。参见 [精确身份验证结构](/api/authentication/#platform-admin-device-sessions)。没有远程 shell、任意执行端点或管理员 API 密钥。变更仍通过现有受权限控制的管理员端点和审计轨迹执行。
 
-### Recent evidence
+### 近期诊断证据 [#recent-evidence]
 
-`GET /admin/fleet/nodes/:id/logs` accepts optional `after`/`before` (inclusive
-RFC3339 timestamps, after cannot follow before), `level` (`info`, `warn`,
-`error`), `mailbox_id` (mailbox account UUID, not folder/message) and `limit`
-(integer 1..200, default 200). Newest-first results contain at most one hour
-and 1,000 retained events per node; expired/count-evicted evidence cannot be
-recovered. This is allowlisted process evidence, not a full journal export.
+`GET /admin/fleet/nodes/:id/logs` 接受可选 `after`/`before`（含边界的 RFC3339 时间戳，after 不得晚于 before）、`level`（`info`、`warn`、`error`）、`mailbox_id`（邮箱账户 UUID，不是文件夹或邮件）及 `limit`（整数 1..200，默认 200）。结果最新在前，每个节点最多保留一小时和 1,000 个事件；过期或因数量限制淘汰的证据无法恢复。这是允许列表内的进程证据，不是完整日志导出。
 
-Response `200` (`Cache-Control: no-store`):
+响应 `200`（`Cache-Control: no-store`）：
 
 ```json
 {
@@ -901,71 +878,44 @@ Response `200` (`Cache-Control: no-store`):
 }
 ```
 
-`capture` is omitted until observed. Oldest/newest/count describe the entire
-retained window, not filtered rows. `truncated` means additional matching
-retained rows exist beyond the response limit. `dropped` counts known queue
-overflow/exhausted transport batches since that process's start, not lifetime
-loss. It resets on `run_id`. Crash loss, events before capture installation and
-lost acknowledgements cannot be measured completely: an exhausted batch is
-counted as dropped even if ingestion succeeded but its acknowledgement was
-lost. TTL/count eviction is intentional retention, not transport loss.
+尚未观测到时省略 `capture`。最早/最新时间及数量描述整个保留窗口，而非筛选后的行。`truncated` 表示响应条数上限之外仍有匹配的保留记录。`dropped` 统计该进程启动后已知的队列溢出/传输重试耗尽批次数，而非整个生命周期的丢失量；在 `run_id` 改变时重置。崩溃丢失、安装采集功能前的事件及丢失的确认无法完整度量：即使接收成功但确认丢失，重试耗尽的批次仍计为丢弃。TTL/数量淘汰属于预期保留策略，而非传输丢失。
 
-| Availability / reason | Meaning |
+| 可用性 / 原因 | 含义 |
 | --- | --- |
-| `unavailable` / `log_credential_unavailable` | Old/manual worker or lost Redis enrollment state; re-enroll |
-| `unavailable` / `capture_not_observed` | Enrolled but no upgraded capture received; might be an old worker |
-| `unavailable` / `cache_unavailable` | History cannot be read, not zero errors |
-| `stale` / `no_recent_capture` | Capture observation older than two minutes; retained rows may still appear |
-| `fresh` / `no_recent_evidence` | Recent empty capture, not proof of provider health |
-| `fresh` / `allowlisted_evidence_only` | Fresh partial evidence, never complete/healthy inference |
+| `unavailable` / `log_credential_unavailable` | 旧版/手动工作节点，或 Redis 加入状态丢失；请重新加入 |
+| `unavailable` / `capture_not_observed` | 已加入，但尚未收到升级后的采集数据；可能是旧工作节点 |
+| `unavailable` / `cache_unavailable` | 无法读取历史，不代表错误数为零 |
+| `stale` / `no_recent_capture` | 采集观测超过两分钟；仍可能显示保留记录 |
+| `fresh` / `no_recent_evidence` | 近期空采集，不能证明服务商健康 |
+| `fresh` / `allowlisted_evidence_only` | 新近的部分证据，绝不能据此推断完整覆盖或健康状态 |
 
-Fixed event schema: UUID `id`, RFC3339 `observed_at`, allowlisted `event`,
-canonical `level`/`category`, optional mailbox UUID and numeric `count`
-(0..1,000,000). Only `sync_control_plane_held` retains numeric HTTP status
-(100..599), including actual sync map/control-plane 503 responses.
+固定事件结构：UUID `id`、RFC3339 `observed_at`、允许列表中的 `event`、标准 `level`/`category`、可选邮箱 UUID，以及数值 `count`（0..1,000,000）。仅 `sync_control_plane_held` 保留数值 HTTP 状态（100..599），包括实际同步映射/控制平面的 503 响应。
 
-| Event | Category / level | Observed behavior |
+| 事件 | 类别 / 级别 | 观测到的行为 |
 | --- | --- | --- |
-| `sync_control_plane_held` | `control_plane` / `warn` | Actual failed sync control-plane call; pass aborted, cursors held |
-| `sync_message_deferred` | `control_plane` / `warn` | Unpublished map cleanup failed, pass skipped |
-| `mailbox_provider_unreachable` | `provider` / `warn` | Actual sync connection/transport failure |
-| `mailbox_provider_auth_failed` | `provider` / `warn` | Actual sync auth/authorization failure |
-| `mailbox_provider_throttled` | `provider` / `warn` | Actual sync throttle |
-| `mailbox_provider_sync_completed` | `provider` / `info` | Measured complete pass after prior transport failures |
-| `sync_folder_skipped` | `sync_policy` / `info` | Count of folders excluded by sync policy |
-| `sync_message_deferred_by_policy` | `sync_policy` / `info` | Count of messages deferred in a sync pass |
-| `sync_skipped_folder_search_failed` | `provider` / `warn` | Actual excluded-folder search failure |
-| `sync_legacy_arrival` | `compatibility` / `warn` | Existing legacy arrival fallback used |
-| `worker_error` | `worker_runtime` / `error` | Worker Zap error severity only, without arbitrary log text |
+| `sync_control_plane_held` | `control_plane` / `warn` | 实际同步控制平面调用失败；中止本轮处理，保持游标不变 |
+| `sync_message_deferred` | `control_plane` / `warn` | 未发布映射的清理失败，跳过本轮处理 |
+| `mailbox_provider_unreachable` | `provider` / `warn` | 实际同步连接/传输失败 |
+| `mailbox_provider_auth_failed` | `provider` / `warn` | 实际同步身份验证/授权失败 |
+| `mailbox_provider_throttled` | `provider` / `warn` | 实际同步限流 |
+| `mailbox_provider_sync_completed` | `provider` / `info` | 此前传输失败后，观测到一次完整处理成功 |
+| `sync_folder_skipped` | `sync_policy` / `info` | 同步策略排除的文件夹数 |
+| `sync_message_deferred_by_policy` | `sync_policy` / `info` | 某轮同步中被延后的邮件数 |
+| `sync_skipped_folder_search_failed` | `provider` / `warn` | 实际被排除文件夹搜索失败 |
+| `sync_legacy_arrival` | `compatibility` / `warn` | 使用了现有旧版到达回退机制 |
+| `worker_error` | `worker_runtime` / `error` | 仅工作节点 Zap 错误级别，不包含任意日志文本 |
 
-History also reports `generic_error_coverage: "unavailable"` and `generic_error_reason: "unhooked_runtime_sources"`. Generic runtime error capture currently hooks worker Zap only. Worker Zerolog and consumer standard-log/Zerolog errors are not captured. Explicit allowlisted sync/provider/control-plane decision hooks remain separate and unchanged. A fresh empty capture, including a consumer capture, never establishes zero runtime errors or health. These fields describe missing source coverage, not a current failure.
+历史还报告 `generic_error_coverage: "unavailable"` 和 `generic_error_reason: "unhooked_runtime_sources"`。通用运行时错误采集目前仅接入工作节点 Zap。工作节点 Zerolog 和消费者进程 standard-log/Zerolog 错误尚未采集。显式允许列表内的同步/服务商/控制平面决策采集点仍独立存在且保持不变。新近的空采集（包括消费者进程采集）绝不能证明运行时错误为零或系统健康。这些字段描述的是来源覆盖缺失，不是当前故障。
 
-No addresses, subjects, bodies, headers, raw errors, folder names or provider
-credentials are forwarded. Unknown free-form fields are discarded; categories
-and levels are reconstructed before transport and again on ingestion/read.
-Unknown events are rejected. Evidence does not change sync leases, cursor
-handling, arrival admission or send authority.
+不转发地址、主题、正文、邮件头、原始错误、文件夹名称或服务商凭据。未知自由格式字段被丢弃；类别和级别在传输前，以及接收/读取时重新构建。未知事件被拒绝。证据不会更改同步租约、游标处理、到达接纳或发送授权。
 
-### Node ingestion
+### 节点数据接收 [#node-ingestion]
 
-`POST /api/v1/internal/fleet/nodes/:id/logs` accepts only the enrollment-issued
-node-specific `Authorization: Bearer <NODE_LOG_TOKEN>`. The existing fleet join
-token authorizes issuance in `env_b64`. Shared broker/internal tokens are not
-accepted; hashes bind to exactly one registered node and are rechecked atomically
-at ingestion. Rejoin rotates; node deletion revokes and removes log state.
-This credential grants evidence submission only, not mailbox/command access.
+`POST /api/v1/internal/fleet/nodes/:id/logs` 仅接受加入时签发、专属于该节点的 `Authorization: Bearer <NODE_LOG_TOKEN>`。现有节点集群加入令牌授权在 `env_b64` 中签发此凭据。不接受共用消息代理/内部令牌；哈希精确绑定一个已注册节点，并在接收时进行原子复核。重新加入会轮换凭据；删除节点会撤销凭据并清除日志状态。此凭据仅授予证据提交权限，不授予邮箱或命令访问权限。
 
-There is no broker-key-to-log-credential refresh endpoint: the existing broker
-key authenticates the fleet, not ownership of a particular node UUID. Existing
-nodes must upgrade and rerun authenticated enrollment with the same UUID. The
-normal join script reads that UUID from the existing `node.env`, retains
-`node.local.env` and restarts the service; do not remove the configuration
-directory or delete the fleet row. Until capture is received, availability is
-unavailable, not healthy. Redis enrollment-hash loss requires the same safe
-re-enrollment, and no historical journals are imported. See
-[upgrade order and coverage](/development/data-control/#upgrade-order-and-coverage).
+不存在用消息代理密钥刷新日志凭据的端点：现有消息代理密钥验证节点集群身份，不证明某个节点 UUID 的所有权。现有节点必须升级，并使用相同 UUID 重新执行已认证的加入流程。常规加入脚本从现有 `node.env` 读取 UUID，保留 `node.local.env` 并重启服务；不要移除配置目录或删除集群节点记录。在收到采集数据前，可用性为不可用，而非健康。Redis 加入哈希丢失时也需要采用相同安全重新加入流程，且不会导入历史日志。参见 [升级顺序与覆盖范围](/development/data-control/#upgrade-order-and-coverage)。
 
-Request JSON (max 32 KiB, 32 events; events use the schema above):
+请求 JSON（最多 32 KiB、32 个事件；事件使用上述结构）：
 
 ```json
 {
@@ -975,33 +925,13 @@ Request JSON (max 32 KiB, 32 events; events use the schema above):
 }
 ```
 
-Empty batches report capture coverage only. Batch time must be within two
-minutes of receipt and no more than one minute ahead. Events must be within
-one-hour retention and no more than one minute ahead. `started_at` must be
-present and not after observation. Duplicate batch IDs are idempotent for one
-hour; older batches cannot overwrite newer capture metadata. Cadence is five
-seconds, queue 256 events, at most three attempts with bounded backoff and
-five-second HTTP deadlines. Capture never waits for network/queue space.
-Authenticated requests are capped at 30/node/minute. Success `204`; errors use
-the standard envelope: `400 bad_request` (invalid protocol/time/bounds/event),
-`401 unauthorized` (missing/wrong-node/revoked credential), `404 not_found`
-(absent registered node), `429 rate_limit_exceeded` (`Retry-After: 60`) and
-`503 service_unavailable` (dependencies).
+空批次仅报告采集覆盖情况。批次时间必须在接收前两分钟内，且不得超前一分钟。事件必须位于一小时保留期内，且不得超前一分钟。`started_at` 必须存在，且不得晚于观测时间。重复批次 ID 在一小时内具有幂等性；旧批次不能覆盖较新的采集元数据。采集周期为五秒，队列容量 256 个事件，最多尝试三次，使用有上限的退避和五秒 HTTP 超时。采集绝不等待网络或队列空间。已认证请求上限为每节点每分钟 30 次。成功返回 `204`；错误采用标准响应结构：`400 bad_request`（协议/时间/边界/事件无效）、`401 unauthorized`（凭据缺失、节点不匹配或已撤销）、`404 not_found`（已注册节点不存在）、`429 rate_limit_exceeded`（`Retry-After: 60`）及 `503 service_unavailable`（依赖问题）。
 
-### Broker committed lag
+### 消息代理的已提交消费进度滞后量 [#broker-committed-lag]
 
-`GET /admin/fleet/nodes/:id/broker` accepts a registered worker UUID, no
-topic/group overrides. Existing read-only scopes remain separate:
-`commands` observes `worker-<UUID>` / `w.<UUID>`; `results` observes
-`consumer-group` / `jobs.worker-events`, shared results, not attributable to
-that worker. No extra consumer scopes or offset mutations are created.
+`GET /admin/fleet/nodes/:id/broker` 接受已注册工作节点 UUID，不允许覆盖主题或消费者组。现有只读范围保持独立：`commands` 观测 `worker-<UUID>` / `w.<UUID>`；`results` 观测 `consumer-group` / `jobs.worker-events`，这是共用结果，不能归因到该工作节点。不新增消费者权限范围，也不更改偏移量。
 
-Response `200` has `node_id`, RFC3339 `observed_at`, `commands`, `results` and
-`note`. Each uses existing `MonitoringSource`: `id`, `availability`, `coverage`,
-optional `reason`, `observed_at`, `checked_at`, measured/expected scopes and
-`metrics`. Successful metrics are `committed_lag` (messages) and `members`, with
-count, observation/evidence timestamps, `condition: "unknown"`, severity and
-cautionary note. Only this focused endpoint opts into lag partition detail:
+响应 `200` 包含 `node_id`、RFC3339 `observed_at`、`commands`、`results` 和 `note`。各部分使用现有 `MonitoringSource`：`id`、`availability`、`coverage`，可选 `reason`、`observed_at`、`checked_at`，已测量/预期范围，以及 `metrics`。成功指标为 `committed_lag`（消息数）和 `members`，包含计数、观测/证据时间戳、`condition: "unknown"`、严重程度及提示说明。仅此专用端点启用滞后分区详情：
 
 ```json
 {
@@ -1012,48 +942,33 @@ cautionary note. Only this focused endpoint opts into lag partition detail:
 }
 ```
 
-Every requested topic/partition and committed/earliest/latest offset is
-validated; partition IDs must be nonnegative, max 128 partitions/scope, sorted
-by topic/partition. Missing commits, offsets outside retention, mismatched
-partitions, negative/overflowing lag, permission errors and timeouts are
-unavailable, never clamped to zero. Failed metrics have null count, no broker
-detail, unknown condition and attempted observation time. Reasons include
-`dependency_missing`, `resource_absent`, `permission_denied`, `timeout`,
-`collection_failed`; non-Kafka/unsupported buses return `unsupported` with
-empty metrics. One scope failure does not hide another successful scope.
-Overall collection deadline is eight seconds.
+会验证所有请求的主题/分区，以及已提交/最早/最新偏移量；分区 ID 必须非负，每个范围最多 128 个分区，按主题/分区排序。缺少提交、偏移量超出保留范围、分区不匹配、滞后为负或溢出、权限错误和超时均视为不可用，绝不将其截为零。失败指标计数为 null，不含消息代理详情，条件为 unknown，并记录尝试观测的时间。原因包括 `dependency_missing`、`resource_absent`、`permission_denied`、`timeout`、`collection_failed`；非 Kafka 或不支持的消息总线返回 `unsupported` 和空指标。某个范围失败不会隐藏另一个成功范围。整体采集时限为八秒。
 
-Lag is **not** delivery, provider health, throughput, uncommitted in-flight
-work, queue-drain time or an outage. Membership alone is not an outage either.
-Errors: `400 bad_request` (UUID/non-worker/invalid log filters),
-`401 unauthorized`, `403 admin_mfa_required`/`forbidden`, `404 not_found`,
-`503 service_unavailable` (node registry). Log Redis read failure instead
-returns `200` with explicit unavailable coverage. Successful diagnostics use
-`Cache-Control: no-store`.
+滞后 **不** 等同于投递、服务商健康、吞吐量、未提交的在途工作、队列清空时间或故障。仅凭成员数量也不能判定故障。错误：`400 bad_request`（UUID/非工作节点/无效日志筛选）、`401 unauthorized`、`403 admin_mfa_required`/`forbidden`、`404 not_found`、`503 service_unavailable`（节点登记表）。日志 Redis 读取失败则返回 `200`，明确标注覆盖不可用。成功诊断使用 `Cache-Control: no-store`。
 
-## Internal warmup recovery
+## 内部预热恢复 [#internal-warmup-recovery]
 
-These control-plane endpoints use the existing node-internal credential, not an API key, dashboard JWT or node logging credential. Their base is `/api/v1/internal`, not the public API base above. They introduce no new node identity or credential exchange.
+这些控制平面端点使用现有节点内部凭据，不使用 API 密钥、控制台 JWT 或节点日志凭据。基础路径为 `/api/v1/internal`，而非上方公开 API 基础路径。不引入新节点身份或凭据交换。
 
-| Method | Internal path | Scope |
+| 方法 | 内部路径 | 权限范围 |
 | --- | --- | --- |
-| POST | `/worker/warmup-actions` | Check current mailbox assignment and permitted actions; exact pending single-file work can return versioned filing recovery proof |
-| POST | `/worker/warmup-actions/defer` | Commit a monotonic provider retry time for that exact pending filing under current mailbox assignment |
+| POST | `/worker/warmup-actions` | 检查当前邮箱分配及允许操作；精确匹配的待处理单文件整理工作可返回带版本的整理恢复证明 |
+| POST | `/worker/warmup-actions/defer` | 在当前邮箱分配下，为精确匹配的待处理整理操作提交单调不减的服务商重试时间 |
 
-Deferral accepts `mailbox_id`, `worker_id`, `filing_id` and an absolute `provider_retry_at` timestamp. Successful `persisted: true` is returned only after commit, with `filing_recovery` proof containing protocol `1`, the same three IDs and the retained timestamp. Requesting a shorter time never shortens an existing provider hold or ordinary retry lease. There is no GET mutation or new filing-success event on deferral.
+延后操作接受 `mailbox_id`、`worker_id`、`filing_id` 和绝对 `provider_retry_at` 时间戳。仅在提交后才返回成功 `persisted: true`，并提供 `filing_recovery` 证明，包含协议 `1`、相同的三个 ID 及保留的时间戳。请求更短时间绝不会缩短现有服务商暂停或普通重试租约。延后操作没有 GET 变更，也不会产生新的整理成功事件。
 
-For exact filing commands, an upgraded backend returns no permitted actions when the pending filing is completed, missing, foreign or has a different action payload. Workers skip provider filing and do not emit a filing-success event for that denial. Untracked actions retain the existing admission behavior.
+对于精确匹配的整理命令，若待处理整理已完成、不存在、归属其他资源或操作载荷不同，升级后的后端不返回任何允许操作。工作节点跳过服务商整理，且不会为此拒绝发出整理成功事件。未跟踪的操作保持现有准入行为。
 
-Invalid identifiers or time return `400`; stale, deleted, foreign or disallowed work returns `403`; unsupported authority or database failure returns `503`. Responses use `Cache-Control: no-store`. Clients reject unmarked, malformed, unsupported-version or incorrectly scoped replies as durable deferral proof. Existing older-backend retry behavior is unchanged; an older worker does not implement the provider floor. See [warmup reconnect recovery](/development/data-control/#warmup-reconnect-recovery) for backend-first upgrade and source-instance data handling.
+标识符或时间无效返回 `400`；工作已过时、已删除、归属其他资源或不被允许时返回 `403`；授权能力不受支持或数据库失败返回 `503`。响应使用 `Cache-Control: no-store`。客户端不会接受未标记、格式错误、版本不支持或范围不正确的回复作为持久化延后证明。现有旧后端的重试行为保持不变；旧工作节点不实现服务商重试时间下限。先升级后端及来源实例数据处理说明，参见 [预热重连恢复](/development/data-control/#warmup-reconnect-recovery)。
 
-## Notes
+## 说明 [#notes]
 
-- When a route has both a JWT permission and an API permission listed, the dual-auth middleware checks the JWT user's organization role for browser callers and the key's permission bitmask for API key callers. They're independent gates: a user's role doesn't constrain what an API key can do beyond what was granted at creation.
-- Every API key request is logged to `api_key_usage_logs` with the endpoint pattern (e.g. `/campaigns/:id`), method, IP, user-agent, response status, and elapsed milliseconds. JWT requests are not logged here.
-- Rate limit categories (`X-RateLimit-*` headers) are scoped to the underlying user, not the key; every key issued by a user shares the user's quota.
+- 当路由同时列出 JWT 权限和 API 权限时，同时支持 JWT 和 API 密钥的身份验证中间件对浏览器调用者检查 JWT 用户的组织角色，对 API 密钥调用者检查密钥权限位掩码。两者是独立检查：除创建时授予的权限外，用户角色不会进一步限制 API 密钥的操作能力。
+- 每个 API 密钥请求都记录到 `api_key_usage_logs`，包含端点模式（例如 `/campaigns/:id`）、方法、IP、user-agent、响应状态及耗时毫秒数。JWT 请求不在此处记录。
+- 速率限制类别（`X-RateLimit-*` 请求头）按底层用户而非密钥划分；同一用户签发的所有密钥共用该用户的额度。
 
-## See also
+## 另请参阅 [#see-also]
 
-- [Authentication](/api/authentication/)
-- [Permissions Reference](/api/permissions/)
-- [Error Codes](/api/error-codes/)
+- [身份验证](/api/authentication/)
+- [权限参考](/api/permissions/)
+- [错误码](/api/error-codes/)

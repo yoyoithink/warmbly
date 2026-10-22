@@ -1,48 +1,48 @@
 ---
-title: Contacts
-description: Search, manage, import, export, and enrich contacts along with their notes, activities, timeline, and deals.
+title: "联系人"
+description: "搜索、管理、导入、导出和补全联系人信息，以及相关备注、活动记录、时间线和商机。"
 ---
 
-Contacts are the people you send to. This group covers the full lifecycle: searching and filtering, creating and editing (singly and in bulk), CSV/XLSX/JSON import and export, the hydrated contact 360 view, the per-contact email and activity feeds, and CRM notes, activities, and deals attached to a contact. List endpoints return a `data` array plus a `pagination` envelope; errors follow the standard `{error, message, code, request_id}` shape (see [error codes](/api/error-codes/)).
+联系人是您发送邮件的对象。本组端点涵盖完整生命周期：搜索和筛选、创建和编辑（单个及批量）、CSV/XLSX/JSON 导入和导出、包含完整关联数据的联系人 360 视图、各联系人的邮件和活动动态，以及关联到联系人的 CRM 备注、活动和商机。列表端点返回 `data` 数组及 `pagination` 分页结构；错误采用标准的 `{error, message, code, request_id}` 格式（参见 [错误码](/api/error-codes/)）。
 
-## Search contacts
+## 搜索联系人 [#search-contacts]
 
 `POST /contacts/search`
 
-Faceted, server-side contact search scoped to your organization. The request body holds the filters; pagination is via query params.
+在组织范围内进行服务端多维度联系人搜索。筛选条件放在请求体中；分页通过查询参数控制。
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `cursor` | query | string | Opaque pagination cursor from the previous page's `pagination.next_cursor`. It carries the exact position of the next page under the ordering it was issued for, so rows that share a sort value are never skipped or repeated. A malformed cursor, or one replayed with a different `sort_by` or `reverse` than it was issued under, is a `400`. |
-| `limit` | query | string | Page size (numeric string). |
-| `category` | query | string | Convenience filter for a single label ID. |
+| `cursor` | query | string | 上一页 `pagination.next_cursor` 返回的不透明分页游标。它保存了按原排序规则继续读取下一页的精确位置，因此排序值相同的记录不会被跳过或重复。游标格式无效，或使用与签发时不同的 `sort_by` 或 `reverse` 重放游标，均返回 `400`。 |
+| `limit` | query | string | 每页条数（数字字符串）。 |
+| `category` | query | string | 按单个标签 ID 快速筛选。 |
 
-### Request body
+### 请求体 [#request-body]
 
-Every field is optional; an empty body matches all contacts in the organization.
+所有字段均可选；空请求体匹配组织中的所有联系人。
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `query` | string | No | Text search across core fields (name, email, company). |
-| `custom_field_filters` | array | No | Per custom-field filters: `{ "name", "value", "type" }` where `type` is one of `equal`, `starts_with`, `ends_with`, `contains`. |
-| `campaign_ids` | string[] | No | Contact must be in ALL of these campaigns. |
-| `lead_status` | string | No | Filter to one derived lead status: `pending`, `active`, `completed`, `replied`, `bounced`, `failed`, `paused`, `undeliverable`, or `unsubscribed`. Requires exactly one `campaign_ids` entry, otherwise the request is rejected with `lead_filter_requires_campaign`; an unknown value is rejected with `invalid_lead_status`. |
-| `engagement` | string | No | Filter by engagement inside that campaign: `opened`, `not_opened`, `clicked`, `not_clicked`, `replied`, `not_replied`, or `bounced`. `opened` means a human open (machine opens never count); the `not_*` values match only leads sent at least one step. Combines with `lead_status` as AND. Requires exactly one `campaign_ids` entry (`lead_filter_requires_campaign`); an unknown value is rejected with `invalid_engagement`. |
-| `category_ids` | string[] | No | Label IDs. The contact must have ALL of these labels. |
-| `segment_ids` | string[] | No | Contact must be a member of ALL of these segments (conditions plus manual overrides). An id that is not a valid UUID is rejected with `400`; an unknown segment matches nothing. |
-| `verification_status` | string | No | Filter by verification verdict: `valid`, `risky`, `invalid`, or `unknown`. |
-| `mail_hosts` | string[] | No | Contacts whose inbox is hosted by any of these `mail_host` values (see [Email provider](#email-provider)). `""` matches contacts with no known provider: not checked yet, or a domain with no mail server. An unknown value is rejected with `invalid_mail_host`. |
-| `min_campaigns` | integer | No | Minimum number of associated campaigns. |
-| `max_campaigns` | integer | No | Maximum number of associated campaigns. |
-| `subscribed` | boolean | No | Filter by subscription status. |
-| `created_after` | string (RFC 3339) | No | Created on or after this time. |
-| `created_before` | string (RFC 3339) | No | Created on or before this time. |
-| `updated_after` | string (RFC 3339) | No | Updated on or after this time. |
-| `updated_before` | string (RFC 3339) | No | Updated on or before this time. |
-| `sort_by` | string | No | Sort column: `created_at` (the default), `updated_at`, `first_name`, `last_name`, `email`, `company`, `phone`, `campaign_count`, or `mail_host`. `mail_host` sorts by the provider value, with contacts that have no known provider grouped last when ascending and first when descending. `custom:<key>` sorts on a custom field, as text, with contacts that lack the field (or have it blank) grouped last when ascending and first when descending. A custom-field name that could never exist is rejected with `invalid_sort_by`; any other unknown value falls back to `created_at`. |
-| `reverse` | boolean | No | Ascending when true. The default is descending. |
+| `query` | string | 否 | 在核心字段（姓名、邮箱、公司）中进行文本搜索。 |
+| `custom_field_filters` | array | 否 | 各自定义字段的筛选条件：`{ "name", "value", "type" }`，其中 `type` 为 `equal`、`starts_with`、`ends_with`、`contains` 之一。 |
+| `campaign_ids` | string[] | 否 | 联系人必须同时属于列出的所有营销活动。 |
+| `lead_status` | string | 否 | 按单个派生潜在客户状态筛选：`pending`、`active`、`completed`、`replied`、`bounced`、`failed`、`paused`、`undeliverable` 或 `unsubscribed`。`campaign_ids` 必须恰好包含一项，否则请求以 `lead_filter_requires_campaign` 拒绝；未知值以 `invalid_lead_status` 拒绝。 |
+| `engagement` | string | 否 | 按该营销活动中的互动情况筛选：`opened`、`not_opened`、`clicked`、`not_clicked`、`replied`、`not_replied` 或 `bounced`。`opened` 表示真人打开（机器打开不计入）；`not_*` 值仅匹配至少已发送一个步骤的潜在客户。与 `lead_status` 以 AND 逻辑组合。`campaign_ids` 必须恰好包含一项（否则返回 `lead_filter_requires_campaign`）；未知值以 `invalid_engagement` 拒绝。 |
+| `category_ids` | string[] | 否 | 标签 ID。联系人必须同时具有列出的所有标签。 |
+| `segment_ids` | string[] | 否 | 联系人必须同时属于列出的所有分群（综合条件和手动覆盖）。ID 不是有效 UUID 时以 `400` 拒绝；未知分群不会匹配任何联系人。 |
+| `verification_status` | string | 否 | 按验证结论筛选：`valid`、`risky`、`invalid` 或 `unknown`。 |
+| `mail_hosts` | string[] | 否 | 收件箱由任一所列 `mail_host` 托管的联系人（参见 [邮箱服务商](#email-provider)）。`""` 匹配服务商未知的联系人：尚未检查，或域名没有邮件服务器。未知值以 `invalid_mail_host` 拒绝。 |
+| `min_campaigns` | integer | 否 | 关联营销活动数量的最小值。 |
+| `max_campaigns` | integer | 否 | 关联营销活动数量的最大值。 |
+| `subscribed` | boolean | 否 | 按订阅状态筛选。 |
+| `created_after` | string (RFC 3339) | 否 | 创建时间不早于此时间。 |
+| `created_before` | string (RFC 3339) | 否 | 创建时间不晚于此时间。 |
+| `updated_after` | string (RFC 3339) | 否 | 更新时间不早于此时间。 |
+| `updated_before` | string (RFC 3339) | 否 | 更新时间不晚于此时间。 |
+| `sort_by` | string | 否 | 排序列：`created_at`（默认）、`updated_at`、`first_name`、`last_name`、`email`、`company`、`phone`、`campaign_count` 或 `mail_host`。`mail_host` 按服务商值排序，服务商未知的联系人在升序时排在最后，降序时排在最前。`custom:<key>` 将自定义字段按文本排序，缺少该字段或字段为空的联系人在升序时排在最后，降序时排在最前。不可能存在的自定义字段名称以 `invalid_sort_by` 拒绝；其他未知值则回退到 `created_at`。 |
+| `reverse` | boolean | 否 | 为 true 时升序排列。默认降序。 |
 
 ```json
 {
@@ -55,9 +55,9 @@ Every field is optional; an empty body matches all contacts in the organization.
 }
 ```
 
-### Response
+### 响应 [#response]
 
-Returns a `data` array of contacts plus a `pagination` envelope. Paginate by passing `pagination.next_cursor` back as `cursor` until `has_more` is `false`; `pagination.total` is the count for the whole filtered set and is only sent on the first page.
+返回联系人 `data` 数组及 `pagination` 分页结构。将 `pagination.next_cursor` 作为 `cursor` 传回以继续分页，直到 `has_more` 为 `false`；`pagination.total` 是完整筛选结果集的数量，仅在第一页返回。
 
 ```json
 {
@@ -104,17 +104,17 @@ Returns a `data` array of contacts plus a `pagination` envelope. Paginate by pas
 }
 ```
 
-Every contact carries its address verification: `verification_status` (`valid`, `risky`, `invalid`, or `unknown`), `verification_sub_status` (`catch_all`, `disposable`, `role`, `spamtrap`, `mailbox_full`, `no_mx`, `syntax`, `undisclosed`, or empty), `verification_source` (`probe` for the built-in check, `provider` for a connected verification service, `imported` for a verdict that came with the contact, `manual` for one a member set, empty when never checked), `verification_provider` (who produced it), `verification_reason`, `verification_checked_at`, `verification_requested_at` (set while a re-check a member asked for is waiting to run; the verdict stands until it lands), and `verification_confidence` (0 to 100, scored from the check plus what real mail to the address showed; see [what real mail teaches the check](/guides/deliverability/#what-real-mail-teaches-the-check)). Campaigns never send to `invalid`, and send to `risky` only when their `risky_emails` setting is on.
+每位联系人都携带其地址验证信息：`verification_status`（`valid`、`risky`、`invalid` 或 `unknown`）、`verification_sub_status`（`catch_all`、`disposable`、`role`、`spamtrap`、`mailbox_full`、`no_mx`、`syntax`、`undisclosed` 或为空）、`verification_source`（内置检查为 `probe`，已连接的验证服务为 `provider`，随联系人提供的结论为 `imported`，成员手动设置的结论为 `manual`，从未检查时为空）、`verification_provider`（结论产生方）、`verification_reason`、`verification_checked_at`、`verification_requested_at`（成员请求的重新检查尚待执行时设置；新结果产生前，原结论继续有效），以及 `verification_confidence`（0 至 100，根据检查结果及向该地址发送真实邮件的情况评分；参见 [真实邮件如何改进验证结果](/guides/deliverability/#what-real-mail-teaches-the-check)）。营销活动从不向 `invalid` 地址发送，且仅在启用了 `risky_emails` 设置时才向 `risky` 地址发送。
 
-### Email provider
+### 邮箱服务商 [#email-provider]
 
-Every contact carries `mail_host`, who hosts the inbox the address belongs to, and `esp_provider`, that host's family. Warmbly reads them from the domain's DNS in the background, usually within a minute of the contact being added or its address changing: the MX records first, then the SPF record when a filtering gateway such as Proofpoint or Mimecast sits in front of the real host. Consumer domains like `gmail.com` are known without a lookup. Each domain is looked up once however many contacts share it, and nothing about the address is sent to a third party.
+每位联系人都携带 `mail_host`（该地址收件箱的托管方）及 `esp_provider`（托管方所属类别）。Warmbly 在后台读取域名 DNS 来确定这些值，通常在添加联系人或更改地址后一分钟内完成：先检查 MX 记录；若真实托管方前有 Proofpoint 或 Mimecast 等过滤网关，则继续检查 SPF 记录。`gmail.com` 这类个人邮箱域名无需查询即可识别。无论多少联系人共用同一域名，每个域名只查询一次，也不会向第三方发送任何地址信息。
 
-`mail_host` is one of `google_workspace`, `gmail`, `microsoft365`, `outlook`, `zoho`, `yahoo`, `aol`, `icloud`, `fastmail`, `godaddy`, `namecheap`, `ionos`, `hostinger`, `ovh`, `migadu`, `purelymail`, `rackspace`, `yandex`, `gmx`, `proton`, or `other` (the domain receives mail, on a host Warmbly does not name), and is empty until the check has run or when the domain has no mail server. `esp_provider` is `gmail` for either Google product, `outlook` for either Microsoft one, `other` for the rest, and empty with `mail_host`. Campaign [ESP matching](/guides/campaigns/) pairs senders and recipients by `esp_provider`. A domain whose provider could not be read is checked again a week later; one whose lookup failed is retried within the hour.
+`mail_host` 为以下值之一：`google_workspace`、`gmail`、`microsoft365`、`outlook`、`zoho`、`yahoo`、`aol`、`icloud`、`fastmail`、`godaddy`、`namecheap`、`ionos`、`hostinger`、`ovh`、`migadu`、`purelymail`、`rackspace`、`yandex`、`gmx`、`proton` 或 `other`（域名可以收信，但 Warmbly 未具体识别其托管方）；检查尚未执行或域名没有邮件服务器时，该值为空。`esp_provider` 对两种 Google 产品均为 `gmail`，对两种 Microsoft 产品均为 `outlook`，其他为 `other`，并在 `mail_host` 为空时为空。营销活动的 [ESP 匹配](/guides/campaigns/) 按 `esp_provider` 配对发件人和收件人。未能识别服务商的域名会在一周后重新检查；查询失败的域名则在一小时内重试。
 
-When the search filters by exactly one campaign, each contact additionally carries a `campaign_lead` object with its processing state inside that campaign (`status`, `sent`, `opened`, `machine_opened`, `clicked`, `replied`, `bounced`, `current_step`, `sender`, `last_activity_at`, `hold` when held, `cc` when the lead copies anyone, and `failure_reason` when failed). `cc` lists the contacts copied on every email to the lead, in the shape [get a lead's CC](/api/reference/campaigns/#get-a-leads-cc) returns. `sender` is the mailbox address the lead's whole sequence sends from, fixed when its first email went out and absent until then. `opened` counts steps opened by a person; steps fetched automatically by a mail client (Apple Mail Privacy Protection and similar) are in `machine_opened` instead, matching the machine opens the analytics summary reports. The `status` derivation, highest priority first, is `unsubscribed` (not subscribed), then `bounced`, `replied`, `failed` (a step could not be sent after every retry; `failure_reason` carries the sending worker's reason), `completed` (every email step sent, no reply), `paused` (the lead's flow is held, by an out-of-office auto-reply, by hand, or because the contact is copied on another lead's emails in the campaign; the `hold` object carries `since`, `until`, `reason` and `source`), `active` (some steps sent, more to send), `undeliverable` (pre-send verification refused the address, so the campaign skips the lead and never sends to it), and `pending` (queued, nothing sent). A step counts as sent only once the sending worker has delivered it to the mailbox provider; a send the worker could not complete is retried on the campaign's next pass and never shows as sent. The `lead_status` filter narrows to one of these buckets.
+搜索仅按一个营销活动筛选时，每位联系人还包含 `campaign_lead` 对象，记录其在该活动中的处理状态（`status`、`sent`、`opened`、`machine_opened`、`clicked`、`replied`、`bounced`、`current_step`、`sender`、`last_activity_at`，暂停时还包含 `hold`，该潜在客户有抄送对象时包含 `cc`，失败时包含 `failure_reason`）。`cc` 列出每封发给该潜在客户的邮件中都会抄送的联系人，结构与 [获取潜在客户的抄送联系人](/api/reference/campaigns/#get-a-leads-cc) 的返回值相同。`sender` 是该潜在客户整个邮件序列使用的发件邮箱地址，在首封邮件发出时固定，之前不出现。`opened` 统计真人打开过的步骤；由邮件客户端自动获取的步骤（Apple Mail 隐私保护等）则计入 `machine_opened`，与分析摘要报告的机器打开一致。`status` 的派生优先级从高到低为：`unsubscribed`（未订阅）、`bounced`、`replied`、`failed`（某个步骤在所有重试后仍无法发送；`failure_reason` 提供发送工作节点的原因）、`completed`（所有邮件步骤均已发送，未回复）、`paused`（潜在客户的流程因外出自动回复、手动操作，或因其被抄送此活动中另一位潜在客户的邮件而暂停；`hold` 对象包含 `since`、`until`、`reason` 和 `source`）、`active`（部分步骤已发送，仍有待发送步骤）、`undeliverable`（发送前验证拒绝该地址，因此活动跳过此潜在客户且不会向其发送），以及 `pending`（已排队，尚未发送）。只有发送工作节点将邮件交付给邮箱服务商后，步骤才计为已发送；工作节点未能完成的发送会在营销活动下一轮处理时重试，绝不会显示为已发送。`lead_status` 筛选条件可限定为其中一个状态类别。
 
-When the search filters by exactly one campaign, the first page (no `cursor`) also includes a `lead_counts` object: per-status lead totals for that campaign, independent of the `lead_status` and `engagement` filters so every scope's total is available at once. The status buckets include `paused`. Alongside them it carries engagement totals that match the `engagement` filter: `contacted` (leads sent at least one step), `opened` (a human open on any step), `clicked`, and `replied_any` (a reply on any step, whatever the derived status). `providers` splits the campaign's leads by [email provider](#email-provider) family, the grouping ESP matching uses: `gmail`, `outlook`, `other` (including checked domains with no known provider, which ESP matching treats the same way), and `undetected` for leads whose provider has not been read yet.
+搜索仅按一个营销活动筛选时，第一页（没有 `cursor`）还包含 `lead_counts` 对象：该活动各状态的潜在客户总数，不受 `lead_status` 和 `engagement` 筛选条件影响，因此可一次获取所有状态类别的总数。这些状态类别包括 `paused`。此外，该对象还提供与 `engagement` 筛选条件相对应的互动总数：`contacted`（至少已发送一个步骤的潜在客户）、`opened`（任一步骤出现真人打开）、`clicked` 和 `replied_any`（任一步骤有回复，不论派生状态是什么）。`providers` 按 [邮件服务商](#email-provider) 类别划分活动的潜在客户，即 ESP 匹配所用的分组：`gmail`、`outlook`、`other`（包括已经检查但服务商仍未知的域名，ESP 匹配同样这样处理），以及 `undetected`（尚未读取服务商的潜在客户）。
 
 ```json
 {
@@ -133,7 +133,7 @@ When the search filters by exactly one campaign, the first page (no `cursor`) al
 }
 ```
 
-On the first page (no `cursor`), the response includes a `counts` object with org-wide facet totals (independent of the request filters), useful for a browse sidebar. Later pages omit it:
+在第一页（没有 `cursor`）中，响应包含 `counts` 对象，提供组织范围内的各筛选维度总数（不受请求筛选条件影响），适合用于浏览侧栏。后续页面省略此对象：
 
 ```json
 {
@@ -150,38 +150,38 @@ On the first page (no `cursor`), the response includes a `counts` object with or
 }
 ```
 
-### Outreach
+### 客户开发 [#outreach]
 
-Every contact carries `outreach`, its engagement across every campaign: how many emails reached it (`sent`), and how many of those it `opened`, `clicked`, `replied` to or `bounced`, with the time each last happened (`last_sent_at`, `last_opened_at`, `last_clicked_at`, `last_replied_at`, `last_bounced_at`, absent until the first one). These are the same counts the [contact 360](#get-a-contact) reports under `engagement`. Opens count a person only; a mail client fetching the message automatically is not counted.
+每位联系人都携带 `outreach`，汇总其在所有营销活动中的互动情况：向其发送了多少封邮件（`sent`），以及其中有多少封被 `opened`、`clicked`、`replied` 或 `bounced`，并提供各行为最近发生的时间（`last_sent_at`、`last_opened_at`、`last_clicked_at`、`last_replied_at`、`last_bounced_at`，首次发生前不出现）。这些计数与 [联系人 360 视图](#get-a-contact) 中 `engagement` 提供的相同。打开仅统计真人操作；邮件客户端自动获取邮件不会计入。
 
-## Create contacts
+## 创建联系人 [#create-contacts]
 
 `POST /contacts`
 
-Creates one or more contacts. The body is a JSON array of contacts, or a single contact object, which is read as an array of one.
+创建一个或多个联系人。请求体为联系人 JSON 数组，也可以是单个联系人对象，后者按仅含一个元素的数组处理。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`
 
-### Request body
+### 请求体 [#request-body-1]
 
-A JSON array of contact objects (at least one, up to the per-request maximum; an empty array is a `400`), or one contact object on its own. The response is an array either way.
+联系人对象的 JSON 数组（至少一个，不超过单次请求上限；空数组返回 `400`），或单个联系人对象。无论哪种形式，响应均为数组。
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `email` | string | Yes | Contact email address. Stored lowercased; a display name (`Dana Reyes <dana@acme.com>`) is reduced to the address inside it, and anything that is not an address answers `400`. |
-| `first_name` | string | No | First name. |
-| `last_name` | string | No | Last name. |
-| `company` | string | No | Company name. |
-| `phone` | string | No | Phone number. |
-| `campaigns` | string[] | No | Campaign IDs to add the contact to. |
-| `categories` | string[] | No | Label IDs to put on the contact. |
-| `segments` | string[] | No | Segment IDs to pin the contact into, as a manual include override, so it belongs whether or not the conditions match it. An unknown id is rejected with `400` before any contact is written, and the override is written in the same transaction as the contact, so a success response always means the membership exists. |
-| `custom_fields` | object | No | String key/value custom fields. Keys may use letters, numbers, underscores, spaces, and dashes. |
-| `subscribed` | boolean | No | Marketing-consent flag. Omit it to let a new contact default to subscribed and an existing one keep whatever it already had. |
-| `verification_status` | string | No | A verdict you already hold for the address, in Warmbly's vocabulary (`valid`, `risky`, `invalid`, `unknown`) or any known service's (`ok`, `catch-all`, `do_not_mail`, `deliverable`, `ok_for_all`, ...). Stored as an imported verdict that the background check leaves alone. A value no known service writes is rejected with `unknown_verification_status`. |
-| `verification_provider` | string | No | The vocabulary `verification_status` is written in: `zerobounce`, `millionverifier`, `cleanmylist`, `neverbounce`, `bouncer`, `kickbox`, `emailable`, `debounce`, `clearout`, `emaillistverify`, or `warmbly`. Omit it to have the value recognised by itself. An unknown name is rejected with `unknown_verification_provider`. |
+| `email` | string | 是 | 联系人邮箱地址。以小写形式存储；带显示名称的值（`Dana Reyes <dana@acme.com>`）会提取其中的地址，非地址内容返回 `400`。 |
+| `first_name` | string | 否 | 名。 |
+| `last_name` | string | 否 | 姓。 |
+| `company` | string | 否 | 公司名称。 |
+| `phone` | string | 否 | 电话号码。 |
+| `campaigns` | string[] | 否 | 要将联系人加入的营销活动 ID。 |
+| `categories` | string[] | 否 | 要添加到联系人的标签 ID。 |
+| `segments` | string[] | 否 | 通过手动包含覆盖，将联系人固定加入这些分群 ID，无论其是否满足分群条件。未知 ID 会在写入任何联系人之前以 `400` 拒绝；覆盖记录与联系人在同一事务中写入，因此响应成功始终意味着成员关系已存在。 |
+| `custom_fields` | object | 否 | 字符串键值形式的自定义字段。键可使用字母、数字、下划线、空格和连字符。 |
+| `subscribed` | boolean | 否 | 营销同意标志。省略时，新联系人默认订阅，现有联系人保持原状态。 |
+| `verification_status` | string | 否 | 您已有的地址验证结论，可使用 Warmbly 的状态词（`valid`、`risky`、`invalid`、`unknown`），或任何已知服务的状态词（`ok`、`catch-all`、`do_not_mail`、`deliverable`、`ok_for_all` 等）。作为导入结论保存，后台检查不会改动它。若值不属于任何已知服务，则以 `unknown_verification_status` 拒绝。 |
+| `verification_provider` | string | 否 | `verification_status` 使用的服务商状态词：`zerobounce`、`millionverifier`、`cleanmylist`、`neverbounce`、`bouncer`、`kickbox`、`emailable`、`debounce`、`clearout`、`emaillistverify` 或 `warmbly`。省略时根据值本身自动识别。未知名称以 `unknown_verification_provider` 拒绝。 |
 
-An address you already have is matched (lowercased) and enriched rather than duplicated: fields you send replace what is stored, fields you omit or send empty are left alone, and `custom_fields` is merged key by key. Use `PATCH /contacts/:id` to clear a value.
+已有地址按小写匹配并补充信息，而不会重复创建：提交的字段替换已存储的值，省略或提交空值的字段保持不变，`custom_fields` 则按键合并。清除某个值请使用 `PATCH /contacts/:id`。
 
 ```json
 [
@@ -196,9 +196,9 @@ An address you already have is matched (lowercased) and enriched rather than dup
 ]
 ```
 
-### Response
+### 响应 [#response-1]
 
-Returns the created contacts as a bare JSON array (same contact shape as search).
+以无封装的 JSON 数组返回创建的联系人（联系人结构与搜索相同）。
 
 ```json
 [
@@ -222,20 +222,20 @@ Returns the created contacts as a bare JSON array (same contact shape as search)
 ]
 ```
 
-## Selecting contacts for a bulk action
+## 为批量操作选择联系人 [#selecting-contacts-for-a-bulk-action]
 
-Every endpoint that acts on a set of contacts (`PATCH /contacts`, `DELETE /contacts`, `POST /contacts/verification`, `POST /contacts/research/batch`, `POST /segments/:id/members` and `POST /integrations/connections/:id/push`) names that set one of two ways.
+所有对联系人集合执行操作的端点（`PATCH /contacts`、`DELETE /contacts`、`POST /contacts/verification`、`POST /contacts/research/batch`、`POST /segments/:id/members` 和 `POST /integrations/connections/:id/push`）均通过以下两种方式之一指定集合。
 
-**By id.** A `contacts` array of up to 10,000 ids, the original shape.
+**按 ID。** 使用原有结构：`contacts` 数组，最多包含 10,000 个 ID。
 
-**By filter.** Set `all` to `true` and pass the same body `POST /contacts/search` takes as `filters`. The server resolves that search and applies the action to every contact it matches, so one call can cover far more than a page. `exclude` drops ids back out of the resolved set, which is how the dashboard handles rows unticked after a select-all.
+**按筛选条件。** 将 `all` 设为 `true`，并以 `filters` 提供与 `POST /contacts/search` 接受的相同请求体。服务端执行该搜索，并对所有匹配联系人应用操作，因此一次调用可覆盖远超一页的结果。`exclude` 可从最终集合中排除指定 ID，控制台即通过它处理全选后取消勾选的行。
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `contacts` | string[] | Yes, unless `all` | Contact ids, up to 10,000 (`too_many_contacts` past that). |
-| `all` | boolean | No | Resolve the selection from `filters` instead of `contacts`. |
-| `filters` | object | Yes when `all` | A [contact search](#search-contacts) body. The action applies to everything it matches. |
-| `exclude` | string[] | No | Contact ids to drop from the resolved set, up to 250,000 (`too_many_contacts` past that). Ignored unless `all`. |
+| `contacts` | string[] | 必填，除非使用 `all` | 联系人 ID，最多 10,000 个（超出时返回 `too_many_contacts`）。 |
+| `all` | boolean | 否 | 通过 `filters` 而非 `contacts` 确定所选联系人。 |
+| `filters` | object | `all` 启用时必填 | 一个 [联系人搜索](#search-contacts) 请求体。操作作用于所有匹配项。 |
+| `exclude` | string[] | 否 | 要从最终集合中排除的联系人 ID，最多 250,000 个（超出时返回 `too_many_contacts`）。仅在 `all` 启用时有效。 |
 
 ```json
 {
@@ -245,28 +245,28 @@ Every endpoint that acts on a set of contacts (`PATCH /contacts`, `DELETE /conta
 }
 ```
 
-A filter selection that matches more than 250,000 contacts is refused with `selection_too_large` rather than truncated; narrow it and repeat. One that matches nothing is a `400`. `POST /integrations/connections/:id/push` and `POST /contacts/research/batch` accept the same shape and answer the same way, but still cap the resolved set at 500: a push calls the CRM once per contact inside the request, and each research run spends AI credits.
+按筛选条件选中的联系人超过 250,000 位时，会以 `selection_too_large` 拒绝，而不会截断；请缩小范围后重试。没有匹配项时返回 `400`。`POST /integrations/connections/:id/push` 和 `POST /contacts/research/batch` 接受相同结构，也采用相同响应方式，但最终集合上限仍为 500：推送操作会在请求中为每位联系人调用一次 CRM，而每次调研运行都会消耗 AI 积分。
 
-## Bulk update contacts
+## 批量更新联系人 [#bulk-update-contacts]
 
 `PATCH /contacts`
 
-Applies one set of edits across a [selection of contacts](#selecting-contacts-for-a-bulk-action): add/remove campaigns and labels (`add_categories`, `remove_categories`), set custom-field operations, and toggle subscription.
+对 [选定的联系人集合](#selecting-contacts-for-a-bulk-action) 应用同一组修改：添加/移除营销活动和标签（`add_categories`、`remove_categories`）、设置自定义字段操作，以及切换订阅状态。
 
-Auth: **Scope** `BULK_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `BULK_CONTACTS` · **组织权限** `manage_contacts`
 
-### Request body
+### 请求体 [#request-body-2]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `contacts` | string[] | Yes, unless `all` | Contact IDs to edit (1 to 10,000). |
-| `all`, `filters`, `exclude` | — | No | Select by filter instead; see [selecting contacts](#selecting-contacts-for-a-bulk-action). |
-| `add_campaigns` | string[] | No | Campaign IDs to add. |
-| `remove_campaigns` | string[] | No | Campaign IDs to remove. |
-| `add_categories` | string[] | No | Label IDs to add. |
-| `remove_categories` | string[] | No | Label IDs to remove. |
-| `fields` | array | No | Custom-field operations: `{ "type", "key", "value" }` where `type` is `ADD`, `EDIT`, `DELETE`, or `RENAME`. |
-| `subscribe` | boolean | No | Set subscription status for all listed contacts. |
+| `contacts` | string[] | 必填，除非使用 `all` | 要编辑的联系人 ID（1 至 10,000 个）。 |
+| `all`, `filters`, `exclude` | — | 否 | 也可按筛选条件选择；参见 [选择联系人](#selecting-contacts-for-a-bulk-action)。 |
+| `add_campaigns` | string[] | 否 | 要添加的营销活动 ID。 |
+| `remove_campaigns` | string[] | 否 | 要移除的营销活动 ID。 |
+| `add_categories` | string[] | 否 | 要添加的标签 ID。 |
+| `remove_categories` | string[] | 否 | 要移除的标签 ID。 |
+| `fields` | array | 否 | 自定义字段操作：`{ "type", "key", "value" }`，其中 `type` 为 `ADD`、`EDIT`、`DELETE` 或 `RENAME`。 |
+| `subscribe` | boolean | 否 | 为列出的所有联系人设置订阅状态。 |
 
 ```json
 {
@@ -277,9 +277,9 @@ Auth: **Scope** `BULK_CONTACTS` · **Org permission** `manage_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-2]
 
-Returns the updated contacts as a bare JSON array (contact shape as above). A selection made with `all` returns an empty array instead: it can name far more contacts than are worth serializing back, so re-read the list rather than the response.
+以无封装的 JSON 数组返回更新后的联系人（联系人结构同上）。使用 `all` 选择联系人时，改为返回空数组：它可能选中远超适合序列化返回数量的联系人，因此请重新读取列表，而非依赖响应。
 
 ```json
 [
@@ -294,52 +294,52 @@ Returns the updated contacts as a bare JSON array (contact shape as above). A se
 ]
 ```
 
-## Bulk delete contacts
+## 批量删除联系人 [#bulk-delete-contacts]
 
 `DELETE /contacts`
 
-Deletes a [selection of contacts](#selecting-contacts-for-a-bulk-action).
+删除 [选定的联系人集合](#selecting-contacts-for-a-bulk-action)。
 
-Auth: **Scope** `BULK_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `BULK_CONTACTS` · **组织权限** `manage_contacts`
 
-### Request body
+### 请求体 [#request-body-3]
 
-A JSON array of contact ID strings (1 to 1000; an empty array is a `400`).
+联系人 ID 字符串的 JSON 数组（1 至 1000 个；空数组返回 `400`）。
 
 ```json
 ["1b2c3d4e-5f60-4a1b-8c2d-3e4f5a6b7c8d", "2c3d4e5f-6071-4b2c-9d3e-4f5a6b7c8d9e"]
 ```
 
-A [selection object](#selecting-contacts-for-a-bulk-action) is accepted in the same place, for deleting everything a filter matches.
+同一位置也接受 [选择对象](#selecting-contacts-for-a-bulk-action)，以删除所有符合筛选条件的联系人。
 
 ```json
 { "all": true, "filters": { "subscribed": false } }
 ```
 
-### Response
+### 响应 [#response-3]
 
 `204 No Content`.
 
-## Export contacts
+## 导出联系人 [#export-contacts]
 
 `POST /contacts/export`
 
-Exports contacts to CSV, XLSX, or JSON. The response is the file itself, not JSON.
+将联系人导出为 CSV、XLSX 或 JSON。响应是文件本身，而非 JSON 响应对象。
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`
 
-### Request body
+### 请求体 [#request-body-4]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `format` | string | Yes | `csv`, `xlsx`, or `json`. |
-| `scope` | string | Yes | `all`, `filtered`, or `selected`. |
-| `contact_ids` | string[] | No | Contact IDs when `scope` is `selected`. |
-| `filters` | object | No | A search-contacts filter body when `scope` is `filtered`. |
-| `fields` | string[] | No | Column identifiers in display order (built-ins like `email`, `first_name`, or `custom:<key>`). Empty uses the default columns. `lead_status`, `lead_opened`, `lead_clicked` and `lead_replied` are the contact's engagement inside the one campaign named in `filters.campaign_ids`; they are blank when the filters do not name exactly one campaign. |
-| `filename` | string | No | Filename without extension. Sanitized server-side; empty falls back to `contacts-<YYYY-MM-DD>`. |
+| `format` | string | 是 | `csv`、`xlsx` 或 `json`。 |
+| `scope` | string | 是 | `all`、`filtered` 或 `selected`。 |
+| `contact_ids` | string[] | 否 | `scope` 为 `selected` 时的联系人 ID。 |
+| `filters` | object | 否 | `scope` 为 `filtered` 时的联系人搜索筛选请求体。 |
+| `fields` | string[] | 否 | 按显示顺序排列的列标识符（内置字段如 `email`、`first_name`，或 `custom:<key>`）。为空时使用默认列。`lead_status`、`lead_opened`、`lead_clicked` 和 `lead_replied` 是联系人在 `filters.campaign_ids` 指定的单个营销活动中的互动数据；筛选条件未恰好指定一个营销活动时，这些列为空。 |
+| `filename` | string | 否 | 不含扩展名的文件名。服务端会进行清理；为空时回退到 `contacts-<YYYY-MM-DD>`。 |
 
-With `scope` set to `selected`, `filters` is optional and is applied on top of `contact_ids`; pass the campaign there to populate the `lead_*` columns for the selected rows.
+`scope` 设为 `selected` 时，`filters` 可选，并在 `contact_ids` 的基础上应用；在其中指定营销活动，即可为所选行填充 `lead_*` 列。
 
 ```json
 {
@@ -351,33 +351,33 @@ With `scope` set to `selected`, `filters` is optional and is applied on top of `
 }
 ```
 
-### Response
+### 响应 [#response-4]
 
-`200 OK` with the file as an attachment. The relevant headers are:
+`200 OK`，文件以附件形式返回。相关响应头如下：
 
-| Header | Description |
+| 请求头 | 说明 |
 | --- | --- |
-| `Content-Type` | The export's MIME type (CSV, XLSX, or JSON). |
+| `Content-Type` | 导出文件的 MIME 类型（CSV、XLSX 或 JSON）。 |
 | `Content-Disposition` | `attachment; filename="..."`. |
-| `X-Total-Rows` | Number of rows written. |
+| `X-Total-Rows` | 写入的行数。 |
 
-Exports are capped at 50,000 rows. Larger sets should be split via filters or selection.
+导出最多 50,000 行。更大的集合应通过筛选条件或选择范围拆分。
 
-## Preview an import
+## 预览导入 [#preview-an-import]
 
 `POST /contacts/import/preview`
 
-Uploads a CSV or XLSX file and returns detected columns plus a small sample so the client can build a column mapping before committing.
+上传 CSV 或 XLSX 文件，返回检测到的列及少量样本，供客户端在正式提交前建立列映射。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`
 
-Send the file as `multipart/form-data` with a `file` form field. Uploads are capped at 50 MB.
+使用 `multipart/form-data`，通过 `file` 表单字段发送文件。上传最大 50 MB。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `file` | form-data | file | The CSV/XLSX upload. |
+| `file` | form-data | file | 上传的 CSV/XLSX 文件。 |
 
-### Response
+### 响应 [#response-5]
 
 ```json
 {
@@ -400,36 +400,36 @@ Send the file as `multipart/form-data` with a `file` form field. Uploads are cap
 }
 ```
 
-`sample_rows` is capped at 20 rows. `suggested_mapping` is a default the client may override. A header that names one of the workspace's existing custom fields, ignoring case, spaces, underscores, dashes and dots, is suggested as `custom` with that field's stored spelling in `custom_key` (above, `industry` maps to the existing `Industry`). Each field is suggested for one column at most, standard fields are matched first, and a header that matches nothing is `ignore`. A column of email addresses is suggested as `email` whatever its header when no header named one. `GET /contacts/custom-fields` ([endpoints](/api/endpoints/#contacts)) lists the fields a mapping can target.
+`sample_rows` 最多包含 20 行。`suggested_mapping` 是客户端可覆盖的默认映射。若列标题与工作区已有自定义字段名称匹配（忽略大小写、空格、下划线、连字符和点），则建议映射为 `custom`，并在 `custom_key` 中使用该字段已保存的拼写（上例中，`industry` 映射到现有的 `Industry`）。每个字段最多为一列提供映射建议，优先匹配标准字段；无法匹配的列标题设为 `ignore`。若没有列标题明确指向邮箱字段，则无论标题为何，包含邮箱地址的列都会被建议为 `email`。`GET /contacts/custom-fields`（[端点](/api/endpoints/#contacts)）列出可供映射的目标字段。
 
-On an instance with TypeSafe configured, the columns still `ignore` after that are placed by what their header means, and `inferred_columns` lists their indexes so a client can ask for a second look. Only the headers, the kind of value each column holds and the workspace's field names are sent, never a cell value. The field is omitted when no column was inferred.
+在配置了 TypeSafe 的实例中，此后仍为 `ignore` 的列会根据标题含义确定映射，`inferred_columns` 列出其索引，便于客户端提示再次确认。仅发送列标题、每列的数据类型及工作区字段名称，绝不发送任何单元格值。未推断任何列时省略此字段。
 
-## Commit an import
+## 提交导入 [#commit-an-import]
 
 `POST /contacts/import/commit`
 
-Re-uploads the file with a mapping and dedup options, applies it, and returns per-row results.
+重新上传文件并附带映射及去重选项，执行导入后返回逐行结果。
 
-Auth: **Scope** `BULK_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `BULK_CONTACTS` · **组织权限** `manage_contacts`
 
-Send `multipart/form-data` with a `file` field and an `options` field containing the JSON below as a string.
+使用 `multipart/form-data`，提供 `file` 字段，以及以字符串形式包含下方 JSON 的 `options` 字段。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `file` | form-data | file | The CSV/XLSX upload (max 50 MB). |
-| `options` | form-data | string | JSON-encoded commit options (below). |
+| `file` | form-data | file | 上传的 CSV/XLSX 文件（最大 50 MB）。 |
+| `options` | form-data | string | 以 JSON 编码的提交选项（见下方）。 |
 
-### `options` fields
+### `options` 字段 [#options-fields]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `mapping` | array | Yes | Column mappings: `{ "index", "target", "custom_key", "verification_provider" }`. `target` is `ignore`, `email`, `first_name`, `last_name`, `company`, `phone`, `subscribed`, `categories` (label names), `verification_status`, or `custom` with the name in `custom_key`. `custom:<key>` is still accepted as the older spelling. Exactly one column must map to `email`. A `verification_status` column is read in the vocabulary named by `verification_provider` (see [Create contacts](#create-contacts)), or recognised value by value when it is omitted; a cell nobody recognises leaves that contact unverified rather than failing the row. The preview suggests this target itself when a column's header or values look like another service's results. |
-| `dedup` | string | Yes | `skip`, `update`, or `create_duplicate` for rows whose email matches an existing contact. |
-| `has_header` | boolean | Yes | Whether the first row is a header. |
-| `category_ids` | string[] | No | Label IDs to put on imported contacts. |
-| `campaign_ids` | string[] | No | Campaigns to add imported contacts to. |
-| `segment_ids` | string[] | No | Segments to pin imported contacts into, as a manual include override. Applies to imported, updated, and skipped-but-linked contacts alike. An id that is not a valid UUID, or that names no segment in the organization, is rejected with `400` before any row is written. |
-| `subscribed_default` | boolean | No | Subscription state for new contacts when no subscribed column is mapped. Defaults to true. |
+| `mapping` | array | 是 | 列映射：`{ "index", "target", "custom_key", "verification_provider" }`。`target` 为 `ignore`、`email`、`first_name`、`last_name`、`company`、`phone`、`subscribed`、`categories`（标签名称）、`verification_status`，或通过 `custom_key` 指定名称的 `custom`。旧写法 `custom:<key>` 仍然支持。必须恰好有一列映射到 `email`。`verification_status` 列按 `verification_provider` 指定的服务商状态词读取（参见 [创建联系人](#create-contacts)）；省略时逐值识别。无法识别的单元格会使该联系人保持未验证，而不会让整行失败。若列标题或值看起来像其他服务的验证结果，预览会自动建议此映射目标。 |
+| `dedup` | string | 是 | 邮箱与现有联系人匹配的行采用 `skip`、`update` 或 `create_duplicate`。 |
+| `has_header` | boolean | 是 | 第一行是否为表头。 |
+| `category_ids` | string[] | 否 | 要添加到导入联系人的标签 ID。 |
+| `campaign_ids` | string[] | 否 | 要将导入联系人加入的营销活动。 |
+| `segment_ids` | string[] | 否 | 通过手动包含覆盖，将导入联系人固定加入这些分群。同样适用于新导入、已更新及虽跳过但已关联的联系人。ID 不是有效 UUID，或不对应组织内的分群时，会在写入任何行之前以 `400` 拒绝。 |
+| `subscribed_default` | boolean | 否 | 未映射 subscribed 列时，新联系人的订阅状态。默认为 true。 |
 
 ```json
 {
@@ -445,7 +445,7 @@ Send `multipart/form-data` with a `file` field and an `options` field containing
 }
 ```
 
-### Response
+### 响应 [#response-6]
 
 ```json
 {
@@ -470,55 +470,55 @@ Send `multipart/form-data` with a `file` field and an `options` field containing
 }
 ```
 
-`quality` describes the addresses in the file: `malformed` are not addresses at all, `disposable` are on known throwaway domains, and `role` counts shared inboxes such as `info@`. `bad_share_pct` is malformed plus disposable, as a percentage of the file; role addresses are deliberately excluded from it, since mailing a shared inbox is a choice rather than a defect. `flagged` is set above 25% on files of at least 20 rows, and carries a `summary` sentence. It is advisory: a flagged import still stores every row it could parse. A list bad enough to matter is refused at campaign launch instead.
+`quality` 描述文件中的地址质量：`malformed` 完全不是有效地址，`disposable` 属于已知临时邮箱域名，`role` 则统计 `info@` 等共享收件箱。`bad_share_pct` 是格式错误和临时地址之和占文件的百分比；角色地址有意不计入，因为向共享收件箱发信是一种选择，而非地址缺陷。对于至少 20 行的文件，该比例超过 25% 时会设置 `flagged`，并提供一句 `summary`。这只是提示：即使导入被标记，仍会保存所有可解析的行。质量差到足以产生影响的名单，会在营销活动启动时遭拒。
 
-Imports are capped at 50,000 rows. `errors` carries at most the first 1,000 entries; past that `errors_truncated` is `true` and the counters, not the list, are the real totals. Every row lands in exactly one of `imported`, `updated`, `skipped`, or `failed`, so those four always sum to `total`.
+导入最多 50,000 行。`errors` 最多包含前 1,000 条；超过此数量时，`errors_truncated` 为 `true`，真实总数以计数器而非列表为准。每行恰好归入 `imported`、`updated`、`skipped` 或 `failed` 之一，因此这四项之和始终等于 `total`。
 
-`errors` also carries notes about rows that were not failures, so an entry there does not always mean a lost row. A note about the import as a whole rather than one row carries `line: 0` and is listed first, so a file full of bad addresses cannot push it out of a truncated list. `segments_pinned` is present only when `segment_ids` was set: `true` when every membership write landed, `false` when one did not, with the reason among the notes.
+`errors` 也包含未失败行的备注，因此其中有记录并不一定意味着某行丢失。针对整个导入而非单行的备注带有 `line: 0`，并排在最前，以免文件中的大量无效地址使其被挤出截断后的列表。仅设置了 `segment_ids` 时才出现 `segments_pinned`：所有成员关系均写入成功时为 `true`，有任一写入失败时为 `false`，原因在备注中提供。
 
-A custom-field name may use letters, numbers, underscores, spaces, and dashes (`Company Mobile`, `first-name`, `plan_tier`). Anything else is a `400` on the whole request, raised before any row is written, along with a mapping that names no `email` column or a `custom` column with no `custom_key`. Per-row `errors` are reserved for problems with the data itself.
+自定义字段名称可使用字母、数字、下划线、空格和连字符（`Company Mobile`、`first-name`、`plan_tier`）。其他字符会导致整个请求返回 `400`，且在写入任何行之前拒绝；映射未指定 `email` 列，或 `custom` 列没有 `custom_key`，也同样处理。逐行 `errors` 仅用于数据本身的问题。
 
-An existing contact is matched across the organization, not only among the caller's own contacts, so an address a teammate added is `skipped` or `updated` like any other. A row whose address the caller already holds as a contact in another organization fails with a reason saying so, and that organization's contact is not changed. A row that cannot be saved fails on its own; the rows written with it are unaffected.
+现有联系人在整个组织范围内匹配，而不限于调用者自己的联系人，因此团队成员添加的地址也会像其他地址一样被 `skipped` 或 `updated`。若某行地址已被调用者作为联系人保存在另一组织中，该行会失败并说明原因，且不会更改另一组织的联系人。无法保存的行单独失败；同批已写入的其他行不受影响。
 
-## Background imports
+## 后台导入 [#background-imports]
 
-The commit above runs inside the request, which suits small files and scripts. For a large file, a background import uploads it once, reports what it would do over the whole file, and then runs on the server in chunks, so it survives a dropped connection and can be followed from anywhere. The mapping and options are the same as the commit's.
+上述提交在请求内执行，适合小文件和脚本。对于大文件，后台导入只需上传一次，先报告整个文件将产生的操作，再在服务端分块执行，因此连接中断也不影响运行，且可从任何位置跟踪。其映射及选项与提交操作相同。
 
-1. `POST /contacts/imports` uploads the file and returns a draft with its `preview`.
-2. `POST /contacts/imports/:id/analyze` reports what the import would do under a mapping. Optional, and safe to repeat.
-3. `POST /contacts/imports/:id/start` queues it.
-4. `GET /contacts/imports/:id` reports progress until `status` is `completed`, `failed`, or `cancelled`. Dashboard sockets also receive `CONTACT_IMPORT_PROGRESS` as it moves; see [realtime](/api/realtime/).
+1. `POST /contacts/imports` 上传文件，并返回带有 `preview` 的草稿。
+2. `POST /contacts/imports/:id/analyze` 报告按指定映射导入将执行哪些操作。可选，并可安全重复调用。
+3. `POST /contacts/imports/:id/start` 将导入加入队列。
+4. `GET /contacts/imports/:id` 报告进度，直到 `status` 为 `completed`、`failed` 或 `cancelled`。进度变化时，控制台 socket 也会收到 `CONTACT_IMPORT_PROGRESS`；参见 [实时通信](/api/realtime/)。
 
-A draft keeps its preview and whatever mapping and options were last saved to it, so a client can resume it. A draft that is never started is deleted after 24 hours, and a finished import, with its stored rows, after 30 days. A workspace may hold 10 drafts and running imports at once; creating another is a `409`.
+草稿保留预览及最后保存的映射和选项，以便客户端恢复操作。从未启动的草稿在 24 小时后删除；已完成的导入及其存储行在 30 天后删除。一个工作区可同时持有 10 个草稿和运行中的导入；继续创建会返回 `409`。
 
-### Create an import
+### 创建导入任务 [#create-an-import]
 
 `POST /contacts/imports`
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`
 
-Send the file as `multipart/form-data` with a `file` field (max 50 MB, 50,000 rows). Responds `201 Created` with the import in `draft` status and a `preview` shaped like [the preview above](#preview-an-import), plus:
+使用 `multipart/form-data`，通过 `file` 字段发送文件（最大 50 MB、50,000 行）。返回 `201 Created`，包含状态为 `draft` 的导入，以及结构与 [上方预览](#preview-an-import) 相同的 `preview`，另加：
 
-| Field | Type | Description |
+| 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `preview.column_stats` | array | One entry per column, measured over every row: `filled` (non-empty cells), `distinct` (different values, counted up to 1,000), and `samples` (up to three distinct values). |
-| `preview.mapping_source` | string | `saved` when this organization started an import with these exact headers before; `suggested_mapping` is then the mapping it confirmed. Otherwise `suggested`. |
+| `preview.column_stats` | array | 每列一项，对全部行进行统计：`filled`（非空单元格数）、`distinct`（不同值的数量，最多统计到 1,000）及 `samples`（最多三个不同值）。 |
+| `preview.mapping_source` | string | 若此组织先前曾以完全相同的列标题启动导入，则为 `saved`，此时 `suggested_mapping` 是当时确认的映射；否则为 `suggested`。 |
 
-### Save a draft
+### 保存草稿 [#save-a-draft]
 
 `PATCH /contacts/imports/:id`
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`
 
-Stores a draft's in-progress mapping and options (the same body as [start](#start-an-import)) without checking them, so a client can autosave and pick the draft up again later; `GET` returns them in `options`, with the draft's `preview`. They are checked when the import is started. Returns the import; `409` once it has started. Saving the same body again is harmless.
+保存草稿编辑中的映射和选项（请求体与 [启动](#start-an-import) 相同），但不进行检查，使客户端可自动保存并在之后恢复；`GET` 会在 `options` 中返回这些设置，同时返回草稿的 `preview`。启动导入时才检查这些设置。返回导入对象；导入已启动时返回 `409`。再次保存相同请求体没有副作用。
 
-### Analyze an import
+### 分析导入内容 [#analyze-an-import]
 
 `POST /contacts/imports/:id/analyze`
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`
 
-Reads a draft under a mapping and writes nothing. `409` once the import has started.
+按指定映射读取草稿，不写入任何内容。导入已启动时返回 `409`。
 
 ```json
 { "mapping": [{ "index": 0, "target": "email" }], "has_header": true }
@@ -537,21 +537,21 @@ Reads a draft under a mapping and writes nothing. `409` once the import has star
 }
 ```
 
-Every row lands in exactly one of `new`, `existing`, `duplicates_in_file`, `invalid`, or `conflicts` (an address the caller holds as a contact in another organization). `invalid_samples` lists up to 25 of the invalid and conflicting rows. `problem`, when present, is why starting would be refused as a whole: the plan's contact limit, or too many distinct labels.
+每行恰好归入 `new`、`existing`、`duplicates_in_file`、`invalid` 或 `conflicts`（调用者已在另一组织中保存为联系人的地址）之一。`invalid_samples` 列出最多 25 个无效行和冲突行。`problem` 出现时，说明整个启动操作将遭拒的原因：套餐联系人上限，或不同标签数量过多。
 
-### Start an import
+### 启动导入 [#start-an-import]
 
 `POST /contacts/imports/:id/start`
 
-Auth: **Scope** `BULK_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `BULK_CONTACTS` · **组织权限** `manage_contacts`
 
-The body is the commit's [`options`](#options-fields) object as JSON. Returns the import in `queued` status. Starting an import that has already started returns it unchanged, so a retried request never runs the file twice. A cancelled import is a `409`. When `has_header` is true, the mapping is remembered for the next file with the same headers.
+请求体是提交操作的 [`options`](#options-fields) 对象，格式为 JSON。返回状态为 `queued` 的导入。对已经启动的导入再次启动，会原样返回，不作更改，因此重试请求绝不会让文件运行两次。已取消的导入返回 `409`。`has_header` 为 true 时，会记住映射，供下一个列标题相同的文件使用。
 
-### Get an import
+### 获取导入任务 [#get-an-import]
 
 `GET /contacts/imports/:id`
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`
 
 ```json
 {
@@ -574,39 +574,39 @@ Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
 }
 ```
 
-`processed` is the rows settled so far and always equals `imported + updated + skipped + failed`. Once finished, `finished_at` is set, `quality` and `segments_pinned` mean what they mean on the commit, `notes` carries messages about the import as a whole, `error` says why a `failed` import stopped, and `failures` lists the first 200 failed rows with `line`, `email`, `values` (the row as uploaded) and `reason`.
+`processed` 是迄今已处理完的行数，始终等于 `imported + updated + skipped + failed`。完成后设置 `finished_at`；`quality` 和 `segments_pinned` 的含义与提交操作相同；`notes` 提供整个导入的相关消息；`error` 说明 `failed` 导入停止的原因；`failures` 列出前 200 个失败行，包含 `line`、`email`、`values`（上传时的原始行）和 `reason`。
 
-### List imports
+### 列出导入任务 [#list-imports]
 
 `GET /contacts/imports`
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`
 
-The organization's imports, newest first, as `data` plus `pagination`. `limit` defaults to 50 and may be up to 100; pass `pagination.next_cursor` back as `cursor` for the next page. An invalid cursor or limit is a `400`.
+返回组织的导入，最新在前，采用 `data` 加 `pagination` 的结构。`limit` 默认为 50，最多 100；将 `pagination.next_cursor` 作为 `cursor` 传回以获取下一页。游标或条数无效时返回 `400`。
 
-### Cancel an import
+### 取消导入 [#cancel-an-import]
 
 `POST /contacts/imports/:id/cancel`
 
-Auth: **Scope** `BULK_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `BULK_CONTACTS` · **组织权限** `manage_contacts`
 
-Stops a draft, queued, or running import and returns it. Rows already imported stay imported. Cancelling a finished import returns it unchanged.
+停止处于草稿、排队或运行状态的导入，并返回该导入。已导入的行保持不变。取消已完成的导入时，原样返回，不作更改。
 
-### Download failed rows
+### 下载导入失败的行 [#download-failed-rows]
 
 `GET /contacts/imports/:id/failed.csv`
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`
 
-Every failed row as uploaded, under the file's own headers, followed by `Line` and `Error` columns, so the file can be corrected and imported again. A cell that a spreadsheet would read as a formula is prefixed with `'`.
+按文件原有列标题返回每个失败行的原始上传内容，并在末尾添加 `Line` 和 `Error` 列，便于修正后重新导入。电子表格可能解析为公式的单元格会加上 `'` 前缀。
 
-## Verification overview
+## 邮箱验证概览 [#verification-overview]
 
 `GET /contacts/verification`
 
-Reports which verifier checks this workspace's addresses and the contacts by verdict. **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`.
+报告此工作区使用哪个验证器检查地址，以及各验证结论的联系人数。**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`。
 
-### Response
+### 响应 [#response-7]
 
 ```json
 {
@@ -618,26 +618,26 @@ Reports which verifier checks this workspace's addresses and the contacts by ver
 }
 ```
 
-`provider` is `builtin`, `millionverifier`, or `cleanmylist`. `credits` is the connected service's remaining balance when available (omitted for CleanMyList); `provider_error` is set instead when the service is connected but unusable (a rejected key, no credits), in which case the built-in check is in use. `builtin_ready` says whether the built-in mailbox probe can run on this instance. `pending` counts contacts nobody has checked yet plus those with a re-check queued.
+`provider` 为 `builtin`、`millionverifier` 或 `cleanmylist`。`credits` 是已连接服务的剩余额度（可获取时提供，CleanMyList 省略）；若服务已连接但不可用（密钥遭拒、额度不足），则改为设置 `provider_error`，并使用内置检查。`builtin_ready` 表示此实例是否能运行内置邮箱探测。`pending` 统计尚未经任何验证器检查的联系人，加上已排队等待重新检查的联系人。
 
-## Verify or override contacts
+## 验证联系人邮箱或覆盖验证结果 [#verify-or-override-contacts]
 
 `POST /contacts/verification`
 
-Queues a fresh check of the listed contacts, or records a manual verdict on them. **Scope** `BULK_CONTACTS` · **Org permission** `manage_contacts`.
+为列出的联系人排队执行新检查，或记录手动验证结论。**权限范围** `BULK_CONTACTS` · **组织权限** `manage_contacts`。
 
-### Request body
+### 请求体 [#request-body-5]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `action` | string | Yes | `verify` queues a re-check ahead of the background backlog, whatever the contact's current verdict, its age, or the evidence behind it; the verdict stays in force until the new one lands, and each contact updates as it does. `mark_deliverable` records `valid`; `mark_undeliverable` records `invalid`, and either answers a re-check still waiting. Manual verdicts are never re-checked unless asked. Anything else is rejected with `invalid_action`. |
-| `contacts` | string[] | No | Contact ids, up to the bulk maximum per request. |
-| `all`, `filters`, `exclude` | — | No | Select by filter instead; see [selecting contacts](#selecting-contacts-for-a-bulk-action). |
-| `campaign_id` | string | No | Instead of, or as well as, a selection: every lead of this campaign that verification refused. |
+| `action` | string | 是 | `verify` 将重新检查排在后台积压任务之前，无论联系人当前结论、结论时间或依据为何；新结论产生之前，旧结论继续有效，各联系人在结果产生时分别更新。`mark_deliverable` 记录 `valid`；`mark_undeliverable` 记录 `invalid`，两者都会完成仍在等待的重新检查。除非明确请求，否则不会重新检查手动结论。其他值以 `invalid_action` 拒绝。 |
+| `contacts` | string[] | 否 | 联系人 ID，数量不超过单次批量请求上限。 |
+| `all`, `filters`, `exclude` | — | 否 | 也可按筛选条件选择；参见 [选择联系人](#selecting-contacts-for-a-bulk-action)。 |
+| `campaign_id` | string | 否 | 可替代所选集合，或与其同时使用：此营销活动中所有因验证而被拒绝的潜在客户。 |
 
-At least one contact must be selected (`no_contacts`). Marking leads deliverable resumes any campaign of the workspace that was paused for verification.
+必须至少选择一位联系人（否则返回 `no_contacts`）。将潜在客户标记为可投递，会恢复工作区内所有因验证而暂停的营销活动。
 
-### Response
+### 响应 [#response-8]
 
 ```json
 {
@@ -649,25 +649,25 @@ At least one contact must be selected (`no_contacts`). Marking leads deliverable
 }
 ```
 
-For `verify`, `verifier` names who runs the checks (`builtin`, `millionverifier`, or `cleanmylist`) and `verifier_label` its display name. When a verifier is connected but cannot be used right now, `verifier` is `builtin` and `verifier_error` says why (the same sentence as the overview's `provider_error`).
+对于 `verify`，`verifier` 指明执行检查的验证器（`builtin`、`millionverifier` 或 `cleanmylist`），`verifier_label` 为其显示名称。若验证器已连接但当前不可用，`verifier` 为 `builtin`，`verifier_error` 说明原因（与概览中 `provider_error` 的说明相同）。
 
-## Look up a contact by email
+## 按邮箱地址查找联系人 [#look-up-a-contact-by-email]
 
 `GET /contacts/lookup`
 
-Resolves a sender address to a contact in your organization. Returns `200` with `{"contact": null}` when nothing matches, so unknown senders render a clean empty state rather than a `404`. A display-name wrapped address (`Name <addr@example.com>`) is accepted and unwrapped.
+将发件地址解析为组织内的联系人。无匹配项时返回 `200` 和 `{"contact": null}`，因此未知发件人可显示正常的空状态，而非 `404`。接受带显示名称的地址（`Name <addr@example.com>`），并提取其中的实际地址。
 
-Pass `thread_id` to resolve a reply the way the unibox does. The address is tried first; when it is not a contact, the thread's campaign send answers instead, so a reply from an alias or a forwarded address resolves to the lead the campaign emailed. `match` says which one answered: `email` or `thread`. It is absent when `contact` is `null`. The thread is read only in the mailboxes an API key's email account allowlist permits, and an `account_id` outside it returns `403`.
+传入 `thread_id` 可按统一收件箱的方式解析回复。先尝试按地址匹配；若不是联系人，则使用会话中的营销活动发送记录，因此来自别名或转发地址的回复可以解析到该活动最初发信的潜在客户。`match` 表示匹配方式：`email` 或 `thread`。`contact` 为 `null` 时省略此字段。仅在 API 密钥邮箱允许列表许可的邮箱中读取会话；`account_id` 不在其中时返回 `403`。
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`. With `thread_id`, also **Scope** `READ_UNIBOX` · **Org permission** `access_unibox`.
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`。提供 `thread_id` 时还需 **权限范围** `READ_UNIBOX` · **组织权限** `access_unibox`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `email` | query | string | The email address to resolve. Required unless `thread_id` is given. |
-| `thread_id` | query | string | Optional. A unibox thread id (`thread_id` on a unibox message). |
-| `account_id` | query | UUID | Optional. The mailbox holding the thread, to limit the thread match to it. A malformed id returns `400`. |
+| `email` | query | string | 要解析的邮箱地址。未提供 `thread_id` 时必填。 |
+| `thread_id` | query | string | 可选。统一收件箱会话 ID（统一收件箱邮件上的 `thread_id`）。 |
+| `account_id` | query | UUID | 可选。保存会话的邮箱，将会话匹配限定到该邮箱。ID 格式无效时返回 `400`。 |
 
-### Response
+### 响应 [#response-9]
 
 ```json
 {
@@ -690,19 +690,19 @@ Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`. With `thr
 }
 ```
 
-## Get a contact
+## 获取联系人 [#get-a-contact]
 
 `GET /contacts/:id`
 
-Returns the hydrated contact 360 payload: the contact plus an engagement summary, when present suppression state, and a `verification` object explaining the verdict: `status`, `confidence`, `reasons` (sentences, strongest first), `decisive` (true when real mail rather than a check decided the status), `source` and `provider` (who produced the last verdict, as on the contact) with `provider_label` (the verifier's display name, such as `MillionVerifier`), `check_status` (what that check itself answered, which differs from `status` when real mail decided otherwise), `checked_at`, `requested_at` (set while a re-check is waiting), and `evidence`, the observations it was scored from, newest first, each `{ "kind", "detail", "observed_at" }` with `kind` one of `delivered`, `opened`, `clicked`, `replied`, `auto_replied`, `bounced_recipient`, `bounced_other`. Engagement and suppression counts are org-scoped; they are returned only when an organization is selected.
+返回包含完整关联数据的联系人 360 载荷：联系人、互动摘要、存在时的禁止发送状态，以及解释验证结论的 `verification` 对象：`status`、`confidence`、`reasons`（说明句，最有力的原因在前）、`decisive`（状态由真实邮件而非检查结果决定时为 true）、`source` 和 `provider`（产生最近结论的来源，与联系人字段相同），以及 `provider_label`（验证器显示名称，如 `MillionVerifier`）、`check_status`（检查本身的结果；若真实邮件得出了不同结论，此值与 `status` 不同）、`checked_at`、`requested_at`（重新检查等待期间设置），以及 `evidence`（评分所依据的观测记录，最新在前）。每条观测为 `{ "kind", "detail", "observed_at" }`，其 `kind` 为 `delivered`、`opened`、`clicked`、`replied`、`auto_replied`、`bounced_recipient`、`bounced_other` 之一。互动及禁止发送计数按组织隔离，仅在选择了组织时返回。
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | Contact ID. |
+| `id` | path | UUID | 联系人 ID。 |
 
-### Response
+### 响应 [#response-10]
 
 ```json
 {
@@ -743,41 +743,41 @@ Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
 }
 ```
 
-`engagement.total_opened` and `engagement.last_opened_at` count opens by a person; opens a mail client or security gateway fetched automatically are left out, as they are in campaign analytics. A person's click counts as an open too; an automated click does not add to either field.
+`engagement.total_opened` 和 `engagement.last_opened_at` 仅统计真人打开；与营销活动分析一样，邮件客户端或安全网关自动获取邮件不计入。真人点击也算作打开；自动点击不会增加任一字段的计数。
 
-`engagement.reads_on` is how the contact reads your mail: each client and device a person's opens came from, most recent first, at most four, with the number of `opens` and the latest `last_opened_at`. Its fields mean what they do on a timeline event's `origin` (see [the timeline](#list-a-contacts-timeline)). It is omitted until an open says something about itself.
+`engagement.reads_on` 表示联系人阅读邮件的方式：真人打开邮件所用的各客户端和设备，按最近使用顺序排列，最多四项，并提供 `opens` 数量及最近的 `last_opened_at`。各字段含义与时间线事件的 `origin` 相同（参见 [时间线](#list-a-contacts-timeline)）。在有打开事件提供可识别信息之前，此字段省略。
 
-When the contact is suppressed, `suppression` is an object: `{ "id", "kind", "value", "reason", "source", "expires_at", "created_at" }`. `kind` is `email` when the contact's own address is on the list or `domain` when its whole domain is, `value` is the matching entry, and `source` is `bounce`, `complaint`, `unsubscribe`, `manual`, or `import`. `id` is the suppression entry, which `DELETE /suppressions/:id` lifts; see [deliverability and ops](/api/reference/deliverability-ops/#list-the-suppression-list).
+联系人被禁止发送时，`suppression` 是一个对象：`{ "id", "kind", "value", "reason", "source", "expires_at", "created_at" }`。联系人自身地址在名单上时，`kind` 为 `email`；整个域名在名单上时为 `domain`。`value` 为匹配的条目，`source` 为 `bounce`、`complaint`、`unsubscribe`、`manual` 或 `import`。`id` 是禁止发送记录的 ID，可通过 `DELETE /suppressions/:id` 解除；参见 [邮件送达能力与运维](/api/reference/deliverability-ops/#list-the-suppression-list)。
 
-## Update a contact
+## 更新联系人 [#update-a-contact]
 
 `PATCH /contacts/:id`
 
-Partially updates a single contact. Only the fields present are changed. Campaign and label lists (`categories`) can be set wholesale or adjusted with diff-style add/remove.
+部分更新单个联系人。只更改请求中出现的字段。营销活动列表和标签列表（`categories`）可整体设置，也可通过差量添加/移除来调整。
 
-`email` replaces the contact's address. It is stored lowercased, a display name (`Dana Reyes <dana@acme.com>`) is reduced to the address inside it, and anything that is not an address answers `400`. The address has to be free: one another contact already holds answers `409` with `code` `contact_email_taken` rather than merging the two. A changed address drops the contact's verification verdict back to `unknown`, clears the delivery evidence behind it and forgets its `mail_host` and `esp_provider`, because all of them belonged to the old mailbox; the next verification pass checks the new address and the provider is read again from the new domain. Steps already sent went to the old address and keep their history.
+`email` 替换联系人的地址。以小写形式存储；带显示名称的值（`Dana Reyes <dana@acme.com>`）会提取其中的地址，非地址内容返回 `400`。地址必须尚未被占用：若另一联系人已使用该地址，则返回 `409`，其中 `code` 为 `contact_email_taken`，而不会合并两位联系人。地址更改后，联系人的验证结论回退到 `unknown`，支撑结论的投递证据被清除，`mail_host` 和 `esp_provider` 也被清空，因为它们均属于旧邮箱；下一轮验证会检查新地址，并从新域名重新读取服务商。已经发送的步骤仍保留发往旧地址的历史记录。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | Contact ID. |
+| `id` | path | UUID | 联系人 ID。 |
 
-### Request body
+### 请求体 [#request-body-6]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `first_name` | string | No | First name. |
-| `last_name` | string | No | Last name. |
-| `email` | string | No | New email address. Normalized to lowercase; must be a valid address and unused by another contact. |
-| `company` | string | No | Company. |
-| `phone` | string | No | Phone. |
-| `custom_fields` | object | No | Replaces the custom-fields map. |
-| `subscribed` | boolean | No | Subscription status. |
-| `campaigns` | string[] | No | Set the full campaign membership (nil leaves as-is). |
-| `categories` | string[] | No | Set the full list of label IDs (nil leaves as-is). |
-| `add_categories` | string[] | No | Diff-style add (ignored when `categories` is set). |
-| `remove_categories` | string[] | No | Diff-style remove (ignored when `categories` is set). |
+| `first_name` | string | 否 | 名。 |
+| `last_name` | string | 否 | 姓。 |
+| `email` | string | 否 | 新邮箱地址。统一为小写；必须是有效地址，且未被其他联系人使用。 |
+| `company` | string | 否 | 公司。 |
+| `phone` | string | 否 | 电话。 |
+| `custom_fields` | object | 否 | 替换自定义字段映射。 |
+| `subscribed` | boolean | 否 | 订阅状态。 |
+| `campaigns` | string[] | 否 | 设置完整的营销活动成员关系（nil 表示保持不变）。 |
+| `categories` | string[] | 否 | 设置完整的标签 ID 列表（nil 表示保持不变）。 |
+| `add_categories` | string[] | 否 | 差量添加（设置了 `categories` 时忽略）。 |
+| `remove_categories` | string[] | 否 | 差量移除（设置了 `categories` 时忽略）。 |
 
 ```json
 {
@@ -787,9 +787,9 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
 }
 ```
 
-### Response
+### 响应 [#response-11]
 
-Returns the updated contact as a bare object (contact shape as in search).
+以无封装对象返回更新后的联系人（联系人结构与搜索相同）。
 
 ```json
 {
@@ -806,42 +806,42 @@ Returns the updated contact as a bare object (contact shape as in search).
 }
 ```
 
-## Delete a contact
+## 删除联系人 [#delete-a-contact]
 
 `DELETE /contacts/:id`
 
-Deletes a single contact.
+删除单个联系人。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | Contact ID. |
+| `id` | path | UUID | 联系人 ID。 |
 
-### Response
+### 响应 [#response-12]
 
 `204 No Content`.
 
-## List emails sent to a contact
+## 列出发给联系人的邮件 [#list-emails-sent-to-a-contact]
 
 `GET /contacts/:id/emails`
 
-Returns one row per email sent (or attempted) to the contact, newest first, with sender, campaign, sequence, and engagement timestamps. Pagination is keyed on the `(created_at, task_id)` of the last row.
+为每封已向联系人发送（或尝试发送）的邮件返回一行，最新在前，包含发件人、营销活动、邮件序列和互动时间戳。分页以最后一行的 `(created_at, task_id)` 为依据。
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | Contact ID. |
-| `limit` | query | integer | Page size, 1 to 200 (default 50). |
-| `before_at` | query | string (RFC 3339 nano) | `created_at` of the last row from the previous page. |
-| `before_id` | query | UUID | `task_id` of the last row from the previous page. |
+| `id` | path | UUID | 联系人 ID。 |
+| `limit` | query | integer | 每页数量，范围 1 至 200，默认 50。 |
+| `before_at` | query | string (RFC 3339 nano) | 上一页最后一行的 `created_at`。 |
+| `before_id` | query | UUID | 上一页最后一行的 `task_id`。 |
 
-Both `before_at` and `before_id` must be supplied together; otherwise the cursor is ignored and the first page is returned.
+必须同时提供 `before_at` 和 `before_id`，否则忽略游标并返回第一页。
 
-### Response
+### 响应 [#response-13]
 
-Returns a `data` array plus a `pagination` envelope.
+返回 `data` 数组及 `pagination` 分页结构。
 
 ```json
 {
@@ -871,28 +871,28 @@ Returns a `data` array plus a `pagination` envelope.
 }
 ```
 
-`email_account_id`, `email_account_email` and `email_account_name` are the mailbox the email was actually sent from, which is what a campaign rotating across several mailboxes needs: the row names the mailbox that sent this email, not the campaign's pool or the one that sent the previous step.
+`email_account_id`、`email_account_email` 和 `email_account_name` 表示邮件实际发出的邮箱，这正是跨多个邮箱轮换的营销活动所需的信息：该行指明发送此封邮件的邮箱，而不是营销活动邮箱池或发送前一步邮件的邮箱。
 
-`opened_at` is a person's open, as it is in `engagement` and in campaign analytics. A fetch by a mail client's prefetch or a security gateway is reported as `machine_opened_at` instead, so a row is never presented as read by the recipient when only a machine touched it. At most one of the two is present.
+`opened_at` 表示真人打开，与 `engagement` 和营销活动分析中的含义相同。邮件客户端预取或安全网关获取邮件则报告为 `machine_opened_at`，因此仅有机器访问时，记录绝不会显示为收件人已读。两者最多出现一个。
 
-## List a contact's timeline
+## 列出联系人的时间线记录 [#list-a-contacts-timeline]
 
 `GET /contacts/:id/timeline`
 
-Returns the selected organization's merged activity feed for a contact: sends, opens, clicks (one per link, naming the link), replies, bounces, deliverability and suppression events, notes, meeting bookings, and lifecycle events (the contact's creation with its first-touch source, and every time it joined or left a campaign or gained or lost a label). Every member with permission to view contacts receives the same timeline, regardless of who created the contact or its campaigns. A request with no selected organization returns `400`, and a contact outside the selected organization returns `404`.
+返回所选组织内某位联系人的合并活动动态：发送、打开、点击（每个链接一项，并标明链接）、回复、退信、送达能力及禁止发送事件、备注、会议预约和生命周期事件（联系人创建及其首次接触来源，以及每次加入/离开营销活动、添加/移除标签）。所有拥有联系人查看权限的成员都会看到相同时间线，不论联系人或其营销活动由谁创建。未选择组织的请求返回 `400`，联系人不属于所选组织时返回 `404`。
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | Contact ID. |
-| `limit` | query | integer | Page size, 1 to 200 (default 50). Anything else is a `400`. |
-| `cursor` | query | string | Opaque pagination cursor from `pagination.next_cursor`. A malformed cursor is a `400`. |
-| `before` | query | string (RFC 3339 nano) | Deprecated. Returns the events strictly older than this timestamp, which can skip events that share an instant with the page boundary; use `cursor`. A value that is not an RFC 3339 timestamp is a `400`. Ignored when `cursor` is set. |
+| `id` | path | UUID | 联系人 ID。 |
+| `limit` | query | integer | 每页条数，1 至 200（默认为 50）。其他值返回 `400`。 |
+| `cursor` | query | string | 来自 `pagination.next_cursor` 的不透明分页游标。游标格式无效时返回 `400`。 |
+| `before` | query | string (RFC 3339 nano) | 已弃用。返回严格早于此时间戳的事件，可能跳过与分页边界处于同一时刻的事件；请使用 `cursor`。值不是 RFC 3339 时间戳时返回 `400`。设置了 `cursor` 时忽略。 |
 
-### Response
+### 响应 [#response-14]
 
-Returns a `data` array and the standard `pagination` envelope. Paginate by passing `pagination.next_cursor` back as `cursor` until `has_more` is `false`. The cursor is the exact position of the last event on the page (its time, source and row), so events that share a timestamp, common when a send, its open and a note land in the same second, are never skipped or repeated across pages. The top-level `has_more` mirrors `pagination.has_more` and is kept for clients written before the envelope. `pagination.total` is always `null`: the feed is merged from several tables and is never counted.
+返回 `data` 数组和标准 `pagination` 分页结构。将 `pagination.next_cursor` 作为 `cursor` 传回以继续分页，直到 `has_more` 为 `false`。游标是本页最后一个事件的精确位置（时间、来源和记录），因此具有相同时间戳的事件不会在跨页时被跳过或重复；发送、打开及备注落在同一秒时就常见这种情况。顶层 `has_more` 与 `pagination.has_more` 相同，为兼容在引入分页封装前编写的客户端而保留。`pagination.total` 始终为 `null`：动态由多个表合并而成，不统计总数。
 
 ```json
 {
@@ -955,29 +955,29 @@ Returns a `data` array and the standard `pagination` envelope. Paginate by passi
 }
 ```
 
-`type` is one of `email_sent`, `email_opened`, `email_clicked`, `email_replied`, `email_bounced`, `reply_received`, `deliverability`, `suppressed`, `note`, `meeting_booked`, `meeting_rescheduled`, `meeting_canceled`, `contact_created`, `campaign_added`, `campaign_removed`, `category_added`, `category_removed`, `form_submitted`, or `page_hit`. Fields not relevant to an event type are omitted.
+`type` 为以下值之一：`email_sent`、`email_opened`、`email_clicked`、`email_replied`、`email_bounced`、`reply_received`、`deliverability`、`suppressed`、`note`、`meeting_booked`、`meeting_rescheduled`、`meeting_canceled`、`contact_created`、`campaign_added`、`campaign_removed`、`category_added`、`category_removed`、`form_submitted` 或 `page_hit`。与事件类型无关的字段会省略。
 
-`email_opened` and `email_clicked` carry `machine`: `true` when an automated fetcher did it rather than the person (a mail privacy proxy, a fetch inside the instance's automated-engagement window, which starts when the step is dispatched to a worker, several links followed within seconds). Per-link `email_clicked` events carry `machine_reason` (`prefetch`, `instant`, `scanner` or `burst`), and per-event `email_opened` rows carry it too (`prefetch`, `instant` or `scanner`); an open summarised from the lead alone carries only the flag. Both kinds carry an `origin` object when the event was logged: `client` when the user agent names a mail client (`Gmail`, `Apple Mail`, `Outlook`, `Yahoo Mail`, `Thunderbird` and others); `client_type`, `app` for an installed mail app or `webmail` for a browser (on a click, `app` only when a mail app made the request itself, and never `webmail`); `device_hidden: true` when the mailbox provider's image proxy fetched the email (Gmail, Yahoo Mail, HEY, Fastmail, Seznam, and Apple Mail Privacy Protection, whose user agent is just `Mozilla/5.0`); `device_type` (`desktop`, `mobile` or `tablet`), `os`, `browser`, `browser_version`; and `country_code`, `region`, `city` when the consumer could resolve them. A hidden device omits the device, operating system and browser, which would describe the proxy, and the location too, except the country and region Apple's relay keeps. The stripped WebKit user agent that Mail on a Mac and the new Outlook for Windows both send is reported as `client: "Apple Mail or Outlook"`, `client_type: "app"`, with no device. On a click, `browser` and `device_type` are where the link opened, and `client` is set only when a mail app made the request itself. Opens appear once per event, so a contact who opened from two devices has two rows. Automated clicks are on the feed for the record but never count the step as clicked. An `email_clicked` event carries `link` with the link's `id`, `url`, `label` (its anchor text), the `utm_*` parameters the URL carried, and the `user_agent`; every link in an email is tracked on its own, so each link clicked is its own event. Clicks recorded before per-link attribution have no `link`.
+`email_opened` 和 `email_clicked` 携带 `machine`：若由自动抓取程序而非真人触发，则为 `true`（例如邮件隐私代理、发生在实例自动互动判定窗口内的获取——该窗口从步骤被分发到工作节点时开始——或数秒内访问多个链接）。逐链接的 `email_clicked` 事件携带 `machine_reason`（`prefetch`、`instant`、`scanner` 或 `burst`），逐事件的 `email_opened` 记录也携带此字段（`prefetch`、`instant` 或 `scanner`）；仅根据潜在客户记录汇总的打开则只带该标志。两类事件在有日志记录时都携带 `origin` 对象：用户代理可识别邮件客户端时包含 `client`（`Gmail`、`Apple Mail`、`Outlook`、`Yahoo Mail`、`Thunderbird` 等）；`client_type` 对已安装的邮件应用为 `app`，对浏览器为 `webmail`（点击事件中，仅当邮件应用自身发出请求时才为 `app`，绝不会为 `webmail`）；由邮箱服务商图片代理获取邮件时，包含 `device_hidden: true`（Gmail、Yahoo Mail、HEY、Fastmail、Seznam，以及用户代理仅为 `Mozilla/5.0` 的 Apple Mail 隐私保护）；还包括 `device_type`（`desktop`、`mobile` 或 `tablet`）、`os`、`browser`、`browser_version`；消费者进程能够解析时还包括 `country_code`、`region`、`city`。设备被隐藏时，会省略设备、操作系统和浏览器，因为这些信息描述的是代理；位置也会省略，但 Apple 中继保留的国家和地区除外。Mac 上的 Mail 和新版 Outlook for Windows 都会发送简化的 WebKit 用户代理，这种情况报告为 `client: "Apple Mail or Outlook"`、`client_type: "app"`，不含设备。点击事件中的 `browser` 和 `device_type` 是链接打开时的浏览器和设备类型；只有邮件应用自身发出请求时才设置 `client`。每次打开都单独记录，因此从两个设备打开邮件的联系人会有两行。自动点击保留在动态中供查阅，但绝不将步骤计为已点击。`email_clicked` 事件携带 `link`，其中包含链接的 `id`、`url`、`label`（锚文本）、URL 中的 `utm_*` 参数，以及 `user_agent`；邮件中的每个链接独立跟踪，因此每个被点击的链接都有自己的事件。在引入逐链接归因之前记录的点击没有 `link`。
 
-A `form_submitted` event carries `form_id` and `form_name`. A `page_hit` event is a page view on your own site from a browser tied to the contact through an email-link ticket (see [Website tracking](/guides/website-tracking/)); `subject` is the page title, or its path when the page has none, and `page_hit` carries the full view: `url`, `path`, `title`, `referrer`, `referrer_domain`, `landing` (the first view of a session), the `utm_*` parameters, `device_type`, `os`, `browser`, `browser_version`, `device_brand`, `language`, `timezone`, `screen_width`, `screen_height`, and `country_code`, `region`, `city` when known.
+`form_submitted` 事件携带 `form_id` 和 `form_name`。`page_hit` 事件表示您自己网站上的一次页面浏览，其浏览器通过邮件链接票据与联系人关联（参见 [网站跟踪](/guides/website-tracking/)）；`subject` 为页面标题，无标题时则为路径；`page_hit` 包含完整浏览信息：`url`、`path`、`title`、`referrer`、`referrer_domain`、`landing`（会话的首次浏览）、`utm_*` 参数、`device_type`、`os`、`browser`、`browser_version`、`device_brand`、`language`、`timezone`、`screen_width`、`screen_height`，以及已知时的 `country_code`、`region`、`city`。
 
-Lifecycle events carry the name of what changed as it was at the time (`campaign_name`, or, for a label, `category_id` plus `category_title`), so a later rename or deletion does not rewrite history. A `contact_created` event carries `source` (`manual`, `campaign`, `import`, `sheet_sync`, `api`, `form`, `automation`, `ai_assistant`, or `unknown` for contacts that predate attribution) and `source_detail` (the file, campaign, sheet, form, automation or API key name). The same values are on the contact itself as `source`, `source_detail` and `first_seen_at`, and never change after creation.
+生命周期事件保留变更对象在当时的名称（`campaign_name`；标签则为 `category_id` 加 `category_title`），因此后续重命名或删除不会改写历史。`contact_created` 事件携带 `source`（`manual`、`campaign`、`import`、`sheet_sync`、`api`、`form`、`automation`、`ai_assistant`，或对早于归因功能创建的联系人使用 `unknown`）及 `source_detail`（文件、营销活动、表格、表单、自动化流程或 API 密钥的名称）。相同信息也保存在联系人自身的 `source`、`source_detail` 和 `first_seen_at` 上，创建后不会改变。
 
-## Get a contact's campaign state
+## 获取联系人在营销活动中的状态 [#get-a-contacts-campaign-state]
 
 `GET /contacts/:id/campaigns`
 
-Returns, for every campaign the contact is a lead of, the flow with this contact's progress on each step, the derived lead status, the last thing that happened, and what happens next. Requires a selected organization.
+对联系人作为潜在客户参与的每个营销活动，返回流程及其在各步骤的进度、派生潜在客户状态、最近发生的事件，以及接下来会发生什么。要求已选择组织。
 
-The next action is derived on read by the scheduler through the same constraints a real send goes through (the step's wait, the campaign's start date and sending windows, mailbox caps and spacing, the new-lead limit); a campaign is one self-perpetuating task, so nothing per contact is stored. `next.state` says how firm the timing is: `due` carries `scheduled_at`, when the campaign's chain next works through its queue rather than a slot held for this contact (leads ahead in the queue can still push the step to a later pass, and the field is absent while the chain is being re-seeded); `waiting` carries `not_before`, the step's hard floor, and a `constraint`; `paused` and `blocked` carry only the reason. Both times come from the constraints and never from the send spacing, so repeating the call on unchanged state returns the same values. `next` is absent once the flow has ended for the contact, and `ended_reason` says why. A `replied` lead is not ended by the reply alone: while the campaign still routes them (stop on reply off, or a reply branch), `next` stays present.
+下一操作在读取时由调度器推导，经过与实际发送相同的约束（步骤等待时间、营销活动开始日期及发送时段、邮箱上限和发送间隔、新潜在客户限制）；营销活动是一个持续自我调度的任务，因此不为每位联系人单独存储计划。`next.state` 表示时间的确定程度：`due` 携带 `scheduled_at`，它是营销活动任务链下一次处理队列的时间，并非为此联系人预留的时段（队列中靠前的潜在客户仍可能将此步骤推迟到后续轮次；任务链正在重新建立时省略该字段）；`waiting` 携带步骤不可早于的时间 `not_before` 及一个 `constraint`；`paused` 和 `blocked` 仅携带原因。这两个时间均来自约束，而不是发送间隔，因此在状态不变时重复调用会返回相同值。联系人的流程结束后，`next` 省略，`ended_reason` 说明原因。`replied` 潜在客户不会仅因回复而结束流程：只要营销活动仍对其进行路由（关闭了回复后停止，或存在回复分支），`next` 就会保留。
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | Contact ID. |
+| `id` | path | UUID | 联系人 ID。 |
 
-### Response
+### 响应 [#response-15]
 
 ```json
 {
@@ -1020,25 +1020,25 @@ Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
 }
 ```
 
-`sender_id` and `sender_email` are the mailbox this lead's whole sequence sends from. Rotation picks it when the first email goes out and every follow-up keeps it, so the contact only ever hears from one address; both fields are absent until that first email. They change only when that mailbox can no longer send for the campaign.
+`sender_id` 和 `sender_email` 表示此潜在客户整个邮件序列使用的发件邮箱。首封邮件发出时由轮换机制选定，所有跟进邮件都保留该邮箱，因此联系人始终只收到来自一个地址的邮件；首封邮件发送前两个字段均省略。只有该邮箱无法再为营销活动发送时，它们才会更改。
 
-`lead_status` uses the same values as the campaign Leads view: `pending`, `active`, `completed`, `replied`, `bounced`, `failed`, `paused`, `unsubscribed`, or `undeliverable`. A held lead also carries a `hold` object (`since`, `until`, `reason`, `source`) and keeps its `next` action, with the hold as the reason it is waiting; see [pause a lead](/api/reference/campaigns/#pause-a-lead). `cc` lists the contacts copied on every email to the contact in that campaign, empty when none; see [get a lead's CC](/api/reference/campaigns/#get-a-leads-cc). Each step carries whichever of `sent_at`, `opened_at`, `clicked_at`, `replied_at`, `bounced_at` and `failed_at` apply, plus `attempts` and `in_flight` (reserved for a worker whose result has not come back). `opened_at` is a person's open, as it is in the Leads view: a step a mail client prefetched or a security gateway scanned carries no `opened_at`. While a branch condition is undecided, `next.step_id` is absent and `next.step_label` says the step depends on the contact's response.
+`lead_status` 使用与营销活动潜在客户视图相同的值：`pending`、`active`、`completed`、`replied`、`bounced`、`failed`、`paused`、`unsubscribed` 或 `undeliverable`。暂停中的潜在客户还携带 `hold` 对象（`since`、`until`、`reason`、`source`），并保留 `next` 操作，以暂停作为等待原因；参见 [暂停潜在客户](/api/reference/campaigns/#pause-a-lead)。`cc` 列出此营销活动每封发给该联系人的邮件中都会抄送的联系人，无抄送时为空；参见 [获取潜在客户的抄送联系人](/api/reference/campaigns/#get-a-leads-cc)。各步骤包含适用的 `sent_at`、`opened_at`、`clicked_at`、`replied_at`、`bounced_at`、`failed_at`，以及 `attempts` 和 `in_flight`（已为工作节点预留，结果尚未返回）。`opened_at` 表示真人打开，与潜在客户视图一致：被邮件客户端预取或安全网关扫描的步骤不会携带 `opened_at`。分支条件尚未确定时，`next.step_id` 省略，`next.step_label` 说明该步骤取决于联系人的响应。
 
-## List a contact's activities
+## 列出联系人的活动记录 [#list-a-contacts-activities]
 
 `GET /contacts/:id/activities`
 
-Returns the structured CRM activity log for a contact (note, deal, task, campaign, and engagement events recorded in the CRM activity table). Requires a selected organization.
+返回联系人的结构化 CRM 活动日志（记录在 CRM 活动表中的备注、商机、任务、营销活动和互动事件）。要求已选择组织。
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | Contact ID. |
-| `limit` | query | integer | Page size, 1 to 100 (default 50). |
-| `cursor` | query | UUID | Opaque cursor from the previous page's `pagination.next_cursor`. |
+| `id` | path | UUID | 联系人 ID。 |
+| `limit` | query | integer | 每页数量，范围 1 至 100，默认 50。 |
+| `cursor` | query | UUID | 上一页 `pagination.next_cursor` 中的不透明游标。 |
 
-### Response
+### 响应 [#response-16]
 
 ```json
 {
@@ -1061,23 +1061,23 @@ Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
 }
 ```
 
-`activity_type` is a closed enum including `email_sent`, `email_opened`, `email_clicked`, `email_replied`, `email_bounced`, `note_added`, `note_updated`, `deal_created`, `deal_stage_changed`, `deal_won`, `deal_lost`, `task_created`, `task_completed`, `contact_created`, `contact_updated`, `campaign_added`, `campaign_removed`, `category_added`, and `category_removed`.
+`activity_type` 为封闭枚举，包括 `email_sent`、`email_opened`、`email_clicked`、`email_replied`、`email_bounced`、`note_added`、`note_updated`、`deal_created`、`deal_stage_changed`、`deal_won`、`deal_lost`、`task_created`、`task_completed`、`contact_created`、`contact_updated`、`campaign_added`、`campaign_removed`、`category_added` 和 `category_removed`。
 
-## List a contact's notes
+## 列出联系人备注 [#list-a-contacts-notes]
 
 `GET /contacts/:id/notes`
 
-Returns the CRM notes attached to a contact, newest first. Requires a selected organization.
+返回附加到联系人的 CRM 备注，最新在前。要求已选择组织。
 
-Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CONTACTS` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | Contact ID. |
-| `limit` | query | integer | Page size, 1 to 100 (default 50). |
-| `cursor` | query | UUID | Opaque cursor from the previous page's `pagination.next_cursor`. |
+| `id` | path | UUID | 联系人 ID。 |
+| `limit` | query | integer | 每页数量，范围 1 至 100，默认 50。 |
+| `cursor` | query | UUID | 上一页 `pagination.next_cursor` 中的不透明游标。 |
 
-### Response
+### 响应 [#response-17]
 
 ```json
 {
@@ -1101,31 +1101,31 @@ Auth: **Scope** `READ_CONTACTS` · **Org permission** `view_contacts`
 }
 ```
 
-## Create a contact note
+## 创建联系人备注 [#create-a-contact-note]
 
 `POST /contacts/:id/notes`
 
-Adds a note to a contact. Requires a selected organization.
+向联系人添加备注。要求已选择组织。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | Contact ID. |
+| `id` | path | UUID | 联系人 ID。 |
 
-### Request body
+### 请求体 [#request-body-7]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `content` | string | Yes | Note body (1 to 10,000 characters). |
+| `content` | string | 是 | 备注正文（1 至 10,000 个字符）。 |
 
 ```json
 { "content": "Sent the proposal, following up Monday." }
 ```
 
-### Response
+### 响应 [#response-18]
 
-`201 Created` with the created note (same shape as a note in the list).
+`201 Created`，包含创建的备注（结构与列表中的备注相同）。
 
 ```json
 {
@@ -1139,32 +1139,32 @@ Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
 }
 ```
 
-## Update a contact note
+## 更新联系人备注 [#update-a-contact-note]
 
 `PATCH /contacts/:id/notes/:noteId`
 
-Edits a note's content. Requires a selected organization.
+编辑备注内容。要求已选择组织。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | Contact ID. |
-| `noteId` | path | UUID | Note ID. |
+| `id` | path | UUID | 联系人 ID。 |
+| `noteId` | path | UUID | 备注 ID。 |
 
-### Request body
+### 请求体 [#request-body-8]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `content` | string | No | New note body. |
+| `content` | string | 否 | 新的备注正文。 |
 
 ```json
 { "content": "Sent the proposal, following up Tuesday." }
 ```
 
-### Response
+### 响应 [#response-19]
 
-Returns the updated note.
+返回更新后的备注。
 
 ```json
 {
@@ -1178,36 +1178,36 @@ Returns the updated note.
 }
 ```
 
-## Delete a contact note
+## 删除联系人备注 [#delete-a-contact-note]
 
 `DELETE /contacts/:id/notes/:noteId`
 
-Deletes a note. Requires a selected organization.
+删除备注。要求已选择组织。
 
-Auth: **Scope** `WRITE_CONTACTS` · **Org permission** `manage_contacts`
+身份验证：**权限范围** `WRITE_CONTACTS` · **组织权限** `manage_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | Contact ID. |
-| `noteId` | path | UUID | Note ID. |
+| `id` | path | UUID | 联系人 ID。 |
+| `noteId` | path | UUID | 备注 ID。 |
 
-### Response
+### 响应 [#response-20]
 
 `204 No Content`.
 
-## List a contact's deals
+## 列出联系人的商机 [#list-a-contacts-deals]
 
 `GET /contacts/:id/deals`
 
-Returns the CRM deals associated with a contact as a bare JSON array.
+以无封装的 JSON 数组返回与联系人关联的 CRM 商机。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | Contact ID. |
+| `id` | path | UUID | 联系人 ID。 |
 
-### Response
+### 响应 [#response-21]
 
 ```json
 [
@@ -1229,13 +1229,13 @@ Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`
 ]
 ```
 
-`status` is `open`, `won`, or `lost`. `value`, `expected_close_date`, `won_at`, `lost_at`, `lost_reason`, `assigned_to`, `campaign_id`, and `source_mailbox_id` are nullable and omitted when unset.
+`status` 为 `open`、`won` 或 `lost`。`value`、`expected_close_date`、`won_at`、`lost_at`、`lost_reason`、`assigned_to`、`campaign_id` 和 `source_mailbox_id` 可为空，未设置时省略。
 
-## Segments
+## 联系人分群 [#segments]
 
-Segments are saved contact audiences: a list of conditions plus per-contact manual overrides. Membership is evaluated live on every read, so a segment never needs rebuilding. Every segment endpoint takes the contact scopes, except enrolling into a campaign, which writes leads and takes `WRITE_CAMPAIGNS`. Endpoints that operate on an existing segment address it by its `id`; besides `GET /segments`, the dashboard shows that ID on the segment page header (click to copy) and in the row menu of the Segments tab.
+分群是保存的联系人受众：由一组条件及逐联系人的手动覆盖组成。每次读取都会实时计算成员关系，因此无需重新构建分群。所有分群端点均使用联系人权限范围，只有将成员加入营销活动的端点例外，因为它会写入潜在客户，需要 `WRITE_CAMPAIGNS`。操作现有分群的端点通过其 `id` 定位；除 `GET /segments` 外，控制台也在分群页面标题处（点击复制）及分群选项卡的行菜单中显示该 ID。
 
-A segment object:
+分群对象：
 
 ```json
 {
@@ -1258,42 +1258,42 @@ A segment object:
 }
 ```
 
-`match` is `all` or `any`. A contact is a member when it matches the conditions or is manually included, and is not manually excluded. A segment with no conditions holds only its manual includes.
+`match` 为 `all` 或 `any`。联系人满足条件或被手动包含，且未被手动排除时，即为成员。没有条件的分群只包含手动加入的联系人。
 
-### Conditions
+### 条件 [#conditions]
 
-Each condition names a `field`, an `operator`, and either a `value` (scalar operators) or `values` (list operators). Fields and their kinds are returned by `GET /segments/fields`, including the workspace's custom fields as `custom.<key>` (written with the key in place of the angle-bracket placeholder, for example `custom.industry`).
+每个条件指定一个 `field`、一个 `operator`，以及 `value`（标量运算符）或 `values`（列表运算符）。`GET /segments/fields` 返回字段及其类型，包括以 `custom.<key>` 表示的工作区自定义字段（将尖括号占位符替换为实际键，例如 `custom.industry`）。
 
-| Kind | Fields | Operators | Value |
+| 类型 | 字段 | 运算符 | 值 |
 | --- | --- | --- | --- |
-| text | `first_name`, `last_name`, `email`, `email_domain`, `phone`, `company`, `custom.*` | `equals`, `not_equals`, `contains`, `not_contains`, `starts_with`, `ends_with`, `is_empty`, `is_not_empty` | `value` string; comparisons ignore case |
-| enum | `source`, `verification_status`, `mail_host`, `esp_provider` | `in`, `not_in` | `values`, drawn from the field's `options`; `option_labels` names them for display |
-| bool | `subscribed`, `suppressed`, `is_catch_all` | `is_true`, `is_false` | none |
-| date | `created_at`, `updated_at`, `last_sent_at`, `last_opened_at`, `last_clicked_at`, `last_replied_at` | `within_days`, `not_within_days` (`value` is a day count, 1 to 3650); `before`, `after` (`value` is `YYYY-MM-DD` or RFC 3339); `is_empty`, `is_not_empty` | see operators |
-| number | `campaign_count`, `emails_sent`, `emails_opened`, `emails_clicked`, `emails_replied`, `emails_bounced` | `equals`, `not_equals`, `gt`, `gte`, `lt`, `lte` | `value`, a whole number |
-| category | `category` | `in`, `not_in`, `is_empty`, `is_not_empty` | `values`, label ids |
-| campaign | `campaign` | `in`, `not_in`, `is_empty`, `is_not_empty` | `values`, campaign ids |
-| segment | `segment` | `in`, `not_in` | `values`, segment ids; at most five levels deep, no loops |
+| text | `first_name`, `last_name`, `email`, `email_domain`, `phone`, `company`, `custom.*` | `equals`, `not_equals`, `contains`, `not_contains`, `starts_with`, `ends_with`, `is_empty`, `is_not_empty` | `value` 字符串；比较时忽略大小写 |
+| enum | `source`, `verification_status`, `mail_host`, `esp_provider` | `in`, `not_in` | `values`，取自字段的 `options`；`option_labels` 提供用于显示的名称 |
+| bool | `subscribed`, `suppressed`, `is_catch_all` | `is_true`, `is_false` | 无 |
+| date | `created_at`, `updated_at`, `last_sent_at`, `last_opened_at`, `last_clicked_at`, `last_replied_at` | `within_days`、`not_within_days`（`value` 为天数，1 至 3650）；`before`、`after`（`value` 为 `YYYY-MM-DD` 或 RFC 3339）；`is_empty`、`is_not_empty` | 参见运算符 |
+| number | `campaign_count`, `emails_sent`, `emails_opened`, `emails_clicked`, `emails_replied`, `emails_bounced` | `equals`, `not_equals`, `gt`, `gte`, `lt`, `lte` | `value`，整数 |
+| category | `category` | `in`, `not_in`, `is_empty`, `is_not_empty` | `values`，标签 ID |
+| campaign | `campaign` | `in`, `not_in`, `is_empty`, `is_not_empty` | `values`，营销活动 ID |
+| segment | `segment` | `in`, `not_in` | `values`，分群 ID；最多嵌套五层，不允许循环引用 |
 
-Engagement counters add up every campaign the contact has been in, and opens count human opens only. Limits: 50 conditions per segment, 200 values per list condition, 200 segments per workspace. A condition that fails validation is rejected with `400` and a message naming the condition.
+互动计数累加联系人参与过的所有营销活动，打开仅统计真人打开。限制：每个分群 50 个条件，每个列表条件 200 个值，每个工作区 200 个分群。未通过验证的条件会以 `400` 拒绝，并通过消息指出具体条件。
 
-### List, create, read, update, delete
+### 列出、创建、读取、更新和删除 [#list-create-read-update-delete]
 
-`GET /segments` returns every segment with live counts under `data`. `POST /segments` creates one from `name` (required), `description`, `color` (`#rrggbb`), `match` and `conditions`; a duplicate name is a `409`. `GET /segments/:id` returns one segment. `PATCH /segments/:id` accepts the same fields, all optional. `DELETE /segments/:id` returns `204`, or `409` when another segment's conditions reference it or a campaign has it [linked as a live audience](/api/reference/campaigns/#replace-linked-segments); detach it first.
+`GET /segments` 在 `data` 下返回所有分群及实时计数。`POST /segments` 根据 `name`（必填）、`description`、`color`（`#rrggbb`）、`match` 和 `conditions` 创建分群；名称重复时返回 `409`。`GET /segments/:id` 返回单个分群。`PATCH /segments/:id` 接受相同字段，全部可选。`DELETE /segments/:id` 返回 `204`；若其他分群的条件引用了它，或某个营销活动将其 [关联为实时受众](/api/reference/campaigns/#replace-linked-segments)，则返回 `409`，须先解除关联。
 
-Auth: **Scope** `READ_CONTACTS` for reads, `WRITE_CONTACTS` for writes · **Org permission** `view_contacts` / `manage_contacts`
+身份验证：**权限范围** 读取需要 `READ_CONTACTS`，写入需要 `WRITE_CONTACTS` · **组织权限** `view_contacts` / `manage_contacts`
 
-### Preview a definition
+### 预览分群定义 [#preview-a-definition]
 
 `POST /segments/preview`
 
-Counts the contacts an unsaved definition would match. Send `match` and `conditions`; include `id` to keep that segment's manual overrides in the count while editing it.
+统计尚未保存的定义会匹配多少联系人。发送 `match` 和 `conditions`；编辑现有分群时，可包含 `id`，以在计数中保留该分群的手动覆盖。
 
 ```json
 { "contact_count": 412 }
 ```
 
-### Manual overrides
+### 人工覆盖规则 [#manual-overrides]
 
 `POST /segments/:id/members`
 
@@ -1301,17 +1301,17 @@ Counts the contacts an unsaved definition would match. Send `match` and `conditi
 { "contacts": ["…", "…"], "mode": "include" }
 ```
 
-`mode` is `include` (pin in), `exclude` (pin out) or `auto` (clear the override). Up to 10,000 contact ids per call, or a filter selection of up to 250,000; ids outside the organization are ignored. Returns `{ "updated": n }`. The body also takes a [filter selection](#selecting-contacts-for-a-bulk-action) (`all`, `filters`, `exclude`) instead of `contacts`, for pinning everything a search matches.
+`mode` 为 `include`（固定包含）、`exclude`（固定排除）或 `auto`（清除覆盖）。每次调用最多 10,000 个联系人 ID，或通过筛选选择最多 250,000 位联系人；忽略组织外的 ID。返回 `{ "updated": n }`。请求体也可以用 [筛选选择](#selecting-contacts-for-a-bulk-action)（`all`、`filters`、`exclude`）替代 `contacts`，对所有搜索匹配项设置固定成员关系。
 
-`POST /segments/:id/members/lookup` takes `{ "contacts": [...] }` and returns `{ "data": { "<contact id>": "include" | "exclude" } }` for the contacts that carry an override.
+`POST /segments/:id/members/lookup` 接受 `{ "contacts": [...] }`，并为具有覆盖设置的联系人返回 `{ "data": { "<contact id>": "include" | "exclude" } }`。
 
-`GET /segments/:id/overrides` lists every pinned contact (`contact_id`, `first_name`, `last_name`, `email`, `company`, `mode`, `created_at`) under `data`, includes first, newest first, capped at 500.
+`GET /segments/:id/overrides` 在 `data` 下列出所有固定包含或排除的联系人（`contact_id`、`first_name`、`last_name`、`email`、`company`、`mode`、`created_at`），包含项在前，各组最新在前，最多 500 项。
 
-`GET /contacts/:id/segments` is the contact-side view: every segment in the organization with `member` (whether the contact is in it right now) and `mode` (its override, when any) under `data`.
+`GET /contacts/:id/segments` 是联系人侧视图：在 `data` 下列出组织的所有分群，以及 `member`（联系人当前是否属于该分群）和 `mode`（存在时的覆盖设置）。
 
-Sequence action steps `add_to_segment` and `remove_from_segment` take a `segment_id` and apply the include or exclude override to the contact when the step runs; see [campaigns](/api/reference/campaigns/).
+邮件序列操作步骤 `add_to_segment` 和 `remove_from_segment` 接受 `segment_id`，并在步骤运行时为联系人应用包含或排除覆盖；参见 [营销活动](/api/reference/campaigns/)。
 
-### Add to a campaign
+### 加入营销活动 [#add-to-a-campaign]
 
 `POST /segments/:id/add-to-campaign`
 
@@ -1319,6 +1319,6 @@ Sequence action steps `add_to_segment` and `remove_from_segment` take a `segment
 { "campaign_id": "…" }
 ```
 
-Enrols every current member as a lead. Contacts already in the campaign are skipped, each new lead gets a `campaign_added` activity, and a running campaign is woken so the leads are scheduled. Returns `{ "campaign_id", "added", "members" }`. This is a snapshot: later members are not added until the call is repeated. Safe to retry. It counts as choosing the leads it adds, so it clears any hand-made removal and the rows it writes are never withdrawn by [detaching a segment](/api/reference/campaigns/#replace-linked-segments). Members that are already leads are left exactly as they are, provenance included. For a live link that keeps enrolling members as they join the segment, see [linked segments](/api/reference/campaigns/#list-linked-segments).
+将当前所有成员作为潜在客户加入。已在营销活动中的联系人会被跳过；每位新潜在客户获得一条 `campaign_added` 活动记录，运行中的营销活动会被唤醒以安排这些潜在客户。返回 `{ "campaign_id", "added", "members" }`。这是一次快照操作：之后新增的成员只有再次调用才会加入。可安全重试。此操作视为手动选择所加入的潜在客户，因此会清除手动移除记录，且它写入的记录不会因 [解除分群关联](/api/reference/campaigns/#replace-linked-segments) 而撤回。已经是潜在客户的成员保持原样，包括来源信息。若需要实时关联，以持续加入之后进入分群的成员，参见 [关联分群](/api/reference/campaigns/#list-linked-segments)。
 
-Auth: **Scope** `WRITE_CAMPAIGNS` · **Org permission** `manage_campaigns`
+身份验证：**权限范围** `WRITE_CAMPAIGNS` · **组织权限** `manage_campaigns`

@@ -1,23 +1,23 @@
 ---
-title: Inbox placement tests
-description: Start placement tests and batches, read where each copy landed, manage the workspace's seed inboxes, and schedule a campaign's placement monitor.
+title: "收件箱投递位置测试"
+description: "启动单次或批量投递位置测试，读取每封测试邮件的实际投递位置，管理工作区的种子测试邮箱，并安排营销活动的投递位置监控。"
 ---
 
-An inbox placement test sends a template or a campaign step from one of the workspace's mailboxes to a panel of seed inboxes and reports where each copy landed: the primary inbox, a Gmail tab, spam, or nowhere. The [placement tests guide](/guides/placement-tests/) explains how copies are rendered, sent and found, and how to read a result.
+收件箱投递位置测试会从工作区中的一个邮箱，将模板或营销活动步骤发送到一组种子收件箱，并报告每封副本实际到达的位置：主收件箱、Gmail 分类标签页、垃圾邮件，或始终未到达。[投递位置测试指南](/guides/placement-tests/)介绍测试邮件如何渲染、发送和查找，以及如何解读结果。
 
-Every route is scoped to the selected organization (API keys are always bound to one), and every id in a request is checked against it: a sending mailbox, campaign, step or contact from another workspace is a `404`. Errors follow the shared `{error, message, code, request_id}` envelope; the codes these routes add are listed under [placement test refusals](/api/error-codes/#placement-test-refusals).
+每条路由都限定在所选组织内，API 密钥始终绑定到一个组织；请求中的每个 ID 都会据此检查。发件邮箱、营销活动、步骤或联系人属于其他工作区时，返回 `404`。错误使用共享的 `{error, message, code, request_id}` 封装；这些路由新增的错误码列于[投递位置测试拒绝原因](/api/error-codes/#placement-test-refusals)。
 
-Changes are pushed live as a `PLACEMENT_TEST_UPDATED` event on the organization's [realtime](/api/realtime/) channel when a test starts, on every new verdict, and when it finishes or is cancelled. A batch sends the same event with `batch_id` instead of `test_id` when it starts, skips or defers a mailbox, and finishes.
+测试开始、每次出现新的判定结果，以及测试完成或取消时，变更会以 `PLACEMENT_TEST_UPDATED` 事件实时推送到组织的[实时通信](/api/realtime/)通道。批次开始、跳过或延后某个邮箱，以及完成时，也会发送同一事件，以 `batch_id` 替代 `test_id`。
 
-## Get the overview
+## 获取概览 [#get-the-overview]
 
 `GET /placement/overview`
 
-Returns the seed panels this workspace can test on, with each panel's seed count and provider mix, and the workspace's monthly allowance.
+返回工作区可使用的种子邮箱组，包括各组的种子数量、服务商分布，以及工作区月度额度。
 
-Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`
+身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`
 
-### Response
+### 响应 [#response]
 
 ```json
 {
@@ -60,43 +60,43 @@ Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`
 }
 ```
 
-| Field | Description |
+| 字段 | 说明 |
 |-------|-------------|
-| `panels[].panel` | `instance` (the operator's panel), `workspace` (the workspace's own seed inboxes) or `cloud` (Warmbly Cloud's panel). `cloud` is listed on a self-hosted instance, and elsewhere only when it is available |
-| `panels[].available` | Whether a test can run on the panel now. `reason` says why not, in one sentence |
-| `panels[].families` | Seeds per provider family. `family` is a stable id (`gmail`, `google_workspace`, `microsoft365`, `outlook`, `yahoo`, `aol`, `icloud`, `zoho`, `fastmail`, `gmx`, `proton`, `yandex`, `other` and more); `label` is its display name |
-| `panels[].metered` | Whether a test on the panel counts against a monthly allowance |
-| `usage` | Free tests used this calendar month (UTC) against `limit`, the month's free tests. A test paid in credits, or one that finished without delivering a copy, is not counted. `limit` is `null` when the instance does not meter tests, which is always the case on a self-hosted instance |
-| `usage.credits_per_test` | What a test on the `instance` panel costs in credits once the free tests are used up. `0` when tests cannot be paid for, and then a workspace past its free tests waits for the next month |
-| `usage.credit_balance` | The workspace's spendable credits, `null` when credits are off |
-| `seeds_per_test` | The most seeds one test sends to |
-| `spacing_seconds` | The average gap between two copies from one sender |
+| `panels[].panel` | `instance`（运维人员维护的邮箱组）、`workspace`（工作区自己的种子收件箱）或 `cloud`（Warmbly Cloud 邮箱组）。自托管实例会列出 `cloud`，其他环境仅在可用时列出 |
+| `panels[].available` | 当前能否在该邮箱组上运行测试。不能时，`reason` 用一句话说明原因 |
+| `panels[].families` | 各服务商类别的种子数。`family` 是稳定 ID（`gmail`、`google_workspace`、`microsoft365`、`outlook`、`yahoo`、`aol`、`icloud`、`zoho`、`fastmail`、`gmx`、`proton`、`yandex`、`other` 等）；`label` 是显示名称 |
+| `panels[].metered` | 在该邮箱组上测试是否计入月度额度 |
+| `usage` | 当前 UTC 自然月已使用的免费测试数，相对于当月免费测试额度 `limit`。使用积分付费的测试，或结束时没有任何副本成功投递的测试，不计入此数。实例不计量测试时，`limit` 为 `null`；自托管实例始终如此 |
+| `usage.credits_per_test` | 免费测试用尽后，在 `instance` 邮箱组运行一次测试所需的积分。无法付费测试时为 `0`，此时免费额度已用尽的工作区须等到下个月 |
+| `usage.credit_balance` | 工作区可用积分；积分功能关闭时为 `null` |
+| `seeds_per_test` | 单次测试最多发送到多少个种子收件箱 |
+| `spacing_seconds` | 同一发件邮箱发送两封测试副本之间的平均间隔 |
 
-## Start a test
+## 启动测试 [#start-a-test]
 
 `POST /placement/tests`
 
-Starts a test, or two linked tests for a tracking comparison. Every check (entitlement, allowance, tests in flight, the sender's state and daily limit, available seeds) runs before anything is scheduled, so a refused request sends nothing and charges nothing. A paid test is charged when it starts and refunded by itself if no copy is delivered; an `insufficient_credits` (`402`) or `usage_cap_exceeded` (`429`) refusal charges nothing. Supports `Idempotency-Key`, and a retry with the same key is never charged twice.
+启动一次测试，或用于跟踪对比的两次关联测试。所有检查，包括功能资格、额度、进行中的测试数、发件邮箱状态和每日上限、可用种子，均在安排任何发送前完成，因此被拒绝的请求不会发送邮件，也不会扣费。付费测试启动时扣除积分，如果最终没有任何副本成功投递，会自动退款；`insufficient_credits`（`402`）或 `usage_cap_exceeded`（`429`）拒绝不会扣费。支持 `Idempotency-Key`，使用相同键重试绝不会重复扣费。
 
-Auth: **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`
+身份验证：**权限范围** `SEND_CAMPAIGNS` · **组织权限** `send_campaigns`
 
-### Request body
+### 请求体 [#request-body]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `sender_account_id` | uuid | yes | The mailbox that sends every copy. It must be connected and active, cannot be a seed inbox, and must be one an API key with a mailbox allowlist may use |
-| `campaign_id` | uuid | no | Test with this campaign's settings: its opt-out line, tracking and attachments |
-| `sequence_id` | uuid | no | A step of `campaign_id`. Its subject and body are used when the request carries neither. Needs `campaign_id` |
-| `contact_id` | uuid | no | The contact merge fields and AI blocks are rendered for. Defaults to the campaign's first lead, except on the `cloud` panel, where it defaults to a placeholder so no lead's details leave the instance unless you choose one; AI blocks are left out when no contact is used |
-| `subject` | string | no | The subject. Required when there is no step to take it from |
-| `body_html` | string | no | HTML body. A test needs this or `body_plain` |
-| `body_plain` | string | no | Plain-text body |
-| `tracking` | string | no | `campaign` (default: the campaign's own open and click tracking, none for an ad-hoc test), `on`, `off`, or `compare` (one untracked and one tracked test to the same seeds, each seed getting the same rendered copy from both) |
-| `panel` | string | no | `instance` (default), `workspace` or `cloud` |
-| `families` | string[] | no | Only seeds at these provider families, as `panels[].families[].family` lists them. Works on every panel; on `instance` and `cloud` it is the only way to narrow a test, since their addresses are masked. A panel with no seed at those providers is refused with `placement_no_seeds` |
-| `pace` | string | no | `spaced` (default, about 60 seconds between copies) or `quick` (about 8 seconds, so a test sends in minutes) |
-| `max_credits` | integer | no | The most credits you agree to pay for the test when the month's free tests on the `instance` panel are used up. A request whose price is higher, or that omits it, is refused with `placement_quota_exceeded`, whose `message` names the price, and nothing is charged. Ignored while free tests are left |
-| `seed_ids` | uuid[] | no | Only with `panel` `workspace`: send to these seed inboxes of the workspace and no others. Each must be a seed inbox of the workspace that is connected and running (`placement_invalid_seeds` otherwise, naming any that are not), and each gets a copy: `seeds_per_test` does not cap a chosen list. When the sender's daily limit cannot pay for all of them the request is refused with `placement_daily_budget` rather than dropping some. One on the sender's domain is skipped as usual. Omit it to let the test pick |
+| `sender_account_id` | uuid | 是 | 发送全部副本的邮箱。必须已连接且处于有效状态，不能是种子收件箱；如果 API 密钥有邮箱允许列表，还必须是密钥获准使用的邮箱 |
+| `campaign_id` | uuid | 否 | 使用此营销活动的设置进行测试，包括退订说明、跟踪和附件 |
+| `sequence_id` | uuid | 否 | `campaign_id` 中的一个步骤。请求未提供主题和正文时，使用该步骤的内容。需要同时提供 `campaign_id` |
+| `contact_id` | uuid | 否 | 用于渲染联系人合并字段和 AI 内容块的联系人。默认使用营销活动的首位潜在客户；但在 `cloud` 邮箱组中，默认使用占位联系人，除非你明确选择联系人，否则不会让潜在客户详情离开实例。未使用联系人时省略 AI 内容块 |
+| `subject` | string | 否 | 邮件主题。没有可读取主题的步骤时必填 |
+| `body_html` | string | 否 | HTML 正文。测试必须提供此字段或 `body_plain` |
+| `body_plain` | string | 否 | 纯文本正文 |
+| `tracking` | string | 否 | `campaign`（默认：采用营销活动自身的打开和点击跟踪设置，临时测试则不跟踪）、`on`、`off`，或 `compare`（向同一组种子分别运行不跟踪和启用跟踪的两次测试，每个种子在两次测试中收到相同的渲染内容） |
+| `panel` | string | 否 | `instance`（默认）、`workspace` 或 `cloud` |
+| `families` | string[] | 否 | 仅使用这些服务商类别的种子，取值见 `panels[].families[].family`。适用于所有邮箱组；`instance` 和 `cloud` 的地址已脱敏，因此这是缩小测试范围的唯一方式。如果邮箱组中没有这些服务商的种子，会返回 `placement_no_seeds` 并拒绝测试 |
+| `pace` | string | 否 | `spaced`（默认，副本间隔约 60 秒）或 `quick`（约 8 秒，使测试在数分钟内发完） |
+| `max_credits` | integer | 否 | 当月 `instance` 邮箱组免费测试用尽后，你同意为此次测试支付的最高积分。价格超过此值，或未提供此字段的请求，会返回 `placement_quota_exceeded`，其 `message` 会说明价格，且不扣费。仍有免费测试时忽略此字段 |
+| `seed_ids` | uuid[] | 否 | 仅适用于 `panel` 为 `workspace`：只向工作区中指定的种子收件箱发送。每个邮箱都必须是本工作区已连接且正在运行的种子收件箱，否则返回 `placement_invalid_seeds` 并列出不符合要求的邮箱。每个指定种子都会收到一封副本，`seeds_per_test` 不限制手动选择的列表。如果发件邮箱每日额度无法覆盖全部种子，则返回 `placement_daily_budget` 并拒绝请求，不会只发送其中一部分。与发件邮箱同域名的种子仍会照常跳过。省略时由测试自动选择 |
 
 ```json
 {
@@ -107,9 +107,9 @@ Auth: **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`
 }
 ```
 
-### Response
+### 响应 [#response-1]
 
-`201 Created` with the new tests: one, or two sharing a `compare_group_id` for a comparison. Their copies start going out within seconds.
+`201 Created`，包含新测试：普通测试为一个；对比测试为两个，并共享 `compare_group_id`。副本将在数秒内开始发送。
 
 ```json
 {
@@ -147,25 +147,25 @@ Auth: **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`
 }
 ```
 
-The second element (omitted above) is the tracked half, with `open_tracking` and `link_tracking` set. A comparison counts as two tests against the allowance and the limit on tests in flight, and sends twice as many copies.
+第二个元素在上例中省略，它是启用跟踪的一半，设置了 `open_tracking` 和 `link_tracking`。对比会占用两次测试额度和两个进行中测试名额，并发送两倍数量的副本。
 
-## List tests
+## 列出测试 [#list-tests]
 
 `GET /placement/tests`
 
-Returns the workspace's tests, newest first, each with its counts. The copy's bodies are left out of the list.
+返回工作区的测试，按最新优先排序，每项包含统计数量。列表省略副本正文。
 
-Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`
+身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `limit` | query | integer | `1` to `100`, default `25`. Anything else is a `400` |
-| `cursor` | query | string | Opaque cursor from a previous `pagination.next_cursor`. One this API did not issue is a `400` |
-| `campaign_id` | query | uuid | Only tests of this campaign |
+| `limit` | query | integer | `1` 至 `100`，默认 `25`。其他值返回 `400` |
+| `cursor` | query | string | 来自此前 `pagination.next_cursor` 的不透明游标。不是由本 API 签发的游标会返回 `400` |
+| `campaign_id` | query | uuid | 仅返回此营销活动的测试 |
 
-Tests a [batch](#start-a-batch) started are left out; read them through their batch.
+列表不包含由[批次](#start-a-batch)启动的测试；请通过所属批次读取。
 
-### Response
+### 响应 [#response-2]
 
 ```json
 {
@@ -199,30 +199,30 @@ Tests a [batch](#start-a-batch) started are left out; read them through their ba
 }
 ```
 
-Each test carries the fields shown under [start a test](#start-a-test); the example trims them.
+每个测试都包含[启动测试](#start-a-test)中展示的字段；示例作了精简。
 
-| Field | Description |
+| 字段 | 说明 |
 |-------|-------------|
-| `status` | `running`, `completed`, `cancelled` or `failed`. A test fails when no copy was delivered at all, with the reason in `error` |
-| `origin` | `manual` (started by a person or a key), `monitor` (a campaign's placement monitor), `batch` (a [placement batch](#start-a-batch), named by `batch_id`), `admin` (an operator) or `remote` |
-| `batch_id` | The batch that started the test, `null` otherwise |
-| `pace` | `spaced` or `quick` |
-| `credits_charged` | Credits the test cost past the month's free tests, `0` for a free test |
-| `credits_refunded` | Credits a paid test that delivered no copy got back. Monthly credits whose allowance has reset since the charge are not returned, so this can be less than `credits_charged` |
-| `credits_settled_at` | When a paid test's charge was settled after it finished: refunded if it delivered nothing, kept otherwise. `null` for a free test and until then |
-| `summary` | Counts over every copy. `delivered` is `inbox + promotions + other + spam + missing`: every copy that left the sender and got a verdict |
-| `summary.*_rate` | Fractions from `0` to `1` of `delivered`, `null` until something is delivered. `tabs_rate` covers `promotions` and `other` |
-| `families` | The same counts per provider family |
+| `status` | `running`、`completed`、`cancelled` 或 `failed`。没有任何副本成功投递时，测试失败，原因见 `error` |
+| `origin` | `manual`（由用户或密钥启动）、`monitor`（营销活动的投递位置监测）、`batch`（由 `batch_id` 指定的[投递位置测试批次](#start-a-batch)）、`admin`（运维人员）或 `remote` |
+| `batch_id` | 启动此测试的批次，其他情况为 `null` |
+| `pace` | `spaced` 或 `quick` |
+| `credits_charged` | 当月免费测试用尽后，此测试消耗的积分；免费测试为 `0` |
+| `credits_refunded` | 付费测试未成功投递任何副本时退回的积分。如果扣费后月度积分额度已重置，原月度积分不会退回，因此可能小于 `credits_charged` |
+| `credits_settled_at` | 付费测试结束后完成结算的时间：没有投递则退款，否则保留扣费。免费测试或尚未结算时为 `null` |
+| `summary` | 全部副本的统计。`delivered` 等于 `inbox + promotions + other + spam + missing`，包含每封已离开发件邮箱且获得判定结果的副本 |
+| `summary.*_rate` | 占 `delivered` 的比例，范围 `0` 至 `1`；尚无投递时为 `null`。`tabs_rate` 包含 `promotions` 和 `other` |
+| `families` | 按服务商类别划分的相同统计 |
 
-## Get a test
+## 获取测试 [#get-a-test]
 
 `GET /placement/tests/:id`
 
-Returns one test with its copy, every seed's result, the content check of the copy and, for a tracking comparison, the other half.
+返回单个测试，包括测试内容、每个种子的结果、内容检查，以及跟踪对比时的另一半测试。
 
-Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`
+身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`
 
-### Response
+### 响应 [#response-3]
 
 ```json
 {
@@ -254,58 +254,58 @@ Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`
 }
 ```
 
-The test's own fields are the ones listed under [list tests](#list-tests), plus `body_html` and `body_plain`; the example trims them.
+测试自身字段与[列出测试](#list-tests)中相同，另加 `body_html` 和 `body_plain`；示例作了精简。
 
-| Field | Description |
+| 字段 | 说明 |
 |-------|-------------|
-| `results[].seed` | The seed's address, masked on the `instance` and `cloud` panels and shown in full on `workspace` |
-| `results[].folder` | `pending`, `inbox`, `promotions`, `other` (another Gmail tab: Updates, Social or Forums), `spam`, `missing` (not seen within 120 minutes of `sent_at`), `failed` (never left the sender; `error` says why) or `cancelled` |
-| `content` | The advisory content score of the test's copy, the same shape as [score template content](/api/reference/deliverability-ops/#score-template-content) |
-| `compare` | Present only on a tracking comparison: the other half, with its counts and without its results |
+| `results[].seed` | 种子地址，在 `instance` 和 `cloud` 邮箱组中脱敏，在 `workspace` 中完整显示 |
+| `results[].folder` | `pending`、`inbox`、`promotions`、`other`（其他 Gmail 分类标签页：动态、社交或论坛）、`spam`、`missing`（`sent_at` 后 120 分钟内未发现）、`failed`（始终未离开发件邮箱，原因见 `error`）或 `cancelled` |
+| `content` | 测试内容的建议性评分，结构与[为模板内容评分](/api/reference/deliverability-ops/#score-template-content)相同 |
+| `compare` | 仅在跟踪对比中出现：另一半测试，包含计数，但不包含逐项结果 |
 
-## Cancel a test
+## 取消测试 [#cancel-a-test]
 
 `POST /placement/tests/:id/cancel`
 
-Stops the copies that have not been sent yet. Copies already sent keep being classified. Supports `Idempotency-Key`.
+停止尚未发送的副本。已发送的副本继续进行分类。支持 `Idempotency-Key`。
 
-Auth: **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`
+身份验证：**权限范围** `SEND_CAMPAIGNS` · **组织权限** `send_campaigns`
 
-### Response
+### 响应 [#response-4]
 
-`200 OK` with the test, in the list shape. A test that has already finished answers `409` with `placement_not_running`.
+`200 OK`，包含与列表结构相同的测试。测试已经结束时，返回 `409` 和 `placement_not_running`。
 
-## Start a batch
+## 启动批次 [#start-a-batch]
 
 `POST /placement/batches`
 
-Runs the same test from many sending mailboxes. The request is validated as a whole (the copy, panel, tracking, allowance and credits agreed), the senders are resolved and written down, and the batch is answered `queued` right away. Nothing is sent by the request itself: the backend starts the senders a few at a time, each with its own test, checking each one's daily limit, connection and worker when its turn comes. See [testing a fleet with batches](/guides/placement-tests/#testing-a-fleet-with-batches). Supports `Idempotency-Key`.
+从多个发件邮箱运行相同测试。首先整体验证请求，包括内容、邮箱组、跟踪、额度和同意支付的积分，然后解析并保存发件邮箱列表，立即返回状态为 `queued` 的批次。请求本身不会发送任何邮件：后端每次启动少量邮箱，各自运行独立测试，轮到该邮箱时再检查其每日上限、连接和工作节点。参阅[批量测试发件邮箱](/guides/placement-tests/#testing-a-fleet-with-batches)。支持 `Idempotency-Key`。
 
-Auth: **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`
+身份验证：**权限范围** `SEND_CAMPAIGNS` · **组织权限** `send_campaigns`
 
-### Request body
+### 请求体 [#request-body-1]
 
-The copy fields are the ones [start a test](#start-a-test) takes: `campaign_id`, `sequence_id`, `contact_id`, `subject`, `body_html`, `body_plain`, `tracking`, `panel`, `families` and `seed_ids`. `pace` is always `spaced` for a batch; `quick` is a `400`. The copy is resolved once, when the batch is created, so every sender tests the same email. Instead of `sender_account_id` a batch takes exactly one of:
+内容字段与[启动测试](#start-a-test)相同：`campaign_id`、`sequence_id`、`contact_id`、`subject`、`body_html`、`body_plain`、`tracking`、`panel`、`families` 和 `seed_ids`。批次的 `pace` 始终为 `spaced`；使用 `quick` 返回 `400`。创建批次时只解析一次内容，因此每个发件邮箱测试的是同一封邮件。批次不使用 `sender_account_id`，而必须且只能提供以下两项之一：
 
-| Field | Type | Description |
+| 字段 | 类型 | 说明 |
 |-------|------|-------------|
-| `sender_account_ids` | uuid[] | These mailboxes. Duplicates are dropped; one that is not in the workspace, or is a seed inbox, is a `404`, and one an API key with a mailbox allowlist may not use is a `403`. A disconnected one is kept and deferred or skipped when its turn comes |
-| `sender_scope` | object | Mailboxes resolved on the server, so a fleet of thousands needs no id list |
-| `sender_scope.type` | string | `campaign` (every mailbox `campaign_id`'s scheduler sends from) or `workspace` (every mailbox of the workspace) |
-| `sender_scope.campaign_id` | uuid | Required with `type` `campaign` |
-| `sender_scope.providers` | string[] | Only mailboxes hosted by these families, such as `google_workspace`, `gmail`, `microsoft365`, `outlook` or `other` |
-| `sender_scope.domains` | string[] | Only mailboxes sending from these domains |
-| `sender_scope.tag_ids` | uuid[] | Only mailboxes carrying one of these tags |
-| `sender_scope.include_inactive` | boolean | Keep disconnected mailboxes. Default `false` |
-| `sender_scope.untested_days` | integer | Only mailboxes with no finished placement test in this many days, `1` to `365` |
+| `sender_account_ids` | uuid[] | 指定的这些邮箱。重复项会被去除；不属于工作区或属于种子收件箱的邮箱返回 `404`；API 密钥邮箱允许列表不允许使用的邮箱返回 `403`。已断开连接的邮箱仍会保留，轮到它时再延后或跳过 |
+| `sender_scope` | object | 由服务端解析邮箱集合，因此数千个邮箱也无需提供 ID 列表 |
+| `sender_scope.type` | string | `campaign`（`campaign_id` 的调度器实际用于发送的所有邮箱），或 `workspace`（工作区的所有邮箱） |
+| `sender_scope.campaign_id` | uuid | `type` 为 `campaign` 时必填 |
+| `sender_scope.providers` | string[] | 仅选择由这些类别服务商托管的邮箱，例如 `google_workspace`、`gmail`、`microsoft365`、`outlook` 或 `other` |
+| `sender_scope.domains` | string[] | 仅选择使用这些域名发送的邮箱 |
+| `sender_scope.tag_ids` | uuid[] | 仅选择带有这些标签之一的邮箱 |
+| `sender_scope.include_inactive` | boolean | 保留已断开连接的邮箱。默认 `false` |
+| `sender_scope.untested_days` | integer | 仅选择最近指定天数内没有完成投递位置测试的邮箱，范围 `1` 至 `365` 天 |
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `sample` | object | no | Which of the resolved mailboxes to keep. Default `{"mode": "all"}` |
-| `sample.mode` | string | no | `all`, `random` (`count` mailboxes), `percent` (`percent` of them, rounded up), `per_domain` or `per_provider` (up to `count` from each) |
-| `sample.stratify` | string | no | With `random` or `percent` only: `provider` or `domain` splits the sample in proportion to each group's share |
-| `on_unavailable` | string | no | `defer` (default: retry a mailbox that cannot send when its turn comes, for up to seven days) or `skip` |
-| `max_credits` | integer | no | The most credits you agree to pay across the whole batch for tests past the month's free ones. Needed only when the batch needs more tests than are free: the request is refused with `placement_quota_exceeded`, naming the most it can cost, when it is lower. The batch never spends more |
+| `sample` | object | 否 | 从解析出的邮箱中保留哪些。默认 `{"mode": "all"}` |
+| `sample.mode` | string | 否 | `all`、`random`（选取 `count` 个邮箱）、`percent`（选取其中 `percent` 的比例，向上取整）、`per_domain` 或 `per_provider`（每组最多 `count` 个） |
+| `sample.stratify` | string | 否 | 仅适用于 `random` 或 `percent`：`provider` 或 `domain` 会按各组所占比例分配样本 |
+| `on_unavailable` | string | 否 | `defer`（默认：轮到邮箱时无法发送则重试，最长七天），或 `skip` |
+| `max_credits` | integer | 否 | 当月免费测试之外，你同意整个批次最多支付的积分。仅在批次所需测试数超过免费额度时需要；该值不足时，请求返回 `placement_quota_exceeded` 并说明最高可能费用。批次绝不会超出该金额 |
 
 ```json
 {
@@ -317,9 +317,9 @@ The copy fields are the ones [start a test](#start-a-test) takes: `campaign_id`,
 }
 ```
 
-### Response
+### 响应 [#response-5]
 
-`201 Created` with the batch.
+`201 Created`，包含批次。
 
 ```json
 {
@@ -355,23 +355,23 @@ The copy fields are the ones [start a test](#start-a-test) takes: `campaign_id`,
 }
 ```
 
-| Field | Description |
+| 字段 | 说明 |
 |-------|-------------|
-| `status` | `queued` until the first mailbox starts, then `running`; at the end `completed`, `completed_with_warnings` (some mailboxes were skipped or failed), `failed` (none finished a test, with `error`) or `cancelled` |
-| `selection` | How the mailboxes were chosen, and how many the scope `matched` before sampling. The mailboxes themselves are the snapshot under [list a batch's senders](#list-a-batchs-senders) |
-| `progress` | The batch's mailboxes by status. `running` is a mailbox whose test has not finished yet |
-| `summary` | Where the batch's copies landed so far, over the copy the campaign really sends: the tracked half of a tracking comparison |
-| `retry_until` | Deferred mailboxes are retried until then, then skipped |
+| `status` | 首个邮箱开始前为 `queued`，之后为 `running`；结束时为 `completed`、`completed_with_warnings`（部分邮箱被跳过或失败）、`failed`（没有邮箱完成测试，附带 `error`）或 `cancelled` |
+| `selection` | 邮箱选择方式，以及抽样前范围共 `matched` 多少个邮箱。具体邮箱为[列出批次发件邮箱](#list-a-batchs-senders)中的快照 |
+| `progress` | 批次邮箱按状态的统计。`running` 表示测试尚未完成的邮箱 |
+| `summary` | 批次副本截至目前的投递位置，统计营销活动实际发送的版本；对于跟踪对比，即启用跟踪的一半 |
+| `retry_until` | 延后的邮箱会重试到此时间，之后跳过 |
 
-## Preview a batch
+## 预览批次 [#preview-a-batch]
 
 `POST /placement/batches/preview`
 
-Takes the body of [start a batch](#start-a-batch) and returns what it would come to, without writing anything or sending anything. The copy fields may be left out to count the mailboxes alone; once any is given, the copy is checked as on start. A random sample is drawn again when the batch starts, so the counts are the same but the mailboxes can differ.
+接受[启动批次](#start-a-batch)的请求体，返回预计结果，不写入或发送任何内容。可以省略内容字段，只统计邮箱；一旦提供任意内容字段，就会像启动批次一样检查内容。批次启动时会重新随机抽样，因此数量相同，但具体邮箱可能不同。
 
-Auth: **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`
+身份验证：**权限范围** `SEND_CAMPAIGNS` · **组织权限** `send_campaigns`
 
-### Response
+### 响应 [#response-6]
 
 ```json
 {
@@ -390,61 +390,61 @@ Auth: **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`
 }
 ```
 
-| Field | Description |
+| 字段 | 说明 |
 |-------|-------------|
-| `variants` | `2` for a tracking comparison, which doubles `tests` and `max_sends` |
-| `max_sends` | The most copies the batch sends: `tests` times `seeds_per_test`. Each mailbox's daily limit can only make it fewer |
-| `free_tests`, `paid_tests`, `credits` | How `tests` splits against the month's free tests, and the most the paid ones cost. All `0` on an unmetered panel |
-| `concurrency` | How many of the workspace's batch mailboxes send at once |
+| `variants` | 跟踪对比时为 `2`，会使 `tests` 和 `max_sends` 加倍 |
+| `max_sends` | 批次最多发送的副本数：`tests` 乘以 `seeds_per_test`。各邮箱每日上限只会使实际数量更少 |
+| `free_tests`, `paid_tests`, `credits` | `tests` 如何分配到当月免费测试，以及付费部分的最高费用。不计量的邮箱组中均为 `0` |
+| `concurrency` | 工作区的批次邮箱中，同时发送的数量 |
 
-## List batches
+## 列出批次 [#list-batches]
 
 `GET /placement/batches`
 
-Returns the workspace's batches, newest first, in the shape above. Takes `limit` (`1` to `100`, default `25`) and an opaque `cursor`, and returns `data` plus `pagination`.
+按上述结构返回工作区的批次，最新优先。接受 `limit`（`1` 至 `100`，默认 `25`）和不透明的 `cursor`，返回 `data` 加 `pagination`。
 
-Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`
+身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`
 
-## Get a batch
+## 获取批次 [#get-a-batch]
 
 `GET /placement/batches/:id`
 
-Returns one batch with its placement grouped across the fleet.
+返回单个批次，以及在所有发件邮箱间分组汇总的投递位置。
 
-Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`
+身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`
 
-### Response
+### 响应 [#response-7]
 
-The batch's fields as above, plus:
+除上述批次字段外，还包含：
 
-| Field | Description |
+| 字段 | 说明 |
 |-------|-------------|
-| `untracked` | On a tracking comparison only: the untracked half's counts. `summary` is the tracked half |
-| `domains` | Per sending domain, worst inbox rate first: `key` (the domain), `senders` in the batch, `tested` (senders that finished a test) and `counts` |
-| `providers` | The same per sending provider, `key` a host family and `label` its name |
-| `recipients` | Counts per recipient provider family, like a test's `families` |
-| `matrix` | Per sending domain, in the order of `domains`, its counts per recipient provider in the order of `recipients` |
-| `content` | The content score of the batch's copy |
+| `untracked` | 仅在跟踪对比中出现：未启用跟踪的一半的计数。`summary` 为启用跟踪的一半 |
+| `domains` | 按发件域名分组，收件箱到达率最低的在前：`key`（域名）、批次中的 `senders`、`tested`（已完成测试的发件邮箱）和 `counts` |
+| `providers` | 按发件服务商划分的相同统计，`key` 为托管服务商类别，`label` 为其名称 |
+| `recipients` | 按收件服务商类别的计数，与单个测试的 `families` 类似 |
+| `matrix` | 按 `domains` 顺序列出各发件域名，并按 `recipients` 顺序列出其各收件服务商计数 |
+| `content` | 批次内容的评分 |
 
-The groups read the same copy as `summary`. They are not broken down by worker: a worker signs in to the mailbox provider, which delivers from its own servers, so a recipient's filter never sees it.
+各分组统计的内容版本与 `summary` 相同。不按工作节点划分：工作节点只负责登录邮箱服务商，实际投递由服务商自身的服务器完成，因此收件方过滤器看不到工作节点。
 
-## List a batch's senders
+## 列出批次中的发件人 [#list-a-batchs-senders]
 
 `GET /placement/batches/:id/senders`
 
-Returns the batch's mailboxes with where each one's copies landed.
+返回批次中的邮箱，以及各邮箱测试副本的投递位置。
 
-Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`
+身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `limit` | query | integer | `1` to `100`, default `25` |
-| `cursor` | query | string | Opaque cursor from a previous `pagination.next_cursor` |
-| `sort` | query | string | `worst` (default: lowest inbox rate first, untested last), `best`, `email` or `status` |
-| `status` | query | string | Only mailboxes in this status: `queued`, `deferred`, `running`, `completed`, `skipped`, `failed` or `cancelled` |
-| `q` | query | string | Only addresses containing this text |
+| `limit` | query | integer | `1` 至 `100`，默认 `25` |
+| `cursor` | query | string | 此前 `pagination.next_cursor` 中的不透明游标 |
+| `sort` | query | string | `worst`（默认：收件箱到达率最低的在前，未测试的在最后）、`best`、`email` 或 `status` |
+| `status` | query | string | 仅返回此状态的邮箱：`queued`、`deferred`、`running`、`completed`、`skipped`、`failed` 或 `cancelled` |
+| `q` | query | string | 仅返回地址包含此文本的邮箱 |
 
-### Response
+### 响应 [#response-8]
 
 ```json
 {
@@ -470,33 +470,33 @@ Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`
 }
 ```
 
-| Field | Description |
+| 字段 | 说明 |
 |-------|-------------|
-| `status` | `queued`, `deferred` (waiting to retry at `next_attempt_at`), `running`, `completed`, `skipped`, `failed` or `cancelled` |
-| `reason`, `detail` | Why a mailbox was deferred, skipped or failed: a code from [placement test refusals](/api/error-codes/#placement-test-refusals) and its sentence |
-| `test_ids` | The mailbox's tests, readable with [get a test](#get-a-test): the untracked half first on a comparison |
+| `status` | `queued`、`deferred`（等待在 `next_attempt_at` 重试）、`running`、`completed`、`skipped`、`failed` 或 `cancelled` |
+| `reason`, `detail` | 邮箱被延后、跳过或失败的原因：来自[投递位置测试拒绝原因](/api/error-codes/#placement-test-refusals)的错误码及其说明 |
+| `test_ids` | 该邮箱的测试，可通过[获取测试](#get-a-test)读取；对比时不跟踪的一半在前 |
 
-## Cancel a batch
+## 取消批次 [#cancel-a-batch]
 
 `POST /placement/batches/:id/cancel`
 
-Stops the batch: no mailbox starts again, copies not sent yet are cancelled, and copies already sent keep being classified.
+停止批次：不再启动任何邮箱，取消尚未发送的副本，已发送副本继续分类。
 
-Auth: **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`
+身份验证：**权限范围** `SEND_CAMPAIGNS` · **组织权限** `send_campaigns`
 
-### Response
+### 响应 [#response-9]
 
-`200 OK` with the batch. A batch that has already finished answers `409` with `placement_batch_not_running`.
+`200 OK`，包含批次。批次已经结束时返回 `409` 和 `placement_batch_not_running`。
 
-## Get fleet coverage
+## 获取发件邮箱的测试覆盖情况 [#get-fleet-coverage]
 
 `GET /placement/coverage`
 
-How many of the workspace's connected sending mailboxes finished a placement test recently.
+工作区已连接的发件邮箱中，最近完成投递位置测试的数量。
 
-Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`
+身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`
 
-### Response
+### 响应 [#response-10]
 
 ```json
 {
@@ -504,15 +504,15 @@ Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`
 }
 ```
 
-## List seed inboxes
+## 列出种子测试邮箱 [#list-seed-inboxes]
 
 `GET /placement/seeds`
 
-Returns every mailbox of the workspace with whether it is one of the workspace's seed inboxes. A key restricted to certain mailboxes sees only those.
+返回工作区的每个邮箱，以及它是否为工作区种子收件箱。仅允许访问特定邮箱的密钥只会看到这些邮箱。
 
-Auth: **Scope** `READ_EMAILS` · **Org permission** `view_campaigns`
+身份验证：**权限范围** `READ_EMAILS` · **组织权限** `view_campaigns`
 
-### Response
+### 响应 [#response-11]
 
 ```json
 {
@@ -538,39 +538,39 @@ Auth: **Scope** `READ_EMAILS` · **Org permission** `view_campaigns`
 }
 ```
 
-`blocker` is present when the mailbox cannot become a seed inbox right now, and says why.
+邮箱当前无法成为种子收件箱时出现 `blocker`，并说明原因。
 
-## Mark a seed inbox
+## 标记种子测试邮箱 [#mark-a-seed-inbox]
 
 `PUT /placement/seeds/:email_account_id`
 
-Makes a workspace mailbox one of its seed inboxes, or an ordinary mailbox again. A seed never warms up (its warmup is turned off here, and starting it again is refused with `mailbox_is_seed`), never sends campaign mail, and cannot send a placement test. The body states the value to hold, so a retry lands on the same state.
+将工作区邮箱设为种子收件箱，或恢复为普通邮箱。种子邮箱不会预热，此处会关闭预热，再次启动会返回 `mailbox_is_seed` 并拒绝；也不会发送营销活动邮件，不能作为投递位置测试的发件邮箱。请求体直接声明期望值，因此重试后会得到相同状态。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-### Request body
+### 请求体 [#request-body-2]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `seed` | boolean | yes | `true` to make the mailbox a seed inbox, `false` to make it an ordinary mailbox |
+| `seed` | boolean | 是 | `true` 将邮箱设为种子收件箱，`false` 将其恢复为普通邮箱 |
 
 ```json
 { "seed": true }
 ```
 
-### Response
+### 响应 [#response-12]
 
-`200 OK` with the mailbox, in the shape of [list seed inboxes](#list-seed-inboxes). A mailbox on the instance panel, or one a test is still sending from, answers `409` with `placement_seed_unavailable`; a workspace that already has `50` seed inboxes answers `placement_seed_limit`.
+`200 OK`，包含邮箱，结构与[列出种子收件箱](#list-seed-inboxes)相同。属于实例邮箱组，或仍有测试正在从其发送的邮箱，会返回 `409` 和 `placement_seed_unavailable`；工作区已有 `50` 个种子收件箱时，返回 `placement_seed_limit`。
 
-## Get a campaign's placement monitor
+## 获取营销活动的投递位置监控 [#get-a-campaigns-placement-monitor]
 
 `GET /campaigns/:id/placement-monitor`
 
-Returns the campaign's scheduled placement test, or `null` when it has none.
+返回营销活动的计划投递位置测试；没有时返回 `null`。
 
-Auth: **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`
+身份验证：**权限范围** `READ_CAMPAIGNS` · **组织权限** `view_campaigns`
 
-### Response
+### 响应 [#response-13]
 
 ```json
 {
@@ -593,44 +593,44 @@ Auth: **Scope** `READ_CAMPAIGNS` · **Org permission** `view_campaigns`
 }
 ```
 
-`last_error` is present when the last run could not start a test, and says why (for example, the campaign was not running); the monitor then tries again a day later.
+上次运行无法启动测试时出现 `last_error`，并说明原因，例如营销活动未运行；监测器随后会在一天后重试。
 
-## Set a campaign's placement monitor
+## 设置营销活动的投递位置监控 [#set-a-campaigns-placement-monitor]
 
 `PUT /campaigns/:id/placement-monitor`
 
-Creates or updates the campaign's monitor. Every field is optional: an absent field keeps its current value, or its default on a new monitor. The body states values rather than changes, so a retry lands on the same state. A new or re-enabled monitor runs its first test within about five minutes; changing `interval_days` moves the next run to that interval after the last one.
+创建或更新营销活动监测器。所有字段均可选：省略字段保留当前值，新监测器则采用默认值。请求体声明期望值，而非增量变更，因此重试会得到相同状态。新建或重新启用的监测器会在约五分钟内运行首次测试；修改 `interval_days` 会将下次运行时间调整为上次运行后经过该间隔的时间。
 
-Each run tests the campaign's first email step with a subject and a body, rendered for its first lead with the campaign's own tracking, from the next of the campaign's sending mailboxes in turn. It runs only while the campaign is `active`, and counts against the allowance and the mailbox's daily limit like any other test.
+每次运行都会测试营销活动中第一个同时具有主题和正文的邮件步骤，使用首位潜在客户渲染，采用活动自身的跟踪设置，并轮流使用营销活动发件邮箱中的下一个邮箱。仅在营销活动为 `active` 时运行，与其他测试一样计入测试额度和邮箱每日上限。
 
-Auth: **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`
+身份验证：**权限范围** `SEND_CAMPAIGNS` · **组织权限** `send_campaigns`
 
-### Request body
+### 请求体 [#request-body-3]
 
-| Field | Type | Default | Description |
+| 字段 | 类型 | 默认值 | 说明 |
 |-------|------|---------|-------------|
-| `enabled` | boolean | `true` | Whether the monitor runs |
-| `interval_days` | integer | `7` | Days between runs, `1` to `30` |
-| `panel` | string | `instance` | `instance`, `workspace` or `cloud` |
-| `alert_below` | integer | `70` | Inbox percentage, `0` to `100`. A run whose primary-inbox share lands below it notifies every member who can view campaigns with a `placement_alert` notification |
-| `pause_on_alert` | boolean | `false` | Also pause the campaign when a run alerts. The campaign moves to `paused_guardrail` with the reason in its activity log and stays paused until it is started again |
+| `enabled` | boolean | `true` | 是否运行监测器 |
+| `interval_days` | integer | `7` | 运行间隔天数，`1` 至 `30` |
+| `panel` | string | `instance` | `instance`、`workspace` 或 `cloud` |
+| `alert_below` | integer | `70` | 收件箱百分比，`0` 至 `100`。某次运行的主收件箱占比低于该值时，会向所有有权查看营销活动的成员发送 `placement_alert` 通知 |
+| `pause_on_alert` | boolean | `false` | 发出警报时同时暂停营销活动。活动转为 `paused_guardrail`，并在活动日志中记录原因；保持暂停，直到再次启动 |
 
 ```json
 { "interval_days": 3, "alert_below": 80, "pause_on_alert": true }
 ```
 
-### Response
+### 响应 [#response-14]
 
-`200 OK` with the monitor, in the shape above.
+`200 OK`，包含上述结构的监测器。
 
-## Remove a campaign's placement monitor
+## 移除营销活动的投递位置监控 [#remove-a-campaigns-placement-monitor]
 
 `DELETE /campaigns/:id/placement-monitor`
 
-Removes the campaign's monitor. Tests it already ran stay in the list.
+移除营销活动监测器。已经运行的测试仍保留在列表中。
 
-Auth: **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`
+身份验证：**权限范围** `SEND_CAMPAIGNS` · **组织权限** `send_campaigns`
 
-### Response
+### 响应 [#response-15]
 
-`204 No Content`. A campaign with no monitor answers `404`.
+`204 No Content`。营销活动没有监测器时返回 `404`。

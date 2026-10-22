@@ -1,23 +1,23 @@
 ---
-title: Webhooks
-description: Subscribe to Warmbly platform events and receive HMAC-signed delivery callbacks at your own HTTPS endpoints.
+title: "Webhook"
+description: "订阅 Warmbly 平台事件，在自己的 HTTPS 端点接收带有 HMAC 签名的投递回调。"
 ---
 
-Webhooks let your systems react to Warmbly activity in real time. You register one or more HTTPS endpoints, optionally filter them to specific event types, and Warmbly POSTs a signed JSON payload to each matching endpoint whenever a subscribed event fires. Every delivery is signed with HMAC-SHA256 and carries a unique event id so you can verify authenticity and dedupe replays. Failed deliveries are retried with exponential backoff and their history is queryable for debugging.
+Webhook 让你的系统能够实时响应 Warmbly 中的活动。注册一个或多个 HTTPS 端点，可按特定事件类型筛选；每当订阅事件发生时，Warmbly 会向所有匹配端点 POST 已签名的 JSON 载荷。每次投递都使用 HMAC-SHA256 签名，并携带唯一事件 ID，便于验证真实性和对重放去重。失败投递会按指数退避重试，且可查询历史进行排错。
 
-All webhook management endpoints are org-scoped and share one auth gate: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`. The signing secret is server-generated and only returned at create and rotate time, so capture it immediately.
+所有 Webhook 管理端点均限定在组织范围内，并共用身份验证要求：**权限范围** `WEBHOOKS` · **组织权限** `manage_settings`。签名密钥由服务器生成，仅在创建和轮换时返回，因此应立即保存。
 
-## List webhook endpoints
+## 列出 Webhook 端点 [#list-webhook-endpoints]
 
 `GET /webhooks`
 
-Returns every endpoint configured for the caller's organization. Secrets are never included in this response.
+返回调用者组织配置的所有端点。响应绝不包含密钥。
 
-Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `WEBHOOKS` · **组织权限** `manage_settings`。
 
-### Response
+### 响应 [#response]
 
-Returns an object with the configured `endpoints` array. This is not a `data` + `pagination` envelope.
+返回包含已配置 `endpoints` 数组的对象，不使用 `data` + `pagination` 封装。
 
 ```json
 {
@@ -42,15 +42,15 @@ Returns an object with the configured `endpoints` array. This is not a `data` + 
 }
 ```
 
-## List available event types
+## 列出可用事件类型 [#list-available-event-types]
 
 `GET /webhooks/event-types`
 
-Returns the canonical catalog of every event Warmbly can emit. Use this to build an event-type picker or validate `event_types` values before writing them.
+返回 Warmbly 可发出的所有事件的标准目录。可用于构建事件类型选择器，或在写入前验证 `event_types` 的值。
 
-Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `WEBHOOKS` · **组织权限** `manage_settings`。
 
-### Response
+### 响应 [#response-1]
 
 ```json
 {
@@ -71,26 +71,26 @@ Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
 }
 ```
 
-`firehose: true` means the event is high-volume. An endpoint with an empty `event_types` list does **not** receive firehose events automatically. To receive them you must list each one explicitly in `event_types`. See [Firehose events](#firehose-events) for details.
+`firehose: true` 表示高频事件。`event_types` 列表为空的端点**不**会自动接收全量事件流中的高频事件；必须在 `event_types` 中逐项明确列出。详情见[全量事件流](#firehose-events)。
 
-## Create a webhook endpoint
+## 创建 Webhook 端点 [#create-a-webhook-endpoint]
 
 `POST /webhooks`
 
-Creates a new subscription. The response is the only time the signing `secret` is returned, so store it immediately. The URL must be HTTPS and resolve to a publicly routable host. Loopback, private, and link-local targets are rejected unless the server runs with unsafe webhook URLs enabled for local or self-hosted development.
+创建新的订阅。此次响应是唯一一次返回签名 `secret`，应立即保存。URL 必须为 HTTPS，且解析到可公开路由的主机。回环、私有和链路本地目标均会被拒绝，除非服务器为本地或自托管开发启用了不安全 Webhook URL。
 
-New endpoints start in an **unverified** state. They receive a single signed challenge request and no real events until verification passes. See [Endpoint verification](#endpoint-verification).
+新端点初始处于**未经验证**状态，只会收到一次已签名的挑战请求，在验证通过前不会收到实际事件。参阅[端点验证](#endpoint-verification)。
 
-Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `WEBHOOKS` · **组织权限** `manage_settings`。
 
-### Request body
+### 请求体 [#request-body]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `url` | string | Yes | HTTPS URL that will receive POST callbacks. Must be publicly routable. |
-| `description` | string | No | Free-text label for your own reference. |
-| `event_types` | string[] | No | Event names to subscribe to. Each must be a known type. An empty or omitted array subscribes to all non-firehose events. |
-| `enabled` | boolean | No | Whether the endpoint is active. Defaults to `true`. |
+| `url` | string | 是 | 接收 POST 回调的 HTTPS URL，必须可公开路由。 |
+| `description` | string | 否 | 供自己识别使用的自由文本标签。 |
+| `event_types` | string[] | 否 | 要订阅的事件名称，每项都必须是已知类型。数组为空或省略时订阅全部常规事件，不包含全量事件流中的高频事件。 |
+| `enabled` | boolean | 否 | 端点是否启用。默认 `true`。 |
 
 ```json
 {
@@ -101,9 +101,9 @@ Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
 }
 ```
 
-### Response
+### 响应 [#response-2]
 
-`201 Created` with the full endpoint object, including the one-time `secret`. A new endpoint starts unverified (`verified_at` is `null`) and only receives the live event stream once it passes verification.
+`201 Created`，包含完整端点对象和仅返回一次的 `secret`。新端点初始未经验证，`verified_at` 为 `null`；只有验证通过后才接收实时事件流。
 
 ```json
 {
@@ -125,64 +125,64 @@ Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
 }
 ```
 
-## Update a webhook endpoint
+## 更新 Webhook 端点 [#update-a-webhook-endpoint]
 
 `PATCH /webhooks/:id`
 
-Updates a subscription's URL, description, event filter, or enabled state. The signing secret is not changed here. Use the rotate endpoint for that. The same URL and event-type validation as create applies. Changing the URL host re-arms endpoint verification.
+更新订阅的 URL、说明、事件筛选或启用状态。此处不修改签名密钥，需使用轮换端点。URL 和事件类型采用与创建时相同的验证规则。修改 URL 主机后，需要重新验证端点。
 
-Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `WEBHOOKS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | The endpoint id to update. |
+| `id` | path | UUID | 要更新的端点 ID。 |
 
-### Request body
+### 请求体 [#request-body-1]
 
-Same shape as create. All fields are replaced with the values sent, so send the complete desired state (`event_types` is overwritten, not merged).
+结构与创建时相同。所有字段都会替换为发送的值，因此应发送完整的期望状态；`event_types` 会被覆盖，不会合并。
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `url` | string | Yes | HTTPS, publicly routable URL. |
-| `description` | string | No | Free-text label. |
-| `event_types` | string[] | No | Replacement event filter. Empty means all non-firehose events. |
-| `enabled` | boolean | No | Active state. Defaults to `true` if omitted. |
+| `url` | string | 是 | 使用 HTTPS 且可公开路由的 URL。 |
+| `description` | string | 否 | 自由文本标签。 |
+| `event_types` | string[] | 否 | 替换现有事件筛选。为空表示全部常规事件，不含高频事件。 |
+| `enabled` | boolean | 否 | 启用状态。省略时默认 `true`。 |
 
-### Response
+### 响应 [#response-3]
 
-`200 OK` with the updated endpoint (no secret).
+`200 OK`，包含更新后的端点，不含密钥。
 
-## Delete a webhook endpoint
+## 删除 Webhook 端点 [#delete-a-webhook-endpoint]
 
 `DELETE /webhooks/:id`
 
-Deletes a subscription and cascades to its delivery history.
+删除订阅，并级联删除其投递历史。
 
-Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `WEBHOOKS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | The endpoint id to delete. |
+| `id` | path | UUID | 要删除的端点 ID。 |
 
-### Response
+### 响应 [#response-4]
 
-`204 No Content` with an empty body.
+`204 No Content`，响应体为空。
 
-## Rotate the signing secret
+## 轮换签名密钥 [#rotate-the-signing-secret]
 
 `POST /webhooks/:id/rotate-secret`
 
-Issues a new signing secret and returns it once. In-flight deliveries that were already signed continue to verify against the old secret until they settle, while new deliveries use the new secret. Update your verifier promptly after rotating.
+签发新的签名密钥，并仅返回一次。已完成签名的在途投递在完成前仍需使用旧密钥验证，新投递则使用新密钥。轮换后应及时更新验证器。
 
-Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `WEBHOOKS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | The endpoint id to rotate. |
+| `id` | path | UUID | 要轮换密钥的端点 ID。 |
 
-### Response
+### 响应 [#response-5]
 
-`200 OK` with the new secret. This is the only time it is returned.
+`200 OK`，包含新密钥。这是唯一一次返回该密钥。
 
 ```json
 {
@@ -190,21 +190,21 @@ Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
 }
 ```
 
-## Endpoint verification
+## 端点验证 [#endpoint-verification]
 
 `POST /webhooks/:id/verify`
 
-New endpoints start **unverified** and do not receive real events until they pass a reachability check. Calling this endpoint sends a single signed challenge request to the target URL. It is also useful as a "send a test event" button after the endpoint is already verified.
+新端点初始**未经验证**，通过可达性检查前不会收到实际事件。调用此端点会向目标 URL 发送一次已签名的挑战请求。端点验证后，它也可用作“发送测试事件”功能。
 
-Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `WEBHOOKS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | The endpoint id to verify. |
+| `id` | path | UUID | 要验证的端点 ID。 |
 
-### Challenge request
+### 质询请求 [#challenge-request]
 
-Warmbly sends a `POST` to the endpoint URL with `X-Warmbly-Event: webhook.test` and a body of:
+Warmbly 向端点 URL 发送 `POST`，携带 `X-Warmbly-Event: webhook.test`，请求体如下：
 
 ```json
 {
@@ -217,44 +217,44 @@ Warmbly sends a `POST` to the endpoint URL with `X-Warmbly-Event: webhook.test` 
 }
 ```
 
-The challenge is signed with the endpoint's secret, so you can verify it exactly like any other delivery (see [Verifying signatures](#verifying-signatures)).
+挑战使用端点密钥签名，因此可像其他投递一样验证，参阅[验证签名](#verifying-signatures)。
 
-### Responding to the challenge
+### 响应质询 [#responding-to-the-challenge]
 
-For simple reachability (dashboard-registered endpoints): respond with any `2xx`. The endpoint is marked verified.
+对于简单可达性检查，即在控制台注册的端点，返回任意 `2xx` 即可，端点会标为已验证。
 
-For URL ownership proof (required for OAuth-app-registered endpoints): additionally echo the `challenge` value back. You may return it in the JSON response body:
+对于 URL 所有权证明，OAuth 应用注册的端点必须完成此项，还需回显 `challenge` 值。可在 JSON 响应体中返回：
 
 ```json
 { "challenge": "whcg_..." }
 ```
 
-Or in a response header:
+也可在响应头中返回：
 
 ```
 X-Warmbly-Webhook-Challenge: whcg_...
 ```
 
-Changing an endpoint's URL host re-arms verification: the endpoint reverts to unverified and must pass the challenge again before it resumes receiving events.
+修改端点 URL 的主机后，会重新启动验证要求：端点恢复为未经验证，必须再次通过挑战才能恢复接收事件。
 
-## List all deliveries (org-wide)
+## 列出所有投递记录（整个组织） [#list-all-deliveries-org-wide]
 
 `GET /webhooks/deliveries`
 
-Returns delivery attempts across all endpoints for the organization, newest first. Accepts query parameters to narrow the result.
+返回组织所有端点的投递尝试，按最新优先排序。可通过查询参数缩小结果范围。
 
-Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `WEBHOOKS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `status` | query | string | Filter by delivery status. One of `pending`, `in_flight`, `delivered`, `failed`, `abandoned`. |
-| `event_type` | query | string | Filter by event type, for example `campaign.reply_received`. |
-| `limit` | query | integer | Max rows. Between 1 and 200, defaults to 50. Out-of-range values return `400`. |
-| `cursor` | query | string | Opaque pagination cursor from the previous response's `pagination.next_cursor`. |
+| `status` | query | string | 按投递状态筛选，取值为 `pending`、`in_flight`、`delivered`、`failed`、`abandoned` 之一。 |
+| `event_type` | query | string | 按事件类型筛选，例如 `campaign.reply_received`。 |
+| `limit` | query | integer | 最大行数。范围为 1 至 200，默认 50。超出范围会返回 `400`。 |
+| `cursor` | query | string | 上一次响应 `pagination.next_cursor` 中的不透明分页游标。 |
 
-### Response
+### 响应 [#response-6]
 
-Uses the standard `data` + `pagination` envelope with an opaque cursor.
+使用标准 `data` + `pagination` 封装和不透明游标。
 
 ```json
 {
@@ -284,63 +284,63 @@ Uses the standard `data` + `pagination` envelope with an opaque cursor.
 }
 ```
 
-## List deliveries for one endpoint
+## 列出指定端点的投递记录 [#list-deliveries-for-one-endpoint]
 
 `GET /webhooks/:id/deliveries`
 
-Returns recent delivery attempts for a specific endpoint, newest first. Each row reflects the latest state across all retry attempts for that event.
+返回特定端点最近的投递尝试，最新优先。每行反映对应事件在全部重试尝试中的最新状态。
 
-Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `WEBHOOKS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | UUID | The endpoint id whose deliveries to list. |
-| `status` | query | string | Filter by delivery status. |
-| `event_type` | query | string | Filter by event type. |
-| `limit` | query | integer | Max rows. Between 1 and 200, defaults to 50. Out-of-range values return `400`. |
-| `cursor` | query | string | Opaque pagination cursor. |
+| `id` | path | UUID | 要列出投递记录的端点 ID。 |
+| `status` | query | string | 按投递状态筛选。 |
+| `event_type` | query | string | 按事件类型筛选。 |
+| `limit` | query | integer | 最大行数。范围为 1 至 200，默认 50。超出范围会返回 `400`。 |
+| `cursor` | query | string | 不透明分页游标。 |
 
-### Response
+### 响应 [#response-7]
 
-Uses the same `data` + `pagination` envelope as the org-wide list.
+使用与组织级列表相同的 `data` + `pagination` 封装。
 
-Delivery `status` is one of `pending`, `in_flight`, `delivered`, `failed`, or `abandoned` (retries exhausted). `response_body_excerpt` is capped at the first 1024 bytes of the subscriber's response.
+投递 `status` 为 `pending`、`in_flight`、`delivered`、`failed` 或 `abandoned`（重试次数耗尽）之一。`response_body_excerpt` 最多保留订阅者响应的前 1024 字节。
 
-## Redeliver a delivery
+## 重新投递 [#redeliver-a-delivery]
 
 `POST /webhooks/deliveries/:deliveryId/redeliver`
 
-Manually re-enqueues a delivery regardless of its current status. Useful for replaying a failed or abandoned delivery after you have fixed the receiver. The redelivery is a new attempt with its own retry lifecycle, but it carries the same `event_id` so your idempotency key logic will dedupe it correctly.
+无论当前状态如何，都可手动将投递重新入队。适合在修复接收端后重放失败或已放弃的投递。重新投递是一轮新尝试，具有独立重试生命周期，但携带相同的 `event_id`，因此你的幂等键逻辑可以正确去重。
 
-Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `WEBHOOKS` · **组织权限** `manage_settings`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `deliveryId` | path | UUID | The delivery id to redeliver. |
+| `deliveryId` | path | UUID | 要重新投递的投递记录 ID。 |
 
-### Response
+### 响应 [#response-8]
 
-`200 OK` with the updated delivery object.
+`200 OK`，包含更新后的投递对象。
 
-## List throttle drops
+## 列出因限流而丢弃的事件 [#list-throttle-drops]
 
 `GET /webhooks/throttle-drops`
 
-Returns events that were suppressed by the per-endpoint delivery rate limit or the per-org per-event-type dispatch throttle. Throttled events are surfaced here rather than silently discarded, so you can monitor for integration pressure and redeliver if needed.
+返回因每端点投递速率限制，或每组织、每事件类型分发限流而被抑制的事件。受限流影响的事件会在此展示，不会静默丢弃，便于监控集成处理压力，并在需要时重新投递。
 
-Auth: **Scope** `WEBHOOKS` · **Org permission** `manage_settings`.
+身份验证：**权限范围** `WEBHOOKS` · **组织权限** `manage_settings`。
 
-## Delivery payload
+## 投递负载 [#delivery-payload]
 
-Every callback is an HTTP `POST` with a `Content-Type: application/json` body in this shape:
+每次回调都是 HTTP `POST`，带有 `Content-Type: application/json` 请求体，结构如下：
 
-| Field | Type | Description |
+| 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `id` | UUID | Unique event id. Stable across retries of the same event. Matches `X-Warmbly-Event-Id`. |
-| `event_type` | string | The event name, for example `campaign.reply_received`. |
-| `organization_id` | UUID | The organization the event belongs to. |
-| `created_at` | string | RFC 3339 UTC timestamp of when the event was dispatched. |
-| `data` | object | Event-specific payload. Shape depends on `event_type`. |
+| `id` | UUID | 唯一事件 ID。同一事件重试期间保持不变，与 `X-Warmbly-Event-Id` 一致。 |
+| `event_type` | string | 事件名称，例如 `campaign.reply_received`。 |
+| `organization_id` | UUID | 事件所属组织。 |
+| `created_at` | string | 事件分发时间，RFC 3339 UTC 时间戳。 |
+| `data` | object | 事件特定载荷，结构取决于 `event_type`。 |
 
 ```json
 {
@@ -352,11 +352,11 @@ Every callback is an HTTP `POST` with a `Content-Type: application/json` body in
 }
 ```
 
-There is no `version` field in the payload. If an event's payload ever changes in a backward-incompatible way, it is published under a new `event_type` name. Existing event type names are never re-versioned in place.
+载荷中没有 `version` 字段。如果某种事件载荷发生不向后兼容的变更，会以新的 `event_type` 名称发布。现有事件类型名称绝不会原地变更版本。
 
-### Reply received payload
+### 收到回复事件的负载 [#reply-received-payload]
 
-`campaign.reply_received` carries `contact_email`, `intent` and `confidence` (the workspace keyword list's reading), `subject`, `snippet`, `action_taken`, `thread_id` and `email_account_id`. `contact_id` and `campaign_id` are optional, included only when the reply is linked to the corresponding contact or campaign. When [inbox tagging](/guides/inbox-tagging/) judged the message it also carries the stored verdict:
+`campaign.reply_received` 包含 `contact_email`、`intent` 和 `confidence`（基于工作区关键词列表的判读结果）、`subject`、`snippet`、`action_taken`、`thread_id` 及 `email_account_id`。`contact_id` 和 `campaign_id` 为可选项，仅在回复关联了对应联系人或营销活动时包含。如果[收件箱标记](/guides/inbox-tagging/)已判断该邮件，还会携带已保存的判断结果：
 
 ```json
 {
@@ -369,32 +369,32 @@ There is no `version` field in the payload. If an event's payload ever changes i
 }
 ```
 
-`ai_kind` and `ai_intent` are empty strings when tagging was not confident enough to act on them, and the six keys are absent when tagging never judged the message. See [Automations](/guides/automations/#filtering-replies-on-inbox-tagging) for what each holds.
+如果标记功能对相应判断的置信度不足，无法据此操作，`ai_kind` 和 `ai_intent` 为空字符串；如果从未判断过该邮件，则省略全部六个键。各字段含义见[自动化流程](/guides/automations/#filtering-replies-on-inbox-tagging)。
 
-### Delivery headers
+### 投递请求头 [#delivery-headers]
 
-Each delivery carries these request headers:
+每次投递均携带以下请求头：
 
-| Header | Description |
+| 请求头 | 说明 |
 | --- | --- |
-| `X-Warmbly-Signature` | HMAC-SHA256 signature in the form `t=<unix>,v1=<hex>`. |
-| `X-Warmbly-Event` | The event type, so you can route without parsing the body. |
-| `X-Warmbly-Event-Id` | The unique event id (same as the payload `id`). Stable across retries. Use it as your idempotency key. |
+| `X-Warmbly-Signature` | HMAC-SHA256 签名，格式为 `t=<unix>,v1=<hex>`。 |
+| `X-Warmbly-Event` | 事件类型，便于无需解析请求体即可路由。 |
+| `X-Warmbly-Event-Id` | 唯一事件 ID，与载荷 `id` 相同。重试期间保持不变，应将其用作幂等键。 |
 | `User-Agent` | `Warmbly-Webhooks/1.0`. |
 
-## Verifying signatures
+## 验证签名 [#verifying-signatures]
 
-Warmbly signs every delivery with HMAC-SHA256 using the endpoint's signing secret. The `X-Warmbly-Signature` header has the form `t=<unix-timestamp>,v1=<hex-digest>`. The signed string is the timestamp, a literal `.`, then the exact raw request body.
+Warmbly 使用端点签名密钥，通过 HMAC-SHA256 为每次投递签名。`X-Warmbly-Signature` 请求头格式为 `t=<unix-timestamp>,v1=<hex-digest>`。签名字符串依次为时间戳、字面字符 `.`、未经改动的原始请求体。
 
-To verify:
+验证步骤：
 
-1. Parse `t` and `v1` from the header.
-2. Reject the request if `t` is more than 5 minutes from the current wall clock. Never use a tolerance of 0 (that would break deliveries that arrive even one second late).
-3. Compute `HMAC-SHA256(secret, t + "." + rawRequestBody)` and hex-encode the result.
-4. Compare your digest against `v1` using a **constant-time** comparison to avoid timing attacks.
-5. Ignore any scheme that is not `v1` (downgrade defense: future schemes may exist).
+1. 从请求头解析 `t` 和 `v1`。
+2. 如果 `t` 与当前系统时钟相差超过 5 分钟，拒绝请求。容差绝不能设为 0，否则即使晚到一秒也会导致投递失败。
+3. 计算 `HMAC-SHA256(secret, t + "." + rawRequestBody)`，并将结果编码为十六进制。
+4. 使用**恒定时间**比较，将你的摘要与 `v1` 比对，以防时序攻击。
+5. 忽略所有非 `v1` 的方案，以防降级攻击，因为未来可能出现其他方案。
 
-Always compute the HMAC over the **raw, unmodified request body** before any JSON re-serialization. The secret is the `whsec_`-prefixed value returned at create or rotate time.
+始终在任何 JSON 重新序列化之前，基于**未经改动的原始请求体**计算 HMAC。密钥是创建或轮换时返回的带 `whsec_` 前缀的值。
 
 ```text
 # Pseudocode
@@ -403,7 +403,7 @@ expected_v1    = hex(hmac_sha256(whsec_..., signed_payload))
 is_valid       = constant_time_equal(expected_v1, v1) AND abs(now() - t) < 300
 ```
 
-Example in Python:
+Python 示例：
 
 ```python
 import hashlib, hmac, time
@@ -421,24 +421,24 @@ def verify(secret: str, header: str, raw_body: bytes) -> bool:
     return hmac.compare_digest(expected, v1)
 ```
 
-Use `X-Warmbly-Event-Id` (or the payload `id` field) as an idempotency key to dedupe replays. The same event id can arrive more than once if a retry fires before Warmbly receives your `2xx`.
+使用 `X-Warmbly-Event-Id` 或载荷 `id` 字段作为幂等键，对重放去重。如果 Warmbly 收到你的 `2xx` 之前就触发重试，同一事件 ID 可能到达多次。
 
-## Retries and backoff
+## 重试与退避 [#retries-and-backoff]
 
-Deliveries are enqueued and drained asynchronously, so the dispatching API call returns immediately and is not blocked on your endpoint.
+投递采用异步入队和消费，因此触发分发的 API 调用会立即返回，不会等待你的端点。
 
-- A `2xx` response marks the delivery `delivered` and resets the endpoint's failure health.
-- Any non-`2xx` response (including `3xx`: redirects are never followed), a connection error, or a timeout (15-second request timeout) marks the attempt failed and schedules a retry.
-- Backoff doubles each retry starting at 30 seconds: 30s, 1m, 2m, 4m, 8m, 16m, 32m. Subsequent waits are capped at 1 hour.
-- The default `max_attempts` is 8. Once attempts are exhausted the delivery is marked `abandoned`.
-- Both `4xx` and `5xx` responses are retried up to the attempt cap. A `4xx` may be a transient validation flap.
-- Endpoints that fail continuously over a sustained window are auto-disabled to protect third parties. Re-enable them in Settings once your receiver is stable.
+- `2xx` 响应会将投递标为 `delivered`，并重置端点的失败健康状态。
+- 任意非 `2xx` 响应，包括 `3xx`（绝不跟随重定向），连接错误，或超时（请求超时为 15 秒），都会将尝试标为失败并安排重试。
+- 退避间隔从 30 秒开始，每次重试加倍：30 秒、1 分钟、2 分钟、4 分钟、8 分钟、16 分钟、32 分钟。后续等待上限为 1 小时。
+- 默认 `max_attempts` 为 8。尝试次数耗尽后，投递标为 `abandoned`。
+- `4xx` 和 `5xx` 响应都会重试，直到尝试次数上限；`4xx` 也可能只是暂时的验证异常。
+- 持续一段时间不断失败的端点会被自动停用，以保护第三方。接收端恢复稳定后，可在设置中重新启用。
 
-Make your handler idempotent. Dedupe on `X-Warmbly-Event-Id` since the same event id can arrive more than once across retries.
+处理程序应具有幂等性。按 `X-Warmbly-Event-Id` 去重，因为同一事件 ID 可能在重试中到达多次。
 
-## Firehose events
+## 全量事件流 [#firehose-events]
 
-High-volume events (marked `firehose: true` in the event catalog) are **opt-in only**. An endpoint whose `event_types` list is empty or omitted subscribes to all standard events but will not receive firehose events. To receive a firehose event, list it explicitly:
+高频事件在事件目录中标有 `firehose: true`，且**必须主动订阅**。`event_types` 列表为空或省略的端点会订阅全部标准事件，但不会接收高频事件。要接收某个高频事件，必须明确列出：
 
 ```json
 {
@@ -450,170 +450,170 @@ High-volume events (marked `firehose: true` in the event catalog) are **opt-in o
 }
 ```
 
-This keeps default integrations from being overwhelmed by send-pipeline or inbox-sync volume. Subscribe selectively and ensure your receiver can handle the sustained throughput before opting in.
+这样可避免默认集成被发送流水线或收件箱同步产生的大量事件淹没。应有选择地订阅，并在启用前确认接收端能承受持续吞吐量。
 
-## Security
+## 安全 [#security]
 
-- **HTTPS only**: endpoint URLs must use `https://`. Plain HTTP is rejected at registration time.
-- **SSRF protection**: outbound delivery is hardened against SSRF. Private, loopback, link-local, and cloud-metadata IP ranges are blocked at dial time. Redirects are never followed. Only standard web ports are allowed.
-- **Rate limits**: a per-endpoint delivery rate limit and a per-org per-event-type dispatch throttle protect both your receivers and third parties. Throttled events appear in `GET /webhooks/throttle-drops`.
-- **Signature verification**: always verify the `X-Warmbly-Signature` header. Ignoring it means any party that knows your endpoint URL can replay or spoof events.
+- **仅限 HTTPS**：端点 URL 必须使用 `https://`。普通 HTTP 会在注册时被拒绝。
+- **SSRF 防护**：对外投递具备 SSRF 防护。建立连接时会阻止私有、回环、链路本地及云元数据 IP 范围。绝不跟随重定向，只允许标准 Web 端口。
+- **速率限制**：每端点投递速率限制和每组织、每事件类型分发限流，同时保护你的接收端和第三方。受限流影响的事件会出现在 `GET /webhooks/throttle-drops` 中。
+- **签名验证**：始终验证 `X-Warmbly-Signature` 请求头。忽略它意味着任何知道端点 URL 的人都可以重放或伪造事件。
 
-## Event catalog
+## 事件目录 [#event-catalog]
 
-The full catalog is available at `GET /webhooks/event-types`. Below is the complete reference grouped by category. Events marked **firehose** must be subscribed to explicitly (see [Firehose events](#firehose-events)).
+完整目录可通过 `GET /webhooks/event-types` 获取。下方为按类别分组的完整参考。标为**高频事件**的事件必须明确订阅，参阅[全量事件流](#firehose-events)。
 
-### Campaign
+### 营销活动 [#campaign]
 
-| Event | Description | Firehose |
+| 事件 | 说明 | 高频事件 |
 | --- | --- | --- |
-| `campaign.started` | A campaign starts sending. | |
-| `campaign.paused` | A campaign is paused. | |
-| `campaign.completed` | A campaign finishes all sends. | |
-| `campaign.created` | A campaign is created. | |
-| `campaign.updated` | A campaign's settings change. | |
-| `campaign.deleted` | A campaign is deleted. | |
-| `campaign.email_sent` | A campaign email is dispatched by a worker. | yes |
-| `campaign.email_delivered` | A campaign email is accepted by the recipient's mail server. | yes |
-| `campaign.email_opened` | A person opens a tracked email. The payload carries `origin` when the open said anything about itself: the mail client, app or webmail, device and location, as on a [contact timeline](/api/reference/contacts/#list-a-contacts-timeline) event. Automated opens (mail privacy proxies, fetches inside seconds of the send) do not fire it. | yes |
-| `campaign.email_clicked` | A person clicks a tracked link. The payload carries the `url`, the link's `link_label`, and `origin` with the device and browser the link opened in. Automated clicks (security gateways walking the links) do not fire it. | yes |
-| `campaign.email_bounced` | A campaign email bounces. | |
-| `campaign.reply_received` | A human reply lands for a campaign thread. | |
-| `campaign.unsubscribed` | A recipient opts out. `source` is `one_click` (the mail client's button), `link` (the link in the email), `reply` (a reply asking to stop) or `action` (a sequence's unsubscribe step). | |
-| `campaign.deliverability_warning` | The campaign's rolling bounce or complaint rate enters the early-warning band. | |
-| `campaign.action` | A sequence flow `notify` action node fires. | |
+| `campaign.started` | 营销活动开始发送。 | |
+| `campaign.paused` | 营销活动暂停。 | |
+| `campaign.completed` | 营销活动完成全部发送。 | |
+| `campaign.created` | 创建营销活动。 | |
+| `campaign.updated` | 营销活动设置发生变化。 | |
+| `campaign.deleted` | 删除营销活动。 | |
+| `campaign.email_sent` | 工作节点发出一封营销活动邮件。 | 是 |
+| `campaign.email_delivered` | 营销活动邮件被收件方邮件服务器接受。 | 是 |
+| `campaign.email_opened` | 用户打开跟踪邮件。能够获取打开环境信息时，载荷包含 `origin`，提供邮件客户端、应用或网页邮箱、设备和位置，与[联系人时间线](/api/reference/contacts/#list-a-contacts-timeline)事件一致。自动打开，例如邮件隐私代理或发送后几秒内的抓取，不会触发此事件。 | 是 |
+| `campaign.email_clicked` | 用户点击跟踪链接。载荷包含 `url`、链接的 `link_label`，以及描述链接打开设备和浏览器的 `origin`。自动点击，例如安全网关遍历链接，不会触发此事件。 | 是 |
+| `campaign.email_bounced` | 营销活动邮件退信。 | |
+| `campaign.reply_received` | 营销活动会话收到人工回复。 | |
+| `campaign.unsubscribed` | 收件人退订。`source` 为 `one_click`（邮件客户端按钮）、`link`（邮件中的链接）、`reply`（要求停止联系的回复）或 `action`（邮件序列的退订步骤）。 | |
+| `campaign.deliverability_warning` | 营销活动的滚动退信率或投诉率进入预警区间。 | |
+| `campaign.action` | 邮件序列流程中的 `notify` 操作节点触发。 | |
 
-### Warmup
+### 邮箱预热 [#warmup]
 
-| Event | Description | Firehose |
+| 事件 | 说明 | 高频事件 |
 | --- | --- | --- |
-| `warmup.email_sent` | A warmup message is sent. | yes |
-| `warmup.health_changed` | A mailbox's warmup health state transitions. | |
-| `warmup.placement_in_spam` | A warmup message is observed landing in the spam folder. The payload carries the sending mailbox (`email_account_id`, `email`), `content_source`, and the recipient's `recipient_provider` (how it connects) and `recipient_host` (who runs its mail, such as `google_workspace` or `zoho`), never its address or domain. | |
-| `warmup.quarantined` | A mailbox is quarantined from the shared warmup pool. | |
-| `warmup.blocked` | A mailbox is blocked from the shared warmup pool. | |
+| `warmup.email_sent` | 发送一封预热邮件。 | 是 |
+| `warmup.health_changed` | 邮箱预热健康状态发生转换。 | |
+| `warmup.placement_in_spam` | 观察到预热邮件落入垃圾邮件文件夹。载荷包含发件邮箱（`email_account_id`、`email`）、`content_source`，以及收件方的 `recipient_provider`（连接方式）和 `recipient_host`（邮件托管服务商，例如 `google_workspace` 或 `zoho`），绝不包含收件地址或域名。 | |
+| `warmup.quarantined` | 邮箱被隔离出共享预热池。 | |
+| `warmup.blocked` | 邮箱被共享预热池封禁。 | |
 
-### Deliverability
+### 邮件送达能力 [#deliverability]
 
-| Event | Description | Firehose |
+| 事件 | 说明 | 高频事件 |
 | --- | --- | --- |
-| `deliverability.bounce` | A bounce signal is processed (hard or soft). | |
-| `deliverability.complaint` | A complaint (spam report) is processed. | |
+| `deliverability.bounce` | 处理退信信号，包括硬退信或软退信。 | |
+| `deliverability.complaint` | 处理垃圾邮件投诉。 | |
 
-### Inbox
+### 收件箱 [#inbox]
 
-| Event | Description | Firehose |
+| 事件 | 说明 | 高频事件 |
 | --- | --- | --- |
-| `inbox.email_received` | A new email arrives in a connected mailbox. | yes |
-| `inbox.email_updated` | An inbox email's state changes (labels, read status). | yes |
-| `inbox.email_deleted` | An inbox email is deleted or expunged. | yes |
-| `inbox.reply_received` | A human reply arrives on a tracked thread (distinct from `campaign.reply_received`). | |
+| `inbox.email_received` | 已连接邮箱收到新邮件。 | 是 |
+| `inbox.email_updated` | 收件箱邮件状态变化，例如标签或已读状态。 | 是 |
+| `inbox.email_deleted` | 收件箱邮件被删除或彻底清除。 | 是 |
+| `inbox.reply_received` | 受跟踪的邮件会话收到人工回复，与 `campaign.reply_received` 不同。 | |
 
-### Mailbox
+### 邮箱 [#mailbox]
 
-| Event | Description | Firehose |
+| 事件 | 说明 | 高频事件 |
 | --- | --- | --- |
-| `email_account.connected` | A mailbox is connected to the organization. | |
-| `email_account.disconnected` | A mailbox loses its connection (auth failure, token revoked). | |
-| `email_account.removed` | A mailbox is removed from the organization. | |
-| `email_account.error` | A mailbox encounters a sync or sending error. | |
-| `email_account.synced` | A mailbox sync cycle completes. | yes |
-| `email_account.health_changed` | A mailbox's health state transitions. | |
+| `email_account.connected` | 邮箱连接到组织。 | |
+| `email_account.disconnected` | 邮箱失去连接，例如身份验证失败或令牌被撤销。 | |
+| `email_account.removed` | 邮箱从组织移除。 | |
+| `email_account.error` | 邮箱发生同步或发送错误。 | |
+| `email_account.synced` | 邮箱完成一次同步周期。 | 是 |
+| `email_account.health_changed` | 邮箱健康状态发生转换。 | |
 
-### Contact
+### 联系人 [#contact]
 
-| Event | Description | Firehose |
+| 事件 | 说明 | 高频事件 |
 | --- | --- | --- |
-| `contact.created` | A contact is created. Carries `contact_id`, `contact_email`, `first_name`, `last_name`, `company`, `phone`, `subscribed`, `custom_fields`, `source`, `source_detail`, `campaign_ids`, `category_ids` and `created_at`. Fires for contacts added by hand, through the API, by a form or by an automation; file imports, sheet syncs and a single API request adding more than 100 contacts are bulk arrivals and do not raise it. | |
-| `contact.updated` | A contact's fields change. | |
-| `contact.deleted` | A contact is deleted. | |
-| `form.submitted` | A hosted form received a submission. Carries the form id and name, the submission id, the answers under `data`, the mapped contact columns (`contact_email`, `first_name`, `last_name`, `company`, `phone`), `source_url`, and the contact id when one was created or matched. | |
+| `contact.created` | 创建联系人。包含 `contact_id`、`contact_email`、`first_name`、`last_name`、`company`、`phone`、`subscribed`、`custom_fields`、`source`、`source_detail`、`campaign_ids`、`category_ids` 和 `created_at`。手动、通过 API、表单或自动化流程添加联系人时触发；文件导入、表格同步和单个 API 请求添加超过 100 个联系人属于批量新增，不会触发。 | |
+| `contact.updated` | 联系人字段发生变化。 | |
+| `contact.deleted` | 删除联系人。 | |
+| `form.submitted` | 托管表单收到提交。包含表单 ID 和名称、提交记录 ID、`data` 下的答案、映射的联系人字段（`contact_email`、`first_name`、`last_name`、`company`、`phone`）、`source_url`；创建或匹配到联系人时还包含联系人 ID。 | |
 
-### CRM
+### CRM [#crm]
 
-| Event | Description | Firehose |
+| 事件 | 说明 | 高频事件 |
 | --- | --- | --- |
-| `crm.deal_created` | A deal is created. | |
-| `crm.deal_updated` | A deal's fields or stage change. | |
-| `crm.deal_deleted` | A deal is deleted. | |
-| `crm.task_created` | A CRM task is created. | |
-| `crm.task_updated` | A CRM task changes. A bulk write ([bulk update tasks](/api/reference/crm/#bulk-update-tasks)) raises it once for the whole call, with no `entity_id` and a `metadata` of `bulk` and `count`, so treat a missing id as "re-read the tasks you track" rather than as one task. `contact.updated` behaves the same way for a bulk contact edit. | |
-| `crm.note_created` | A note is added to a contact or deal. | |
-| `crm.pipeline_updated` | A pipeline or its stages change. | |
+| `crm.deal_created` | 创建商机。 | |
+| `crm.deal_updated` | 商机字段或阶段发生变化。 | |
+| `crm.deal_deleted` | 删除商机。 | |
+| `crm.task_created` | 创建 CRM 任务。 | |
+| `crm.task_updated` | CRM 任务发生变化。批量写入（[批量更新任务](/api/reference/crm/#bulk-update-tasks)）只会对整次调用触发一次，不含 `entity_id`，`metadata` 中包含 `bulk` 和 `count`；因此缺少 ID 时，应理解为需要重新读取所跟踪的任务，而非单个任务。批量编辑联系人时，`contact.updated` 行为相同。 | |
+| `crm.note_created` | 向联系人或商机添加备注。 | |
+| `crm.pipeline_updated` | 销售管道或其阶段发生变化。 | |
 
-### Automation
+### 自动化流程 [#automation]
 
-| Event | Description | Firehose |
+| 事件 | 说明 | 高频事件 |
 | --- | --- | --- |
-| `automation.created` | An automation is created. | |
-| `automation.updated` | An automation's definition or enabled state changes. | |
-| `automation.deleted` | An automation is deleted. | |
-| `automation.run` | An automation completes a run for a contact. | |
+| `automation.created` | 创建自动化流程。 | |
+| `automation.updated` | 自动化流程定义或启用状态发生变化。 | |
+| `automation.deleted` | 删除自动化流程。 | |
+| `automation.run` | 自动化流程为某个联系人完成一次运行。 | |
 
-### Meeting
+### 会议 [#meeting]
 
-| Event | Description | Firehose |
+| 事件 | 说明 | 高频事件 |
 | --- | --- | --- |
-| `meeting.booked` | A call is booked through a connected scheduler (Calendly or Cal.com). | |
-| `meeting.rescheduled` | A booked call is rescheduled. | |
-| `meeting.canceled` | A booked call is canceled. | |
+| `meeting.booked` | 通过已连接的预约工具 Calendly 或 Cal.com 预约通话。 | |
+| `meeting.rescheduled` | 已预约的通话改期。 | |
+| `meeting.canceled` | 已预约的通话取消。 | |
 
-### Team and access
+### 团队与访问权限 [#team-and-access]
 
-| Event | Description | Firehose |
+| 事件 | 说明 | 高频事件 |
 | --- | --- | --- |
-| `team.member_invited` | A team member invitation is sent. | |
-| `team.member_removed` | A member is removed from the organization. | |
-| `role.created` | A custom role is created. | |
-| `role.updated` | A custom role's permissions change. | |
-| `role.deleted` | A custom role is deleted. | |
+| `team.member_invited` | 发送团队成员邀请。 | |
+| `team.member_removed` | 成员从组织移除。 | |
+| `role.created` | 创建自定义角色。 | |
+| `role.updated` | 自定义角色权限发生变化。 | |
+| `role.deleted` | 删除自定义角色。 | |
 
-### Bulk operations
+### 批量操作 [#bulk-operations]
 
-| Event | Description | Firehose |
+| 事件 | 说明 | 高频事件 |
 | --- | --- | --- |
-| `bulk_operation.started` | A bulk import, export, or deletion begins. | |
-| `bulk_operation.completed` | A bulk operation finishes successfully. | |
-| `bulk_operation.failed` | A bulk operation fails or is aborted. | |
+| `bulk_operation.started` | 批量导入、导出或删除开始。 | |
+| `bulk_operation.completed` | 批量操作成功完成。 | |
+| `bulk_operation.failed` | 批量操作失败或中止。 | |
 
-### Workspace
+### 工作区 [#workspace]
 
-| Event | Description | Firehose |
+| 事件 | 说明 | 高频事件 |
 | --- | --- | --- |
-| `lead_sync_source.updated` | A lead sync source (CSV import, Google Sheets) is updated. | |
-| `settings.updated` | Organization settings change. | |
-| `subscription.updated` | The billing subscription changes (plan, seats, status). | |
+| `lead_sync_source.updated` | 潜在客户同步来源更新，例如 CSV 导入或 Google Sheets。 | |
+| `settings.updated` | 组织设置发生变化。 | |
+| `subscription.updated` | 计费订阅变化，包括套餐、席位或状态。 | |
 
-### Developer
+### 开发者 [#developer]
 
-| Event | Description | Firehose |
+| 事件 | 说明 | 高频事件 |
 | --- | --- | --- |
-| `custom.event` | A custom event emitted by an automation or campaign sequence Fire Event step. | |
+| `custom.event` | 自动化流程或营销活动邮件序列中的“触发事件”步骤发出的自定义事件。 | |
 
-### Trigger-only (not delivered outbound)
+### 仅用作触发器（不向外投递） [#trigger-only-not-delivered-outbound]
 
-`inbound.webhook` is an automation trigger for receiving inbound HTTP requests. It is never delivered outbound as a webhook event.
+`inbound.webhook` 是接收入站 HTTP 请求的自动化触发器，绝不会作为对外 Webhook 事件投递。
 
-## OAuth app-level subscriptions
+## OAuth 应用级订阅 [#oauth-app-level-subscriptions]
 
-OAuth apps can receive events without registering per-org endpoints manually. Set `webhook_url` and `webhook_events` on the app once, and Warmbly automatically materializes a managed endpoint for every org that authorizes the app. Events are gated by the intersection of the app's declared events and the org's granted scopes. The app signs all deliveries with a single shared `whsec_` secret, verifiable with the same scheme documented in [Verifying signatures](#verifying-signatures).
+OAuth 应用无需手动为每个组织注册端点即可接收事件。只需在应用上设置一次 `webhook_url` 和 `webhook_events`，Warmbly 就会为每个授权该应用的组织自动创建受管理端点。事件取应用声明的事件与组织已授予权限范围允许事件的交集。应用使用同一个共享的 `whsec_` 密钥签署所有投递，可通过[验证签名](#verifying-signatures)所述的相同机制验证。
 
-Four management endpoints let you inspect and maintain the app-level delivery pipeline: reveal the secret, rotate it, list per-org endpoints with health, and page through the cross-org delivery log. All four require **Scope** `API_KEYS` and **org permission** `manage_api_keys`. See [OAuth: receiving events as an app](/api/oauth/#receiving-events-as-an-app-webhooks) for the full reference, including the scope-to-event gating table and a comparison with the realtime gateway.
+四个管理端点可检查和维护应用级投递流程：查看密钥、轮换密钥、列出各组织端点及健康状态，以及分页查看跨组织投递日志。四者均需 **权限范围** `API_KEYS` 和**组织权限** `manage_api_keys`。完整参考见[OAuth：作为应用接收事件](/api/oauth/#receiving-events-as-an-app-webhooks)，其中包含权限范围与事件的对应表，以及与实时网关的比较。
 
-## OAuth app webhook domains
+## OAuth 应用 Webhook 域名 [#oauth-app-webhook-domains]
 
-OAuth applications that register webhook endpoints on behalf of their users must declare the domains those endpoints may use. The field is `allowed_webhook_domains` (a string array) on the OAuth app object.
+代表用户注册 Webhook 端点的 OAuth 应用，必须声明这些端点可使用的域名。字段位于 OAuth 应用对象的 `allowed_webhook_domains`，类型为字符串数组。
 
-Any webhook endpoint registered by an OAuth app must have its URL host within the app's `allowed_webhook_domains` list. This is enforced at registration time and re-checked at delivery time. An app with an empty `allowed_webhook_domains` list cannot register any webhook endpoints.
+OAuth 应用注册的任意 Webhook 端点，其 URL 主机都必须位于应用的 `allowed_webhook_domains` 允许范围内。注册时会强制检查，投递时也会重新检查。`allowed_webhook_domains` 列表为空的应用不能注册任何 Webhook 端点。
 
-**Matching rules:**
+**匹配规则：**
 
-- A bare entry (`acme.com`) matches that exact host only.
-- A leading-dot entry (`.acme.com`) matches the apex domain and any subdomain: `acme.com`, `hooks.acme.com`, `prod.hooks.acme.com`.
+- 不带前导点的条目（`acme.com`）仅匹配完全相同的主机。
+- 带前导点的条目（`.acme.com`）匹配根域名及任意子域名：`acme.com`、`hooks.acme.com`、`prod.hooks.acme.com`。
 
-Example: if `allowed_webhook_domains` is `[".acme.com"]`, then `https://hooks.acme.com/warmbly` is allowed and `https://otherdomain.com/warmbly` is rejected.
+例如，`allowed_webhook_domains` 为 `[".acme.com"]` 时，允许 `https://hooks.acme.com/warmbly`，拒绝 `https://otherdomain.com/warmbly`。
 
-Set this field when creating or updating your OAuth app:
+创建或更新 OAuth 应用时设置此字段：
 
 ```json
 {
@@ -622,20 +622,20 @@ Set this field when creating or updating your OAuth app:
 }
 ```
 
-See [OAuth](/api/oauth/) for the full app registration flow and field reference.
+完整的应用注册流程和字段参考见 [OAuth](/api/oauth/)。
 
-## Pushing custom data from a flow
+## 从流程推送自定义数据 [#pushing-custom-data-from-a-flow]
 
-To push custom data from a campaign or automation flow into your endpoints, add a "Fire event" action step: it emits a `custom.event` that every endpoint subscribed to it receives, signed with that endpoint's own secret and retried like any other delivery. That keeps a single, consistent verification model: one secret per endpoint, with signed and retried delivery.
+要将营销活动或自动化流程的自定义数据推送到端点，请添加“触发事件”操作步骤：它会发出 `custom.event`，由每个订阅该事件的端点接收，使用各端点自身密钥签名，并像其他投递一样重试。这样可保持统一验证模型：每个端点一份密钥，投递经过签名并支持重试。
 
-## Errors
+## 错误 [#errors]
 
-Webhook endpoints use the standard error envelope with stable `code` and `request_id` fields (see [error codes](/api/error-codes/)). Common cases:
+Webhook 端点采用标准错误封装，包含稳定的 `code` 和 `request_id` 字段，参阅[错误码](/api/error-codes/)。常见情况：
 
-- `400` invalid payload, a non-HTTPS or non-routable `url`, an unknown event type, or a `limit` outside 1 to 200.
-- `400` an invalid endpoint id or delivery id in the path.
-- `403` an OAuth app attempting to register an endpoint whose URL host is not in `allowed_webhook_domains`.
-- `404` the endpoint or delivery does not exist or does not belong to your organization.
+- `400`：载荷无效，`url` 非 HTTPS 或不可路由，事件类型未知，或 `limit` 不在 1 至 200 之间。
+- `400`：路径中的端点 ID 或投递 ID 无效。
+- `403`：OAuth 应用尝试注册的端点 URL 主机不在 `allowed_webhook_domains` 中。
+- `404`：端点或投递记录不存在，或不属于你的组织。
 
 ```json
 {

@@ -1,253 +1,253 @@
 ---
-title: Sending domains
-description: "Every domain your mailboxes send from, with its authentication, tracking host and a redirect for visitors to the bare domain."
+title: "发信域名"
+description: "查看邮箱使用的所有发信域名，以及各域名的身份验证、跟踪主机和针对不带路径的域名访问的重定向设置。"
 ---
 
-A sending domain is any domain one of your mailboxes has an address on. Warmbly lists them for you, and from here you give each one a tracking host and a redirect for visitors to the bare domain.
+发件域名是邮箱地址中使用的域名。Warmbly 会自动列出这些域名，你可以在这里为每个域名设置跟踪主机，以及访客访问裸域名时的跳转目标。
 
-![Sending domains: each domain with its mailboxes, authentication and tracking host](/guides/sending-domains.webp)
+![发件域名：各域名的邮箱、身份验证和跟踪主机](/guides/sending-domains.webp)
 
-## Set up your domains
+## 设置域名 [#set-up-your-domains]
 
 <Steps>
 
 <Step>
 
-Tick the domains in the list, or the box in the header for every domain shown.
+勾选列表中的域名，或勾选表头的复选框，选择当前显示的所有域名。
 
 </Step>
 
 <Step>
 
-In the bar at the bottom, choose **Tracking domain** or **Redirect**.
+在底部操作栏中选择**跟踪域名**或**重定向**。
 
 </Step>
 
 <Step>
 
-Set the tracking subdomain (`link` unless you change it) and the website to send visitors to.
+设置跟踪子域名，默认为 `link`，并填写访客应跳转到的网站。
 
 </Step>
 
 <Step>
 
-Add the DNS records the dialog lists at your DNS provider, unless an inbox vendor sets them up for you.
+除非邮箱供应商会代为配置，否则请在 DNS 服务商处添加对话框列出的 DNS 记录。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- There is nothing to add: connect a mailbox on `acme.io` and `acme.io` appears here.
-- A tracking host is saved before its DNS record exists. Links keep using the shared tracking host until the record resolves.
-- A redirect sends visitors to the bare domain on to your company's website, so the domain looks like part of a real business.
-- Mail is unaffected: `MX`, SPF, DKIM and DMARC records live beside these and nothing here changes them.
-- When an inbox vendor holds the domain, Warmbly can forward it or write the tracking record there for you.
+- 无需手动添加域名：连接一个地址位于 `acme.io` 的邮箱后，`acme.io` 就会出现在这里。
+- 跟踪主机会在其 DNS 记录尚未存在时先行保存。在记录可以正确解析之前，链接继续使用共享跟踪主机。
+- 重定向会将访问裸域名的访客带到公司网站，让域名看起来是实际业务的一部分。
+- 邮件不受影响：`MX`、SPF、DKIM 和 DMARC 记录与这些记录并存，这里的操作不会修改它们。
+- 如果域名由邮箱供应商管理，Warmbly 可以代你设置转发或写入跟踪记录。
 
 <Fold>
 
-## What a sending domain is
+## 什么是发信域名 [#what-a-sending-domain-is]
 
-Browsing filters, searches and view choices are [remembered in your browser tab](/guides/browsing/) across refreshes and navigation, separately for each user and workspace.
+浏览时使用的筛选、搜索和视图选项会[保存在浏览器标签页中](/guides/browsing/)，刷新页面或切换页面后仍然保留，并按用户和工作区分别保存。
 
-A sending domain is any domain one of the workspace's mailboxes has an address on. Warmbly builds the list from the mailboxes themselves, so there is nothing to add: connect a mailbox on `acme.io` and `acme.io` is here.
+发件域名是工作区中某个邮箱地址所使用的域名。Warmbly 根据邮箱本身生成列表，因此无需手动添加：连接一个地址位于 `acme.io` 的邮箱后，`acme.io` 就会出现在这里。
 
-The same choices are offered per domain while [importing mailboxes](/guides/mailbox-import/#tracking-domains-and-root-redirects), so a new domain can be set up in one pass.
+[导入邮箱](/guides/mailbox-import/#tracking-domains-and-root-redirects)时也可逐个域名配置相同选项，因此能够一次完成新域名的设置。
 
 </Fold>
 
 <Fold>
 
-## The domains list
+## 域名列表 [#the-domains-list]
 
-Each domain shows:
+每个域名显示以下内容：
 
-| Column | What it holds |
+| 列 | 内容 |
 | --- | --- |
-| Mailboxes | How many of the workspace's mailboxes are on the domain, and who hosts their mail |
-| Authentication | Whether SPF, DKIM and DMARC are published, and the domain's overall state. See [domain authentication](/guides/deliverability/#domain-authentication) |
-| Tracking hosts | The [custom tracking domains](/guides/mailboxes/#custom-tracking-domain) the domain's mailboxes use, how many mailboxes use each, and whether each is verified |
-| Redirect | Where visitors to the bare domain are sent, and whether the redirect is live |
-| Vendor | The [inbox vendor](/guides/mailbox-import/#import-from-an-inbox-vendor) account that holds the domain, when one of the workspace's connected vendor accounts does, with its current forwarding and what its API can do for the domain |
+| 邮箱 | 工作区中使用该域名的邮箱数量，以及邮箱的托管服务商 |
+| 身份验证 | 是否已发布 SPF、DKIM 和 DMARC，以及域名整体状态。参见[域名身份验证](/guides/deliverability/#domain-authentication) |
+| 跟踪主机 | 该域名邮箱使用的[自定义跟踪域名](/guides/mailboxes/#custom-tracking-domain)、每个主机被多少邮箱使用，以及是否已验证 |
+| 重定向 | 裸域名的访客会被发送到哪里，以及重定向是否已生效 |
+| 供应商 | 如果工作区已连接的某个[邮箱供应商](/guides/mailbox-import/#import-from-an-inbox-vendor)账户持有该域名，则显示该账户、当前转发设置，以及其 API 能为该域名执行的操作 |
 
 </Fold>
 
 <Fold>
 
-## One tracking host for a whole domain
+## 整个域名共用一个跟踪主机 [#one-tracking-host-for-a-whole-domain]
 
-A tracking host is normally set per mailbox. From the domain you can set one for every mailbox on it in one step, or clear it for all of them.
+跟踪主机通常按邮箱设置。在域名页面，可以一步为该域名的所有邮箱设置同一个主机，也可以为所有邮箱清除设置。
 
-Warmbly suggests a host: one a verified mailbox on the domain already uses, else one whose DNS already points at this instance (it tries `link`, `links`, `track`, `t`, `click`, `go`, `email` and `trk`), else `link.<domain>`. The suggestion comes with the `CNAME` value to add. `link` is the default because it reads as an ordinary link when a recipient hovers one.
+Warmbly 会建议一个主机：优先使用该域名某个已验证邮箱正在使用的主机；否则使用 DNS 已指向此实例的主机，依次尝试 `link`、`links`、`track`、`t`、`click`、`go`、`email` 和 `trk`；再没有则使用 `link.<domain>`。建议值会附带需要添加的 `CNAME` 值。默认使用 `link`，因为收件人悬停查看链接时，它看起来像普通链接。
 
-The host is saved even before its DNS record exists. Until the record resolves, links keep using the shared tracking host, so nothing breaks; the hourly tracking check verifies the host by itself, and new sends switch to it from then on. Setting the same host again changes nothing.
+即使 DNS 记录尚不存在，主机也会保存。在记录解析成功之前，链接继续使用共享跟踪主机，因此不会失效。每小时运行的跟踪检查会自动验证该主机，此后的新发送就会切换到它。再次设置相同主机不会产生任何变化。
 
-When an inbox vendor account holds the domain and can write DNS records for it, Warmbly can add the `CNAME` for you instead; see [domains held by an inbox vendor](#domains-held-by-an-inbox-vendor).
+如果邮箱供应商账户持有该域名，并允许为其写入 DNS 记录，Warmbly 可以代为添加 `CNAME`；参见[由邮箱供应商管理的域名](#domains-held-by-an-inbox-vendor)。
 
 </Fold>
 
 <Fold>
 
-## Set up many domains at once
+## 批量设置域名 [#set-up-many-domains-at-once]
 
-Tick domains in the list (or the box in the header for every domain shown; hold Shift to tick every row between two clicks) and a bar appears at the bottom:
+勾选列表中的域名，或使用表头复选框选择当前显示的所有域名；按住 Shift 可以勾选两次点击之间的所有行。选中后，底部会出现操作栏：
 
-| Action | What it does |
+| 操作 | 作用 |
 | --- | --- |
-| **Tracking domain** | Opens the setup dialog below with the tracking domain on |
-| **Redirect** | Opens the setup dialog below with the redirect on |
-| **More > Check DNS now** | Re-checks every tracking host and redirect still waiting for DNS, instead of waiting for the next automatic check |
-| **More > Copy DNS records to add** | Copies every record the picked domains still need, one per line with the domain, type, name and value, ready to paste into a sheet or a DNS provider's bulk import |
-| **More > Export as CSV** | Downloads the picked domains with their mailboxes, authentication, tracking host, redirect and vendor |
-| **More > Clear tracking domain** | After a confirmation, puts every mailbox on the picked domains back on the shared tracking host |
-| **More > Remove redirect** | After a confirmation, stops each redirect, and removes vendor forwarding where the vendor's API allows it |
+| **跟踪域名** | 打开下述设置对话框，并启用跟踪域名选项 |
+| **重定向** | 打开下述设置对话框，并启用重定向选项 |
+| **更多 > 立即检查 DNS** | 重新检查仍在等待 DNS 的所有跟踪主机和重定向，无需等待下一次自动检查 |
+| **更多 > 复制待添加的 DNS 记录** | 复制所选域名仍需添加的全部记录，每行包含域名、类型、名称和值，可直接粘贴到电子表格或 DNS 服务商的批量导入中 |
+| **更多 > 导出为 CSV** | 下载所选域名及其邮箱、身份验证、跟踪主机、重定向和供应商信息 |
+| **更多 > 清除跟踪域名** | 确认后，将所选域名的全部邮箱恢复为使用共享跟踪主机 |
+| **更多 > 移除重定向** | 确认后，停止各个重定向；供应商 API 允许时，也移除供应商转发 |
 
-The setup dialog takes one base value for every picked domain:
+设置对话框为所有选中的域名提供一组基础值：
 
-- **Own tracking domain.** A subdomain, `link` unless you change it, set on each domain as `link.<domain>` for every mailbox on it. A domain whose tracking domain is already verified keeps it, unless you tick the option to replace those too.
-- **Redirect the root to your website.** One website for every picked domain. It is filled in with the website most of your domains already redirect to, when there is one.
+- **自有跟踪域名。** 子域名默认为 `link`，可以修改；对每个域名都设置为 `link.<domain>`，并应用到其全部邮箱。已验证跟踪域名的域名会保留原设置，除非勾选同时替换它们的选项。
+- **将根域名重定向到你的网站。** 为所有选中的域名指定同一个网站。如果大多数域名已经跳转到同一网站，会预填该网站。
 
-**Change per domain** opens a list of the picked domains, each with its own tracking host and website filled in from the base values. Type over either to give one domain something else, untick it to leave that domain out, or press **Reset** to put it back on the base values. Changing a base value later updates every domain nobody changed and leaves the changed ones alone.
+**逐域名修改**会打开所选域名列表，每个域名的跟踪主机和网站先按基础值填入。你可以覆盖其中任一项，为某个域名单独设置；取消勾选可以排除该域名；点击**重置**可恢复基础值。以后修改基础值时，会更新所有未单独修改的域名，保留已单独修改的域名。
 
-The dialog says up front how many domains an [inbox vendor](#domains-held-by-an-inbox-vendor) sets up for you and how many need DNS you add. Each domain takes the easiest path on its own: the vendor writes the `CNAME` or forwards the root when its API can, and otherwise the host or redirect is saved and waits for DNS exactly as it would when set one domain at a time. When it finishes, the dialog lists the `CNAME` records still to add (with **Copy all**), the redirects waiting for DNS, and any domain that was refused and why. A refusal on one domain never stops the others, and running the same setup again changes nothing that is already in place.
+对话框会预先说明有多少域名可由[邮箱供应商](#domains-held-by-an-inbox-vendor)代为设置，有多少需要你添加 DNS。每个域名分别采用最方便的方式：供应商 API 支持时，由供应商写入 `CNAME` 或转发根域名；否则先保存主机或重定向，等待 DNS，与单个域名设置时相同。完成后，对话框会列出仍需添加的 `CNAME` 记录，并提供**全部复制**；还会列出等待 DNS 的重定向，以及被拒绝的域名和原因。一个域名被拒绝不会影响其他域名，再次运行相同设置也不会改动已经正确配置的内容。
 
-While any domain still uses the shared tracking host or has no redirect, the top of the page says how many and offers **Set up all**, which opens the same dialog for exactly those domains. Dismissing it hides it until another domain needs setting up.
+只要仍有域名使用共享跟踪主机，或尚未设置重定向，页面顶部就会显示数量，并提供**全部设置**，为这些域名打开同一个对话框。关闭提示后，它会保持隐藏，直到出现另一个需要设置的域名。
 
 </Fold>
 
 <Fold>
 
-## Root redirects
+## 根域名重定向 [#root-redirects]
 
-A domain bought for cold email usually answers nothing when someone types it into a browser. A recipient who checks who wrote to them, or a filter that looks at the domain, finds an empty page or an error, which reads as a throwaway domain. A redirect sends visitors to the bare domain (and its `www`) on to your company's main website instead, so the domain looks like what it is: part of a real business.
+为冷邮件购买的域名，在有人将其输入浏览器时通常不会显示任何内容。收件人想核实发件人身份，或过滤器检查域名时，会看到空白页或错误，让它显得像一次性域名。重定向会将裸域名及其 `www` 的访客带到公司主网站，让域名呈现其真实用途：实际业务的一部分。
 
-Warmbly serves the redirect from this instance's tracking service once DNS proves two things: that you control the domain, and that its root points here. A self-hosted instance linked to Warmbly Cloud can [have Cloud serve it](#serve-it-from-warmbly-cloud) instead, with nothing to set up on its own server.
+DNS 证明了两件事后，Warmbly 会通过当前实例的跟踪服务提供重定向：你控制该域名，以及其根域名指向这里。已关联 Warmbly Cloud 的自托管实例还可以[让 Cloud 提供重定向](#serve-it-from-warmbly-cloud)，无需在自己的服务器上配置。
 
-### Set one up
+### 设置重定向 [#set-one-up]
 
-Enter the website to send visitors to, such as `https://yourcompany.com`. It must be an `http` or `https` address on another host; a redirect back to the same domain or its `www` is refused. **Include www** is on by default. Warmbly then lists the records to add at your DNS provider:
+输入访客应跳转到的网站，例如 `https://yourcompany.com`。地址必须使用 `http` 或 `https`，且位于其他主机；不允许跳回同一域名或其 `www`。**包含 www**默认开启。Warmbly 随后会列出需要在 DNS 服务商处添加的记录：
 
-| Purpose | Type | Name | Value | Needed to verify |
+| 用途 | 类型 | 名称 | 值 | 验证是否必需 |
 | --- | --- | --- | --- | --- |
-| Ownership | `TXT` | `_warmbly.<domain>` | `warmbly-verify=<value>` | Yes |
-| Root | `A` and `AAAA` | `<domain>` | The tracking host's public addresses, as listed | Yes |
-| www | `CNAME` | `www.<domain>` | The tracking host | No |
+| 所有权 | `TXT` | `_warmbly.<domain>` | `warmbly-verify=<value>` | 是 |
+| 根域名 | `A` 和 `AAAA` | `<domain>` | 列出的跟踪主机公网地址 | 是 |
+| www | `CNAME` | `www.<domain>` | 跟踪主机 | 否 |
 
-The ownership value is unique to your workspace and the domain on this instance, so a record another workspace published proves nothing for yours. It is the same record a [Google Workspace admin grant](/guides/mailbox-import/#prove-the-workspace-controls-the-domain) accepts as proof, so a domain that has one for either needs nothing more for the other.
+所有权验证值专属于此实例中你的工作区与该域名的组合，因此其他工作区发布的记录不能证明你的所有权。[Google Workspace 管理员授权](/guides/mailbox-import/#prove-the-workspace-controls-the-domain)也接受同一条记录作为证明，因此域名已经为其中一项发布过该记录时，另一项无需额外记录。
 
-When the tracking host has no public address to list, the root record is shown as an `ALIAS` to the tracking host instead. A provider that offers `ALIAS`, `ANAME` or a flattened `CNAME` at the root can use that in place of the address records either way: Warmbly compares the addresses the root resolves to.
+如果跟踪主机没有可列出的公网地址，根域名记录会改为显示指向跟踪主机的 `ALIAS`。无论是否列出地址记录，支持根域名 `ALIAS`、`ANAME` 或扁平化 `CNAME` 的服务商都可以用它们代替地址记录：Warmbly 比较的是根域名最终解析出的地址。
 
-The root of a domain has to point here for the redirect to work, so a domain whose root already serves a website is not a candidate. Mail is unaffected: `MX`, SPF, DKIM and DMARC records live beside these and nothing here changes them.
+重定向要生效，根域名必须指向这里，因此根域名已经用于托管网站的域名不适合此方案。邮件不受影响：`MX`、SPF、DKIM 和 DMARC 记录与这些记录并存，这里的操作不会修改它们。
 
-### Verification
+### 验证 [#verification]
 
-A redirect verifies when the `TXT` record and the root record are both in place. The `www` record is optional; without it, only the bare domain redirects.
+当 `TXT` 记录和根域名记录都已就绪时，重定向通过验证。`www` 记录是可选的；没有它时，只有裸域名会重定向。
 
-Verified DNS proves the domain points here, not that a visitor gets the redirect: a proxy in front of Warmbly can still answer in its place. So once DNS verifies, Warmbly opens the domain over `http` and `https` the way a visitor does, and the redirect shows **Live** when both lead to your website. When something answers in Warmbly's place, it shows **Not reaching visitors**, says what answered, and counts under **Needs attention**. Two cases stay **Live** with a note instead, because the check cannot tell them from a working redirect: nothing answered the check at all, or the tracking service is still picking up a redirect that has just verified. See [when visitors do not get it](#when-visitors-do-not-get-it).
+DNS 验证只能证明域名指向这里，不能证明访客实际得到重定向：Warmbly 前面的代理仍可能代为响应。因此 DNS 验证通过后，Warmbly 会像访客一样通过 `http` 和 `https` 打开域名；两者都跳转到你的网站时，重定向显示为**已生效**。如果其他服务代替 Warmbly 响应，则显示**未能触达访客**，说明响应方，并计入**需要处理**。另外两种情况会保留**已生效**并附说明，因为检查无法将它们与正常重定向区分：检查完全没有收到响应，或跟踪服务仍在接收刚通过验证的重定向配置。参见[访客没有收到重定向时](#when-visitors-do-not-get-it)。
 
-Warmbly checks the records as soon as you save, whenever you press **Check now**, and on its own: every 10 minutes while the redirect is pending (for its first 14 days, then every 6 hours), every 10 minutes while it is verified but not reaching visitors (for 14 days after it verified, then every 6 hours), and every 6 hours once it is live. A verified redirect only stops when a check finds the records definitively gone or pointing elsewhere; a DNS lookup that fails or times out leaves it running, and so does a failed visit.
+Warmbly 会在保存后立即检查记录，也会在点击**立即检查**时检查，并自动定期检查：等待验证的前 14 天每 10 分钟一次，之后每 6 小时一次；已验证但未能触达访客时，自验证之日起的 14 天内每 10 分钟一次，之后每 6 小时一次；正常生效后每 6 小时一次。只有明确发现记录已不存在或指向其他位置时，已验证的重定向才会停止。DNS 查询失败或超时会保持运行，访问测试失败也一样。
 
-Saving the redirect again, to change the website or the `www` setting, keeps the same ownership value, so the `TXT` record you already added stays valid.
+再次保存重定向以修改目标网站或 `www` 设置时，会保留同一个所有权验证值，因此之前添加的 `TXT` 记录仍然有效。
 
-### What visitors get
+### 访客会看到什么 [#what-visitors-get]
 
-A visit to the domain (and to its `www` when included) answers with a `302` to the website you entered, cacheable for five minutes. The path they asked for is not carried over: every visit lands on that one address. The answer is temporary on purpose, so a change or a deletion reaches every visitor within minutes instead of lingering in browsers.
+访问该域名，以及启用时的 `www`，会返回指向所填网站的 `302` 响应，可缓存五分钟。原请求路径不会带到目标网站：每次访问都会落到同一个地址。刻意采用临时重定向，是为了让修改或删除在几分钟内影响所有访客，避免浏览器长时间保留旧结果。
 
-HTTPS needs a certificate for your domain. Warmbly Cloud issues one on demand the first time someone visits, and only for a domain whose redirect is verified, including redirects it serves for a linked instance. A self-hosted instance installed with the bundled Caddy does the same. Behind an operator's own proxy, the proxy has to route the domain to the tracking service and hold a certificate for it; see [custom tracking domain](/guides/mailboxes/#custom-tracking-domain) for the same caveat.
+HTTPS 需要该域名的证书。Warmbly Cloud 会在首次访问时按需签发，并且只为重定向已经验证的域名签发，包括代已关联实例提供重定向的域名。使用随附 Caddy 安装的自托管实例也会如此。如果使用运维人员自己的代理，该代理必须将域名路由到跟踪服务，并持有对应证书；[自定义跟踪域名](/guides/mailboxes/#custom-tracking-domain)中介绍了同样的注意事项。
 
-### When visitors do not get it
+### 访客无法获得重定向的情况 [#when-visitors-do-not-get-it]
 
-The redirect's tab says what the check saw and, for the usual causes, what to change:
+重定向标签页会说明检查发现了什么，并为常见原因给出修改建议：
 
-| What the check saw | What it usually means | What to do |
+| 检查结果 | 常见原因 | 处理方式 |
 | --- | --- | --- |
-| Another web server answered, often a `404`, and the tab names it when it can tell (Traefik, nginx, Caddy, Apache) | A proxy in front of Warmbly only answers for the hostnames it was set up with | Add the domain wherever the tracking host is set up, since that one already reaches Warmbly. The tab shows the exact change for Traefik, Coolify, Dokploy, nginx and Caddy |
-| The tracking service answered but did not recognise the domain | The proxy sends the visit on under a different hostname | Pass the original `Host` header through, for example `proxy_set_header Host $host;` in nginx |
-| The domain redirects somewhere else | Another redirect answers first: a proxy rule, or forwarding at the domain or DNS provider | Remove that redirect |
-| `https` has no valid certificate | The proxy has no certificate for the domain | Add the domain to the proxy's configuration so it gets one |
-| Nothing answers on port 80 or 443 | A firewall, or nothing listening | Open the port and make the proxy serve the domain |
+| 其他 Web 服务器响应，通常是 `404`；能够识别时，标签页会显示其名称，如 Traefik、nginx、Caddy 或 Apache | Warmbly 前面的代理只响应已经配置的主机名 | 在配置跟踪主机的同一位置添加该域名，因为跟踪主机已经能访问 Warmbly。标签页会给出 Traefik、Coolify、Dokploy、nginx 和 Caddy 的具体改动 |
+| 跟踪服务已响应，但无法识别域名 | 代理转发请求时使用了不同的主机名 | 透传原始 `Host` 请求头，例如在 nginx 中使用 `proxy_set_header Host $host;` |
+| 域名跳转到其他位置 | 其他重定向先响应，例如代理规则，或域名/DNS 服务商处的转发 | 移除该重定向 |
+| `https` 没有有效证书 | 代理没有该域名的证书 | 将域名加入代理配置，以便获取证书 |
+| 端口 80 或 443 没有响应 | 防火墙阻挡，或没有服务监听 | 开放端口，并让代理为该域名提供服务 |
 
-When nothing answered the check at all, the redirect still shows **Live**, with a note to open the domain yourself: some networks do not let a server open its own public address, so the check cannot tell that apart from a working redirect. The same goes for the first minute after DNS verifies, while the tracking service picks the redirect up: the tab says so and checks again within 10 minutes.
+如果检查完全没有收到响应，重定向仍显示**已生效**，同时提示你自行打开域名：某些网络不允许服务器访问自己的公网地址，因此检查无法将这种情况与正常重定向区分。DNS 验证后的第一分钟，跟踪服务尚在接收重定向配置时也一样；标签页会说明情况，并在 10 分钟内再次检查。
 
-For a proxy you run yourself, the change is the same wherever the tracking host is configured. With Traefik, extend the router rule that already routes the tracking host:
+如果代理由你自行运行，应在配置跟踪主机的同一位置修改。使用 Traefik 时，扩展已经将跟踪主机路由到 Warmbly 的路由器规则：
 
 ```text
 Host(`t.example.com`) || Host(`acme.io`) || Host(`www.acme.io`)
 ```
 
-With nginx, add the names to the server block that proxies the tracking service, keep the original hostname, and give it a certificate:
+使用 nginx 时，将这些名称加入代理跟踪服务的 server 块，保留原始主机名，并配置证书：
 
 ```nginx
 server_name t.example.com acme.io www.acme.io;
 proxy_set_header Host $host;
 ```
 
-On a self-hosted instance linked to Warmbly Cloud, the same tab also offers to skip all of this and [serve the redirect from Warmbly Cloud](#serve-it-from-warmbly-cloud).
+在已关联 Warmbly Cloud 的自托管实例中，同一标签页也提供一个选项，让你跳过这些配置，[由 Warmbly Cloud 提供重定向](#serve-it-from-warmbly-cloud)。
 
-### Serve it from Warmbly Cloud
+### 由 Warmbly Cloud 提供服务 [#serve-it-from-warmbly-cloud]
 
-On a self-hosted instance [linked to Warmbly Cloud](/guides/warmbly-cloud/), a redirect has a **Served from** choice: **This server** or **Warmbly Cloud**. Cloud serves the redirect and its certificate from its own tracking service, so nothing on your server has to route the domain. You point the root at the addresses Cloud lists and publish the ownership value it lists, which is Cloud's own and differs from your instance's.
+在[已关联 Warmbly Cloud](/guides/warmbly-cloud/)的自托管实例中，重定向有**提供服务的位置**选项：**此服务器**或 **Warmbly Cloud**。Cloud 使用自己的跟踪服务提供重定向和证书，因此你的服务器无需为该域名设置任何路由。只需将根域名指向 Cloud 列出的地址，并发布它给出的所有权验证值；该值属于 Cloud，与当前实例的值不同。
 
-- An instance that is not linked yet can link from right there: **Connect Warmbly Cloud** under **Served from**, or in the fix for a redirect that is not reaching visitors, shows the code to approve on Warmbly Cloud, and approving it moves on to serving the redirect from Cloud. When redirects are not reaching visitors, the top of the page offers the same for all of them at once.
-- While the instance is linked, the dashboard picks Warmbly Cloud for a new redirect (the API keeps this instance unless `served_by` says otherwise). Bulk setup has the same choice; there, a domain that already has a redirect keeps where it is served from unless you pick a server, and the dashboard asks before moving a live one.
-- Cloud checks the records and opens the domain on its own schedule, the same one described above. Your instance shows Cloud's verdict, records and last visit, and reads them again on its own schedule and on **Check now**.
-- Moving a redirect between this server and Cloud changes its root records, so a live redirect pauses until the new records are in place. The dashboard asks before it moves one.
-- Only the domain, the website and the `www` setting go to Cloud. See [data control](/development/data-control/#outbound-calls).
-- If Cloud cannot be reached when you save, the redirect is kept as waiting for Cloud and sent as soon as it answers. A redirect Cloud still serves that no workspace here has any more, after a workspace is deleted for example, is released within about half an hour.
-- Disconnecting the instance, or unlinking it from Warmbly Cloud, stops every redirect Cloud served for it. Each one then says so and can be moved back to this server. A redirect Cloud no longer has while the link is still up is put back by the next check.
+- 尚未关联的实例可直接在这里关联：在**提供服务的位置**下，或“未能触达访客”的修复提示中，点击**连接 Warmbly Cloud**，即可显示需要在 Warmbly Cloud 上批准的代码；批准后会继续将重定向交由 Cloud 提供。如果多个重定向未能触达访客，页面顶部也会提供一次处理全部的相同入口。
+- 实例保持关联时，控制台为新重定向默认选择 Warmbly Cloud；API 则仍默认使用当前实例，除非 `served_by` 指定其他位置。批量设置也有同样的选择；在那里，已有重定向的域名会保留原服务位置，除非你明确选择服务器。移动已生效的重定向前，控制台会要求确认。
+- Cloud 按上述相同计划检查记录并访问域名。当前实例显示 Cloud 的判定、记录和最近访问结果，并按自己的计划及点击**立即检查**时重新读取。
+- 在当前服务器和 Cloud 之间移动重定向会改变根域名记录，因此已生效的重定向会暂停，直到新记录就绪。控制台会在移动前询问。
+- 只有域名、目标网站和 `www` 设置会发送到 Cloud。参见[数据控制](/development/data-control/#outbound-calls)。
+- 保存时如果无法访问 Cloud，重定向会保留为等待 Cloud，待其响应后立即发送。如果 Cloud 仍在提供某个重定向，但当前实例已没有任何工作区持有它，例如工作区已删除，该重定向会在大约半小时内释放。
+- 断开实例连接，或从 Warmbly Cloud 解除关联，会停止 Cloud 为它提供的全部重定向。每个重定向随后都会说明情况，并可以移回当前服务器。如果关联仍然有效，但 Cloud 上已没有某个重定向，下一次检查会将其重新创建。
 
-### Limits
+### 限制 [#limits]
 
-- The workspace must have a mailbox on the domain.
-- Domains of shared email providers, such as `gmail.com` or `outlook.com`, are refused.
-- One workspace per domain on an instance. While one workspace's redirect for a domain is verified, another workspace's redirect for it is refused with `domain_redirect_taken` and does not verify.
-- The instance needs a tracking host (`TRACKING_DOMAIN`), because the tracking service is what answers. Without one, redirects are not offered, except from Warmbly Cloud on a linked instance.
-- Warmbly Cloud serves up to 200 redirects for one linked instance.
+- 工作区必须在该域名下拥有邮箱。
+- 不接受共享邮件服务商的域名，例如 `gmail.com` 或 `outlook.com`。
+- 同一实例中的一个域名只能由一个工作区使用重定向。某个工作区的域名重定向已验证期间，另一个工作区为同一域名创建的重定向会以 `domain_redirect_taken` 被拒绝，无法通过验证。
+- 实例需要配置跟踪主机（`TRACKING_DOMAIN`），因为实际响应由跟踪服务提供。未配置时不提供重定向，已关联实例通过 Warmbly Cloud 提供的重定向除外。
+- Warmbly Cloud 最多为一个已关联实例提供 200 个重定向。
 
 </Fold>
 
 <Fold>
 
-## Domains held by an inbox vendor
+## 由邮箱供应商管理的域名 [#domains-held-by-an-inbox-vendor]
 
-A domain bought from an [inbox vendor](/guides/mailbox-import/#import-from-an-inbox-vendor) usually has its DNS hosted by that vendor, and most vendors can forward the domain themselves. When one of the workspace's connected vendor accounts holds a domain, the domain shows that vendor, and two shortcuts replace the DNS work above:
+从[邮箱供应商](/guides/mailbox-import/#import-from-an-inbox-vendor)购买的域名，DNS 通常也托管在该供应商处，而且大多数供应商可以自行转发域名。如果工作区已连接的某个供应商账户持有该域名，页面会显示供应商，并提供两种快捷操作，替代上述 DNS 配置工作：
 
-- **Forward through the vendor.** Enter the website, and Warmbly asks the vendor to forward the domain's root to it. Nothing needs adding at a DNS provider and nothing is served by this instance. The website has the same rules as a redirect: an `http` or `https` address on another host. Clearing the website removes the forwarding where the vendor allows it.
-- **Write the tracking record through the vendor.** Pick a tracking host under the domain, and Warmbly writes its `CNAME` at the vendor, then sets the host on every mailbox on the domain. It is the only record Warmbly writes. A record of the same name and type is replaced, and one the vendor manages itself is left alone and the write refused.
+- **通过供应商转发。** 输入目标网站，Warmbly 会请求供应商将根域名转发过去。无需在 DNS 服务商处添加任何记录，当前实例也不负责提供服务。目标网站遵循与重定向相同的规则：必须是位于其他主机的 `http` 或 `https` 地址。清空网站后，会在供应商允许的情况下移除转发。
+- **通过供应商写入跟踪记录。** 在该域名下选择一个跟踪主机，Warmbly 会在供应商处写入其 `CNAME`，再为该域名的每个邮箱设置该主机。这是 Warmbly 唯一会写入的记录。同名同类型的记录会被替换；供应商自行管理的记录会保持不动，并拒绝写入。
 
-What each vendor's API allows:
+各供应商 API 支持的操作：
 
-| Vendor | Forwarding | Remove forwarding | Tracking `CNAME` |
+| 供应商 | 转发 | 移除转发 | 跟踪 `CNAME` |
 | --- | --- | --- | --- |
-| InboxKit | Yes | Yes | Yes |
-| Zapmail | Yes | Yes | Yes |
-| Cheap Inboxes | Yes | Yes | Yes |
-| Maildoso | Yes | Yes | No |
-| ScaledMail | Yes, as a request ScaledMail's staff apply later | Yes | No |
-| Mailforge | Yes | No | No |
-| Infraforge | Yes | No | No |
+| InboxKit | 支持 | 支持 | 支持 |
+| Zapmail | 支持 | 支持 | 支持 |
+| Cheap Inboxes | 支持 | 支持 | 支持 |
+| Maildoso | 支持 | 支持 | 不支持 |
+| ScaledMail | 支持，但以请求形式提交，稍后由 ScaledMail 工作人员应用 | 支持 | 不支持 |
+| Mailforge | 支持 | 不支持 | 不支持 |
+| Infraforge | 支持 | 不支持 | 不支持 |
 
-Mailforge and Infraforge replace a domain's whole record set on every DNS change, so Warmbly writes no records there: one write could drop the domain's mail records. Add the tracking `CNAME` in their dashboard instead.
+Mailforge 和 Infraforge 每次修改 DNS 都会替换域名的整套记录，因此 Warmbly 不会在这些服务中写入记录，以免一次写入删除域名的邮件记录。请改在其控制台中添加跟踪 `CNAME`。
 
-A [mailbox import](/guides/mailbox-import/#tracking-domains-and-root-redirects) uses these automatically. A root redirect chosen during an import uses the vendor's forwarding when a vendor account holds the domain and can forward it, and a redirect served by this instance otherwise. A tracking host chosen during an import has its `CNAME` written through the vendor when the vendor can, and waits for you to add it otherwise.
+[邮箱导入](/guides/mailbox-import/#tracking-domains-and-root-redirects)会自动采用这些方式。导入时选择的根域名重定向，如果域名由供应商账户持有且支持转发，就使用供应商转发；否则使用当前实例提供的重定向。导入时选择的跟踪主机，如果供应商支持，就通过其写入 `CNAME`；否则等待你添加。
 
-The vendor's domain list is read with the workspace's own API key, only for connections that are active, and kept for five minutes. A vendor that does not answer is left out, so its domains show without a vendor until it does.
+供应商域名列表使用工作区自己的 API 密钥读取，仅查询有效连接，并缓存五分钟。无法响应的供应商会被暂时排除，因此其域名在恢复响应之前不会显示供应商信息。
 
 </Fold>
 
 <Fold>
 
-## What travels in an export
+## 导出时一并迁移的内容 [#what-travels-in-an-export]
 
-Redirects travel in a [workspace export](/guides/workspace-export-import/). They arrive unverified and are served once the destination's own check sees both records. One Warmbly Cloud served for the source arrives served by the destination itself. The ownership value belongs to the workspace on the instance that issued it, so the destination lists its own value: publish that value in the `TXT` record, and point the root at the destination. A tracking host is part of each mailbox's settings and travels with the mailbox; it arrives unverified, and the destination's hourly check verifies it once the `CNAME` points at the destination. Forwarding set through a vendor lives at the vendor and is unaffected by a move.
+重定向会随[工作区导出](/guides/workspace-export-import/)迁移。导入后处于未验证状态，直到目标实例自己的检查确认两类记录均已就绪，才开始提供服务。原先由 Warmbly Cloud 为来源实例提供的重定向，导入后改为由目标实例自身提供。所有权验证值属于签发它的实例上的工作区，因此目标实例会列出自己的值：请将新值发布到 `TXT` 记录，并将根域名指向目标实例。跟踪主机属于每个邮箱的设置，随邮箱迁移；导入后同样未验证，当 `CNAME` 指向目标实例后，其每小时检查会完成验证。通过供应商设置的转发保留在供应商处，不受迁移影响。
 
 </Fold>
 
-## Related guides
+## 相关指南 [#related-guides]
 
 <Cards>
-  <Card title="Mailboxes" href="/guides/mailboxes/" />
-  <Card title="Import mailboxes" href="/guides/mailbox-import/" />
-  <Card title="Deliverability" href="/guides/deliverability/" />
+  <Card title="邮箱" href="/guides/mailboxes/" />
+  <Card title="导入邮箱" href="/guides/mailbox-import/" />
+  <Card title="邮件送达能力" href="/guides/deliverability/" />
 </Cards>

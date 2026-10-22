@@ -1,267 +1,267 @@
 ---
-title: Accounts and access
-description: Who may create an account on your instance, how to invite teammates with or without a mail relay, how single sign-on provisioning works, and how to recover when you are locked out.
+title: "账户与访问权限"
+description: "了解谁可以在实例上创建账户、如何在有无邮件中继的情况下邀请团队成员、单点登录如何创建账户，以及无法登录时如何恢复访问权限。"
 ---
 
-If you landed here after seeing **"This server is not accepting new accounts"** or **"This server is invite only"**, nothing is broken. A self-hosted instance ships closed to the public, and the way in is an invitation or the command line, not the sign-up form. Jump to [registration modes](#registration-modes) for what you saw and why, or straight to [inviting teammates](#inviting-teammates) for how to let people in.
+如果你是在看到 **“此服务器不接受新账户”** 或 **“此服务器仅接受邀请注册”** 后来到本页，这不代表系统故障。自托管实例默认不向公众开放注册，应通过邀请或命令行加入，而不是直接使用注册表单。可跳转到 [注册模式](#registration-modes) 了解提示的含义和原因，或直接查看 [邀请团队成员](#inviting-teammates)，了解如何允许他人加入。
 
-## Self-host defaults
+## 自托管默认设置 [#self-host-defaults]
 
-`DEPLOYMENT_MODE=self_hosted` picks a set of auth defaults that differ from the hosted product, because a deployment you run yourself should not depend on infrastructure you have not set up. Every one is independently overridable.
+`DEPLOYMENT_MODE=self_hosted` 会选择一组与托管版不同的身份验证默认值，因为自行部署的服务不应依赖尚未配置的基础设施。每个默认值都可以独立覆盖。
 
-| Setting | Self-host default | What it does |
+| 设置 | 自托管默认值 | 作用 |
 |---|---|---|
-| `AUTH_LOGIN_CODE` | `off` | Whether a login also requires a code emailed to the account |
-| `REQUIRE_EMAIL_VERIFICATION` | `false` | Whether a signup must confirm an emailed code before the account exists |
-| `DISABLE_REGISTRATION` | `invite_only` | Who may create an account from the sign-up form |
-| `DISABLE_PASSWORD_LOGIN` | `false` | Turns off email and password entirely, for single sign-on only deployments |
-| `SSO_AUTO_PROVISION` | `false` | Whether an identity provider assertion alone may create an account |
-| `AUTH_IP_RATE_LIMIT` | `60` | Unauthenticated auth requests allowed per source IP per 15 minutes |
+| `AUTH_LOGIN_CODE` | `off` | 登录时是否还需要输入发送到账户邮箱的验证码 |
+| `REQUIRE_EMAIL_VERIFICATION` | `false` | 注册时是否必须先确认邮件验证码，才创建账户 |
+| `DISABLE_REGISTRATION` | `invite_only` | 哪些人可以通过注册表单创建账户 |
+| `DISABLE_PASSWORD_LOGIN` | `false` | 完全关闭邮箱和密码登录，适用于仅使用单点登录的部署 |
+| `SSO_AUTO_PROVISION` | `false` | 是否仅凭身份提供方的断言即可创建账户 |
+| `AUTH_IP_RATE_LIMIT` | `60` | 每个来源 IP 在每 15 分钟内允许发起的未登录身份验证请求数 |
 
-## First owner
+## 首位所有者 [#first-owner]
 
-An instance with no accounts is unclaimed. `make up` prints a single-use link that turns the person who opens it into the owner and platform admin:
+没有任何账户的实例处于未认领状态。`make up` 会打印一个一次性链接，打开链接的人将成为所有者和平台管理员：
 
 ```
 http://localhost:5173/setup?token=...
 ```
 
-The link is valid for 24 hours, single use, and only its hash is stored, so reading the database does not yield a working one. It is invalidated the moment it is used, and no further link is ever issued once an account exists.
+该链接有效期为 24 小时，仅能使用一次，系统只保存其哈希值，因此读取数据库无法获得可用链接。链接使用后立即失效；一旦已有账户，系统不会再生成认领链接。
 
-Lost it, or never saw it? [First run](/development/first-run/) covers every case, including the common one where the database already had accounts from a previous `make dev`.
+链接丢失，或从未看到过链接？[首次运行](/development/first-run/) 涵盖了所有情况，包括数据库中已经存在先前执行 `make dev` 时创建的账户这一常见情况。
 
-Unattended, set both of these before the first start and no link is issued at all:
+无人值守配置时，在首次启动前设置以下两项，系统便不会生成认领链接：
 
 ```bash
 WARMBLY_BOOTSTRAP_EMAIL=you@example.com
 WARMBLY_BOOTSTRAP_PASSWORD_HASH=$argon2id$v=19$m=...
 ```
 
-Both are read only while the users table is empty, so they are a no-op on every later restart.
+这两项只会在 users 表为空时读取，之后每次重启都不会再生效。
 
-<Callout type="warn" title="Remove WARMBLY_BOOTSTRAP_PASSWORD once the owner exists">
-The plaintext variant works, and then keeps sitting in your process environment where `docker inspect` and `/proc` can read it. Produce a hash with `warmblyctl hash-password` and use `WARMBLY_BOOTSTRAP_PASSWORD_HASH` instead.
+<Callout type="warn" title="所有者创建后移除 WARMBLY_BOOTSTRAP_PASSWORD">
+明文密码方式可以使用，但密码会一直留在进程环境中，可通过 `docker inspect` 和 `/proc` 读取。建议使用 `warmblyctl hash-password` 生成哈希，并改用 `WARMBLY_BOOTSTRAP_PASSWORD_HASH`。
 </Callout>
 
-## Registration modes
+## 注册模式 [#registration-modes]
 
-`DISABLE_REGISTRATION` is tri-state, because "closed to the public but invitations still work" is the state most operators actually want.
+`DISABLE_REGISTRATION` 有三种状态，因为大多数运维人员实际需要的是“禁止公众注册，但仍允许通过邀请加入”。
 
-| Value | The sign-up form | An invitation link | Single sign-on |
+| 值 | 注册表单 | 邀请链接 | 单点登录 |
 |---|---|---|---|
-| `false` | Anyone may create an account | Works, and joins the inviting workspace | Provisions new accounts |
-| `invite_only` (self-host default) | Refused, and the dashboard does not render the form | Works. The link carries the token that permits the signup | Provisions only for an address that holds a live invitation, or when `SSO_AUTO_PROVISION=true` |
-| `true` | Refused | Refused, and members cannot create new invitations either | Refused unless `SSO_AUTO_PROVISION=true` |
+| `false` | 任何人都可以创建账户 | 可以使用，并加入发出邀请的工作区 | 可自动创建新账户 |
+| `invite_only`（自托管默认值） | 拒绝注册，控制台也不会显示注册表单 | 可以使用；链接携带允许注册的令牌 | 仅为拥有有效邀请的地址创建账户，或在 `SSO_AUTO_PROVISION=true` 时创建 |
+| `true` | 拒绝 | 拒绝，成员也无法创建新邀请 | 拒绝，除非 `SSO_AUTO_PROVISION=true` |
 
-One database-backed setting sits on top of `invite_only`. Turning **`access.allow_invited_signup`** off under **Instance > Configuration > Settings** makes an invitation stop being a self-service signup capability: both the password path and the single sign-on path then answer with `registration_closed`, and an administrator creates every account with `warmblyctl user create`. It is on by default, so the table above is what a stock instance does.
+`invite_only` 之上还叠加了一项存储在数据库中的设置。在 **实例 > 配置 > 设置** 中关闭 **`access.allow_invited_signup`** 后，邀请将不再允许受邀者自行注册：密码登录路径和单点登录路径都会返回 `registration_closed`，所有账户都必须由管理员使用 `warmblyctl user create` 创建。该设置默认开启，因此标准实例的行为与上表一致。
 
-### The first-launch exemption
+### 首次启动时的豁免 [#the-first-launch-exemption]
 
-There is exactly one exception, and it is the reason signup can appear to work once and then stop: **while the users table is empty, a signup is always allowed.** That exemption is what makes an unclaimed instance claimable. It is spent the moment any account exists, including accounts created by seeding.
+系统只有一个例外，这也是为什么注册可能首次成功，之后却不再可用：**只要 users 表为空，注册就始终被允许。** 正是这项豁免让未认领实例能够被认领。任何账户一旦存在，包括通过种子数据创建的账户，豁免就会立即用完。
 
-So "I registered fine yesterday and today it says the server is invite only" is not a regression. Either an account already existed, or the account you created yesterday spent the exemption.
+因此，“昨天还能注册，今天却提示服务器仅接受邀请”并不代表功能退化。要么实例中原本已有账户，要么昨天创建的账户已经用掉首次注册豁免。
 
-### What you saw, and what it means
+### 界面提示及其含义 [#what-you-saw-and-what-it-means]
 
-| Message | `code` | HTTP | What to do |
+| 提示信息 | `code` | HTTP | 处理方式 |
 |---|---|---|---|
-| This server is invite only. Ask an administrator to invite you, then open the link in the invitation to create your account. | `registration_invite_only` | 403 | `DISABLE_REGISTRATION=invite_only`. Get an invitation and create the account from its link, or have an administrator run `warmblyctl user create` |
-| This server is not accepting new accounts. | `registration_closed` | 403 | `DISABLE_REGISTRATION=true`. No invitation overrides this. Only `warmblyctl user create` adds accounts, or change the mode and restart |
-| That invitation link is invalid, expired, or was issued for a different email address. Ask for a fresh one. | `invitation_invalid` | 403 | The invitation expired (7 days by default), was revoked, was already used, or the address you typed is not the address it was issued for |
-| That setup link is invalid, already used, or expired. | `setup_token_invalid` | 401 | 24 hour lifetime, single use, and it does not survive a Redis flush. Print a new one with `warmblyctl setup-link` |
-| This instance has already been set up. | `setup_already_complete` | 403 | An account exists, so no claim link is issued. Sign in, or see [recovering access](#recovering-access) |
+| 此服务器仅接受邀请注册。请管理员邀请你，然后打开邀请中的链接创建账户。 | `registration_invite_only` | 403 | 当前为 `DISABLE_REGISTRATION=invite_only`。获取邀请并通过邀请链接创建账户，或请管理员运行 `warmblyctl user create`。 |
+| 此服务器不接受新账户。 | `registration_closed` | 403 | 当前为 `DISABLE_REGISTRATION=true`，任何邀请都无法绕过此限制。只能通过 `warmblyctl user create` 添加账户，或修改模式后重启。 |
+| 该邀请链接无效、已过期，或是发给另一个邮箱地址的。请申请新的邀请。 | `invitation_invalid` | 403 | 邀请已过期（默认 7 天）、被撤销、已使用，或你输入的地址与受邀地址不一致。 |
+| 该设置链接无效、已使用或已过期。 | `setup_token_invalid` | 401 | 有效期为 24 小时，仅限一次使用，清空 Redis 后也会失效。使用 `warmblyctl setup-link` 打印新链接。 |
+| 此实例已经完成设置。 | `setup_already_complete` | 403 | 实例中已有账户，因此不会生成认领链接。请登录，或参见 [恢复访问权限](#recovering-access)。 |
 
-Older builds returned the invite-only refusal with the text "This server is not accepting new accounts. Ask an administrator for an invitation." and the generic code `forbidden`. Same cause, same fix.
+较早版本在仅邀请模式下会返回“此服务器不接受新账户，请向管理员申请邀请”，并使用通用错误码 `forbidden`。原因和处理方式相同。
 
-## Sign-in methods
+## 登录方式 [#sign-in-methods]
 
-| Method | Needs a mail relay | Notes |
+| 方法 | 是否需要邮件中继 | 说明 |
 |---|---|---|
-| Email and password | No | The default. Turn it off with `DISABLE_PASSWORD_LOGIN=true` for a single sign-on only deployment |
-| Emailed login code | Yes, when enabled | Off on self-host. See [login codes](#login-codes) |
-| TOTP | No | Applies to every sign-in path, including Google, Apple and single sign-on |
-| Passkeys | No | Requires a secure context, so `APP_URL` must be HTTPS or a `localhost` address |
-| Single sign-on (OIDC) | No | The recommended posture when you have no relay. See [single sign-on](#single-sign-on) |
-| Sign in with Google or Apple | No | Optional, and unrelated to connecting Gmail mailboxes. The redirect URI is served by the API: see [self-hosting](/development/deployment-guide/#sign-in-with-google-or-apple-optional) |
+| 邮箱和密码 | 否 | 默认方式。仅使用单点登录的部署可通过 `DISABLE_PASSWORD_LOGIN=true` 关闭。 |
+| 邮件登录验证码 | 启用时需要 | 自托管默认关闭。参见 [登录验证码](#login-codes)。 |
+| TOTP | 否 | 适用于所有登录路径，包括 Google、Apple 和单点登录。 |
+| 通行密钥 | 否 | 要求安全上下文，因此 `APP_URL` 必须是 HTTPS 地址或 `localhost` 地址。 |
+| 单点登录（OIDC） | 否 | 没有邮件中继时的推荐方式。参见 [单点登录](#single-sign-on)。 |
+| 使用 Google 或 Apple 登录 | 否 | 可选功能，与连接 Gmail 邮箱无关。重定向 URI 由 API 提供，参见 [自托管](/development/deployment-guide/#sign-in-with-google-or-apple-optional)。 |
 
-<Callout type="warn" title="Do not disable everything at once">
-`DISABLE_PASSWORD_LOGIN=true` with no configured provider leaves no way to sign in at all. The `no_sign_in_method` check on [Instance health](/development/instance-health/#no_sign_in_method) fires when that happens.
+<Callout type="warn" title="不要同时关闭所有登录方式">
+如果设置 `DISABLE_PASSWORD_LOGIN=true` 却没有配置任何身份提供方，就会完全无法登录。出现这种情况时，[实例健康状态](/development/instance-health/#no_sign_in_method) 中的 `no_sign_in_method` 检查会报告问题。
 </Callout>
 
-## Login codes
+## 登录验证码 [#login-codes]
 
-`AUTH_LOGIN_CODE` is `always`, `new_device` or `off`, and self-host defaults to `off`.
+`AUTH_LOGIN_CODE` 可取 `always`、`new_device` 或 `off`，自托管默认使用 `off`。
 
-That default is deliberate. Emailing a code on every sign-in makes the mail relay a single point of failure for all authentication, and it is not a second factor: NIST SP 800-63B states that email is not to be used for out-of-band authentication, and OWASP ASVS says the same. Codes stay in use for what email is appropriate for, which is verifying an address at signup and recovering an account.
+这是有意选择的默认值。每次登录都发送验证码，会让邮件中继成为整个身份验证流程的单点故障，而且邮件验证码并不属于第二因素：NIST SP 800-63B 明确指出不应使用电子邮件进行带外身份验证，OWASP ASVS 也持相同要求。验证码仍用于电子邮件适合承担的用途，即注册时验证地址和恢复账户。
 
-Set `new_device` to require one only from a device the user has not asked to remember, or `always` to require one on every sign-in. If the transport does not deliver, `always` is demoted to `new_device` at boot, because otherwise nobody could complete a login at all.
+设置为 `new_device`，只在用户未选择记住的设备上要求验证码；设置为 `always`，则每次登录都要求验证码。如果邮件传输无法实际投递，启动时会将 `always` 降为 `new_device`，否则所有人都无法完成登录。
 
-### Remembered devices
+### 已记住的设备 [#remembered-devices]
 
-Under `new_device` the code step offers **Remember this device for 30 days**. Ticking it returns a random 256-bit token that the browser keeps. The server stores only its SHA-256, bound to that account, and the next password sign-in that sends it skips the emailed code. Nothing else changes for that sign-in: the password, the captcha and two-factor authentication still apply, and a sign-in the risk assessment flags (a new country, impossible travel) gets the code anyway. The 30 days are counted from when the box was ticked and are not extended by later sign-ins. Every remembered device is forgotten when the password is reset or changed, and when the user signs out everywhere or signs out their other sessions. `always` ignores remembered devices.
+在 `new_device` 模式下，验证码步骤会提供 **记住此设备 30 天** 选项。勾选后，浏览器会保存一个随机的 256 位令牌；服务器只存储与该账户绑定的 SHA-256 哈希。后续密码登录携带该令牌时，可跳过邮件验证码。其余登录要求不变：密码、人机验证和双重身份验证仍然适用；如果风险评估标记该次登录，例如来自新国家或出现不可能的旅行轨迹，仍会要求验证码。30 天从勾选时开始计算，不会因后续登录而延长。重置或修改密码、退出所有会话，或退出其他会话时，所有已记住设备都会被清除。`always` 模式会忽略已记住设备。
 
-### Excusing one account
+### 为单个账户豁免登录验证码 [#excusing-one-account]
 
-`AUTH_LOGIN_CODE` is instance-wide and read at boot, which is a problem when one person outside your team has to sign in and cannot read your mail: an App Store reviewer signing in to the iOS app, a vendor's reviewer during an OAuth verification, an auditor, a support engineer. Turning codes off for everyone, for as long as the review takes, is a large change to make for one account.
+`AUTH_LOGIN_CODE` 在实例范围内生效，并在启动时读取。如果团队之外的人必须登录，却无法读取你的邮件，就会遇到问题，例如登录 iOS 应用的 App Store 审核员、OAuth 验证中的服务商审核员、审计人员或支持工程师。仅为一个账户，在整个审核期间关闭所有人的验证码，是范围过大的改动。
 
-Exempt that account instead:
+可以只为该账户设置豁免：
 
 ```bash
 warmblyctl user login-code-exempt --email reviewer@example.com \\
   --reason "Google OAuth verification" --by you@example.com
 ```
 
-Or, in the admin panel, open the account under **Users** and turn on **Skip emailed sign-in code** in its **Sign-in** section. That needs the platform `manage_testers` permission and a recent confirmation of your own identity, and it asks for the reason.
+也可以在管理面板的 **用户** 中打开该账户，在 **登录** 区域启用 **跳过邮件登录验证码**。此操作要求平台 `manage_testers` 权限、近期完成过自身身份确认，并且需要填写原因。
 
-Only an instance operator can set it: no dashboard, API key or workspace role can change it, and a [workspace import](/guides/workspace-export-import/) never carries it, because accounts are matched by email on the destination rather than copied.
+只有实例运维人员能够设置此项：客户控制台、API 密钥和工作区角色都无权修改；[工作区导入](/guides/workspace-export-import/) 也不会携带它，因为导入时按邮箱匹配目标端账户，而不是复制账户。
 
-A reason is required, and so is `--by`: this command talks to Postgres directly and has no signed-in operator, so the account accountable for the exemption is named explicitly. The admin panel records the acting admin and asks for nothing. The database refuses a blank reason either way. The exemption removes the emailed code and nothing else: the password, the captcha or App Attest check, the per-address attempt limit and two-factor authentication all still apply, as do bans. The sign-in risk assessment still runs and is recorded, but a sign-in it flags does not bring the code back for an exempt account, because asking for the code is the only thing a flag does. A transport that cannot deliver still short-circuits ahead of it. A failed lookup is not read as an exemption.
+必须填写原因，并提供 `--by`：该命令直接连接 Postgres，没有已登录的运维身份，因此必须明确指出由哪个账户为此豁免负责。管理面板会记录实际操作的管理员，无需另行指定。无论使用哪种方式，数据库都会拒绝空白原因。豁免只移除邮件验证码：密码、人机验证或 App Attest 检查、单个地址的尝试次数限制、双重身份验证和封禁仍然有效。登录风险评估仍会执行并记录，但风险标记不会让豁免账户重新需要验证码，因为该标记的唯一动作就是要求验证码。邮件传输无法投递时，仍会更早短路跳过相关流程。查询豁免状态失败不会被视为获得豁免。
 
-Turning the switch off ends the exemption and signs out every session the account holds, exactly like revoking it under **Testers**.
+关闭开关会终止豁免，并退出该账户的所有会话，与在 **测试人员** 中撤销豁免的效果相同。
 
-The admin panel has the same thing under **Testers**: create one, see the password once, and revoke an exemption when the reason no longer holds. The password a tester is created with works for a period you choose, 1 to 90 days (30 by default), and stops working on that date; the list shows when. Revoking a tester ends the exemption, clears that password and signs out every session the account holds. The account itself survives a revoke, so anything it did stays attributable, and so does any workspace membership it was given: remove the member from the workspace, or ban the account, to end its access entirely. An account exempted with `warmblyctl` has no handed-out password, so revoking it from the panel ends the exemption and its sessions and leaves its own password alone.
+管理面板的 **测试人员** 提供相同功能：创建测试人员，查看仅显示一次的密码，并在原因不再成立时撤销豁免。创建时分配的密码有效期可选择 1 至 90 天，默认 30 天，到期后失效，列表会显示具体日期。撤销测试人员会终止豁免、清除该密码，并退出账户的所有会话。账户本身会保留，以便此前操作仍可归属到该账户；授予的工作区成员身份也会保留。如需完全终止访问，必须将其从工作区移除或封禁账户。通过 `warmblyctl` 获得豁免的账户没有临时分配的密码，因此从面板撤销时，只会终止豁免和会话，不会改动其原密码。
 
-#### Which workspace a tester lands in
+#### 测试人员会进入哪个工作区 [#which-workspace-a-tester-lands-in]
 
-A tester either gets a workspace of its own or joins one that already exists, and the choice is on the create form. Accounts created through **Testers** arrive with onboarding complete, regardless of that choice. Exempting an existing account with the CLI does not complete its onboarding or change its workspace plan.
+测试人员可以获得自己的工作区，也可以加入现有工作区，创建表单提供这两种选择。无论选择哪种方式，通过 **测试人员** 创建的账户都会被视为已完成新手引导。通过 CLI 为现有账户设置豁免，不会自动完成新手引导，也不会更改其工作区套餐。
 
-Its own is the default and the safer one. The reviewer connects their own mailbox and exercises the app without reaching anything of yours, which is usually all an OAuth verification needs to see. The workspace is categorized as **Test** in the admin organization list and gets a private managed Test plan: paid-product features, including mailbox OAuth, campaigns, warmup, Unibox and AI, with 100 test credits. The dashboard header reads **Test**, not a customer plan name, and the credit gauge labels its allowance **Test credits**. Its allowance includes 10,000 contacts, 100 campaigns (20 active), 10 team members and a workspace send budget of 1,000 emails per day. Mailbox send spacing, reputation checks, captcha, authentication and abuse controls still apply. The category is informational, not an authorization bypass.
+默认会创建独立工作区，这也是更安全的选择。审核人员连接自己的邮箱并测试应用，无法接触你的数据；通常这已足以满足 OAuth 验证。管理面板的组织列表会将该工作区归类为 **测试**，并授予专用、由系统管理的测试套餐：包含邮箱 OAuth、营销活动、预热、统一收件箱和 AI 等付费功能，以及 100 测试积分。控制台顶部显示 **测试**，而不是客户套餐名称；积分仪表将该额度标为 **测试积分**。套餐包含 10,000 名联系人、100 个营销活动（其中 20 个可处于活动状态）、10 名团队成员，以及工作区每日 1,000 封邮件的发送额度。邮箱发送间隔、信誉检查、人机验证、身份验证和反滥用控制仍然适用。“测试”分类仅用于标识，不能绕过授权。
 
-The managed plan expires when the handed-out password expires, and revoking the tester ends that grant immediately. Credits do not bypass feature gating after the grant ends. Existing dedicated reviewer workspaces recorded by tester creation are categorized on upgrade; still-active reviewers receive the grant and credits unless the workspace already has a Stripe subscription or an operator-managed plan. Legacy admin-created reviewers without a password expiry get the default 30-day lifetime measured from their original creation, not from the upgrade. Expired or revoked reviewers receive no renewed access. Existing memberships and data are not deleted.
+系统管理的套餐与临时分配的密码同时到期；撤销测试人员会立即终止该授权。授权结束后，剩余积分不能绕过功能权限限制。升级时，之前通过测试人员创建流程记录的专用审核工作区会被归类为测试工作区；仍有效的审核人员会获得相应授权和积分，除非工作区已有 Stripe 订阅或运维人员管理的套餐。对于过去由管理员创建、没有密码到期时间的审核账户，默认有效期为 30 天，从原创建时间而非升级时间计算。已到期或被撤销的审核人员不会重新获得访问权限。已有成员身份和数据不会被删除。
 
-### Adding sample data
+### 添加示例数据 [#adding-sample-data]
 
-In **Admins > Testers**, select **Add sample data** beside an active tester who owns a dedicated **Test** workspace, then confirm. This works for both newly created workspaces and existing dedicated Test workspaces after upgrading. Nothing is added automatically during deployment or account creation. The action requires the platform `manage_testers` permission and an MFA-verified admin session. The backend checks the Test category, the owner's current exemption and password expiry, and an unexpired managed Test grant. Testers attached to ordinary customer workspaces cannot use it.
+在 **管理员 > 测试人员** 中，找到拥有专用 **测试** 工作区且仍有效的测试人员，点击其旁边的 **添加示例数据** 并确认。新工作区和升级后的现有专用测试工作区都支持此操作。部署或创建账户时不会自动添加数据。此操作要求平台 `manage_testers` 权限，以及已通过 MFA 的管理员会话。后端会检查测试分类、所有者当前的豁免状态与密码有效期，以及尚未到期的系统管理测试授权。加入普通客户工作区的测试人员不能使用此功能。
 
-The dataset contains:
+示例数据包含：
 
-- Six fictional, unsubscribed contacts with non-deliverable `@review.invalid` addresses, in one sample contact list.
-- One **draft** campaign with two connected email sequence steps, no sender mailbox and open/link tracking off.
-- Two reusable reply templates.
-- One native CRM pipeline with three stages, two open example deals, one unscheduled task and one contact note.
+- 六名虚构且未订阅的联系人，地址使用无法投递的 `@review.invalid`，共同放入一个示例联系人列表。
+- 一个 **草稿** 营销活动，包含两个相连的邮件序列步骤，没有发件邮箱，并关闭打开跟踪和链接跟踪。
+- 两个可复用的回复模板。
+- 一条原生 CRM 销售管道，包含三个阶段、两个尚未结束的示例商机、一项未安排时间的任务，以及一条联系人备注。
 
-Names clearly identify the examples as samples. The reviewer can open **Contacts**, **Campaigns**, **Templates** and **CRM** to inspect or edit them. Existing workspace records and the Test credit balance stay unchanged. The action adds everything in one transaction and records `seed_tester_workspace` in the admin audit log. Repeating it, including simultaneous requests, returns the original seed timestamp without duplicating data, overwriting edits or restoring deleted examples. The tester list shows when the sample data was added.
+示例名称会明确标注其示例性质。审核人员可以打开 **联系人**、**营销活动**、**模板** 和 **CRM** 查看或编辑这些记录。工作区已有记录和测试积分余额保持不变。全部数据在一个事务中添加，并在管理员审计日志中记录 `seed_tester_workspace`。重复执行，包括同时发起请求，都会返回最初填充数据的时间戳，不会复制数据、覆盖编辑结果或恢复已删除的示例。测试人员列表会显示示例数据的添加时间。
 
-No mailbox, provider credentials, inbox history, warmup activity, delivery events or sending tasks are created. No email is sent and no external integration is called. Connect a dedicated test mailbox manually for OAuth and inbox review; real inbox content must come from that mailbox. An empty mailbox or an unconnected one remains empty. Sample data does not isolate the backend or guarantee complete security-scan coverage.
+此操作不会创建邮箱、服务商凭据、收件箱历史、预热活动、投递事件或发送任务，不发送邮件，也不调用外部集成。审核 OAuth 和收件箱功能时，需要手动连接专用测试邮箱；真实收件箱内容必须来自该邮箱。空邮箱或未连接邮箱仍保持为空。示例数据不会隔离后端，也不保证完整覆盖安全扫描。
 
-The examples are ordinary workspace records and follow the selected export groups. The one-time admin audit marker belongs to this instance and is not part of a workspace archive. Imported workspaces do not acquire a new managed Test grant automatically.
+这些示例属于普通工作区记录，会按所选导出分组参与导出。一次性的管理员审计标记属于当前实例，不包含在工作区归档中。导入工作区不会自动获得新的系统管理测试授权。
 
-Connecting Gmail still needs configured `BOX_GOOGLE_CLIENT_ID` and `BOX_GOOGLE_CLIENT_SECRET`, and the backend and frontend mailbox OAuth flags must permit new connections. A Test plan does not supply provider credentials or change those flags. Dashboard Google sign-in uses the separate `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` configuration. See [configuration](/development/configuration/).
+连接 Gmail 仍需要配置 `BOX_GOOGLE_CLIENT_ID` 和 `BOX_GOOGLE_CLIENT_SECRET`，且后端、前端的邮箱 OAuth 开关必须允许新连接。测试套餐不会提供服务商凭据，也不会更改这些开关。控制台的 Google 登录使用另一组独立配置 `GOOGLE_CLIENT_ID` 和 `GOOGLE_CLIENT_SECRET`。参见 [配置](/development/configuration/)。
 
-Joining an existing workspace is for a review judged on the app doing real work, where an empty workspace shows none of it. The tester becomes an ordinary member of that workspace and gets none of its own, so signing in lands straight in it: the dashboard skips its workspace picker only when someone belongs to exactly one. Two things follow from that, and both are the point rather than a side effect:
+加入现有工作区，适用于必须查看应用真实业务运行情况、空工作区不足以完成的审核。测试人员会成为该工作区的普通成员，不会另获独立工作区，因此登录后直接进入该工作区：控制台仅在某人恰好属于一个工作区时跳过工作区选择器。这会带来以下两点，它们都是这一设计的预期效果：
 
-- **You pick the role, and there is no default.** This is the one path that grants workspace access without anybody in that workspace asking for it, so the form will not submit until a role is named. The role decides everything the holder can reach, and it is recorded on the audit row as well as the members table, which the role can be changed out of later.
-- **The tester can see real data.** A role carrying `access_unibox` or `manage_emails` means real mail and real mailboxes, belonging to real people. Give the narrowest role the review actually needs, and revoke it when the review ends.
+- **必须由你选择角色，没有默认角色。** 这是唯一无需该工作区成员主动请求、便可授予工作区访问权的途径，因此未指定角色时，表单无法提交。角色决定持有人能访问的所有内容，并同时记录在审计记录和成员表中；之后可以通过成员表更改角色。
+- **测试人员能够查看真实数据。** 如果角色包含 `access_unibox` 或 `manage_emails`，就意味着可以访问真实用户的真实邮件和邮箱。只授予审核实际需要的最小角色，并在审核结束时撤销。
 
-The tester occupies a seat like any other member, so a workspace at its team member limit refuses the join rather than quietly exceeding it. Joining does not change the workspace category, grant a Test plan or add credits; its existing plan and the selected role still govern access.
+测试人员与其他成员一样占用席位，因此工作区达到团队成员上限时会拒绝加入，而不会悄然超额。加入操作不会改变工作区分类，不会授予测试套餐或增加积分；访问仍受原套餐和所选角色控制。
 
-`warmblyctl status` lists every exempt account on each run with its reason and the date, because the way this goes wrong is not granting one, it is forgetting it. Remove one with:
+每次运行 `warmblyctl status`，都会列出所有获得豁免的账户、原因和日期，因为真正容易出问题的是忘记撤销豁免，而不是授予豁免本身。移除方式如下：
 
 ```bash
 warmblyctl user login-code-exempt --email reviewer@example.com --clear
 ```
 
-### Stronger factors
+### 更强的身份验证因素 [#stronger-factors]
 
-A user-verified passkey is already a possession factor bound to this origin, so a passkey sign-in does not additionally prompt for TOTP. Changing `APP_URL` after passkeys are enrolled invalidates all of them, because the relying party id derives from it.
+经过用户验证的通行密钥已经是与当前站点来源绑定的持有因素，因此使用通行密钥登录时不会额外要求 TOTP。通行密钥注册后，修改 `APP_URL` 会使所有现有通行密钥失效，因为依赖方 ID 由该值生成。
 
-## Inviting teammates
+## 邀请团队成员 [#inviting-teammates]
 
-An invitation adds someone to **your workspace**, with the roles you pick. It does not create a second workspace, and it works under the default `invite_only` mode.
+邀请会让某人加入 **你的工作区**，并获得你选择的角色。它不会创建第二个工作区，在默认的 `invite_only` 模式下也可使用。
 
 <Steps>
 
 <Step>
 
-### Open the members page
+### 打开成员页面 [#open-the-members-page]
 
-In the dashboard, go to **Settings > Members**. You need the **Manage team** permission; the owner and the seeded Admin role have it, and any custom role can carry it.
-
-</Step>
-
-<Step>
-
-### Add the addresses and pick a role
-
-Paste or type addresses into **Emails**, separated by comma, semicolon, space or Enter. Each becomes a chip: valid ones grey, malformed ones red so you can remove them first. Pick one or more **Roles** for the batch (the panel on the right names what you are granting), then **Send invitations**.
-
-Warmbly sends one invitation per address and reports the outcome as a toast, "Invited 2 people" or "Invited 2 · 1 failed". Malformed addresses are skipped and called out. The chips clear when the batch finishes, and the new rows appear under **Pending invitations**.
-
-Roles are workspace data, so the list is whatever your workspace has. The seeded set is Admin, Manager and Viewer; [team and roles](/guides/team-roles/) explains what each grants. Two rules matter at invite time:
-
-- you can only grant permissions you already hold, so nobody can mint an invitation stronger than their own access
-- roles are re-resolved when the invitation is accepted, so editing a role between invite and accept applies
+在控制台进入 **设置 > 成员**。你需要 **管理团队** 权限；所有者和预置 Admin 角色拥有该权限，也可以将其授予任意自定义角色。
 
 </Step>
 
 <Step>
 
-### Copy the link and send it, if mail does not
+### 添加邮箱地址并选择角色 [#add-the-addresses-and-pick-a-role]
 
-Every invitation is backed by a link of the form `https://your-instance/invite?token=...`. If your instance delivers mail, it is emailed and you do not have to do anything. If it does not, the link is the whole mechanism, and the way to get it is the copy button on the invitee's row under **Pending invitations**. See [without a mail relay](#without-a-mail-relay).
+在 **邮箱** 中粘贴或输入地址，以逗号、分号、空格或回车分隔。每个地址会显示为一个标签：有效地址为灰色，格式错误的为红色，可先移除。为本批邀请选择一个或多个 **角色**，右侧面板会说明将授予的权限，然后点击 **发送邀请**。
+
+Warmbly 会为每个地址发送一封邀请，并通过提示消息报告结果，例如“已邀请 2 人”或“已邀请 2 人 · 1 人失败”。格式错误的地址会被跳过并明确提示。批次处理完成后，地址标签会清空，新记录会出现在 **待接受的邀请** 下。
+
+角色属于工作区数据，因此列表内容由你的工作区已有角色决定。预置角色包括 Admin、Manager 和 Viewer；[团队与角色](/guides/team-roles/) 说明各角色的权限。邀请时有两项重要规则：
+
+- 只能授予自己已经拥有的权限，因此任何人都不能发出权限高于自身访问权的邀请。
+- 接受邀请时会重新解析角色，因此发出邀请后、接受邀请前对角色的修改会生效。
 
 </Step>
 
 <Step>
 
-### They create their account from the link
+### 如果邮件未送达，复制邀请链接并自行发送 [#copy-the-link-and-send-it-if-mail-does-not]
 
-The invitee opens the link, sees the workspace, the inviter and the roles they are being given, and clicks **Create an account**. They set a password and land inside your workspace.
+每个邀请都对应形如 `https://your-instance/invite?token=...` 的链接。如果实例能够投递邮件，链接会通过邮件发送，无需额外操作。如果不能投递，邀请流程完全依赖这个链接；可在 **待接受的邀请** 下通过受邀者所在行的复制按钮获取。参见 [没有邮件中继时](#without-a-mail-relay)。
 
-Signup accepts the invitation as part of account creation, with or without an emailed verification code. It goes straight to the dashboard rather than reopening the used link. An existing account instead signs in, returns to the invitation, and clicks **Accept invitation**. Restricted members land on a resource they can access.
+</Step>
 
-The account, workspace membership, roles and resource grants are saved together. If an invitation becomes invalid before an invite-only signup finishes, no account is left behind. Ask for a fresh invitation and retry with the same address. On an instance with open registration, an invalid invitation can still fall back to creating a personal workspace.
+<Step>
 
-This is the part worth being explicit about: **that signup succeeds under `invite_only` precisely because the link carries the invitation token.** The same person visiting the sign-up form directly, without the link, is refused with `registration_invite_only`. The token is the capability. Nothing else about the address is special.
+### 受邀者通过链接创建账户 [#they-create-their-account-from-the-link]
+
+受邀者打开链接后，可以看到工作区、邀请人和将获得的角色，点击 **创建账户**，设置密码后就会进入你的工作区。
+
+注册会在创建账户时一并接受邀请，无论是否需要邮件验证码。完成后直接进入控制台，不会再次打开已使用的链接。已有账户的受邀者则先登录，再返回邀请页面并点击 **接受邀请**。权限受限的成员会进入其能够访问的资源页面。
+
+账户、工作区成员身份、角色和资源授权会一起保存。如果仅邀请注册流程尚未完成时邀请失效，系统不会遗留一个空账户。请获取新的邀请，再使用同一地址重试。对于开放注册的实例，无效邀请仍可能回退为创建个人工作区。
+
+需要明确的是：**在 `invite_only` 模式下，能够注册正是因为链接携带了邀请令牌。** 同一个人如果不通过链接，直接访问注册表单，会收到 `registration_invite_only` 拒绝。令牌才是允许注册的凭据，邮箱地址本身没有任何特殊之处。
 
 </Step>
 
 </Steps>
 
-### Without a mail relay
+### 未配置邮件中继时 [#without-a-mail-relay]
 
-`MAIL_TRANSPORT` defaults to `log` on a self-hosted install, which writes every message to the backend log and delivers nothing. Invitations still work; they just do not arrive by themselves.
+自托管安装的 `MAIL_TRANSPORT` 默认值为 `log`，它会将每封邮件写入后端日志，而不实际投递。邀请仍可使用，只是不会自动送达。
 
-The dashboard says so before you waste time waiting. When the backend reports that mail is not delivered, an amber notice sits above the **Emails** field: *"This server does not deliver mail, so the invitation email will not arrive. Invite the person anyway, then use Copy invite link on their row under Pending invitations and send it to them yourself."*
+控制台会提前说明这一点，避免你无谓等待。如果后端报告不能投递邮件，**邮箱** 字段上方会显示黄色提示：*“此服务器不投递邮件，因此邀请邮件不会送达。请照常发出邀请，然后在‘待接受的邀请’中找到对应记录，使用‘复制邀请链接’，再自行将链接发送给对方。”*
 
-So the flow is two steps, not one:
+因此，这个流程包含两步：
 
-1. invite the person normally
-2. find their row under **Pending invitations** and click the copy icon on the right of it. The full `/invite?token=...` URL goes to your clipboard and a "Invite link copied" toast confirms it
+1. 照常邀请对方。
+2. 在 **待接受的邀请** 下找到对方所在行，点击右侧复制图标。完整的 `/invite?token=...` URL 会复制到剪贴板，并显示“邀请链接已复制”的提示。
 
-On a phone or tablet the row actions are always visible; on a desktop they appear when you hover the row. The other icon on that row cancels the invitation.
+手机或平板上始终显示行内操作；桌面端则在鼠标悬停时显示。同一行的另一个图标用于取消邀请。
 
-Send the link over a channel you trust. It is a bearer credential: anyone holding it can create an account in your workspace with the roles you attached, until it expires or you cancel it.
+通过可信渠道发送链接。它是一项持有即授权的凭据：在链接到期或被你取消前，持有者可以使用其附带的角色，在你的工作区中创建账户。
 
-<Callout type="info" title="There is no resend button">
-Nothing re-sends an invitation email, because on a `log` transport there would be nothing to send it with. To give somebody a fresh link, invite the same address again: that replaces the row in place with a new token and a reset expiry, and the previously copied link stops working.
+<Callout type="info" title="没有重新发送按钮">
+这里不会重新发送邀请邮件，因为 `log` 传输模式本身就无法实际发送。要提供新链接，请再次邀请相同地址：系统会原地更新记录，生成新令牌并重置有效期，此前复制的链接将失效。
 </Callout>
 
-If you would rather read it out of the log instead:
+如果更愿意从日志中读取链接：
 
 ```bash
 docker compose -p warmbly logs backend | grep -A20 "invitation"
 ```
 
-The cleanest fix is still to point `MAIL_TRANSPORT` at a real relay. See [platform mail](/development/configuration/#platform-mail).
+更直接的解决办法仍是将 `MAIL_TRANSPORT` 配置为真正可用的邮件中继。参见 [平台邮件](/development/configuration/#platform-mail)。
 
-## Invitations
+## 邀请 [#invitations]
 
-| Property | Behavior |
+| 属性 | 行为 |
 |---|---|
-| Expiry | 7 days by default. Change it with `invitations.ttl_hours` under **Instance > Configuration > Settings**, clamped to 1 to 720 hours. It is read when the invitation is written, so a change applies to new invitations, not to outstanding ones |
-| Address binding | The invitation is bound to the address it was issued for. Registering a different address with the same token is refused |
-| Re-inviting the same address | Replaces the row in place: one row per address per workspace, a rotated token, a reset expiry, and the previously copied link dead |
-| Copy link | Returns the token for a pending invitation so you can build and share the URL yourself |
-| Cancel | Revokes it immediately |
-| Expired rows | No longer shown in the dashboard and do not block new invitations. Re-inviting the address replaces the expired row. A platform admin with `manage_organizations` can remove expired records across all workspaces from **Instance > Setup and health > Findings**, with confirmation and an audit entry. Active invitations and members are unchanged |
-| Turning links off | Set `invitations.links_enabled` to false under **Instance > Configuration > Settings** if invitations must arrive by mail and nowhere else. The copy action then fails with an explanation instead of returning a token. Only do this once mail actually delivers |
+| 有效期 | 默认 7 天。可在 **实例 > 配置 > 设置** 中修改 `invitations.ttl_hours`，取值限制为 1 至 720 小时。写入邀请时读取该值，因此修改只影响新邀请，不改变尚未接受的现有邀请。 |
+| 地址绑定 | 邀请与发出时指定的地址绑定。使用同一令牌注册其他邮箱地址会被拒绝。 |
+| 重新邀请相同地址 | 原地更新记录：每个工作区内，每个地址只有一行；轮换令牌，重置有效期，并使此前复制的链接失效。 |
+| 复制链接 | 返回待接受邀请的令牌，以便自行构建和分享 URL。 |
+| 取消 | 立即撤销邀请。 |
+| 过期记录 | 不再显示在控制台中，也不会阻止新邀请。重新邀请该地址会替换过期记录。拥有 `manage_organizations` 权限的平台管理员，可以从 **实例 > 设置与健康状态 > 检查结果** 清除所有工作区的过期记录；操作需要确认，并会写入审计记录。有效邀请和成员保持不变。 |
+| 关闭链接功能 | 如果邀请只能通过邮件送达，不允许其他渠道，请在 **实例 > 配置 > 设置** 中将 `invitations.links_enabled` 设为 false。此后复制操作会失败并显示原因，而不返回令牌。请仅在邮件确实能够投递后这样设置。 |
 
-Invitations join an existing workspace and never create one. To stand up a **second organization** you need `DISABLE_REGISTRATION=false`, or an administrator running `warmblyctl user create`.
+邀请只用于加入现有工作区，从不创建工作区。要建立 **第二个组织**，需要设置 `DISABLE_REGISTRATION=false`，或由管理员运行 `warmblyctl user create`。
 
-## Single sign-on
+## 单点登录 [#single-sign-on]
 
-Generic OpenID Connect works with Authentik, Keycloak, Zitadel, Pocket ID, Dex and anything else that publishes a discovery document. It is in the standard build, not a paid tier, and it is the one sign-in path with no dependency on outbound mail, which makes it the recommended posture for a deployment with no relay.
+通用 OpenID Connect 可与 Authentik、Keycloak、Zitadel、Pocket ID、Dex，以及任何发布发现文档的身份提供方配合使用。它包含在标准构建中，不是付费层级功能，也是唯一不依赖出站邮件的登录路径，因此推荐无邮件中继的部署采用此方式。
 
 ```bash
 OIDC_ISSUER_URL=https://id.example.com/application/o/warmbly/
@@ -272,83 +272,83 @@ OIDC_ALLOWED_DOMAINS=example.com
 OIDC_DEFAULT_ORG=<organization uuid>
 ```
 
-<Callout type="warn" title="The redirect URI is /v1/auth/oidc/callback">
-Not `/api/v1/auth/oidc/callback`. Earlier builds derived the wrong path from `API_PUBLIC_URL`, so a successful login at the provider ended in a 404. If you registered the old path at your provider, change it on both sides: providers match the redirect URI by exact string.
+<Callout type="warn" title="重定向 URI 为 /v1/auth/oidc/callback">
+不要使用 `/api/v1/auth/oidc/callback`。较早版本会根据 `API_PUBLIC_URL` 生成错误路径，导致在身份提供方成功登录后遇到 404。如果此前在提供方注册了旧路径，请同步修改两端配置，因为提供方会按完整字符串精确匹配重定向 URI。
 </Callout>
 
-Register `OIDC_REDIRECT_URL` as the redirect URI at your provider. Unset, it defaults to `API_PUBLIC_URL` plus `/v1/auth/oidc/callback`, so `API_PUBLIC_URL` has to be set for single sign-on to work at all.
+在身份提供方中，将 `OIDC_REDIRECT_URL` 的值注册为重定向 URI。如果未设置，默认使用 `API_PUBLIC_URL` 加上 `/v1/auth/oidc/callback`，因此必须设置 `API_PUBLIC_URL`，单点登录才能正常工作。
 
-Four things worth knowing:
+需要了解四点：
 
-- **Single sign-on obeys `DISABLE_REGISTRATION` too.** A verified assertion for an address nobody invited does not create an account under `invite_only` or `true`. A live invitation for that address acts as the allowlist entry and lets it through.
-- **`SSO_AUTO_PROVISION=true` is the separate switch** for operators whose identity provider is the gate. It lets any verified assertion create an account regardless of the registration mode. Turning on OIDC never silently reopens signup on its own.
-- **Set `OIDC_ALLOWED_DOMAINS`.** Without it, any address your provider will assert can sign in. With it, only the domains you list.
-- **Accounts are bound to the issuer and subject pair**, not to the email address, and an unverified address is refused. Matching on email alone would let anyone who can register an arbitrary address at your provider claim an existing Warmbly account.
+- **单点登录同样遵守 `DISABLE_REGISTRATION`。** 在 `invite_only` 或 `true` 模式下，即使身份断言已验证，也不会为从未受邀的地址创建账户。该地址的有效邀请会作为允许名单项，使其通过检查。
+- **`SSO_AUTO_PROVISION=true` 是独立开关**，适用于希望以身份提供方作为准入关卡的运维人员。它允许任何已验证的身份断言创建账户，不受注册模式限制。仅启用 OIDC 本身不会悄然重新开放注册。
+- **设置 `OIDC_ALLOWED_DOMAINS`。** 如果不设置，身份提供方愿意确认的任何地址都能登录；设置后，只允许列出的域名。
+- **账户绑定的是 issuer 与 subject 这一对值**，而不是邮箱地址；未经验证的地址会被拒绝。如果仅按邮箱匹配，任何能在身份提供方注册任意地址的人，都可能取得现有 Warmbly 账户。
 
-Only RS256 ID tokens are accepted, which every mainstream provider issues by default. Discovery runs at boot: an unreachable or misconfigured issuer disables single sign-on with a logged reason rather than shipping a button that always fails.
+只接受 RS256 ID 令牌，主流身份提供方默认都会签发此类令牌。系统在启动时执行发现流程：如果 issuer 无法访问或配置错误，会禁用单点登录并记录原因，而不是展示一个必定失败的按钮。
 
-<Callout type="warn" title="Upgrading an existing OIDC install">
-Before this change, single sign-on bypassed `DISABLE_REGISTRATION` entirely, so an instance on `invite_only` was in practice open to anyone the provider would assert. That hole is closed. If you were relying on it, set `SSO_AUTO_PROVISION=true` and restart, or invite the people who need access.
+<Callout type="warn" title="升级现有 OIDC 部署">
+在这项变更之前，单点登录完全绕过 `DISABLE_REGISTRATION`，因此设为 `invite_only` 的实例实际上会向身份提供方认可的任何人开放。现在已关闭这一缺口。如果此前依赖该行为，请设置 `SSO_AUTO_PROVISION=true` 后重启，或邀请需要访问的人员。
 </Callout>
 
-Pair single sign-on with `DISABLE_PASSWORD_LOGIN=true` for an SSO-only deployment. Keep at least one platform admin who can still get in another way.
+将单点登录与 `DISABLE_PASSWORD_LOGIN=true` 配合使用，即可部署仅支持 SSO 的实例。请至少保留一个仍能通过其他方式进入的平台管理员。
 
-## Platform admins
+## 平台管理员 [#platform-admins]
 
-A workspace role and a platform admin bit are different things. Roles govern what someone can do inside one organization. The platform admin bits govern the [admin panel](/development/admin-panel/) on `:5174`: workers, users, organizations, warmup, the overview and audit across the whole instance.
+工作区角色与平台管理员权限位是不同概念。角色控制某人在单个组织内能够执行的操作；平台管理员权限位控制 `:5174` 上的 [管理面板](/development/admin-panel/)，包括整个实例的工作节点、用户、组织、预热、概览和审计。
 
-The first owner receives every admin bit when they claim the instance. After that, admins are granted from **Accounts > Admins** in the admin panel, either by preset or per bit, or from a shell as below.
+首位所有者认领实例时会获得全部管理员权限位。此后，可以在管理面板的 **账户 > 管理员** 中按预设或单个位授予管理员权限，也可以使用下方命令行操作。
 
-| Preset | Roughly |
+| 预设 | 大致权限 |
 |---|---|
-| `super` | Every bit, including granting admin access to others |
-| `support` | User and organization lookup, impersonation-free support tooling |
-| `ops` | Workers, queues and operational controls |
-| `analyst` | Read-only analytics |
+| `super` | 全部权限位，包括向其他人授予管理员访问权。 |
+| `support` | 查询用户和组织，使用无需冒用用户身份的支持工具。 |
+| `ops` | 管理工作节点、队列和运行控制。 |
+| `analyst` | 只读分析。 |
 
-From a shell:
+通过命令行操作：
 
 ```bash
 warmblyctl user grant-admin --email you@example.com --role super
 warmblyctl user revoke-admin --email someone@example.com
 ```
 
-`make grant-admin EMAIL=...` and `make revoke-admin EMAIL=...` wrap the same commands for a compose install. Both only change an account that already exists; neither creates one.
+对于 Compose 安装，`make grant-admin EMAIL=...` 和 `make revoke-admin EMAIL=...` 封装了相同命令。两者都只修改已有账户，不会创建账户。
 
-<Callout type="warn" title="Keep a second admin">
-There is no way to grant platform admin from inside the product without already holding the bit. One admin account is one lost password away from needing shell access. The `single_platform_admin` check on [Instance health](/development/instance-health/#single_platform_admin) says so on purpose.
+<Callout type="warn" title="保留第二位管理员">
+只有已经拥有相应权限位的人，才能在产品内授予平台管理员权限。如果只有一个管理员账户，一旦忘记密码，就需要通过命令行恢复访问。[实例健康状态](/development/instance-health/#single_platform_admin) 中的 `single_platform_admin` 检查会有意提示这一风险。
 </Callout>
 
-## Workspace abuse posture
+## 工作区滥用风险处置状态 [#workspace-abuse-posture]
 
-A ban stops one person signing in. A posture governs one workspace's sending, and it is set by detectors rather than by hand. The bands and what each one costs a customer are on [deliverability](/guides/deliverability/#workspace-sending-posture); this is the operator side.
+封禁会阻止某个人登录；滥用管控状态则控制一个工作区的发送行为，由检测器而非手动操作来设置。各等级及其对客户的限制见 [邮件送达能力](/guides/deliverability/#workspace-sending-posture)，本节介绍运维侧的管理方式。
 
-Open **Organizations**, filter by **Abuse posture** to find the workspaces a detector has acted on, and open one. The **Abuse posture** panel is the only place the evidence is readable: the customer endpoint returns the band and a sentence, deliberately not the findings, because handing someone the exact detector weights that flagged them is a map for evading the next check.
+打开 **组织**，按 **滥用管控状态** 筛选已被检测器采取措施的工作区，再打开其中一个。**滥用管控状态** 面板是唯一能读取证据的位置：客户接口只返回等级和一句说明，有意不返回各项检测结果，因为将触发判定的精确权重交给对方，会为规避下次检查提供线索。
 
-The panel shows every finding on file with its weight, what it says, and when it ages out. From it you can:
+面板显示存档的每项检测结果、权重、说明和失效时间。你可以执行以下操作：
 
-| Action | What it does | Permission |
+| 操作 | 作用 | 权限 |
 |---|---|---|
-| Retract a finding | Removes one detector's finding and lowers the score for good | `manage_organizations` |
-| Set posture | Pins the band to your decision. Detectors keep scoring the evidence, but the posture stays where you put it | `manage_organizations` |
-| Lift override | Removes the pin and hands the posture back to the score, re-derived from the findings still on file | `manage_organizations` |
+| 撤回检测结果 | 移除某个检测器的一项结果，并相应永久降低评分。 | `manage_organizations` |
+| 设置管控状态 | 将等级固定为你的决定。检测器仍会对证据评分，但管控状态保持为你指定的等级。 | `manage_organizations` |
+| 解除手动覆盖 | 解除固定状态，按仍在存档的检测结果重新计算评分，并由评分决定管控状态。 | `manage_organizations` |
 
-Reading the panel needs only `view_organizations`.
+读取面板只需要 `view_organizations`。
 
-Two rules are worth knowing before you use it:
+使用前需要了解两项规则：
 
-- **The pin outranks the score in both directions.** Pinning `trusted` keeps a workspace sending even while heavy evidence stands against it, and pinning `suspended` keeps it stopped even after every detector retracts. That is the point: a decision a human made is not undone by the next detector write.
-- **A pin does not expire.** Lifting it is a deliberate act. If you clear a workspace by pinning `trusted` and the underlying findings were genuinely wrong, retract those findings too, then lift the pin. Otherwise the posture snaps back the moment anyone lifts it.
+- **无论放宽还是收紧限制，手动固定状态都优先于评分。** 固定为 `trusted` 后，即使仍有大量不利证据，工作区也会继续发送；固定为 `suspended` 后，即使所有检测器都撤回结果，工作区仍会停止发送。这正是设计目的：人工决定不会被检测器的下一次写入撤销。
+- **手动固定状态不会到期。** 解除必须主动操作。如果通过固定为 `trusted` 来解除某工作区的限制，且底层检测结果确实错误，应同时撤回这些结果，再解除固定。否则，一旦有人解除固定，管控状态就会立即跳回原等级。
 
-The reason you type is shown to the workspace in its dashboard banner, so write it for them. Internal notes belong in the audit trail, which records who changed a posture, from what to what, and why.
+填写的原因会显示在工作区控制台的横幅中，因此应面向客户撰写。内部说明应放在审计记录中；审计会记录谁修改了状态、原状态和新状态，以及原因。
 
-Findings that fire once and have nothing that would ever re-check them, such as a signup's origin score or a run of anomalous sign-ins, carry a 30-day expiry and are swept out automatically, so a workspace recovers on its own without anyone touching it. Findings a detector keeps re-checking carry no expiry, because that detector withdraws them itself: import quality is a running assessment across everything the workspace has imported, and the recipient-outcome pass is re-derived from the last 30 days of sends. The panel's **Ages out** column says which kind each finding is.
+仅触发一次、以后不会重新检查的检测结果，例如注册来源评分或一段时间内的异常登录，会带有 30 天有效期，并在到期后自动清理，因此工作区无需人工干预也能自行恢复。持续重新检查的检测器结果没有到期时间，由对应检测器自行撤回：导入质量会持续评估工作区导入的全部内容；收件人结果检测会根据最近 30 天的发送记录重新计算。面板的 **失效时间** 列会说明各结果属于哪一种。
 
-## Recovering access
+## 恢复访问权限 [#recovering-access]
 
-Every command below runs inside the backend, because that is where the correct environment already lives: `PRIMARY_DB`, `REDIS` and the encryption keys. Authorization is container or host access, which is the right trust model when the identity system is the thing that is broken. `warmblyctl` has no HTTP surface.
+以下所有命令都在后端内部运行，因为那里已经具备正确的环境配置：`PRIMARY_DB`、`REDIS` 和加密密钥。授权依据是容器或主机访问权；当身份系统本身发生问题时，这才是合适的信任模型。`warmblyctl` 不提供 HTTP 接口。
 
-Pick the line that matches how you run Warmbly:
+选择与你运行 Warmbly 的方式对应的一行：
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl status   # docker compose
@@ -357,94 +357,94 @@ kubectl exec -it deploy/warmbly-backend -- warmblyctl status
 warmblyctl status                                          # bare binary
 ```
 
-The rest of this section shows the compose form. Substitute the prefix you need. Every flag each command takes is on the [warmblyctl reference](/development/warmblyctl/).
+本节其余示例使用 Compose 形式。请按实际环境替换命令前缀。每条命令支持的全部选项见 [warmblyctl 参考](/development/warmblyctl/)。
 
-### See where you stand
+### 查看当前状态 [#see-where-you-stand]
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl status
 docker compose -p warmbly exec backend warmblyctl user list --admin
 ```
 
-`status` reports the account count, whether the instance is claimed, the registration mode and whether it was set or defaulted, whether the mail transport delivers, `APP_URL`, who the platform admins are, the open health checks, and the commands that apply to that exact state. It exits non-zero when a check is at error severity. `user list --admin` answers the narrower question of whether any admin account survives.
+`status` 会报告账户数量、实例是否已认领、注册模式及其来自显式设置还是默认值、邮件传输是否实际投递、`APP_URL`、平台管理员名单、未解决的健康检查，以及适用于当前状态的具体命令。如果任一检查达到错误级别，就以非零状态退出。`user list --admin` 则仅回答是否仍有管理员账户存在。
 
-### Reset a password without typing one
+### 通过重置链接修改密码，无需在命令中输入密码 [#reset-a-password-without-typing-one]
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl user reset-password --email you@example.com
 ```
 
-This prints a single-use reset URL valid for one hour. Open it in a browser and set the new password there. Nothing sensitive enters your shell history, and it uses exactly the same redemption path as the reset link the product emails.
+这会打印一个有效期为一小时的一次性密码重置 URL。在浏览器中打开并设置新密码即可。敏感内容不会进入 Shell 历史记录，兑换过程与产品通过邮件发送的重置链接完全相同。
 
-For automation, pipe the password instead so it never appears in `ps` output:
+自动化场景中，应改为通过管道传入密码，避免密码出现在 `ps` 输出中：
 
 ```bash
 printf '%s' "$NEW_PASSWORD" | docker compose exec -T backend warmblyctl user reset-password \
   --email you@example.com --password-stdin
 ```
 
-That form also revokes every other session for the account, matching what the web reset does.
+这种方式也会撤销账户的所有其他会话，与网页重置流程一致。
 
-### Create a new owner and admin
+### 创建新的所有者和管理员 [#create-a-new-owner-and-admin]
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl user create --email you@example.com --admin
 ```
 
-Creates the account, an organization and a trial, and grants every platform admin bit. On a terminal it prompts for the password twice; on a non-TTY it refuses rather than creating a passwordless account, so pass `--password-stdin` in scripts. An address that already exists is an error, and it points you at `reset-password`.
+创建账户、组织和试用记录，并授予全部平台管理员权限位。在终端中，命令会要求输入两次密码；非 TTY 环境中会拒绝执行，而不是创建无密码账户，因此脚本中应使用 `--password-stdin`。如果地址已存在，命令会报错并提示使用 `reset-password`。
 
-### Lost the authenticator but not the password
+### 身份验证器丢失，但仍知道密码 [#lost-the-authenticator-but-not-the-password]
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl user disable-2fa --email you@example.com
 ```
 
-Clears the TOTP enrolment so a lost phone does not become a full password reset.
+清除 TOTP 注册信息，避免丢失手机后必须完整重置密码。
 
-### Reissue the first-run claim link
+### 重新签发首次启动认领链接 [#reissue-the-first-run-claim-link]
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl setup-link
 ```
 
-Only works while the instance has no accounts. On a claimed instance it refuses and points at `user create`. See [first run](/development/first-run/).
+仅在实例没有任何账户时可用。已认领的实例会拒绝操作，并提示使用 `user create`。参见 [首次运行](/development/first-run/)。
 
-### The browser reset path
+### 通过浏览器重置密码 [#the-browser-reset-path]
 
-The ordinary **Forgot password** flow still works, if mail delivers. It is capped at **2 requests per address per 4 hours**, so repeated attempts during an outage will lock you out of the flow for a while. The emailed link is good for **1 hour**.
+只要邮件能够投递，普通的 **忘记密码** 流程仍可使用。该流程限制为 **每个地址每 4 小时最多请求 2 次**，因此在故障期间反复尝试，会让你暂时无法继续使用该流程。邮件链接有效期为 **1 小时**。
 
-The address is matched case-insensitively and surrounding whitespace is ignored, so `You@Example.com` finds the account created as `you@example.com`. An address with no account still answers `200` on purpose, so the form cannot be used to find out who has an account here; the backend logs the attempt, so an operator can tell a typo apart from a mail failure.
+地址匹配不区分大小写，并忽略首尾空白，因此输入 `You@Example.com` 可以找到以 `you@example.com` 创建的账户。对于没有账户的地址，系统也有意返回 `200`，避免注册状态被通过表单探测。后端会记录请求，因此运维人员能够区分地址输入错误和邮件投递失败。
 
-<Callout type="warn" title="Do not flush Redis on an unclaimed instance">
-`redis-cli FLUSHDB` destroys the `bootstrap:setup_token` entry along with every pending auth session and rate limit counter. On an instance you have not claimed yet, that throws away the only way in. Delete the single key you meant to clear instead.
+<Callout type="warn" title="未认领的实例不要清空 Redis">
+`redis-cli FLUSHDB` 会删除 `bootstrap:setup_token` 记录，以及所有待完成的身份验证会话和速率限制计数器。如果实例尚未认领，这会丢失唯一的进入方式。请只删除实际需要清除的单个键。
 </Callout>
 
-## Opening public signup
+## 开放公开注册 [#opening-public-signup]
 
-If you actually want anyone to be able to create an account:
+如果确实希望允许任何人创建账户：
 
 ```bash
 DISABLE_REGISTRATION=false
 ```
 
-Restart the backend. The **Create account** tab reappears, invitations keep working, and `warmblyctl status` reports the new mode so you can confirm it took effect.
+重启后端后，**创建账户** 选项卡会重新出现，邀请仍可使用，`warmblyctl status` 会报告新模式，便于确认配置已生效。
 
-Understand what that means on an instance reachable from the internet: every visitor can create an account and their own workspace, connect mailboxes and start sending through your deployment. There is no per-domain allowlist on the password path. If you want SSO to be the gate instead, keep `invite_only` and set `SSO_AUTO_PROVISION=true` with `OIDC_ALLOWED_DOMAINS` scoped to your own domains.
+需要理解这对公开可访问实例的含义：每个访客都可以创建账户和自己的工作区，连接邮箱，并通过你的部署开始发送邮件。密码注册路径不提供按域名划分的允许名单。如果希望由 SSO 控制准入，请保持 `invite_only`，设置 `SSO_AUTO_PROVISION=true`，并将 `OIDC_ALLOWED_DOMAINS` 限定为你自己的域名。
 
-## When people cannot get in
+## 用户无法登录时 [#when-people-cannot-get-in]
 
-| Situation | What to do |
+| 情况 | 处理方式 |
 |---|---|
-| They never received the invitation | Mail probably does not deliver. Click the copy icon on their row under **Pending invitations** and send the link yourself. See [without a mail relay](#without-a-mail-relay) |
-| They opened the sign-up form and got a 403 | They need the invitation link, not the form. The link carries the token that permits the signup |
-| Their invitation expired | Re-invite the same address. It replaces the row and mints a fresh link |
-| Nobody can reset a password | `MAIL_TRANSPORT` does not deliver. Use `warmblyctl user reset-password` and hand over the printed URL |
-| You lost the only admin account | `warmblyctl user create --email you@example.com --admin`, then sign in at the admin panel |
+| 对方始终没有收到邀请 | 邮件传输可能没有实际投递。请在 **待接受的邀请** 下点击对方所在行的复制图标，自行发送链接。参见 [没有邮件中继时](#without-a-mail-relay)。 |
+| 对方打开注册表单后收到 403 | 需要使用邀请链接，而不是直接访问表单；链接携带允许注册的令牌。 |
+| 邀请已过期 | 重新邀请同一地址，会更新记录并生成新链接。 |
+| 所有人都无法重置密码 | `MAIL_TRANSPORT` 无法投递邮件。使用 `warmblyctl user reset-password`，再将打印的 URL 交给对方。 |
+| 丢失了唯一的管理员账户 | 运行 `warmblyctl user create --email you@example.com --admin`，然后登录管理面板。 |
 
-## See also
+## 另请参阅 [#see-also]
 
-- [First run](/development/first-run/) for claiming a fresh instance
-- [warmblyctl](/development/warmblyctl/) for every command and flag named here
-- [Configuration reference](/development/configuration/) for every variable named here
-- [Team and roles](/guides/team-roles/) for what each workspace role grants
-- [Troubleshooting](/development/troubleshooting/) for the errors self-hosters actually hit
+- [首次运行](/development/first-run/)：认领全新实例。
+- [warmblyctl](/development/warmblyctl/)：本文涉及的全部命令和选项。
+- [配置参考](/development/configuration/)：本文涉及的全部变量。
+- [团队与角色](/guides/team-roles/)：各工作区角色授予的权限。
+- [故障排查](/development/troubleshooting/)：自托管时实际可能遇到的错误。

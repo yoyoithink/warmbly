@@ -1,601 +1,601 @@
 ---
-title: Campaigns
-description: "Create and send cold outreach campaigns safely."
+title: 营销活动
+description: 安全地创建和发送冷邮件营销活动。
 ---
 
-A campaign sends a sequence of emails to a list of contacts, spread across your connected mailboxes. Warmbly handles the timing, volume limits and mailbox rotation, so sending looks natural and stays safe.
+营销活动会向一组联系人发送邮件序列，并将发送分散到你连接的多个邮箱。Warmbly 负责时机安排、发送量限制和邮箱轮换，使发送方式自然且安全。
 
-![The campaigns list, grouped by state, with each campaign tagged and filed in a folder](/guides/campaigns.webp)
+![营销活动列表：按状态分组，每个活动带有标签并归入文件夹](/guides/campaigns.webp)
 
-## Set up a campaign
+## 设置营销活动 [#set-up-a-campaign]
 
 <Steps>
 
 <Step>
 
-Open **Campaigns** and choose **New campaign**.
+打开**营销活动**，选择**新建营销活动**。
 
 </Step>
 
 <Step>
 
-On **Leads**, name the campaign and pick one or more lead lists.
+在**潜在客户**步骤，为活动命名，并选择一个或多个潜在客户名单。
 
 </Step>
 
 <Step>
 
-On **Emails**, write the first email and any follow-ups.
+在**邮件**步骤，编写首封邮件和需要的跟进邮件。
 
 </Step>
 
 <Step>
 
-On **Schedule**, choose when it starts, the sending days and hours, the mailboxes to send from and the daily limit per mailbox.
+在**时间安排**步骤，选择开始时间、发送日期与时段、发件邮箱，以及每个邮箱的每日上限。
 
 </Step>
 
 <Step>
 
-On **Review**, check the finish date, then choose **Launch** or **Save as draft**.
+在**检查**步骤确认完成日期，然后选择**启动**或**保存为草稿**。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Each mailbox sends at most `50` cold emails a day by default, with at least `600` seconds between two sends.
-- A campaign sends only inside its weekly sending windows, in the campaign's timezone.
-- A lead's follow-ups normally go out from the mailbox that sent their first email, and move to another one only when that mailbox is held, cooling or gone.
-- Launch checks your list first and refuses one that is known to be largely undeliverable.
-- Nothing sends until the campaign launches. Closing the flow with anything filled in saves a draft.
+- 默认每个邮箱每天最多发送 `50` 封冷邮件，两次发送至少间隔 `600` 秒。
+- 营销活动只会在其时区中配置的每周发送窗口内发信。
+- 潜在客户的跟进邮件通常由发送首封邮件的邮箱继续发送；只有该邮箱被暂停发送、进入冷却期或不再可用时，才转交其他邮箱。
+- 启动前会检查名单，已知大部分地址无法投递的名单会被拒绝。
+- 活动启动前不会发信。创建流程中只要已填写任何内容，关闭流程就会保存为草稿。
 
 <Fold>
 
-## Sender fields and what you need first
+## 发件人字段与准备条件 [#sender-fields-and-what-you-need-first]
 
-Browsing filters, searches and view choices are [remembered in your browser tab](/guides/browsing/) across refreshes and navigation, separately for each user and workspace.
+浏览时的筛选、搜索和视图选择会[保存在浏览器标签页中](/guides/browsing/)，刷新或切换页面后仍保留，并按用户和工作区分别记录。
 
-A campaign sends a sequence of emails to a list of contacts, spread across your connected mailboxes. Warmbly handles timing, volume limits, and mailbox rotation so sending looks natural and stays safe.
+营销活动向联系人名单发送邮件序列，并在已连接的邮箱之间分配发送任务。Warmbly 处理时机、发送量限制和邮箱轮换，让发送自然且安全。
 
-Personalize from the mailbox sending each message with `{{.Sender.Name}}` and `{{.Sender.Email}}`. Sender values follow mailbox rotation, and the email field uses the active send-as alias when one is selected. The editor's **Sender fields** picker exposes the mailbox's safe details; choose a mailbox in Preview to see its values. See [Sender fields](/guides/expressions/#sender-fields-emails).
+通过 `{{.Sender.Name}}` 和 `{{.Sender.Email}}`，可根据实际发送每封邮件的邮箱生成个性化内容。发件人字段会随邮箱轮换变化，选用发件别名时，邮箱字段采用当前别名。编辑器的**发件人字段**选择器提供可安全使用的邮箱信息；在预览中选择邮箱即可查看具体值。参见[发件人字段](/guides/expressions/#sender-fields-emails)。
 
-<Callout type="info" title="Before you start">
-You need at least one active mailbox and a contact list. Warm new mailboxes before running cold campaigns from them. See [Deliverability](/guides/deliverability/).
+<Callout type="info" title="开始前的准备">
+至少需要一个有效邮箱和一份联系人名单。使用新邮箱发送冷邮件营销活动前，应先预热。参见[邮件送达能力](/guides/deliverability/)。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Shared workspace access
+## 共享工作区访问权限 [#shared-workspace-access]
 
-Campaigns belong to the workspace. Members with **View campaigns** can read campaign details, steps and activity logs regardless of who created them. **Manage campaigns** allows members to edit settings, create or edit steps and delete steps. Campaign overview metrics require **View analytics**. See [Team and roles](/guides/team-roles/) for permission details.
+营销活动属于工作区。拥有**查看营销活动**权限的成员，无论活动由谁创建，都可以读取详情、步骤和活动日志。**管理营销活动**权限允许修改设置、创建或编辑步骤，以及删除步骤。活动概览指标需要**查看数据分析**权限。权限细节见[团队与角色](/guides/team-roles/)。
 
-Select the workspace that owns the campaign before opening it. Creating a campaign does not grant access to it from a different workspace.
-
-</Fold>
-
-<Fold>
-
-## Campaigns list
-
-Campaign names take priority over descriptions in the list. Descriptions use the remaining space and are hidden on small screens. A name that is still too long for the available space is shortened with an ellipsis so the status and actions stay accessible. On devices that support hover, hover over the name to read it in full. The top campaigns list in Analytics also uses the available space for names before shortening them.
+打开营销活动前，应先切换到拥有该活动的工作区。创建活动并不意味着可以从其他工作区访问它。
 
 </Fold>
 
 <Fold>
 
-## Create a campaign
+## 营销活动列表 [#campaigns-list]
 
-**Campaigns** > **New campaign** opens a four-step flow. A campaign is a first email and, optionally, follow-ups that stop for anyone who replies.
-
-1. **Leads**: name the campaign at the top (left blank, it is named after its first list, or "Campaign" and the date; rename it any time), then pick one or more lead lists. Lists are your [segments](/guides/segments/), shown with how many leads each holds; someone on several lists is emailed once, and the total below counts each lead once. **Import new leads** takes you to Contacts to bring in a CSV and keeps the draft for when you return. Picking no list is fine: **Continue without leads** creates the campaign so you can add leads afterwards.
-2. **Emails**: the same editor as the Steps tab, with templates, **Write with AI**, variables, a preview rendered through the send engine and the content score. Selecting a template applies both its saved subject and its body. A template without a subject keeps the email's existing subject. Add follow-ups here, each sent a number of days after the previous email (and stopping for anyone who replies, when **Stop on reply** is on). **Add the usual two follow-ups** adds two at 3 and 7 days. A follow-up with no subject replies in the same thread. The emails can also be left for the Steps tab, where you can branch them and add A/B variants.
-3. **Schedule**: start at launch or on a date, the timezone, sending days and hours, the mailbox tags to send from, and the daily limit per mailbox. Every mailbox in the pool is listed with what it can send: **Ramping up** while it is still graduating from warmup, **Reduced volume** in a watch or throttled health band, **On hold**, **DNS failing** or **Resting** when it will not send. Tracking, UTM parameters, the unsubscribe header and stop on reply are under **Tracking and replies**.
-4. **Review**: the finish date and a day-by-day chart of first emails and follow-ups against what the pool can send, what is setting the pace, and a summary with a link back to each step.
-
-While you work, a **Launch plan** beside the Leads and Schedule steps keeps the estimate current. See [How the estimate works](#how-the-estimate-works).
-
-The flow ends in **Save as draft** or **Launch** (**Schedule** when it starts on a date). Launch creates the campaign, links its lists (so it keeps enrolling leads who join them later, exactly like [linking a segment](/guides/segments/#linking-a-segment-to-a-campaign)) and opens the campaign's launch dialog. That dialog runs the pre-send checks and the [launch check on your list](#the-launch-check-on-your-list) before anything sends, just like **Start** on a campaign page. Launch stays unavailable until there is an email, at least one lead and a mailbox that can send it, and for members without **Send campaigns**. Everything can be changed later.
-
-A campaign that has not launched is a **draft**, and drafts live in your campaigns list. Closing the flow with anything filled in saves it as one, and so does **Import new leads** before it takes you to Contacts. Clicking a draft in the list reopens this flow where it still needs work, with everything you chose, so you can finish the steps (Cmd or Ctrl-click opens the campaign page instead, and members without **Manage campaigns** always get the page). Leads added to a draft directly, from its Leads tab or an import, count alongside its lists. **Discard** throws away a new campaign that was never saved, and **Delete draft** removes a saved one. A draft whose flow has branches or action steps, its own window for each day, or mailboxes picked one by one keeps those as they are; the flow shows them and sends you to the campaign's own tabs to change them.
-
-A draft's Overview tab shows what it still needs (leads, an email, senders), each linking to the tab that fixes it, with **Continue setup** to reopen the flow and a **Launch** button once it is ready. Nothing sends until the campaign launches.
-
-### How the estimate works
-
-The estimate simulates the campaign day by day against the mailboxes that would send it. It uses the same rules as the scheduler:
-
-- each mailbox's own cap and the campaign's daily limit
-- conservative cold pacing, requiring recent real-recipient replies for bounded increases rather than synthetic age
-- the workspace's risk band and each mailbox's health band
-- mailboxes on hold or failing domain authentication, which send nothing
-- mailboxes with an unresolved send outcome or a provider cooldown, which contribute no available sends until the hold is resolved or the cooldown expires
-- sending behaviour profiles
-- the sending window, with the spacing between sends
-
-Warmup keeps running on every warming mailbox, reduced to 5 emails a day while it backs a live campaign, and those emails use the same spacing clock as campaign sends. The estimate counts them, so a narrow window with a long gap between sends finishes later than the caps alone suggest. Mailboxes that already send for other campaigns keep that share of their cap, judged from their last seven days.
-
-Follow-ups that are due go out before new leads start, and the total assumes nobody replies or unsubscribes, so real sequences usually finish sooner. Replies, bounces, new contacts joining a linked segment and changes to a mailbox's health all move the real finish.
-
-An unresolved send from one mailbox does not stop other healthy mailboxes from sending. A follow-up normally uses the address its lead first heard from, but can move to another eligible mailbox when that address is held or cooling. The launch plan and day plan show the hold or cooldown separately from the normal daily limit. An unknown send needs [provider-confirmed resolution](/development/send-safety/#resolving-an-unknown-send); a timeout or missing Sent copy is not proof that it can be retried.
+列表优先显示活动名称，描述使用剩余空间，小屏幕上会隐藏描述。名称仍超出可用空间时会以省略号截断，保证状态和操作始终可见。支持悬停的设备上，将指针移到名称上可查看全文。数据分析中的热门营销活动列表也会先充分利用名称空间，再进行截断。
 
 </Fold>
 
 <Fold>
 
-## Images in the editor
+## 创建营销活动 [#create-a-campaign]
 
-Warmbly loads external images through a display-only preview service while you edit. The image must be publicly reachable over HTTPS and 5 MiB or smaller. Images behind a login, private-network images and unavailable images show an unavailable preview. Uploaded images are read directly from the instance's object store.
+**营销活动** > **新建营销活动**会打开四步创建流程。一个活动包含首封邮件，以及可选的跟进邮件；收到回复的联系人会停止后续跟进。
 
-Your original image URLs, image links and background-image styles stay in saved templates and sent emails. Recipients load images directly from those original URLs, without a Warmbly login. Existing templates use the same preview behavior without a migration. This does not change recipient open or click tracking, or the remote-image consent in your inbox.
+1. **潜在客户**：在顶部命名活动；留空时，会采用首份名单的名称，或“Campaign”加日期，之后可随时改名。接着选择一个或多个名单。名单来自你的[联系人分群](/guides/segments/)，并显示各自人数；出现在多份名单中的人只会收到一次邮件，下方总数也会去重。**导入新潜在客户**会前往联系人页面导入 CSV，并保留草稿供返回后继续。也可以不选名单，点击**暂不添加潜在客户，继续**，先创建活动，之后再补充。
+2. **邮件**：使用与“步骤”标签页相同的编辑器，支持模板、**使用 AI 撰写**、变量、通过发送引擎渲染的预览，以及内容评分。选择模板会同时应用其已保存主题和正文；模板没有主题时，保留当前邮件主题。可以在这里添加跟进邮件，设定在上一封之后若干天发送；启用**回复后停止**时，已回复的人不再收到跟进。**添加常用的两封跟进邮件**会添加分别间隔 3 天和 7 天的两封邮件。跟进邮件没有主题时，会在同一会话中回复。也可留待“步骤”标签页编写，并在那里添加分支和 A/B 版本。
+3. **时间安排**：设置启动后立即开始或指定日期开始、时区、发送日与时段、用于选择发件邮箱的标签，以及每个邮箱的每日上限。邮箱池中的每个邮箱都会显示可发送状态：尚在从预热逐步过渡时为**逐步增量**；处于观察或限流健康等级时为**降低发送量**；不会发信时显示**暂停发送**、**DNS 验证失败**或**休息中**。跟踪、UTM 参数、退订邮件头和回复后停止选项位于**跟踪与回复**中。
+4. **检查**：显示完成日期、逐日首封邮件和跟进邮件数量与邮箱池容量的对照图、决定发送节奏的因素，以及可返回各步骤修改的设置摘要。
+
+配置过程中，“潜在客户”和“时间安排”步骤旁的**启动计划**会持续更新估算。参见[估算方式](#how-the-estimate-works)。
+
+最后可以选择**保存为草稿**或**启动**；指定日期开始时，按钮为**安排发送**。启动会创建活动、关联名单，使之后加入名单的潜在客户持续自动加入，行为与[将分群关联到营销活动](/guides/segments/#linking-a-segment-to-a-campaign)相同，并打开活动启动对话框。与活动页面上的**开始**一样，对话框会在任何发送发生前，执行发送前检查和[名单启动检查](#the-launch-check-on-your-list)。只有至少一封邮件、一位潜在客户和一个能发信的邮箱时，启动才可用；没有**发送营销活动**权限的成员也不能启动。所有设置之后都能修改。
+
+尚未启动的营销活动是**草稿**，会显示在活动列表中。流程中已填写任何内容后关闭，会保存为草稿；**导入新潜在客户**跳转联系人页面前也会保存。点击列表中的草稿，会保留所有已选内容，并从仍待完成的位置重新打开创建流程；按住 Cmd 或 Ctrl 点击则打开活动页面，没有**管理营销活动**权限的成员始终打开活动页面。从潜在客户标签页或导入功能直接加入草稿的人，也与关联名单一起计入。**放弃**会丢弃从未保存的新活动，**删除草稿**会移除已保存草稿。若草稿已包含分支或操作步骤、逐日独立时间窗口，或逐个选择的邮箱，这些配置保持原样；创建流程会展示它们，并引导你到活动自身的标签页修改。
+
+草稿的“概览”标签页会显示仍缺少什么，例如潜在客户、邮件或发件邮箱，每项都链接到对应设置页。点击**继续设置**可重新打开创建流程，准备完成后显示**启动**按钮。启动前不会发送任何邮件。
+
+### 预计完成时间的计算方式 [#how-the-estimate-works]
+
+估算会针对实际负责发送的邮箱，逐日模拟营销活动，采用与调度器相同的规则：
+
+- 各邮箱自身上限与营销活动每日上限。
+- 保守的冷邮件节奏，只有近期真实收件人的回复才能支持有限增量，而不是依据人为累积的使用时间。
+- 工作区风险等级及各邮箱健康等级。
+- 暂停发送或域名身份验证失败的邮箱，其可发送量为零。
+- 存在未解决发送结果或服务商冷却期的邮箱，在暂停原因解决或冷却结束前，不提供可用发送量。
+- 发送行为配置。
+- 发送窗口及两次发送之间的间隔。
+
+所有正在预热的邮箱会继续预热；支持正在运行的营销活动时，预热量降为每天 5 封，并与营销活动共用发送间隔计时。估算会将其计入，因此窗口较窄、间隔较长时，完成时间会晚于仅看每日上限的推算。已为其他营销活动发信的邮箱会保留相应额度份额，依据过去七天的使用情况估计。
+
+到期跟进邮件优先于新潜在客户的首封邮件。总量假定无人回复或退订，因此实际序列通常更早完成。回复、退信、新联系人加入关联分群，以及邮箱健康变化，都可能改变真实完成时间。
+
+某个邮箱的发送结果未解决，不会阻止其他健康邮箱发信。跟进邮件通常使用潜在客户最初收到邮件的地址，但该地址暂停或冷却时，可改用其他合格邮箱。启动计划和每日计划会将暂停或冷却与普通每日上限分别显示。结果未知的发送需要[服务商确认后解决](/development/send-safety/#resolving-an-unknown-send)；超时或“已发送”文件夹缺少副本，都不能证明可以重试。
 
 </Fold>
 
 <Fold>
 
-## Plain text only
+## 编辑器中的图片 [#images-in-the-editor]
 
-**Settings** > **Plain text only** sends the campaign without an HTML part. Recipients get the plain-text body with the mailbox's plain-text signature, and because open pixels and wrapped links need HTML, open and click tracking are off for that campaign whatever their toggles say. Test emails respect it too, so what lands in your own inbox is what recipients get.
+编辑时，Warmbly 通过仅用于展示的预览服务加载外部图片。图片必须可通过 HTTPS 公开访问，且不超过 5 MiB。需要登录、位于私有网络或无法访问的图片，会显示预览不可用。上传图片则直接从实例对象存储读取。
+
+原始图片 URL、图片链接和背景图样式会保留在已保存模板及实际发送的邮件中。收件人直接从原始 URL 加载图片，无需登录 Warmbly。现有模板也使用相同预览方式，无需迁移。这不会改变收件人的打开或点击跟踪，也不影响你在收件箱中对远程图片的加载授权。
 
 </Fold>
 
 <Fold>
 
-## Senders and rotation
+## 仅使用纯文本 [#plain-text-only]
 
-Pick mailboxes in **Sending accounts** three ways, and the first two combine:
+**设置** > **仅纯文本**会让营销活动发送不含 HTML 部分的邮件。收件人收到纯文本正文和邮箱的纯文本签名。由于打开像素和包装链接需要 HTML，该活动的打开与点击跟踪都会关闭，无论各自开关如何设置。测试邮件也遵循此设置，因此你的测试收件箱所收到的，与实际收件人一致。
 
-- **By tag**: every active mailbox with that tag, including ones you tag later.
-- **Individually**: specific mailboxes by hand.
-- **All active mailboxes**: the default when you pick neither.
+</Fold>
 
-A campaign set through the API to `sender_strategy: "explicit"` is the exception to the third line: it never falls back to every active mailbox. If its list empties out, because the mailboxes were disconnected or the list was replaced with nothing, it uses any tags it also has, and with none it pauses itself rather than widening to every mailbox in the workspace. See [replace senders](/api/reference/campaigns/#replace-senders).
+<Fold>
 
-Sending accounts always resolve inside the campaign's own workspace. If you belong to more than one workspace, a tag you reuse across them still only picks up mailboxes belonging to the workspace that owns the campaign, so one workspace's sending reputation, daily caps, and warmup are never spent on another's traffic.
+## 发件邮箱与轮换 [#senders-and-rotation]
 
-<Callout type="info" title="Follow-ups stay on the same mailbox">
-Rotation chooses a mailbox for a lead's **first** email, and that mailbox sends the rest of that lead's sequence. Three emails from three addresses is not a conversation, and a reply belongs in the mailbox the contact was written to from.
+在**发送账户**中，有三种选择邮箱的方式，前两种可以组合：
+
+- **按标签**：所有带有该标签的有效邮箱，包括之后才添加标签的邮箱。
+- **逐个选择**：手动指定具体邮箱。
+- **所有有效邮箱**：前两项都未选择时的默认方式。
+
+通过 API 设置为 `sender_strategy: "explicit"` 的活动，是第三项的例外，绝不会回退为所有有效邮箱。如果邮箱断开连接，或名单被替换为空，导致指定列表清空，活动会使用它同时配置的标签；也没有标签时，会自行暂停，而不是扩大到整个工作区的所有邮箱。参见[替换发件邮箱](/api/reference/campaigns/#replace-senders)。
+
+发送账户始终只在活动所属工作区内解析。如果你属于多个工作区，即使标签名称相同，也只会选择拥有该活动的工作区中的邮箱。因此，一个工作区的发件信誉、每日额度和预热不会用于另一个工作区的流量。
+
+<Callout type="info" title="跟进邮件沿用同一邮箱">
+轮换只为潜在客户的**首封**邮件选择邮箱，后续序列继续由该邮箱发送。三封邮件来自三个地址无法形成自然会话，回复也应进入最初联系对方的邮箱。
 </Callout>
 
-| Rotation | Behavior |
+| 轮换方式 | 行为 |
 |----------|----------|
-| **Even spacing** (recommended) | Picks the mailbox idle longest, the most natural pattern |
-| Round-robin | Cycles in order: `A`, `B`, `C`, back to `A` |
-| Weighted | Sends more from healthier, higher-limit mailboxes |
+| **均匀间隔**（推荐） | 选择空闲时间最长的邮箱，模式最自然 |
+| 轮询 | 依次使用 `A`、`B`、`C`，再回到 `A` |
+| 加权 | 让更健康、上限更高的邮箱承担更多发送 |
 
-Whichever mode you pick, it decides which mailbox **starts** a lead. Every mailbox still stays inside its own daily cap and minimum gap, so a campaign's volume is the sum of its mailboxes' budgets as always. Rotation only chooses among mailboxes whose minimum gap has passed, and warmup mail counts toward that gap. A mailbox that just sent warmup sits out that turn and another one starts the lead. The campaign only waits when every mailbox is inside its gap.
+无论哪种模式，都只决定由哪个邮箱**开始联系**某位潜在客户。每个邮箱仍遵守自身每日上限和最小间隔，因此活动发送量始终是各邮箱额度之和。轮换只在最小间隔已经结束的邮箱之间选择，预热邮件也计入这个间隔。刚发过预热邮件的邮箱会跳过本轮，由另一个邮箱发送首封邮件。只有所有邮箱都处于间隔期，活动才会等待。
 
-The Leads tab shows each lead's mailbox in its **Sender** column, and a contact's Activity tab shows it beside their progress. A lead has none until its first email goes out.
+“潜在客户”标签页的**发件人**列会显示每位潜在客户对应的邮箱，联系人的“活动”标签页也会在进度旁显示。首封邮件发出前，还没有绑定邮箱。
 
-### Campaigns sharing mailboxes
+### 多个营销活动共用邮箱 [#campaigns-sharing-mailboxes]
 
-Several campaigns can send from the same mailboxes, for example by sharing a tag. What they share is each mailbox's minimum gap and daily cap. A campaign that is outside its sending window, or has nothing due, waits without holding any mailbox, so a campaign that is sending gets the pool's full pace in the meantime.
+多个活动可以共用邮箱，例如使用同一标签。它们共用的是每个邮箱的最小间隔和每日上限。活动处于发送窗口外，或没有到期任务时，只会等待，不占用邮箱；此时其他正在发送的活动可以使用邮箱池的完整发送节奏。
 
-Two campaigns never send from one mailbox inside its minimum gap. When both reach for the same mailbox at the same moment, one sends and the other looks again a few seconds later, taking another mailbox whose gap has passed or waiting for this one. Rotation also breaks ties differently for each campaign, so campaigns sharing a pool tend to start on different mailboxes rather than queueing for the same one.
+两个活动不会在同一邮箱的最小间隔内同时发信。如果同时争用一个邮箱，一个活动先发，另一个几秒后重新检查，使用其他间隔已结束的邮箱，或继续等待。轮换为各活动打破平局的方式也不同，因此共享邮箱池的活动通常从不同邮箱开始，而不是排队争用同一个。
 
-Because the daily cap belongs to the mailbox, the campaign whose window opens first can use most of a shared pool's day, which matters when the campaigns send in different timezones. To keep part of the pool for a later campaign, lower the earlier campaign's [daily limit per mailbox](#sending-limits), which caps what it takes from each mailbox. To split the pool outright, give each campaign its own tag.
+由于每日上限属于邮箱，发送窗口较早开始的活动可能消耗共享池当天的大部分容量，活动处于不同时区时尤其需要注意。若要为较晚活动保留容量，可以降低较早活动的[每邮箱每日上限](#sending-limits)，限制其从各邮箱取用的额度。要完全分开邮箱池，则为每个活动使用独立标签。
 
-**ESP matching** optionally aligns sender and recipient providers (Google to Google, Microsoft to Microsoft). The recipient's provider is read from their domain's mail records, so a lead on a company domain hosted by Google Workspace or Microsoft 365 is matched too, not only `gmail.com` and `outlook.com` addresses; the contacts list shows it as a badge on each contact's avatar. A mailbox connected with an app password to Google Workspace or Microsoft 365 counts as that provider. Under **Settings** > **ESP matching**, the coverage panel shows how many of the campaign's leads are on Google, Microsoft and other providers, and which of your mailboxes serve each. **Prefer same** falls back to any mailbox when no same-provider one is free; **Strict same** makes the contact wait instead. A contact left waiting this way waits alone: the campaign moves on to the next lead in the queue rather than stopping, and comes back to them when a matching mailbox is free. An unknown recipient provider never blocks a send. Like rotation, it applies to a lead's first email: a follow-up goes out from the mailbox the contact already knows.
+可选的 **ESP 匹配**会让发件人与收件人服务商对应，例如 Google 对 Google、Microsoft 对 Microsoft。收件人服务商从其域名邮件记录中识别，因此 Google Workspace 或 Microsoft 365 托管的企业域名也能匹配，不限于 `gmail.com` 和 `outlook.com` 地址；联系人列表会在头像上显示服务商标记。通过应用密码连接的 Google Workspace 或 Microsoft 365 邮箱，也归为对应服务商。在**设置** > **ESP 匹配**中，覆盖情况面板会显示活动潜在客户中有多少使用 Google、Microsoft 或其他服务商，以及你的哪些邮箱可以对应。**优先相同**在没有空闲同服务商邮箱时，回退到其他邮箱；**严格相同**则让该联系人等待。此类等待只影响该联系人，活动会继续处理队列中的下一位，而不是整体停止，待匹配邮箱空闲后再回来处理。收件人服务商未知不会阻止发送。与轮换一样，ESP 匹配只作用于首封邮件；跟进邮件由联系人已经熟悉的邮箱发送。
 
-### When a lead's mailbox is busy, or gone
+### 潜在客户对应的邮箱忙碌或已移除时 [#when-a-leads-mailbox-is-busy-or-gone]
 
-Two things can happen to a lead's mailbox, and Warmbly treats them differently:
+潜在客户绑定的邮箱可能遇到两类情况，Warmbly 会区别处理：
 
-- **Busy**: it has used its daily budget, or it is outside its own sending hours. The lead waits for it, and the rest of the campaign keeps sending from the mailboxes that are free. Nothing is lost: the lead sends when the mailbox is next available, and the activity log notes the wait once a day.
-- **Gone**: it was disconnected, removed from the campaign's sending accounts, sent to rest, held by warmup health, or its domain is failing authentication. Waiting would leave the contact silent for days, so the lead moves to another mailbox in the pool and the campaign's activity log records the change.
+- **忙碌**：当天额度已用完，或不在该邮箱自身发送时段内。潜在客户等待该邮箱，其余活动继续使用空闲邮箱发送。任务不会丢失，邮箱下次可用时就会发送，活动日志每天记录一次等待原因。
+- **不再可用**：邮箱已断开连接、从活动发送账户中移除、进入休息、因预热健康状态被暂停，或域名身份验证失败。继续等待可能让联系人多日收不到后续消息，因此潜在客户会转移到池中其他邮箱，变更记录在活动日志中。
 
-Removing a mailbox from **Sending accounts** therefore hands its in-flight leads to the remaining mailboxes as each of them reaches its next step. Adding a mailbox never moves an existing lead; it picks up new ones.
+因此，从**发送账户**移除邮箱后，其尚未完成的潜在客户，会在各自到达下一步骤时交给剩余邮箱。新增邮箱不会转移已有潜在客户，只承接新客户。
 
 </Fold>
 
 <Fold>
 
-## Sending limits
+## 发送限制 [#sending-limits]
 
-Warmbly is mailbox-first: safe volume is the sum of each mailbox's budget, not one global limit. Limits stack, and **the smallest always wins**.
+Warmbly 以邮箱为中心：安全发送量是每个邮箱额度之和，而不是一个全局上限。多种限制叠加时，**始终取最小值**。
 
-| Limit | Default | What it does |
+| 限制 | 默认值 | 作用 |
 | --- | --- | --- |
-| Per-mailbox cold cap | `50`/day | Hard ceiling for cold mail from one mailbox |
-| Minimum gap | `600s` | Shortest spacing between two sends from one mailbox, always enforced |
-| Campaign daily limit | Per campaign | A per-mailbox cap for this campaign, validated `3` to `5000` |
+| 单邮箱冷邮件上限 | `50`/天 | 单个邮箱发送冷邮件的硬性上限 |
+| 最小间隔 | `600s` | 同一邮箱两次发送之间的最短间隔，始终强制执行 |
+| 营销活动每日上限 | 按活动设置 | 该活动对每个邮箱的上限，验证范围为 `3` 到 `5000` |
 
-The campaign daily limit applies as a minimum against the cold cap, so it can lower a mailbox's volume but never raise it above the mailbox's own daily cap (default `50`/day).
+活动每日上限与邮箱冷邮件上限取最小值，因此可以降低邮箱发送量，但不能使其超过邮箱自己的每日上限（默认 `50`/天）。
 
-Only an email actually handed to a sending worker counts against a mailbox's daily budget and its minimum gap. The scheduler's own wake-ups, a step it deferred because its slot was not due yet, and action or wait steps never do, so a campaign started outside its sending window still has its whole budget when the window opens. When every mailbox on a campaign has used its budget for the day, the campaign stays active and waits for the next day; the activity log notes it once per day, and it notes the send that used the last of the budget as well, so a campaign that sends one email in the morning and then goes quiet says so in its feed rather than looking stalled. It also waits, rather than pausing, when every mailbox is outside its own hours, resting, or held back by warmup health. A pool that is part spent and part asleep says so too, naming how many of each, because that campaign resumes when the sleeping mailbox reopens rather than tomorrow.
+只有实际交给发送工作节点的邮件，才计入邮箱每日额度和最小间隔。调度器自行唤醒、因时段未到而延后的步骤，以及操作或等待步骤，都不计入。因此，在发送窗口外启动的活动，到窗口开放时仍保有完整额度。活动中的所有邮箱用完当天额度后，活动保持活跃并等待次日；日志每天记录一次，也会记录用完最后额度的那次发送，使“早上发了一封后就安静”的活动在动态中有解释，而不是看似卡住。所有邮箱都在自身时段外、休息或被预热健康状态限制时，也会等待，而不是暂停。若部分邮箱额度已用完、另一部分尚未进入工作时段，日志也会说明两类各有多少，因为此时活动会在休眠邮箱重新开放时恢复，而非等到明天。
 
-Each of those lines carries a breakdown per mailbox: the cap this campaign gives it today, which limit set that cap (the mailbox's own daily cap, the campaign daily limit, the campaign ramp, the [easing out of warmup](#easing-out-of-warmup) ceiling, or the workspace's [risk band](/guides/deliverability/#workspace-sending-posture)), how much it has sent, the gate that closed it if one did, and its warmup health band when that is dampening it. When a pool's day is shorter than you expected, this is where to look first: a mailbox that is still warming sends `5` cold emails a day at most, whatever its cap says, and three such mailboxes make a `15`-a-day campaign.
+每条这类记录都附有逐邮箱明细：该活动今天给它的上限、由哪个限制决定（邮箱自身每日上限、活动每日上限、活动递增计划、[从预热逐步过渡](#easing-out-of-warmup)的上限，或工作区[风险等级](/guides/deliverability/#workspace-sending-posture)）、已经发送多少、是否有某道限制关闭了发送，以及影响发送量时的预热健康等级。邮箱池当天发送量比预期少时，应先看这里：仍在预热的邮箱，无论配置上限是多少，每天最多发送 `5` 封冷邮件；三个这样的邮箱，活动每天最多 `15` 封。
 
-### Today's sending plan
+### 今日发送计划 [#todays-sending-plan]
 
-The campaign overview opens with a one-line **Today's sending plan**: how many emails the campaign sends today, worked out through the same gates a real send goes through, and the one limit that decides it. **Why** opens the working: a list of every limit that took the number below what your settings add up to, the leads, and each mailbox's day. The card re-reads itself once a minute while the page is open.
+活动概览顶部以一行显示**今日发送计划**：通过与真实发送相同的限制条件，计算活动今天发送多少邮件，并指出决定这个数字的限制。点击**原因**可展开计算明细，包括哪些限制使结果低于设置值总和、潜在客户情况，以及每个邮箱的当天安排。页面打开期间，卡片每分钟重新读取一次。
 
-![A running campaign's overview: today's sends, performance over time and the live activity feed](/guides/campaign-overview.webp)
+![运行中营销活动的概览：今日发送量、表现趋势与实时活动动态](/guides/campaign-overview.webp)
 
-For an active campaign the plan is worked out in the background and refreshed about once a minute, so opening it is quick no matter how many leads the campaign has. The card shows when the figures were last worked out. Right after you edit, start or stop a campaign, or just after midnight UTC, it shows the last good figures while a fresh plan is worked out, then updates on its own within moments. A campaign you have only just created is worked out the moment you open it.
+活跃活动的计划在后台计算，约每分钟刷新一次，因此无论潜在客户有多少，打开页面都很快。卡片会显示数据最后计算时间。编辑、启动或停止活动后，以及 UTC 午夜刚过时，界面会在重新计算期间继续显示上一份有效数据，并在片刻后自动更新。刚创建的活动会在首次打开时立即计算。
 
-The number is the sends already out plus what is still expected, and the list under it adds up: the mailbox caps added together, minus each limit, minus what has been sent, is what is still to go. A limit only appears when it removed something. In the order the scheduler applies them:
+显示的数量等于已发送量加上仍预计发送的数量，下方明细可以完整对账：各邮箱上限之和，减去每项限制，再减去已发送量，就是剩余发送量。只有实际减少数量的限制才会列出。按调度器应用顺序如下：
 
-| Limit | What it means |
+| 限制 | 含义 |
 | --- | --- |
-| Campaign daily limit | The campaign caps each mailbox below the mailbox's own cap |
-| Campaign ramp-up | Daily ramp-up is still climbing toward its ceiling |
-| Easing out of warmup | A mailbox that warmed starts cold at `5` to `20` a day and adds `5` each clean day (see [easing out of warmup](#easing-out-of-warmup)) |
-| Workspace sending posture | A restricted workspace sends a fraction of every cap (see [workspace sending posture](/guides/deliverability/#workspace-sending-posture)) |
-| Domain authentication failing, Resting or in reserve, Held by warmup health | A mailbox that sends nothing cold today, and why |
-| Waiting for Warmbly Cloud status | [Warmbly Cloud](/guides/warmbly-cloud/#safety-and-enforcement) has not reported a current status for a mailbox it warms. Cold sends from it wait until one arrives; it is not a Cloud quarantine or block |
-| Used by other campaigns | A mailbox's daily cap is shared by every campaign it is on; these sends went to another campaign today |
-| Slowed by warmup health | A mailbox on watch or throttled has its sends spaced wider |
-| Outside the mailbox's hours, Sending behaviour plan | A mailbox in another timezone or with its own [workday](/guides/sending-behavior/) is closed for the rest of today, or its rolled plan gives it fewer sends than its cap |
-| Minimum gap between sends | With the sending time left today, a mailbox's gap between two sends does not fit any more. Warmup mail sits on the same clock |
-| Outside the sending window | The schedule has no sending time left today |
-| Plan's daily allowance | The workspace's plan caps campaign emails a day across every campaign (a free trial allows `20`) |
-| New leads per day | Only this many contacts may receive their first email today; follow-ups keep going |
-| Not enough leads due | The mailboxes could send more, but no more steps are due today |
+| 营销活动每日上限 | 活动为每个邮箱设置了低于邮箱自身上限的限制 |
+| 营销活动逐步增量 | 每日递增计划尚未达到最高值 |
+| 从预热逐步过渡 | 已预热邮箱从每天 `5` 到 `20` 封冷邮件起步，每个状态正常的日期增加 `5` 封，参见[从预热逐步过渡](#easing-out-of-warmup) |
+| 工作区发送风险状态 | 受限工作区只能使用各项上限的一部分，参见[工作区发送风险状态](/guides/deliverability/#workspace-sending-posture) |
+| 域名身份验证失败、休息或备用中、受预热健康状态限制 | 邮箱今天不发送冷邮件，以及具体原因 |
+| 等待 Warmbly Cloud 状态 | [Warmbly Cloud](/guides/warmbly-cloud/#safety-and-enforcement) 尚未报告其预热邮箱的当前状态，冷邮件会等待状态到达；这不代表被 Cloud 隔离或封禁 |
+| 被其他营销活动使用 | 邮箱每日上限由所有使用它的活动共享，这部分今日发送量已被其他活动使用 |
+| 因预热健康状态降速 | 处于观察或限流状态的邮箱，会加大发送间隔 |
+| 不在邮箱时段内、发送行为计划 | 其他时区或拥有独立[工作日](/guides/sending-behavior/)的邮箱，今天剩余时间已经关闭，或随机生成的计划低于配置上限 |
+| 发送最小间隔 | 今天剩余发送时间无法再容纳下一次发送间隔，预热邮件也使用同一计时 |
+| 不在发送窗口内 | 时间安排中今天已无剩余发送时段 |
+| 套餐每日额度 | 工作区套餐限制所有活动的每日总邮件数，免费试用为 `20` 封 |
+| 每日新潜在客户数 | 今天只允许这些联系人收到首封邮件，跟进仍会继续 |
+| 到期潜在客户不足 | 邮箱仍可发送更多，但今天没有更多到期步骤 |
 
-Under the list, the card says how many leads are due now, due later today, waiting on a step's delay, inside an undecided branch window, waiting for their own mailbox (each contact keeps the address they first heard from, so a follow-up whose mailbox is spent waits rather than switching) or held, and when the campaign next works through its queue. Daily budgets reset at midnight UTC whatever the campaign's timezone, so a campaign far from UTC sees its "sent today" reset partway through its own day. Expand the mailbox rows to see each mailbox's cap for this campaign today and which limit set it, what it has sent (for this campaign, and for others), what it is still expected to send, and whether it is sending, closed for the day, out of budget, resting, held, waiting for a [Warmbly Cloud](/guides/warmbly-cloud/#safety-and-enforcement) status, failing authentication or reconnecting (no running sending worker holds it right now; it is placed on one again within minutes and the other mailboxes keep sending meanwhile). Each limit links to the page where it is changed.
+明细下方会说明：多少潜在客户现在到期、今天稍后到期、仍在等待步骤延迟、处于尚未决定的分支时间窗口、等待各自邮箱，或被暂停，以及活动下次何时处理队列。每位联系人保留最初联系自己的地址，因此绑定邮箱额度用完时，跟进会等待而不是切换。每日额度无论活动时区如何，均在 UTC 午夜重置，所以离 UTC 较远的活动会在自己的当天中途看到“今日已发送”归零。展开邮箱行，可查看该邮箱今天对本活动的上限及决定因素、已经发送的数量（本活动与其他活动分别显示）、预计还会发送多少，以及当前状态：正在发送、当天已关闭、额度耗尽、休息、暂停、等待 [Warmbly Cloud](/guides/warmbly-cloud/#safety-and-enforcement) 状态、身份验证失败或重新连接。重新连接表示目前没有运行中的发送工作节点承载它，几分钟内会重新分配，其余邮箱同时继续发信。每项限制都链接到可修改它的页面。
 
-The sidebar's **sent today** meter reads its denominator the same way: what the workspace's mailboxes can send today under these limits, not their caps added up. The two agree by construction, because both are read through the scheduler.
+侧边栏的**今日已发送**计量器也以同样方式计算分母：显示工作区邮箱在这些限制下今天实际能够发送多少，而不是简单累加配置上限。两者都通过调度器读取，因此计算结果天然一致。
 
-<Callout type="warn" title="Don't push past the defaults casually">
-Anything above `50`/day per cold mailbox needs positive reputation signals and a low complaint rate behind it. Adding mailboxes is safer than forcing a few to send more.
+<Callout type="warn" title="不要轻易突破默认上限">
+每个冷邮件邮箱每天超过 `50` 封，需要良好信誉信号和较低投诉率支持。增加邮箱比强迫少数邮箱多发更安全。
 </Callout>
 
-**Daily ramp-up** grows volume gradually instead of starting at full limit: **ramp start** (default `10`), **ramp increment** (default `5`), and **ramp ceiling** (default `50`). It applies as another minimum, so it only lowers today's volume while ramping. This is separate from mailbox warmup; the two work together.
+**每日逐步增量**让发送量缓慢增长，而不是一开始就达到上限。设置包括**起始量**（默认 `10`）、**每日增量**（默认 `5`）和**递增上限**（默认 `50`）。它作为另一项最小值限制，仅在递增期间降低当天发送量。它与邮箱预热不同，两者共同起作用。
 
-**Lead flow** throttles new contacts with **Max new leads per day** (`0` for unlimited, up to `1000`). At the cap, follow-ups to in-flight contacts continue and new leads resume tomorrow. You can prioritize new leads over follow-ups, and choose whether to attempt addresses verification flagged risky.
+**潜在客户流量**通过**每天最多新潜在客户数**限制新联系人（`0` 表示无限，最大 `1000`）。达到上限后，正在进行中的联系人的跟进仍继续，新客户次日再开始。可以设置新客户优先于跟进，并选择是否尝试向验证标为风险的地址发送。
 
-**Keep running for new leads** turns a campaign into an ongoing one: when it runs out of leads it stays **active** and shows **waiting for leads** instead of finishing, then sends the sequence to each lead as they arrive from a linked segment, a form, the API, Zapier, Make, n8n or an automation. Linking a segment, pointing a form at the campaign, or saving an automation that enrols leads in it turns it on, and so does pressing play on a finished campaign whose every lead is done; turn it off in the campaign's preferences to have the campaign finish once every lead is done. A campaign with this on can be started with no leads yet. An end date still ends it.
+**持续等待新潜在客户**会让活动持续运行：潜在客户处理完后保持**活跃**并显示**等待潜在客户**，而不是完成退出；新客户从关联分群、表单、API、Zapier、Make、n8n 或自动化流程加入后，活动就为其执行序列。关联分群、将表单指向活动，或保存会向活动加入客户的自动化流程，都会启用此选项；对所有客户都已处理完的已完成活动点击播放，也会启用。在活动偏好设置中关闭后，处理完所有潜在客户便会结束。启用时，即使尚无潜在客户也能启动，但结束日期仍会终止活动。
 
-### Adding leads
+### 添加潜在客户 [#adding-leads]
 
-The **Leads** tab takes contacts four ways. **From contacts** opens a picker over the workspace contact list: search by name, email or company, filter by label, tick individual people or **Select loaded**, or **Select all matching** to add everyone the search returns, up to `250,000` at a time (narrow the search and repeat past that). Contacts already in the campaign are marked as leads and skipped. **Import** runs the file import wizard with this campaign preselected (its Options step can also pin the file into segments), **Sheet sync** attaches a Google Sheet, and **Add lead** creates a single new contact in the campaign. Any workspace member with contact access can add leads to any campaign in the workspace, whoever created it.
+**潜在客户**标签页提供四种添加方式。**从联系人添加**会打开工作区联系人选择器：按姓名、邮箱或公司搜索，按标签筛选，勾选个人或**选择已加载项**，也可通过**选择全部匹配项**一次加入搜索返回的所有人，最多 `250,000` 位；超过时可缩小搜索范围并分批重复。活动中已有的联系人会标记为潜在客户并跳过。**导入**打开预先选好当前活动的文件导入向导，其“选项”步骤还可以将文件中的联系人固定到分群；**表格同步**关联 Google Sheet；**添加潜在客户**则在活动中创建单个新联系人。任何拥有联系人访问权限的工作区成员，都能向工作区内任意活动添加潜在客户，无论活动由谁创建。
 
-**Segments** on the same toolbar links [segments](/guides/segments/) to the campaign as a live audience, up to 20 per campaign. Linking enrols every current member immediately and turns on **Keep running for new leads**, and contacts who enter a linked segment later are enrolled on their own, within a couple of minutes. An active campaign wakes to send to them (a campaign waiting for leads picks up straight away), a finished one restarts through the usual launch checks, and a paused one accumulates them for later. A contact who leaves a linked segment keeps their lead row, but detaching the segment itself takes its leads back out, so swapping one segment for another leaves the campaign with the new list rather than both. Leads the campaign has already emailed stay, as do any you added by hand and anyone a segment that stayed linked still covers; the dialog asks before a save that costs leads. See [linking a segment to a campaign](/guides/segments/#linking-a-segment-to-a-campaign).
+同一工具栏上的**分群**可将[联系人分群](/guides/segments/)作为动态受众关联到活动，每个活动最多 20 个。关联后，所有当前成员立即加入，并启用**持续等待新潜在客户**；之后进入关联分群的联系人，会在几分钟内自动加入。活跃活动会被唤醒处理新客户，处于等待状态的活动立即接手，已完成活动经过正常启动检查后重新启动，暂停活动则先累积客户等待之后处理。联系人离开关联分群后，仍保留潜在客户记录；但解除分群关联本身会移除它带来的潜在客户，因此用一个分群替换另一个后，活动留下新名单，而不是两份名单同时保留。已经收到活动邮件的客户、手动添加的人，以及仍被其他关联分群覆盖的人都会保留。保存会移除潜在客户时，对话框会先询问。参见[将分群关联到营销活动](/guides/segments/#linking-a-segment-to-a-campaign)。
 
-Every linked segment is shown in a **Linked segments** strip under the toolbar, so the audience feeding the list is always visible. Each chip names the segment and shows how many of its members are leads right now (`120/120`); clicking it filters the list to that segment's leads, and the arrow next to it opens the segment. A segment that matches no contacts says **no contacts** instead of a count, and one whose members were removed from the campaign by hand shows how many are **held out** with an **Add back** action, which re-enrols every current member and clears the removals. When a campaign has linked segments but no leads, the empty state explains why (the segments are empty, or their members were removed by hand) rather than offering to link a segment again.
+工具栏下方的**已关联分群**区域始终显示向名单提供受众的分群。每个标签显示名称，以及当前有多少成员属于活动潜在客户，例如 `120/120`。点击标签可将列表筛选为该分群的潜在客户，旁边的箭头打开分群页面。没有匹配联系人的分群显示**无联系人**，而非数字；若成员曾被手动从活动移除，则显示多少人被**排除**，并提供**重新加入**操作，将所有当前成员重新加入并清除移除记录。活动有关联分群但没有潜在客户时，空状态会解释原因，例如分群为空或成员被手动移除，而不是再次建议关联分群。
 
-**Export** on the toolbar downloads the leads as CSV, XLSX or JSON. The scope is the campaign: **Every lead** exports the whole list, **Filtered** the leads matching the current filters, **Selected** the ticked rows. The **Campaign-ready** column preset adds each lead's status and whether they opened, clicked or replied. The same export lives on a segment page for its members.
+工具栏的**导出**可将潜在客户下载为 CSV、XLSX 或 JSON。范围以当前活动为限：**全部潜在客户**导出整份名单，**已筛选**导出符合当前筛选的人，**已选择**导出勾选行。**可直接用于营销活动**列预设还会包含客户状态及是否打开、点击或回复。分群页面也提供相同导出功能，用于导出其成员。
 
-A lead can also be taken out again: the remove button on a lead's row, or **Remove from campaign** in the selection bar when several are ticked, drops the lead from this campaign without deleting the contact. The header checkbox covers the leads loaded so far, and the bar under it offers [**Select all matching**](/guides/contacts-crm/#selecting-rows) when more leads match than are on screen. The removal sticks: a linked segment will not re-enrol that contact automatically, even while they still match it, until you add them back yourself. Neither offers to delete the contact itself: inside a campaign the destructive action is leaving the campaign, and deleting a contact from the workspace is done from the contacts list.
+也可以移除潜在客户：点击行上的移除按钮，或勾选多行后在选择栏点击**从营销活动移除**，只会将其从当前活动移除，不会删除联系人。表头复选框覆盖目前已加载的行；匹配人数多于屏幕显示时，下方操作栏提供[**选择全部匹配项**](/guides/contacts-crm/#selecting-rows)。移除结果会被保留：即使联系人仍匹配关联分群，也不会自动重新加入，直到你手动加回。这里不会提供删除联系人本身的操作；在活动中，破坏性操作仅是退出活动，要从工作区删除联系人需到联系人列表。
 
-### Lead statuses
+### 潜在客户状态 [#lead-statuses]
 
-| Status | Meaning |
+| 状态 | 含义 |
 |--------|---------|
-| Queued | In the campaign, not emailed yet |
-| Processing | Some but not all steps sent, still moving |
-| Done | Every step sent, no reply or bounce |
-| Replied | Contact replied. With stop on reply on, the cold sequence stops (a reply branch still runs); with it off, the follow-ups continue |
-| Bounced | A send hard-bounced |
-| Failed | A step could not be sent after every retry; hover the status for the reason |
-| Paused | The lead's flow is held: by an out-of-office auto-reply, by hand, or because the contact is [copied on another lead's emails](#copying-colleagues-on-one-lead). Hover the status for why and until when |
-| Unsubscribed | Unsubscribed or suppressed |
+| 排队中 | 已加入活动，尚未收到邮件 |
+| 处理中 | 部分步骤已发送，但尚未全部完成，仍在继续 |
+| 已完成 | 所有步骤已发送，没有回复或退信 |
+| 已回复 | 联系人已回复。开启回复后停止时，冷邮件序列停止，但回复分支仍会执行；关闭时，跟进继续 |
+| 已退信 | 某次发送发生硬退信 |
+| 失败 | 某个步骤在所有重试后仍无法发送，悬停状态可查看原因 |
+| 已暂停 | 该客户的流程被暂停，原因可能为外出自动回复、手动暂停，或该联系人[被抄送在另一位潜在客户的邮件中](#copying-colleagues-on-one-lead)。悬停可查看原因和截止时间 |
+| 已退订 | 已退订或被禁止发送 |
 
-A lead is **Processing** only while steps remain, so a finished campaign reads as done rather than stuck mid-flight.
+只有仍有步骤待处理时，潜在客户才显示为**处理中**，因此已结束的活动会显示完成，而不是看似停在中途。
 
-### Out of office and pausing one lead
+### 外出自动回复与暂停单个潜在客户 [#out-of-office-and-pausing-one-lead]
 
-When a recipient's mailbox answers a step with an away message, that is not a reply: Warmbly never counts an auto-reply as a human one, so stop on reply does not fire and, left alone, the next step would go out on schedule to an empty desk. Warmbly holds the lead instead, in every campaign that contact is still a lead of rather than only the one that was answered. An empty desk is an empty desk, so a contact you are running two sequences to is held in both. Completed campaigns are left alone, since nothing in them will send again.
+收件邮箱对某个步骤返回离开通知时，不算真人回复。Warmbly 从不将自动回复计为人工回复，因此不会触发回复后停止；如果不做处理，下一步骤就会照常发给一个暂时无人处理的邮箱。Warmbly 会改为暂停该潜在客户，而且会暂停该联系人仍参与的所有活动，而不只是收到自动回复的那一个。既然对方暂时不在，同时运行的两条序列都应等待。已完成的活动不受影响，因为其中不会再次发送。
 
-The hold reads the return date out of the away message when it can. English, German, French, Spanish, Portuguese, Italian and Dutch phrasings are recognised (`back on 8 September`, `zurück am 09.09.2026`, `ab dem 10.9.`, `jusqu'au 12 septembre`), in ISO and day-dot-month form as well as written months. German calendar weeks count too: `ab KW 42` resumes from that week's Monday, `bis KW 41` from the Monday after it. Two kinds of date are deliberately not read, because a wrong one parks a live lead for weeks: slash dates, since `9/8/2026` means two different days on two sides of the Atlantic, and a month with no day (`until October`), since there is no way to tell which day in it was meant. The lead resumes one working day after the date it found, so the follow-up does not land in the backlog of their first morning back. When no date can be read, the hold is the workspace's fallback, `7` days by default, set under **Settings > Sending > Out of office**. The same section turns the whole behaviour off.
+系统会尽可能从离开通知中读取返回日期。支持英语、德语、法语、西班牙语、葡萄牙语、意大利语和荷兰语表述，例如 `back on 8 September`、`zurück am 09.09.2026`、`ab dem 10.9.`、`jusqu'au 12 septembre`，并支持 ISO、日.月以及文字月份格式。也支持德国周数写法：`ab KW 42` 从该周周一恢复，`bis KW 41` 从其后一个周一恢复。有两类日期刻意不解析，以免错误日期使活跃客户停留数周：斜杠日期，因为 `9/8/2026` 在大西洋两岸可能代表不同日期；只有月份没有日期的表达，例如 `until October`，因为无法判断指哪一天。系统会在识别到的日期之后一个工作日恢复，避免跟进邮件淹没在对方返岗第一天早晨的积压中。无法读取日期时，采用工作区回退值，默认 `7` 天，可在**设置 > 发送 > 外出状态**中修改，同一位置也可关闭整个功能。
 
-With [automatic inbox tagging](/guides/inbox-tagging/#confirming-an-away-messages-return-date) on, the date gets a second reading. The phrase it came from is shown to the classifier, which is asked whether it says when the sender is back. When the answer is a clear no (the date is the first day of the absence, or a stand-in's hours), the hold uses the fallback instead, and the lead's reason reads `auto-reply, return date unclear`. An unsure answer, or a failed call, leaves the date as read.
+启用[自动收件箱标签](/guides/inbox-tagging/#confirming-an-away-messages-return-date)后，日期还会经过第二次判断。系统将日期所在短语交给分类器，询问它是否表示发件人返回时间。若明确否定，例如该日期其实是离开的第一天或代班人的工作时段，则改用回退时长，潜在客户原因显示为 `auto-reply, return date unclear`。判断不确定或调用失败时，保留原先解析的日期。
 
-A hold does not spend the step's wait. A follow-up three days behind its step, held for a week, goes out three days after the contact is back rather than the moment they return, so the sequence keeps its pacing instead of arriving all at once. Only the part of the hold that overlapped that wait counts, so a hold the lead has already served is never charged to a later step. A campaign whose remaining leads are all paused does not finish: it stays active and waits for them, and its activity log says so once rather than every pass. Resuming any of them puts the campaign straight back to work.
+暂停期间不会消耗步骤等待时间。例如，某个跟进应在前一步后三天发送，中间被暂停一周，则在联系人返回后三天再发送，而不是一返回就发送，从而保留序列节奏，避免集中到达。只计入与该等待期重叠的暂停部分，已经经历的暂停不会再计入后续步骤。若活动剩余客户全部暂停，活动不会结束，而是保持活跃等待；日志只记录一次，而不是每次检查都记录。任何客户恢复时，活动立即重新开始处理。
 
-The same hold is available by hand, and it is the missing middle between leaving a lead alone and the two permanent levers. The **Subscribed** toggle takes the contact out of every campaign for good and the suppression list blocks the address workspace-wide; neither is the right answer to "they are on holiday for a week". The pause button on a lead's row holds that one contact in that one campaign, until a date or until you resume them. The same **Pause** sits on each campaign in the contact's **Activity** tab and in the [unibox contact panel](/guides/unibox/#pausing-their-follow-ups), so a reply can hold the follow-ups without leaving the thread. By hand it is one campaign on purpose, unlike the out-of-office hold: you are deciding about this sequence, not reporting that the person is away. They stay subscribed, they stay a lead, and the flow picks up where it stopped.
+同样的暂停功能也可手动使用，填补“不处理”与两种永久限制之间的空白。关闭**已订阅**会将联系人长期排除在所有活动之外，禁止发送名单则在整个工作区封锁地址；它们都不适合“对方休假一周”的情况。潜在客户行上的暂停按钮，只暂停这个联系人在这个活动中的流程，可以设截止日期，也可保持到手动恢复。相同的**暂停**入口也出现在联系人**活动**标签页的各个活动卡片，以及[统一收件箱联系人面板](/guides/unibox/#pausing-their-follow-ups)中，便于在回复时暂停跟进而不离开会话。手动暂停刻意只针对一个活动，与外出自动暂停不同，因为你是在决定某条序列是否继续，而不是报告此人整体不在。他们仍保持订阅和潜在客户身份，之后从停止处接着运行。
 
-An away message is recognised by the subject line the recipient's mail provider writes (`Automatic reply:`, `Automatische Antwort:`, `Abwesenheitsnotiz`, `Réponse automatique`, and the same conventions in Spanish, Portuguese, Italian, Dutch, the Nordic languages and Polish) or by the RFC 3834 and vendor headers it carries. It is matched at the START of the subject only, never inside it: a reply from a person carries your own subject back, so a campaign about annual leave or working out of the office still has every human reply read as a reply.
+离开通知通过收件方服务商生成的主题前缀识别，例如 `Automatic reply:`、`Automatische Antwort:`、`Abwesenheitsnotiz`、`Réponse automatique`，以及西班牙语、葡萄牙语、意大利语、荷兰语、北欧语言和波兰语中的相应惯例；也可通过 RFC 3834 和服务商邮件头识别。只匹配主题开头，不匹配中间，因为真人回复会带回你的原主题；即使活动主题讨论年假或外出办公，真人回复也仍按回复处理。
 
-A held lead reads **Paused** in the list and carries its reason on hover. Open the contact's **Activity** tab and the campaign panel shows the hold with **Resume now** next to it, and **Stop**, which converts a dated hold into one with no end. A lead with a step still to send gets **Pause lead** there instead; one whose flow has ended has neither, because a pause would change nothing. Resume drops the held time rather than carrying it, so the step goes back to the schedule it would have had if the hold had never happened: on the campaign's next pass when that moment has already passed, otherwise when the step's own wait elapses. It lifts the hold, it does not skip the sequence's pacing. Pausing and resuming are audited, and every teammate's list updates live.
+被暂停的潜在客户在列表中显示**已暂停**，悬停可见原因。打开联系人**活动**标签页，活动面板显示暂停状态，旁边有**立即恢复**，以及将有截止时间的暂停改为无限期暂停的**停止**。仍有步骤待发送的客户会看到**暂停潜在客户**；流程已结束的客户不显示这些按钮，因为暂停不会产生影响。手动恢复会丢弃已暂停时间，而不继续携带，因此步骤回到假设从未暂停时的时间表：原定时刻已过，则在活动下一轮检查时发送；尚未到，则等步骤本身的等待时间结束。恢复解除暂停，但不跳过序列节奏。暂停和恢复都会记入审计记录，所有同事的列表实时更新。
 
-### Copying colleagues on one lead
+### 向潜在客户的同事抄送 [#copying-colleagues-on-one-lead]
 
-Reaching two people at one company as two separate leads gives each their own thread and their own follow-ups, neither aware of the other, which reads as double outreach. Copy the second person on the first lead's emails instead. Open the lead's contact, go to **Activity**, and use **CC a colleague** on that campaign's card. The picker offers the lead's likely colleagues first (contacts with the same company name, or the same email domain when it is a company's rather than a personal mail service like Gmail or GMX), and searches the whole contact list as you type. A copy is always a contact in the workspace, so suppression, bounces and verification apply to it exactly as to a lead.
+将同一家公司的两个人作为独立潜在客户联系，会产生各自的会话和跟进，彼此不知情，看起来像重复外联。更合适的方式是把第二个人抄送到第一位潜在客户的邮件中。打开该联系人的**活动**页面，在对应活动卡片使用**抄送同事**。选择器先展示可能的同事：公司名相同，或邮箱域名相同且属于企业域名而非 Gmail、GMX 等个人邮箱服务。输入时会搜索整个联系人列表。被抄送者必须是工作区中的联系人，因此禁止发送、退信和地址验证与普通潜在客户一样适用。
 
-Every email the campaign sends that lead carries the copies in **CC**, follow-ups included, so the whole conversation stays in one thread. It is per campaign on purpose: copying someone on a lead in one campaign does not copy them anywhere else. A lead can copy at most `2` contacts. Every copy is one more recipient who did not ask for the email, so this suits small, personal campaigns better than volume sending. It does not change how much the mailbox sends: the email still counts once against its daily cap and spacing, though Google and Microsoft count each copy toward the mailbox's own recipient limits. Leads with copies show a **CC** badge in the Leads list, with the addresses on hover.
+活动向该潜在客户发送的每封邮件，包括跟进，都会在 **CC** 中带上这些联系人，使整个对话留在同一会话内。抄送按活动独立设置，在一个活动中抄送某人不会影响其他活动。每位潜在客户最多抄送 `2` 位联系人。每增加一位抄送者，就增加一位未主动请求邮件的收件人，因此更适合小规模、个性化活动，而非大量发送。这不会改变 Warmbly 中邮箱发送量的计数：邮件仍只计一次每日额度和发送间隔，但 Google 和 Microsoft 会将每位抄送者分别计入邮箱自身的收件人上限。带抄送的潜在客户在列表显示 **CC** 标记，悬停可见地址。
 
-What happens to the people on the thread:
+会话中不同事件的处理如下：
 
-| Event | What Warmbly does |
+| 事件 | Warmbly 的处理 |
 |-------|-------------------|
-| A copy replies | It counts as the lead's reply, whether they answer your email or the lead's reply to it. A new email from them that answers nothing counts for no lead. With stop on reply on, the sequence stops for everyone on the thread. A reply that leaves your mailbox off (sent only to the lead) never reaches Warmbly |
-| A copy is out of office | Nothing: the lead is not held for someone else's away message |
-| A copy replies asking to stop | Only the copy is suppressed and left off later emails. The lead is not |
-| Someone uses the unsubscribe link | The link cannot tell who clicked, so the lead and every copy on the thread are unsubscribed |
-| A copy bounces | That copy is dropped from the lead's later emails and the lead keeps receiving them. The lead is never marked bounced for a copy. When the mail server refuses the copy outright, the email is retried without them and the refusal does not count against the lead's five attempts |
-| A copy is unsubscribed, suppressed, bounced or fails verification | They are left off the next email and their chip is struck through in the drawer; the lead's email still goes out |
+| 抄送者回复 | 计为该潜在客户的回复，无论其回复你的邮件，还是回复潜在客户对此邮件的回复。若只是另发一封与任何内容无关的新邮件，不计入任何潜在客户。启用回复后停止时，整个会话的序列停止。若回复只发给潜在客户而没有包含你的邮箱，Warmbly 无法收到 |
+| 抄送者外出 | 不处理，不因其他人的离开通知暂停主要潜在客户 |
+| 抄送者回复要求停止联系 | 只将抄送者列入禁止发送名单，之后邮件不再抄送，主要潜在客户不受影响 |
+| 有人使用退订链接 | 链接无法区分是谁点击，因此主要潜在客户及该会话所有抄送者都会退订 |
+| 抄送者退信 | 后续邮件移除该抄送者，主要潜在客户继续接收，不会因此被标记为退信。邮件服务器直接拒绝抄送地址时，会在去掉该地址后重试，该次拒绝不计入主要潜在客户的五次尝试 |
+| 抄送者已退订、被禁发、退信或验证失败 | 下一封邮件不再包含该人，抽屉中的标签会加删除线，主要潜在客户的邮件仍会发送 |
 
-Opens and clicks are counted per email, not per person, so a copy opening the email or clicking a link counts toward the lead.
+打开与点击按邮件计数，而不是按人计数，因此抄送者打开邮件或点击链接，也会计入主要潜在客户。
 
-A contact copied on a lead is reached in that lead's thread, so if they are also a lead of the same campaign their own sequence is held with the reason **Copied on the emails to** the lead's address. That hold has no end and does not keep the campaign from finishing. Removing the copy, or removing the lead from the campaign, releases it and their own sequence picks up. **Send their own too** on that hold starts it anyway after asking, for when two threads are really what you want. For the same reason a lead that is copied on someone else cannot copy others, and a contact with copies of their own cannot be copied.
+被抄送的联系人已在该潜在客户的会话中被联系，因此如果其自身也是同一活动的潜在客户，其独立序列会被暂停，原因显示为**被抄送至发给以下联系人的邮件**及主要客户地址。这种暂停没有截止时间，但不会阻止活动完成。移除抄送，或将主要潜在客户从活动移除后，会解除暂停，其独立序列继续。若确实需要两个会话，可在该暂停状态下选择**也发送其独立序列**，确认后仍可启动。基于同一原因，被别人抄送的潜在客户不能再抄送其他人，自身已有抄送者的联系人也不能被别人抄送。
 
-The campaign's own **CC** and **BCC** in its preferences go on every email to every lead. Both kinds of copy skip an address that is suppressed or is the lead's own, so a copy never reaches someone the lead's email could not have. A campaign-wide address that bounces on one of the campaign's emails is left off its later emails, so one bad address cannot fail every lead's send; fix or remove it in the preferences.
+活动偏好设置中的全局 **CC** 和 **BCC** 会添加到发给每位潜在客户的每封邮件。两类抄送都会跳过被禁止发送的地址，以及主要潜在客户自己的地址，避免抄送触达主要邮件本不允许触达的人。活动全局抄送地址如果在某封活动邮件中退信，后续邮件就不再带上，避免一个坏地址使每位客户的发送都失败；请在偏好设置中修复或移除。
 
-### Who opened, clicked and replied
+### 查看谁打开、点击和回复了邮件 [#who-opened-clicked-and-replied]
 
-Next to each lead's status, the Leads list shows three engagement columns: **Opened**, **Clicked** and **Replied**, each with the number of emails in the sequence the person engaged with. A dash means the lead was emailed and has not engaged; the cell is blank for a lead not emailed yet. An open counts when a person opened the email, or clicked a link in it. Mail clients that fetch every image automatically (Apple Mail Privacy Protection, for example) show as **auto** instead, the same opens the campaign overview reports as automatic, so they never pass for engagement. Clicks are held to the same standard: a link followed from a known mail security network, within the instance's automated-click window after the send (thirty seconds by default), or several links of one email followed within a few seconds of each other, is a security gateway scanning the message, not the recipient. Those clicks are kept on the contact's activity marked **auto**, counted apart on the campaign overview, and never make a lead **Clicked**, never fire a clicked branch or automation, and never send a webhook. See [Link tracking and UTM parameters](#link-tracking-and-utm-parameters).
+潜在客户列表在状态旁显示三列互动：**已打开**、**已点击**和**已回复**，分别统计此人互动过的序列邮件数。横线表示已经发过邮件但尚无该类互动；尚未发信的客户则留空。真人打开邮件或点击其中链接，都算打开。自动获取所有图片的邮件客户端，例如 Apple 邮件隐私保护，会显示为 **auto**；这些与活动概览中的自动打开相同，不会冒充真实互动。点击也遵循同一标准：已知邮件安全网络访问链接、发送后处于实例的自动点击识别窗口内（默认三十秒），或一封邮件中的多个链接在几秒内先后被访问，都会视为安全网关扫描，而非收件人点击。它们保留在联系人活动中并标为 **auto**，在活动概览单独计数，不会使客户变为**已点击**，不会触发点击分支或自动化，也不会发送 Webhook。参见[链接跟踪与 UTM 参数](#link-tracking-and-utm-parameters)。
 
-Opens depend on the recipient's mail client loading images. Outlook, many corporate setups and some privacy-minded clients block them, so a person can read an email and still show no open; the info icon on the column says as much. A click is stronger evidence, so a click by the person always counts as an open too. Open the contact's Activity tab to see each open and click with the device, mail client and location it came from, for example **iPhone · Apple Mail app** or **Gmail · device hidden** (Gmail and Apple Mail Privacy Protection load images on the reader's behalf, so the device cannot be known). See [How an open was read](/guides/analytics/#how-an-open-was-read).
+打开统计依赖收件客户端加载图片。Outlook、许多企业环境和注重隐私的客户端会阻止加载，因此用户可能已经阅读，却没有打开记录，列上的信息图标也会说明这一点。点击是更强的证据，因此真人点击始终也计为打开。在联系人“活动”标签页中，可以查看每次打开和点击对应的设备、邮件客户端和位置，例如 **iPhone · Apple Mail 应用**，或 **Gmail · 设备隐藏**。Gmail 和 Apple 邮件隐私保护代替读者加载图片，因此无法得知设备。参见[打开记录的判定方式](/guides/analytics/#how-an-open-was-read)。
 
-The chips above the list are filters. Click a status chip (**Processing**, **Done**, **Replied**, **Queued**, **Bounced**, **Paused**, **Unsub**) or an engagement chip (**Opened**, **Not opened**, **Clicked**, **Not clicked**, **Replied**, **Not replied**) to show only those leads; click it again to clear. One status and one engagement chip can be active at once and both must match. The numbers on the chips are campaign-wide totals, and filtering happens on the server, so a scope shows every matching lead however long the list is. **Not opened**, **Not clicked** and **Not replied** only cover leads that have been sent at least one email: a queued lead has not had the chance. The same filters live in the **Filters** sheet under **Lead status** and **Engagement**.
+列表上方的标签用于筛选。点击状态标签（**处理中**、**已完成**、**已回复**、**排队中**、**已退信**、**已暂停**、**已退订**），或互动标签（**已打开**、**未打开**、**已点击**、**未点击**、**已回复**、**未回复**），仅显示对应潜在客户，再点一次清除。一次可同时启用一个状态标签和一个互动标签，两项都必须满足。标签数字为整个活动的总数，筛选在服务器完成，因此名单再长也会包含所有匹配客户。**未打开**、**未点击**、**未回复**只包括至少收到一封邮件的人，排队中的客户尚无机会互动。相同筛选也位于**筛选**面板的**潜在客户状态**和**互动**中。
 
-Engagement updates live as opens, clicks and replies arrive; no refresh is needed. **Export** from the Leads tab offers four extra columns (**Lead status**, **Opened**, **Clicked**, **Replied**), whether you export the current scope or selected rows.
+打开、点击和回复到达时，互动数据实时更新，无需刷新。在潜在客户标签页**导出**时，无论导出当前范围还是选中行，都可额外包含四列：**潜在客户状态**、**已打开**、**已点击**、**已回复**。
 
-### What one lead is doing next
+### 单个潜在客户的下一步安排 [#what-one-lead-is-doing-next]
 
-Open a contact and go to **Activity**: the panel at the top lists every campaign the contact is in, with the flow drawn step by step (sent, opened, clicked, replied, bounced or failed on each), the lead status, the last thing that happened, and the next action.
+打开联系人并进入**活动**：顶部面板列出其参与的每个活动，逐步绘制流程，显示各步已发送、打开、点击、回复、退信或失败的状态，以及潜在客户状态、最近发生的事情和下一操作。
 
-The next action is worked out on the spot by the scheduler, through the same rules a real send goes through: the delay before the first email, the step's wait, the campaign's start date and sending windows, each mailbox's daily cap and spacing, and the new-lead limit. Nothing is stored per contact, because a campaign is a single task that picks the next lead each time it runs. The times it shows are the constraints themselves, never the send spacing, so reading the panel twice gives the same answer twice. So the panel shows one of:
+下一操作由调度器即时计算，经过与实际发送相同的规则：首封邮件延迟、步骤等待、活动开始日期与发送窗口、各邮箱每日上限与间隔，以及新客户限额。不会为每个联系人存储独立时间表，因为活动是单个任务，每次运行时选择下一位客户。显示的时间来自约束条件本身，不是发送间隔，因此连续查看两次会得到相同答案。面板可能显示以下状态：
 
-| State | Meaning |
+| 状态 | 含义 |
 |-------|---------|
-| Due | The step is due now. The time shown is when the campaign next works through its queue, not a slot held for this contact; leads queued ahead of this one can still push it to a later pass |
-| Waiting | A hard constraint holds the step back. The panel names it (`Waiting 2 days before the first email`, `Waiting 3 days after Email 1`, `Outside the campaign's sending window`, `Today's new-lead limit is reached`) and shows the earliest the step can go, not a promised time |
-| Paused | This lead is held (out of office, or paused by hand), or the campaign is not running. The panel says which, and a held lead carries **Resume now** |
-| Blocked | The campaign cannot send at all right now: no mailbox attached, every sending domain failing authentication, or past its end date |
+| 到期 | 步骤现在已到期。显示时间是活动下一次处理队列的时间，不是为该联系人保留的专属时段；排在前面的客户仍可能使其延至后续轮次 |
+| 等待 | 某项硬性约束阻止执行。面板指出原因，例如 `Waiting 2 days before the first email`、`Waiting 3 days after Email 1`、`Outside the campaign's sending window`、`Today's new-lead limit is reached`，并显示最早可执行时间，而非承诺时间 |
+| 已暂停 | 该潜在客户被暂停（外出或手动），或活动未运行。面板会说明是哪种情况，被暂停的客户还会显示**立即恢复** |
+| 已阻止 | 活动当前完全无法发送：未绑定邮箱、所有发信域名验证失败，或已过结束日期 |
 
-When a step's branches are still undecided (`if they open within 3 days`), the panel says the next step depends on their response and when that window closes. A lead that has finished, bounced, failed or unsubscribed shows why the flow ended instead, as does a replied lead that stop on reply ended. A replied lead the campaign still routes (stop on reply off, or a reply branch) keeps showing its next step.
+步骤分支尚未决定时，例如 `if they open within 3 days`，面板会说明下一步取决于对方回应，并显示观察窗口何时结束。已完成、退信、失败或退订的客户会改为显示流程结束原因；因回复后停止而终止的已回复客户也一样。仍继续路由的已回复客户，例如关闭回复后停止或存在回复分支，仍会显示下一步骤。
 
-One lead that cannot be sent right now never holds up the campaign. Each pass walks the queue in order and sends the first lead it can place, so a contact waiting for a same-provider mailbox, for the mailbox their conversation belongs to, or for their own working hours is skipped for that pass while the leads behind them go out. A pass tries up to 200 due leads this way. The campaign only waits when every lead it looked at is waiting, says so once a day in the activity log, and comes back and looks again within fifteen minutes.
+某位客户当前无法发送，不会拖住整个活动。每轮按队列顺序检查，发送给第一个能安排的客户；因此等待同服务商邮箱、等待原会话邮箱，或等待自身工作时段的人，会在本轮被跳过，让后面的人先发送。每轮最多这样尝试 200 位到期客户。只有检查过的人全部都在等待，活动才会等待，并每天在日志记录一次，在十五分钟内再次回来检查。
 
-A step counts as sent only once the sending worker has handed it to the mailbox provider. If the worker cannot send (the mailbox was still loading, the provider refused the message, a storage hiccup), the step goes back to the queue, the failure appears in **Needs attention** with the reason, and the next pass retries it. A mailbox that no running sending worker holds is passed over rather than picked, and a pass that fails for any reason is followed by another about a minute later, so a failure never leaves a campaign's leads queued until it is restarted. After five failed attempts the lead is marked **Failed** and dropped from the campaign, so a mailbox that can never send does not loop forever. A recipient the mail server refuses outright is not retried: it is recorded as a **Bounced** lead straight away and goes through the same bounce handling (suppression, guardrails, webhooks) as a bounce notice. A campaign that finished while a send was still in flight reopens to retry it.
+只有发送工作节点已经把邮件交给邮箱服务商，步骤才算已发送。若工作节点无法发送，例如邮箱仍在加载、服务商拒绝邮件或存储短暂故障，步骤会回到队列，失败原因显示在**需要关注**中，下一轮重新尝试。没有运行中发送工作节点承载的邮箱会被跳过，不会选中；任何原因导致的一轮失败，都会在约一分钟后再次运行，避免客户一直排队、必须手动重启才恢复。五次尝试失败后，该客户标为**失败**并退出活动，避免无法发送的邮箱无限循环。邮件服务器直接拒绝的收件人不会重试，而是立即记为**已退信**，并执行与退信通知相同的处理，包括禁止发送、安全限制和 Webhook。如果发送仍在进行中时活动已结束，会重新打开活动以重试。
 
-Every sent count counts emails only: the contact's **Sent** total, a lead's sent steps, the campaign's progress and the rates its guardrails judge. Wait, condition and action steps move a lead through the flow but send nothing, so a lead is **Done** once every email step has gone out, however many other steps sit between them.
+所有已发送计数都只统计邮件：联系人**已发送**总数、客户已发送步骤、活动进度，以及安全限制评估的比率。等待、条件和操作步骤推动流程但不发邮件，因此无论中间有多少其他步骤，只要所有邮件步骤已发出，客户就算**已完成**。
 
-No contact is emailed the same step twice. Each step is recorded as attempted before the send is handed to a worker, so a crash, a restart, or a database hiccup in the moment between the two cannot make the step look unsent and send it again. The trade-off is a step whose outcome is genuinely unknown, when the worker stops responding mid-send: after 30 minutes with no answer the step is treated as a failed attempt, appears in **Needs attention**, and is retried like any other failure.
+不会向同一联系人重复发送同一个步骤。步骤在交给工作节点前先记为已尝试，因此两者之间即使崩溃、重启或数据库短暂故障，也不会让它看起来未发送而再次发出。相应代价是可能出现真实未知的发送结果：工作节点在发送中途不再响应时，30 分钟没有答复后，该步骤视为失败尝试，出现在**需要关注**中，并像其他失败一样重试。
 
 </Fold>
 
 <Fold>
 
-## Link tracking and UTM parameters
+## 链接跟踪与 UTM 参数 [#link-tracking-and-utm-parameters]
 
-With **Link tracking** on, every link in the email body becomes its own tracked link, so Warmbly records which link was clicked, not only that one was. Open a contact's **Activity** tab and a click reads **Clicked Pricing**, with the campaign, step and sending mailbox on the row and, expanded, the link's text, its full URL, every UTM parameter it carried, the browser, and whether a person or a scanner followed it. The campaign's live feed names the link the same way, and the `campaign.email_clicked` webhook carries the URL and the link text.
+启用**链接跟踪**后，正文中的每个链接都有独立跟踪，因此 Warmbly 不只知道发生了点击，还知道具体点击了哪个链接。打开联系人的**活动**标签页，点击记录会显示类似**点击了 Pricing**，同一行列出活动、步骤和发件邮箱；展开后可查看链接文字、完整 URL、所有 UTM 参数、浏览器，以及访问来自真人还是扫描器。活动实时动态以同样方式显示链接名称，`campaign.email_clicked` Webhook 也携带 URL 和链接文字。
 
-**UTM parameters** (on by default for campaigns created in the dashboard, off for campaigns created through the API unless you send `utm_tracking`) tag every link when the email is sent, so nobody has to add them by hand and clicks show up attributed in your web analytics:
+**UTM 参数**会在发送时自动添加到每个链接，无需手动填写，使网站分析可以正确归因点击。控制台创建的活动默认开启；通过 API 创建的活动默认关闭，除非传入 `utm_tracking`。
 
-| Parameter | Value |
+| 参数 | 值 |
 |-----------|-------|
-| `utm_source` | `warmbly`, or the value you set on the campaign |
-| `utm_medium` | `email`, or the value you set |
-| `utm_campaign` | The campaign name as a slug (`q3_outbound`), or the value you set |
-| `utm_content` | The link's own text as a slug (`pricing_page`); a link with no text, such as an image, is numbered `link_1`, `link_2` in order |
+| `utm_source` | `warmbly`，或活动中自行设置的值 |
+| `utm_medium` | `email`，或自行设置的值 |
+| `utm_campaign` | 活动名称转换成 slug，例如 `q3_outbound`，或自行设置的值 |
+| `utm_content` | 链接文字转换成 slug，例如 `pricing_page`；没有文字的链接（如图片）依次编号为 `link_1`、`link_2` |
 
-A link that already carries one of these keeps the hand-written value; only the missing parameters are added. Existing query strings and fragments are left exactly as written, and the tags go on the real destination, so they survive the tracking redirect. Anchors, `mailto:` and `tel:` links, and anything that is not `http(s)` are never touched. UTM tagging works with link tracking off too: the tags are added and the link is otherwise left as written. Bare URLs in the plain-text part are tagged as well, numbered `link_1`, `link_2` since they have no text. Change the source, medium and campaign values under **Settings** > **Deliverability**; leave a field empty to use the default.
-
-</Fold>
-
-<Fold>
-
-## Scheduling
-
-Campaigns send only inside the **weekly sending windows** you define, in the campaign's timezone. Each day is independent, with different hours or several windows per day, set from presets like `Mon-Fri 9-5` or by dragging on the grid (which is Monday-first).
-
-A new campaign follows the workspace timezone, set under **Settings > Profile > Timezones** (which also lists every campaign's and mailbox's timezone, each changeable there in one place), until you give it one of its own on its Schedule tab; while the workspace has no timezone, the wizard starts from your browser's instead. A campaign created through the API without a timezone follows the workspace too and reports the zone in use as `effective_timezone`. Check the zone when a campaign is meant for another region: an `8am` to `6pm` window is read in that zone, so a campaign started in the morning in New York on a London schedule has already used most of its day.
-
-A step whose turn comes while the window is shut waits for the next one; it is never sent late to catch up. That holds however overdue it is, so a follow-up whose wait elapsed at two in the afternoon does not go out at eleven at night because the campaign happened to look at it then. The step keeps its place in the queue and leaves in the next window that has mailbox capacity.
-
-Within a window Warmbly spreads the day's emails evenly, adds random jitter, and rounds to natural send times so nothing arrives in obvious bursts. A mailbox with its own timezone is also kept inside its local business hours (`8am` to `8pm`).
-
-The spread covers every mailbox on the campaign, not one at a time: the day's remaining capacity across the whole sending pool is paced across the hours left in the window. Adding a second healthy mailbox roughly doubles how fast a campaign works through its leads, while each mailbox still stays inside its own daily cap, hourly ceiling and minimum gap. This holds for large pools too: a single campaign can use the whole daily capacity of a hundred mailboxes, sending several emails a minute across them when the window calls for it, so there is no need to split one sequence across several campaigns to reach it.
-
-**Daily limit per mailbox** caps this campaign separately for each sender, not across the whole pool. With a limit of `50`, one mailbox sending `50` does not use another mailbox's allowance. Campaign send budgets reset at midnight UTC, independently of the timezone used for sending windows. Sends reserved for dispatch count once; campaign re-checks that send no email do not count. The mailbox's own campaign cap, capacity used by other campaigns, shared daily and rolling recipient limits, and safety clamps still apply. Existing campaigns stored with a non-positive limit keep their uncapped campaign-specific allowance, without bypassing mailbox limits; new API settings remain validated from `3` to `5000`.
-
-The campaign limit is a configurable ceiling, not a daily target. Newly connected mailboxes use a [variable sending plan](/guides/sending-behavior/) with a `28`–`32`/day starting range, about `30`, chosen once per local working day. Existing profiles and stored daily plans remain unchanged. A `30` campaign ceiling clips a higher roll to `30`; the default `50` ceiling leaves the whole recommended range available. Other campaigns share the same mailbox plan and mailbox-wide capacity.
-
-If send admission refuses a mailbox at its campaign limit, the activity log reports `CAMPAIGN_DAILY_LIMIT_REACHED`, not a worker outage. An unavailable mailbox workday, closed window, or exhausted daily/hourly sending plan reports `MAILBOX_SENDING_PLAN_DENIED`. The worker rechecks before dispatch, so a reservation cannot bypass the day's plan. A refusal before dispatch gives the lead's reservation back without spending a failed-send attempt; the campaign retries through its normal scheduler.
-
-The spacing sits between sends, never in front of the first one. A campaign you start (or resume) with a lead due sends that lead as soon as one of its mailboxes can (inside the sending window, under its daily cap and past its minimum gap), and the paced gap only begins once that email has gone.
-
-When nothing is due (every lead is inside a step's wait, for example), the campaign re-checks itself at least every `15` minutes rather than sleeping until the next step falls due; the activity log notes it once a day rather than on every check. Leads added to a waiting campaign are sent on the same terms, without waiting for that re-check or a restart, unless the campaign sets a delay before the first email. Leads added while a campaign is mid-send join the queue and go out at its current pace, so adding leads never shortens the gap between two sends.
-
-### Delay before the first email
-
-By default a contact's first email is due the moment they enter the campaign. The campaign's **Settings** > **First email** holds it back instead: choose **After a wait**, then pick a preset (`1 hour`, `4 hours`, `1 day`, `2 days`, `3 days`, `1 week`) or a custom amount in minutes, hours or days, up to `90` days. The same control is on the **Start** card at the top of the Steps canvas and on the line under it, and all of them write one setting.
-
-The delay counts from when that contact entered the campaign, not from when the campaign started. A contact who joins a [linked segment](/guides/segments/#linking-a-segment-to-a-campaign) three weeks after launch still gets the full delay from their own arrival, which is what makes it useful for a campaign that keeps enrolling people. Once the delay elapses the email goes out in the first sending window that has mailbox capacity, exactly like any other step, so a `2 days` delay on a Friday afternoon lands on Monday morning if you only send on weekdays.
-
-Follow-up spacing is separate and unaffected: that is each step's own wait, set on the connection into it (see [Sequences](/guides/sequences/#wait-and-spacing)). Every lead carries the moment it was enrolled, so turning a delay on does not re-delay people who joined weeks ago: their wait is already long past. Leads enrolled before this setting existed have no recorded moment and fall back to the campaign's creation date, which has the same effect. Changing the delay on a running campaign takes effect on save.
-
-Optional **campaign dates** bound when it may send. Leave both blank to run open-ended. Picking today as the start date means "start now", and clearing a start date on a running campaign removes the wait entirely. Schedule changes on an active campaign take effect immediately: the next send is recomputed on save, so a campaign waiting on a future start date starts sending as soon as you clear or shorten it. Past the end date nothing goes out at all, including a follow-up that came due before it: the campaign finishes instead, and its activity log says it reached its end date.
+链接已有上述参数时，保留手动填写的值，只补充缺失项。现有查询字符串和片段标识完全保持原样，参数加在真实目标地址上，因此经过跟踪重定向后仍然存在。锚点、`mailto:`、`tel:` 链接，以及任何非 `http(s)` 地址都不会修改。关闭链接跟踪时 UTM 标记也可使用：只添加参数，其余保持原样。纯文本部分中的裸 URL 也会添加参数，因为没有文字，编号为 `link_1`、`link_2`。可在**设置** > **邮件送达能力**下修改 source、medium 和 campaign 值，字段留空则使用默认值。
 
 </Fold>
 
 <Fold>
 
-## Start and stop
+## 发送排期 [#scheduling]
 
-The play and pause buttons work from the list row or the detail view. Starting moves the campaign to **active** and begins scheduling inside your windows and limits; pausing stops new scheduling immediately and resumes from where it left off.
+活动只会在其时区内、你定义的**每周发送窗口**中发送。每天独立设置，可以有不同时间或一天多个窗口；可以使用 `Mon-Fri 9-5` 等预设，也可以在以周一开头的网格上拖动设置。
 
-A campaign can pause itself: **paused, no accounts** when it loses every sender or no sender can send under its settings (a sending behaviour profile with no working days), **paused, trial expired** when a trial ends, **auto-paused** when a guardrail trips, **needs verification** when address verification has refused every remaining lead (the campaign offers to re-verify them or send anyway; see [address verification](/guides/deliverability/#address-verification)), and plain **paused** if it ever loses its workspace, because unsubscribes, bounces and complaints are checked per workspace and cannot be honoured without one. It moves to **finished** once every contact completes the sequence or its end date passes, unless **Keep running for new leads** is on: then it stays active and shows **waiting for leads** until the next lead arrives, and only its end date finishes it. Configured to do so, it also stops following up with a contact the moment they reply.
+新活动默认沿用工作区时区，设置入口为**设置 > 个人资料 > 时区**；该页也统一列出每个活动和邮箱的时区，可集中修改。直到你在活动“时间安排”标签页单独指定时区前，都会继续继承。工作区尚无时区时，向导会从浏览器时区开始。通过 API 创建且未指定时区的活动也跟随工作区，并以 `effective_timezone` 返回实际使用时区。面向其他地区时应检查时区：`8am` 到 `6pm` 按所选时区解释，所以纽约上午启动一个按伦敦时间发送的活动时，它当天的大部分时段可能已经过去。
 
-An auto-pause is never silent. It writes a red entry to the campaign's activity log saying which of the several possible causes it was, and every teammate's campaign list moves to the paused status live, so a campaign that stops sending overnight is visible the moment anyone looks at it rather than hours later.
+步骤到期时窗口关闭，会等待下一窗口，绝不会为了补进度而在窗口外发送。无论逾期多久都一样：下午两点已结束等待的跟进，不会因为活动晚上十一点才检查到它就深夜发出。步骤保留队列位置，在下一次有邮箱容量的窗口发送。
 
-A finished campaign starts again on its own when a lead is added to it, whether by a linked segment, the API, a form, an integration or an automation, through the same launch checks as pressing play. If a check refuses the restart (the list is a bounce risk, the plan cannot send, too many campaigns are active), the activity log says so and the new leads wait until you fix the cause and press play. Pressing play also works after extending or clearing the end date. If there is genuinely nothing left to send, pressing play turns on **Keep running for new leads** and the campaign stays active, **waiting for leads**, so it never dead-ends on a campaign that only ran out of people to write to; the activity log notes the switch.
+窗口内，Warmbly 会均匀分配当天邮件，加入随机抖动，并调整到自然的发送时刻，避免明显突发。拥有自身时区的邮箱，还会受当地办公时间（`8am` 到 `8pm`）约束。
+
+发送节奏覆盖活动的所有邮箱，而不是逐个邮箱轮流用完：整个发送池的当天剩余容量，会分散到窗口剩余时长。增加第二个健康邮箱，大致可使活动处理客户的速度加倍，同时每个邮箱仍遵守自己的每日上限、每小时上限和最小间隔。大邮箱池也一样：单个活动可以利用一百个邮箱的全部每日容量，窗口允许时可在不同邮箱间每分钟发送多封，无需将一个序列拆成多个活动才能达到总吞吐量。
+
+**每邮箱每日上限**对每位发件人分别限制该活动，而不是对整个池统一限制。上限为 `50` 时，一个邮箱发了 `50` 封，不会消耗另一个邮箱的额度。活动发送额度在 UTC 午夜重置，与发送窗口采用的时区无关。已预留派发的发送计入一次；没有发送邮件的活动复查不计入。邮箱自身活动上限、被其他活动占用的容量、共享的每日与滚动收件人数限制，以及安全约束仍然适用。已有活动若保存了非正数上限，会保留活动层面的不限额，但不会绕过邮箱限制；新的 API 设置仍验证为 `3` 到 `5000`。
+
+活动上限是可配置的最高值，不是每日目标。新连接邮箱采用[可变发送计划](/guides/sending-behavior/)，初始范围为每天 `28`–`32` 封，约 `30` 封，每个本地工作日随机选定一次。已有配置和已保存的每日计划保持不变。活动上限设为 `30` 时，更高的随机结果会截到 `30`；默认 `50` 则允许完整使用推荐范围。其他活动共享同一邮箱计划与邮箱总体容量。
+
+发送准入因活动上限拒绝邮箱时，日志显示 `CAMPAIGN_DAILY_LIMIT_REACHED`，而不是工作节点故障。邮箱工作日不可用、窗口关闭，或每日/每小时计划耗尽时，显示 `MAILBOX_SENDING_PLAN_DENIED`。工作节点在派发前还会复查，因此预留不能绕过当日计划。派发前被拒绝会返还客户的预留额度，不消耗失败发送尝试次数，活动通过正常调度器重试。
+
+间隔位于两次发送之间，不会加在第一封之前。如果启动或恢复活动时已有到期客户，只要某个邮箱符合窗口、每日上限和最小间隔要求，就会尽快发送；节奏控制的等待只在这封邮件发出后开始。
+
+没有到期任务时，例如所有客户都在等待步骤延迟，活动至少每 `15` 分钟复查一次，不会一直睡到下一步骤到期；日志每天记录一次，而不是每次都记录。向等待中的活动添加客户，会按相同条件发送，无需等复查或重启，除非活动设置了首封邮件延迟。活动正在发送时加入的客户会进入队列，按当前节奏发出，因此新增客户不会缩短两次发送之间的间隔。
+
+### 首封邮件发送前的延迟 [#delay-before-the-first-email]
+
+默认情况下，联系人加入活动后，首封邮件立即到期。可在活动的**设置** > **首封邮件**中延后：选择**等待一段时间后**，再选预设（`1 hour`、`4 hours`、`1 day`、`2 days`、`3 days`、`1 week`），或自定义分钟、小时、天数，最多 `90` 天。“步骤”画布顶部的**开始**卡片及其下方连线上也提供同一控制项，它们修改的是同一个设置。
+
+延迟从该联系人加入活动时算起，而不是从活动启动时算起。活动启动三周后才进入[关联分群](/guides/segments/#linking-a-segment-to-a-campaign)的人，仍会从自己的加入时间经历完整延迟，这使功能适合持续接收新客户的活动。延迟结束后，邮件与其他步骤一样，在第一个有邮箱容量的发送窗口发出。因此，若仅工作日发送，周五下午开始的 `2 days` 延迟会落到周一早晨。
+
+跟进间隔独立存在，不受影响；它是每个步骤自身的等待时间，在进入该步骤的连接线上设置，参见[邮件序列](/guides/sequences/#wait-and-spacing)。每位客户都记录加入时间，因此启用延迟不会重新延后数周前加入的人，因为他们早已完成等待。此设置推出前加入的客户没有记录时间，会回退到活动创建日期，效果相同。运行中的活动修改延迟后，保存即生效。
+
+可选的**活动日期**限制发送起止。两项留空可无限期运行。开始日期选择今天表示“现在开始”；清除运行中活动的开始日期，则完全取消该等待。活跃活动的时间安排修改会立即生效：保存时重新计算下一次发送，因此原本等待未来开始日期的活动，在清除或提前该日期后可立即开始。结束日期一过，所有邮件都停止，包括此前已到期但尚未发出的跟进；活动转为完成，并在日志中说明已到结束日期。
 
 </Fold>
 
 <Fold>
 
-## Duplicate and delete
+## 启动与停止 [#start-and-stop]
 
-Every campaign has a **⋯** menu, on its row in the list and in the header of its detail view, with **Edit**, **Duplicate**, **Start** or **Pause**, and **Delete**. Both actions need the **Manage campaigns** permission; a member without it is told which permission is missing instead of the action failing later.
+列表行和详情页都提供播放与暂停按钮。开始会将活动设为**活跃**，并在窗口和限制内调度；暂停立即停止安排新发送，恢复时从停止处继续。
 
-**Duplicate** creates a new draft from the campaign's configuration and opens its settings so you can rename it (it starts as `name (copy)`), pick a different audience, change the copy, or adjust the schedule before starting it. The copy keeps every setting, the steps with their branching, the sending accounts, folders, tags, A/B variants and attachments. It does not keep leads, progress, statistics, activity, the ramp level, an auto-pause, or a start or end date that has already passed. The original is not touched, and the two campaigns are independent from then on. A duplicate counts as a new campaign for the daily creation limit.
+活动也可能自行暂停：丢失全部发件邮箱，或没有邮箱能在当前设置下发信（例如发送行为没有任何工作日）时，显示**已暂停：无账户**；试用到期时显示**已暂停：试用已到期**；触发安全限制时显示**自动暂停**；地址验证拒绝了所有剩余客户时显示**需要验证**，并提供重新验证或仍然发送的选项，参见[地址验证](/guides/deliverability/#address-verification)。若活动失去所属工作区，则显示普通**已暂停**，因为退订、退信和投诉按工作区检查，没有工作区就无法遵守这些限制。所有联系人完成序列或超过结束日期时，活动变为**已完成**；但启用**持续等待新潜在客户**时，会继续活跃并显示**等待潜在客户**，直到新客户到达，只有结束日期会终止它。按相应配置，联系人回复后也会立即停止其跟进。
 
-**Delete** asks for confirmation that spells out what goes: the campaign, its steps, lead progress and activity. Contacts and emails already sent stay. A running campaign can be deleted directly; the confirmation says so, and sending stops immediately because every task waiting for the campaign is cancelled together with it. The same action is available at the bottom of the campaign's **Settings**. Deletion cannot be undone.
+自动暂停不会悄无声息。活动日志会写入红色记录，说明具体原因，所有同事的活动列表也会实时切换到暂停状态。因此，夜间停止发信的活动，在任何人打开页面时都能立即看见，而不必等数小时。
+
+向已完成活动加入客户时，无论来自关联分群、API、表单、集成还是自动化，都会通过与点击播放相同的启动检查后自动重启。若检查拒绝重启，例如名单有退信风险、套餐无法发送或活跃活动太多，日志会说明，新客户等待你修复原因后点击播放。延长或清除结束日期后也可点击播放。如果确实没有剩余邮件，点击播放会启用**持续等待新潜在客户**，保持活跃并显示**等待潜在客户**，避免仅因客户处理完就无法继续；日志会记录这个切换。
 
 </Fold>
 
 <Fold>
 
-## Auto-pause guardrails
+## 复制与删除 [#duplicate-and-delete]
 
-**Preferences** > **Opt-out line** chooses what this campaign appends after the signature: the workspace default from **Settings > Sending**, a reply-to-opt-out sentence, an unsubscribe link, or nothing. **Unsubscribe header** attaches the RFC 8058 headers alongside. See [unsubscribe and suppression](/guides/unsubscribe/).
+每个活动在列表行和详情页顶部都有 **⋯** 菜单，包含**编辑**、**复制**、**开始**或**暂停**，以及**删除**。复制和删除都需要**管理营销活动**权限；没有权限时会直接告知缺少哪项权限，而不是等操作后才失败。
 
-**Preferences** > **Auto-pause** stops a campaign the moment its rates leave the band you set, instead of waiting for a mailbox provider to react. Off by default.
+**复制**会根据原活动配置创建新草稿，并打开设置，供你重命名（初始为 `name (copy)`）、选择其他受众、修改文案或调整时间表后再启动。副本保留所有设置、包含分支的步骤、发送账户、文件夹、标签、A/B 版本和附件；不保留潜在客户、进度、统计、活动记录、递增等级、自动暂停状态，以及已经过去的开始或结束日期。原活动不受影响，此后两者独立。副本按新活动计入每日创建限制。
 
-| Rule | Direction | Default | Why |
+**删除**会要求确认，并明确列出被删除内容：活动本身、步骤、潜在客户进度和活动记录。联系人及已发送邮件保留。正在运行的活动也可直接删除，确认框会说明；所有等待该活动的任务会一并取消，因此立即停止发送。活动**设置**底部也有相同操作。删除无法撤销。
+
+</Fold>
+
+<Fold>
+
+## 自动暂停保护机制 [#auto-pause-guardrails]
+
+**偏好设置** > **拒收说明**决定活动在签名后追加什么：采用**设置 > 发送**中的工作区默认值、回复式拒收句、退订链接，或不添加。**退订邮件头**则另行附加 RFC 8058 邮件头。参见[退订与禁止发送](/guides/unsubscribe/)。
+
+**偏好设置** > **自动暂停**在指标离开你设定的范围时停止活动，而不是等邮箱服务商反应。默认关闭。
+
+| 规则 | 触发方向 | 默认值 | 原因 |
 |------|-----------|---------|-----|
-| Bounce rate | pause at or above | `5%` | Amazon SES puts an account under review at `5%` and can pause sending at `10%` |
-| Complaint rate | pause at or above | `0.10%` | Google asks senders to stay under `0.10%` and never reach `0.30%` |
-| Reply rate | pause below | off | A campaign at volume that nobody answers is spending reputation for nothing |
+| 退信率 | 达到或超过时暂停 | `5%` | Amazon SES 在 `5%` 时将账户列入审核，达到 `10%` 时可能暂停发送 |
+| 投诉率 | 达到或超过时暂停 | `0.10%` | Google 要求保持低于 `0.10%`，且绝不达到 `0.30%` |
+| 回复率 | 低于时暂停 | 关闭 | 大量发送却无人回复，是在无效消耗信誉 |
 
-Two more controls keep the rules honest:
+另有两项控制，使规则建立在足够可靠的样本上：
 
-- **Only after** is the sample floor. No rule fires below this many sends in the window, because one bounce out of four is not a `25%` bounce rate. Default `50`.
-- **Measured over the last** is the rolling window in days. `0` measures the campaign's whole history. Default `7`.
+- **仅在达到以下数量后**是最低样本量。窗口内发送量未达到该值时，任何规则都不触发，因为四封中一封退信不足以断言真实退信率为 `25%`。默认 `50`。
+- **最近统计时段**为滚动窗口天数，`0` 表示整个活动历史，默认 `7`。
 
-Setting a rate to `0` turns that rule off. The check runs every 15 minutes, and when several bands are breached at once the campaign is paused with the most damaging reason attached: complaints first, then bounces, then replies.
+将比率设为 `0` 可关闭对应规则。检查每 15 分钟运行一次；同时突破多项阈值时，按最严重原因暂停：优先投诉，其次退信，再其次回复。
 
-A paused campaign shows the reason and the numbers behind it on the **Auto-pause** section, and everyone on the team who can see campaigns gets a notification. Starting the campaign again clears the marker, but the next check re-evaluates from scratch, so fix the underlying problem first.
-
-</Fold>
-
-<Fold>
-
-## Live activity
-
-The detail view streams sends, opens, clicks, replies, bounces, and skips as they happen, for every teammate at once. The **Sending** card appears only while an email is actually being handed to a worker, and always names the contact; between sends the panel shows the campaign's progress and the log, not a send in flight. A **Needs attention** panel above it surfaces failures such as a step that could not be scheduled, a send the worker could not complete, or a mailbox whose sending worker is offline; these retry automatically and stay visible so nothing fails silently.
-
-If scheduling stalls on a transient infrastructure hiccup, Warmbly re-seeds within a few minutes. Pausing and resuming forces a fresh start.
+暂停活动的**自动暂停**区域会显示原因和相关数字，团队中所有能查看活动的人都会收到通知。重新启动会清除该标记，但下次检查会重新评估，因此应先修复根本问题。
 
 </Fold>
 
 <Fold>
 
-## Content checks
+## 实时动态 [#live-activity]
 
-Warmbly scores each step's copy out of 100 for the signals spam filters weight: trigger wording, stacked punctuation, ALL-CAPS subjects, link and image counts, image-only bodies, empty or oversized bodies, and attachments.
+详情页会实时流式显示发送、打开、点击、回复、退信和跳过事件，所有同事同时更新。只有邮件实际交给工作节点时才显示**发送中**卡片，并始终注明联系人；两次发送之间，面板显示进度和日志，不会假装仍有邮件在途。上方的**需要关注**面板呈现无法调度的步骤、工作节点未完成的发送，或发送工作节点离线的邮箱等失败。这些问题会自动重试，同时持续可见，避免静默失败。
 
-Anything the checker can point at, it points at: the badge names the subject or the body (or both, when the wording straddles the two), the offending words are quoted back exactly as you typed them, and the line they sit in is shown for context. You never have to hunt through your own copy for a word the checker already found.
+若临时基础设施故障使调度停滞，Warmbly 会在几分钟内重新创建调度任务。暂停再恢复会强制重新开始。
 
-A few issues are about the message as a whole rather than any wording in it. An empty subject, an empty or oversized body and an image-heavy layout name the half they concern but have nothing to quote; an attachment on a cold email concerns neither half, so it shows as a plain line with no badge. Every issue, located or not, carries its fix in a sentence.
+</Fold>
 
-You see it in three places:
+<Fold>
 
-- **In the editor**, re-scored as you write a step.
-- **In the launch dialog**, alongside the other pre-send checks, with the lowest-scoring step named and its worst issue quoted as `Subject:` or `Body:`. Only email steps are scored; wait and action steps carry no copy.
-- **In the campaign activity feed**, if the copy that actually goes out scores below your floor, again naming the half of the message at fault.
+## 内容检查 [#content-checks]
 
-That last one catches what the first two cannot. The editor scores the template; the send path scores the message after merge fields, spintax, A/B selection and AI blocks have resolved, which is where a clean template becomes "Hi ," or picks the one spammy spintax branch. It logs once per step per day, not once per recipient.
+Warmbly 按垃圾邮件过滤器关注的信号，为每个步骤的文案打分，满分 100：敏感措辞、堆叠标点、全大写主题、链接和图片数量、纯图片正文、空正文或超大正文，以及附件。
 
-**Settings** > **Sending** > **Content checks** turns it off or moves the floor, which defaults to `60` and accepts `1` to `100`.
+能定位的问题，检查器都会明确定位：标记指出问题位于主题还是正文，跨越两者时则同时指出；有问题的词会按你原样输入的内容引用，并显示所在行作为上下文。你无需再在自己的文案中寻找检查器已经发现的词。
 
-<Callout type="info" title="Advisory, not a gate">
-A low score never blocks or delays a send. It is a signal to rewrite, not a verdict: a legitimate email can score badly, and a well-scoring one sent to a bad list will still fail.
+有些问题涉及整封邮件，而非具体措辞。空主题、空正文、过大正文或图片过多的布局，会标明对应部分，但没有可引用片段；冷邮件附件既不属于主题也不属于正文，因此显示为不带位置标记的普通一行。无论能否定位，每个问题都会附一句修改建议。
+
+可以在三个位置看到检查结果：
+
+- **编辑器中**：撰写步骤时持续重新评分。
+- **启动对话框中**：与其他发送前检查一同显示，指出分数最低的步骤，并用 `Subject:` 或 `Body:` 引用其最严重问题。只评分邮件步骤，等待和操作步骤没有文案。
+- **活动动态中**：实际发出的文案低于设定最低分时记录，同样指出问题位于邮件哪一部分。
+
+最后一处可以捕捉前两处看不到的问题。编辑器评分的是模板；发送链路则在合并字段、Spintax、A/B 版本和 AI 内容块全部解析后评分，此时原本正常的模板可能变成“Hi ,”，或恰好选中一个像垃圾邮件的 Spintax 分支。每个步骤每天只记录一次，不会为每位收件人都记录。
+
+可在**设置** > **发送** > **内容检查**中关闭功能或调整最低分，默认 `60`，允许 `1` 到 `100`。
+
+<Callout type="info" title="仅供建议，不作为发送门槛">
+低分不会阻止或延迟发送。它是提醒你修改文案的信号，而不是定论：正常邮件也可能低分，高分邮件发给糟糕的名单仍然会失败。
 </Callout>
 
-### Analyze with AI
+### 使用 AI 分析 [#analyze-with-ai]
 
-The rules above catch what rules can catch. **Analyze with AI**, under the score in the step editor, reads the copy itself and reports what a filter and a human reader will object to:
+上述规则检查只能捕捉规则能识别的问题。步骤编辑器分数下方的**使用 AI 分析**会阅读文案本身，指出过滤器和真人读者可能反感的内容：
 
-- the specific word, phrase or sentence, quoted from your draft, and whether it is in the subject or the body
-- why that fragment hurts deliverability or replies
-- what to write instead
-- a rewritten subject line, which you can apply in one click
-- copy-level advice that has no single fragment to point at
-- an overall deliverability score out of 100
+- 从草稿中引用具体词、短语或句子，并指出位于主题还是正文。
+- 解释该片段为何影响邮件送达或回复。
+- 建议改成什么。
+- 提供可一键应用的重写主题。
+- 提供无法指向单一片段的整体文案建议。
+- 给出满分 100 的整体邮件送达能力评分。
 
-It runs on the AI provider configured for the deployment (see [AI credits](/guides/ai-credits/) for the cost, and [Configuration](/development/configuration/) for self-host setup). It needs the **Use AI** permission. A deployment with neither an AI provider nor TypeSafe configured says so in place of the button rather than offering something that cannot run.
+它使用部署所配置的 AI 服务商。费用见 [AI 积分](/guides/ai-credits/)，自托管设置见[配置](/development/configuration/)。需要**使用 AI**权限。部署既未配置 AI 服务商也未配置 TypeSafe 时，会在按钮位置明确说明，而不是提供无法运行的功能。
 
-When the deployment has TypeSafe configured (`TYPESAFE_API_KEY`), the same click also returns a **Reads as** block: how the copy lands with the person receiving it, on a personal-note-to-bulk-mail scale; whether it is written for this reader or could be sent to anyone; whether it makes one clear ask, several, or none; and a warning when it makes a claim a spam filter would object to. These are calibrated numbers from a reader model, not prose, and the subject and body are sent to TypeSafe to get them. On a deployment with TypeSafe and no AI provider, the button still works: it returns the rules score, the Reads as block and a one-line reading in place of the quoted findings, and spends no credits.
+部署配置了 TypeSafe（`TYPESAFE_API_KEY`）时，同一次点击还会返回**读起来像什么**区域：评估文案在收件人看来更像个人便条还是批量邮件、是否针对当前读者还是可发给任何人、是否提出一个清楚请求、多个请求或没有请求，以及是否包含会让垃圾邮件过滤器警觉的声称。这些是读者模型校准后的数值，而不是自然语言判断；主题和正文会发送到 TypeSafe 进行计算。只有 TypeSafe、没有 AI 服务商的部署，按钮仍可使用：返回规则评分、该评估区域，以及一句整体解读代替逐段引用的发现，并且不消耗积分。
 
-Every quote is checked against your draft before it is shown. A fragment the model could not have copied from your copy is dropped rather than displayed, so the panel never points at a sentence you did not write.
+每条引用显示前都会与草稿核对。如果模型给出的片段不可能来自你的文案，就会被丢弃，避免面板指向你根本没写过的句子。
 
-### Re-check
+### 重新检查 [#re-check]
 
-**Re-check** re-scores the copy on the spot instead of waiting for the editor's debounce, and once you have run an AI analysis it re-runs that too. Edit what the findings told you to edit, press it, and the panel shows the new score against the previous one: `+14 since your last check`.
+**重新检查**会立即重新评分，不必等待编辑器的防抖延迟；如果之前运行过 AI 分析，也会重新分析。按照建议编辑后点击，面板会显示新分数与上次的差值，例如 `+14 since your last check`。
 
-The AI score is deliberately not sampled, so re-checking copy you did not touch returns the same number. A change in the score is a change in the copy.
+AI 评分刻意不采用随机采样，因此未修改文案时重复检查会返回同一分数，分数变化对应文案变化。
 
-When the draft has moved on from the analysis on screen, the panel says so and highlights the button, rather than presenting stale findings as current.
-
-</Fold>
-
-<Fold>
-
-## Testing placement
-
-A content score reads the copy; a placement test sends it. Test any email step from **Placement tests** by choosing the campaign and the step: the copy is rendered the way this campaign sends it (merge fields for its first lead, its opt-out line, its tracking and attachments) and sent from one of its mailboxes to seed inboxes at the major providers, which report whether it reached the inbox, a Gmail tab or spam, or never arrived. Each copy is a send from that mailbox's daily limit.
-
-A **placement monitor** repeats that on a schedule while the campaign runs, every `7` days by default, rotating through the campaign's mailboxes. When a run lands below its alert threshold (`70%` inbox by default), everyone who can view campaigns is notified, and the monitor can pause the campaign too, as an auto-pause you restart yourself. See [inbox placement tests](/guides/placement-tests/).
+如果草稿已经修改，而面板显示的仍是旧分析，界面会明确提示并突出显示按钮，不会把过时发现当作当前结果。
 
 </Fold>
 
 <Fold>
 
-## Easing out of warmup
+## 测试投递位置 [#testing-placement]
 
-A diagnostic-history mailbox starts cold sending at a conservative ceiling of five/day. Synthetic traffic and elapsed age do not show that real recipients welcome outreach.
+内容评分阅读文案，投递位置测试则真正发送邮件。在**投递位置测试**中选择活动和步骤，即可测试任意邮件步骤：按该活动实际发送方式渲染，包括首位潜在客户的合并字段、拒收说明、跟踪和附件，再从其中一个邮箱发送到主要服务商的种子测试邮箱。测试邮箱报告最终进入收件箱、Gmail 某个分类标签页、垃圾邮件，或始终未到达。每份副本都计入发件邮箱的每日发送上限。
 
-Confirmed human replies to actual campaign recipients in the last seven days permit bounded increases: at most five per clean day, and never more than the confirmed reply count. Complaints clear positive progression. Without reply evidence, the ceiling stays five/day.
-
-Configured campaign/mailbox caps, shared daily/rolling recipient limits and negative-feedback holds still bind. This is product pacing, not a universal provider-approved safe volume or proven reputation benefit. Missing evidence leaves full-cap dates unknown rather than projecting synthetic age into readiness. If the feedback lookup fails or omits a known warmed mailbox, its execution, projection and displayed explanation retain the conservative ceiling. A missing lookup does not mean the mailbox never warmed.
-
-<Callout type="info" title="Only for mailboxes that warmed">
-A mailbox that never used warmup is not gated. This exists to smooth the warmup-to-cold transition, not to cap senders who never opted into warmup.
-
-</Callout>
+**投递位置监测**会在活动运行期间定期重复测试，默认每 `7` 天一次，并轮换使用活动邮箱。某次结果低于提醒阈值（默认收件箱到达率 `70%`）时，所有能查看活动的人都会收到通知；监测也可以自动暂停活动，之后需由你手动重启。参见[收件箱到达测试](/guides/placement-tests/)。
 
 </Fold>
 
 <Fold>
 
-## The launch check on your list
+## 逐步从预热过渡到正式发送 [#easing-out-of-warmup]
 
-Starting a campaign measures its recipient list first and refuses to launch one that is known to be largely undeliverable. Mailbox providers put a sender under review at around a 5% bounce rate, so the number worth seeing is the one you can see beforehand.
+具有诊断历史的邮箱，开始发送冷邮件时采用每天五封的保守上限。合成流量和经过的时间，并不能证明真实收件人欢迎外联。
 
-What it counts:
+过去七天内，真实营销活动收件人的已确认人工回复，可以支持有限度提高上限：每个无负面情况的日期最多增加五封，并且增量不超过已确认回复数。投诉会清除正向增长进度。没有回复证据时，上限保持每天五封。
 
-- **Known-invalid addresses only.** Verification has to have actually rejected the address. A list nobody has verified is not evidence of a bad list, so it is never blocked on that basis, only pointed out.
-- **Deliverable recipients only.** Suppressed and unsubscribed leads are skipped at send time, so counting them would make a bad list look fine.
-- **Lists of at least 50.** Below that a share means nothing, and no launch is refused on it.
+配置的活动与邮箱上限、共享每日及滚动收件人限制，以及负面反馈导致的暂停仍然有效。这是产品的节奏控制，不是普遍得到服务商认可的安全发送量，也不是已证实的信誉收益。证据缺失时，达到完整上限的日期保持未知，不会把合成流量积累的时间推算成已准备就绪。如果反馈查询失败，或遗漏了已知经过预热的邮箱，实际执行、容量预测和界面说明都会保留保守上限。查询缺失不意味着该邮箱从未预热。
 
-A refused launch shows why and offers **Launch anyway**, for a list you verified with another service. Through the API the same override is `acknowledge_list_risk` on the start request.
+<Callout type="info" title="仅适用于使用过预热的邮箱">
+从未使用预热的邮箱不受这项限制。它用于平滑从预热到冷邮件的过渡，不是限制那些从未选择预热的发件人。
 
-Above `4%` projected bounce the launch is refused with the number and what to do about it. Between `2%` and `4%` it launches with a warning. The same projection appears in the launch dialog before you click, so a refusal is never a surprise.
-
-</Fold>
-
-<Fold>
-
-## Safety posture
-
-Defaults are deliberately conservative, aiming at a low complaint rate rather than maximum throughput:
-
-- **Spacing over bursts**: the minimum gap and even distribution keep a natural cadence.
-- **Honor provider limits**: adding mailboxes or worker IPs is not a way to bypass provider restrictions.
-- **Ramp gradually**: raise volume only while performance stays healthy.
-- **Health gating**: a mailbox in deliverability trouble has its cold volume cut or paused automatically.
-- **Human timing**: mailboxes with [sending behavior](/guides/sending-behavior/) enabled keep randomized working hours, volume, and spacing in their own timezone.
-
-Choose configured caps using provider policy, recipient permission and observed campaign outcomes. A configured cap is a maximum, not evidence that the volume is safe or that the mailbox is ready for it.
-
-<Callout type="warn" title="Diagnostics are optional">
-When enabled, Warmbly limits a campaign mailbox to at most five diagnostic warmup messages per day, so campaign traffic stays primary. Diagnostic participation is not a proven reputation benefit and cannot compensate for a repetitive template sent to a poorly targeted list: personalize, test meaningful A/B variants, and honor suppression and unsubscribe signals.
 </Callout>
 
 </Fold>
 
-## Related guides
+<Fold>
+
+## 启动前的名单检查 [#the-launch-check-on-your-list]
+
+启动前会评估收件人名单，已知大部分地址无法投递的活动会被拒绝启动。邮箱服务商在退信率约 5% 时就可能将发件人列入审核，因此应关注发送前就能获得的风险估计。
+
+检查只统计以下内容：
+
+- **已知无效地址。** 地址验证必须实际拒绝过该地址。未经验证的名单不能作为名单质量差的证据，因此只会提示，不会据此阻止。
+- **可实际发送的收件人。** 被禁止发送或已退订的客户在发送时会跳过，将他们计入分母会让不良名单看起来正常。
+- **至少 50 人的名单。** 低于此人数时，比率参考意义不足，不会因此拒绝启动。
+
+拒绝时会说明原因，并提供**仍然启动**，供已通过其他服务验证的名单使用。API 中对应的覆盖参数是启动请求中的 `acknowledge_list_risk`。
+
+预计退信率高于 `4%` 时，会拒绝启动，显示数值和处理办法；在 `2%` 到 `4%` 之间时，允许启动但给出警告。点击前，启动对话框就会显示相同预测，因此不会突然才告知拒绝。
+
+</Fold>
+
+<Fold>
+
+## 安全控制状态 [#safety-posture]
+
+默认设置刻意保守，以低投诉率为目标，而非追求最高吞吐量：
+
+- **重视间隔，避免突发**：最小间隔和均匀分配保持自然节奏。
+- **遵守服务商限制**：增加邮箱或工作节点 IP 不能用来绕过服务商限制。
+- **逐步增量**：只有表现健康时才提高发送量。
+- **健康限制**：送达出现问题的邮箱，其冷邮件发送量会自动降低或暂停。
+- **类似真人的时段**：启用[发送行为](/guides/sending-behavior/)的邮箱，按自身时区随机安排工作时间、发送量和间隔。
+
+应依据服务商政策、收件人许可和实际活动结果选择上限。配置上限只是最大值，并不证明该发送量安全，也不证明邮箱已准备好承担它。
+
+<Callout type="warn" title="诊断功能可选">
+启用后，Warmbly 将营销活动邮箱的诊断预热邮件限制为每天最多五封，让活动流量保持主要地位。参与诊断并不具有已证实的信誉提升效果，也无法弥补向目标不准的名单发送重复模板的问题：应做好个性化，测试有实质差异的 A/B 版本，并尊重禁止发送和退订信号。
+</Callout>
+
+</Fold>
+
+## 相关指南 [#related-guides]
 
 <Cards>
-  <Card title="Personalization & expressions" href="/guides/expressions/">
-    Merge fields, fallbacks, conditionals, and spintax.
+  <Card title="个性化与表达式" href="/guides/expressions/">
+    合并字段、回退值、条件判断与 Spintax。
   </Card>
-  <Card title="Deliverability" href="/guides/deliverability/">
-    Warmup, authentication, tracking, and sender reputation.
+  <Card title="邮件送达能力" href="/guides/deliverability/">
+    预热、身份验证、跟踪和发件信誉。
   </Card>
-  <Card title="Inbox placement tests" href="/guides/placement-tests/">
-    Send a step to seed inboxes and see where it lands, once or on a schedule.
+  <Card title="收件箱到达测试" href="/guides/placement-tests/">
+    将某个步骤发送到种子测试邮箱，单次或定期检查最终投递位置。
   </Card>
-  <Card title="Sequences" href="/guides/sequences/">
-    Multi-step follow-ups with delays and branching.
+  <Card title="邮件序列" href="/guides/sequences/">
+    支持延迟和分支的多步骤跟进。
   </Card>
 </Cards>

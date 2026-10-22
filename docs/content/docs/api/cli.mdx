@@ -1,9 +1,9 @@
 ---
-title: CLI
-description: The warmbly command line interface. Sign in once, then drive campaigns, contacts, mailboxes and the inbox from your terminal, from CI, or from an agent.
+title: "CLI"
+description: "warmbly 命令行界面。登录一次，即可通过终端、CI 或智能体管理营销活动、联系人、邮箱和收件箱。"
 ---
 
-`warmbly` is the command line interface to Warmbly. It signs in as you, holds one credential per host, and speaks only the public REST API, so it works against the hosted service and against any self-hosted instance you can reach.
+`warmbly` 是 Warmbly 的命令行界面。它以你的身份登录，为每个主机保存一份凭据，并且仅调用公共 REST API，因此既适用于托管服务，也适用于你能够连接的任何自托管实例。
 
 ```bash
 warmbly auth login
@@ -12,21 +12,21 @@ warmbly inbox list --unseen
 warmbly api "/campaigns?limit=10"
 ```
 
-<Callout type="info" title="This is not warmblyctl">
-There are two CLIs and they answer different questions. `warmbly` is the one you install on your machine to use the product. [`warmblyctl`](/development/warmblyctl/) is the operator's tool: it talks to Postgres directly, runs inside the backend container, and exists for recovery, accounts, health and backups. If you are asking "what is wrong with this install", that is the one you want.
+<Callout type="info" title="此工具与 warmblyctl 不同">
+项目提供两个用途不同的 CLI。`warmbly` 安装在你的计算机上，用于使用产品功能。[`warmblyctl`](/development/warmblyctl/) 则是运维工具：它直接访问 Postgres，在后端容器中运行，用于恢复、账户管理、健康检查和备份。如果你想排查某个安装实例出了什么问题，应使用后者。
 </Callout>
 
-## Install
+## 安装 [#install]
 
-Pick one. All of them produce the same single binary.
+任选一种安装方式。它们都会提供同一个独立二进制文件。
 
-**macOS and Linux**
+**macOS 和 Linux**
 
 ```bash
 curl -fsSL https://warmbly.com/cli.sh | sh
 ```
 
-Installs to `~/.local/bin`, so it needs no root and no toolchain. The script verifies what it downloaded against the published checksum and installs nothing if they disagree, writes shell completions, and tells you the one line to add to your profile if that directory is not already on your PATH.
+安装到 `~/.local/bin`，无需 root 权限或工具链。脚本会将下载内容与已发布的校验和进行比对；不一致时不会安装任何内容。它还会写入 shell 自动补全文件；如果该目录尚未加入 PATH，会提示需要添加到配置文件中的那一行命令。
 
 **Windows**
 
@@ -34,56 +34,56 @@ Installs to `~/.local/bin`, so it needs no root and no toolchain. The script ver
 irm https://warmbly.com/cli.ps1 | iex
 ```
 
-Installs to `%LOCALAPPDATA%\Warmbly\bin` and adds it to your user PATH. No admin rights.
+安装到 `%LOCALAPPDATA%\Warmbly\bin`，并将其加入用户 PATH。无需管理员权限。
 
-**Homebrew** (macOS and Linux)
+**Homebrew**（macOS 和 Linux）
 
 ```bash
 brew install warmbly/tap/warmbly
 ```
 
-**Scoop** (Windows)
+**Scoop**（Windows）
 
 ```powershell
 scoop bucket add warmbly https://github.com/warmbly/homebrew-tap
 scoop install warmbly
 ```
 
-**Docker**, for CI or anywhere installing a binary is more trouble than pulling one:
+**Docker**：适用于 CI，或拉取镜像比安装二进制文件更方便的场景：
 
 ```bash
 docker run --rm -e WARMBLY_TOKEN ghcr.io/warmbly/warmbly/cli campaign list
 ```
 
-A container has no browser, so sign in with `WARMBLY_TOKEN` rather than `auth login`.
+容器没有浏览器，因此应通过 `WARMBLY_TOKEN` 登录，而不是使用 `auth login`。
 
-**From source**, if you have Go:
+**从源码安装**，适用于已安装 Go 的环境：
 
 ```bash
 go install github.com/warmbly/warmbly/cmd/cli@latest
 mv "$(go env GOPATH)/bin/cli" "$(go env GOPATH)/bin/warmbly"
 ```
 
-The package directory is `cmd/cli`, so `go install` names the binary `cli`. Rename it, or use one of the channels above.
+软件包目录为 `cmd/cli`，因此 `go install` 会将二进制文件命名为 `cli`。请自行重命名，或使用上述任一安装渠道。
 
-**Already have a Warmbly instance?** The binary ships inside the backend image:
+**已经部署了 Warmbly 实例？** 后端镜像中已包含此二进制文件：
 
 ```bash
 docker compose -p warmbly exec backend warmbly --help
 ```
 
-### Keeping it current
+### 保持更新 [#keeping-it-current]
 
 ```bash
 warmbly version
 warmbly upgrade
 ```
 
-`upgrade` replaces the binary in place, verifying the download against the release checksums first. When the CLI came from Homebrew or Scoop it says which command to run instead, rather than overwriting a file a package manager owns. The CLI also checks for a new release once a day and mentions it in one line; `WARMBLY_NO_UPDATE_CHECK=1` turns that off, and it never runs in CI or when output is piped.
+`upgrade` 会先根据发布版本的校验和验证下载内容，然后原地替换二进制文件。如果 CLI 通过 Homebrew 或 Scoop 安装，它会提示应运行的更新命令，不会覆盖包管理器管理的文件。CLI 还会每天检查一次新版本，并用一行提示告知；`WARMBLY_NO_UPDATE_CHECK=1` 可关闭此功能，且该检查不会在 CI 或输出被管道转发时运行。
 
-### Installer flags
+### 安装程序选项 [#installer-flags]
 
-The install script takes flags after `--`, and every one of them is also an environment variable, so the same install runs from Ansible, cloud-init or a Dockerfile:
+安装脚本接受 `--` 后的选项，每个选项也都有对应的环境变量，因此同样的安装可从 Ansible、cloud-init 或 Dockerfile 中运行：
 
 ```bash
 curl -fsSL https://warmbly.com/cli.sh | sh -s -- --dir /usr/local/bin
@@ -93,21 +93,21 @@ curl -fsSL https://warmbly.com/cli.sh | sh -s -- --dry-run
 curl -fsSL https://warmbly.com/cli.sh | sh -s -- --uninstall
 ```
 
-| Flag | Variable | What it does |
+| 选项 | 变量 | 作用 |
 |---|---|---|
-| `--dir PATH` | `WARMBLY_INSTALL_DIR` | Where the binary goes. Default `~/.local/bin` |
-| `--version TAG` | `WARMBLY_CLI_VERSION` | Pin a release instead of taking the newest |
-| `--base-url URL` | `WARMBLY_CLI_BASE_URL` | Download from an internal mirror of the release assets |
-| `--no-modify-path` | `WARMBLY_NO_MODIFY_PATH` | Never touch a shell profile |
-| `--no-completions` | `WARMBLY_NO_COMPLETIONS` | Skip the completion files |
-| `--dry-run` | | Print what would happen, change nothing |
-| `--uninstall` | | Remove the binary and completions, keep your sign-ins |
+| `--dir PATH` | `WARMBLY_INSTALL_DIR` | 二进制文件的安装位置。默认 `~/.local/bin` |
+| `--version TAG` | `WARMBLY_CLI_VERSION` | 固定安装指定版本，而非最新版本 |
+| `--base-url URL` | `WARMBLY_CLI_BASE_URL` | 从发布资源的内部镜像下载 |
+| `--no-modify-path` | `WARMBLY_NO_MODIFY_PATH` | 不修改任何 shell 配置文件 |
+| `--no-completions` | `WARMBLY_NO_COMPLETIONS` | 跳过自动补全文件 |
+| `--dry-run` | | 打印将执行的操作，不作任何更改 |
+| `--uninstall` | | 删除二进制文件和自动补全文件，保留登录信息 |
 
-`--help` lists them in the terminal. `sh -s -- --help` works through the pipe.
+`--help` 会在终端列出这些选项。通过管道调用时可使用 `sh -s -- --help`。
 
-### Reading it before you run it
+### 运行前先阅读脚本 [#reading-it-before-you-run-it]
 
-Piping a script into a shell is worth being careful about, which is why the checksum is published next to it:
+将脚本通过管道传入 shell 执行需要谨慎，因此脚本旁同时发布了校验和：
 
 ```bash
 curl -fsSLO https://warmbly.com/cli.sh
@@ -116,11 +116,11 @@ sha256sum -c cli.sh.sha256
 less cli.sh && sh cli.sh
 ```
 
-Every release archive is covered by `checksums.txt` on the release, and the installer verifies the archive against it before unpacking. If the two disagree it installs nothing and says so.
+每个发布归档都有对应版本中的 `checksums.txt` 校验信息，安装器会在解压前据此验证归档。如果两者不匹配，安装器不会安装任何内容，并会明确提示。
 
-### Completions
+### 命令补全 [#completions]
 
-The installer writes them for your shell. To do it by hand:
+安装器会为你的 shell 写入自动补全文件。手动配置方式如下：
 
 ```bash
 warmbly completion bash > /etc/bash_completion.d/warmbly
@@ -128,15 +128,15 @@ warmbly completion zsh  > "${fpath[1]}/_warmbly"
 warmbly completion fish > ~/.config/fish/completions/warmbly.fish
 ```
 
-## Signing in
+## 登录 [#signing-in]
 
 ```bash
 warmbly auth login
 ```
 
-It asks two questions: which instance (the hosted service, or a hostname of your own), and how (a browser approval, or pasting a key you already have).
+它会询问两个问题：连接哪个实例（托管服务或你自己的主机名），以及采用哪种登录方式（浏览器批准，或粘贴已有密钥）。
 
-The browser path shows an eight character code, opens `app.warmbly.com/cli`, and waits. You approve there, choosing which workspace the CLI is signing in to. The client name and machine name on that screen are whatever the terminal reported, so check that the code matches the one your terminal printed. Because approving creates a lasting credential, the screen asks you to confirm it is you (password or second factor) if you have not done so in the last few minutes, the same as creating an API key. The approval creates **one API key named for your machine** (its hostname up to the first dot), which appears under Settings > API keys and is revocable there or with `warmbly auth logout`. The terminal never handles your password, and the browser never handles the key.
+浏览器方式会显示一个八字符代码，打开 `app.warmbly.com/cli`，然后等待。你在该页面批准请求，并选择 CLI 要登录的工作区。页面上的客户端名称和计算机名称均由终端报告，因此应核对代码是否与终端打印的一致。由于批准会创建长期凭据，如果你在最近几分钟内未确认身份，页面会要求通过密码或第二因素确认是你本人，规则与创建 API 密钥相同。批准后会生成**一个以你的计算机命名的 API 密钥**（名称取主机名第一个点之前的部分），它会显示在“设置 > API 密钥”中，并可在那里或通过 `warmbly auth logout` 撤销。终端不会处理你的密码，浏览器也不会处理密钥。
 
 ```
   Your code: K4TM-9RQD
@@ -147,7 +147,7 @@ The browser path shows an eight character code, opens `app.warmbly.com/cli`, and
   Workspace Acme
 ```
 
-Non-interactive forms, for a script or an agent:
+脚本或智能体可使用以下非交互形式：
 
 ```bash
 warmbly auth login --hostname warmbly.acme.com --web
@@ -155,22 +155,22 @@ echo "$WARMBLY_KEY" | warmbly auth login --with-token
 warmbly auth login --scopes read-only
 ```
 
-### Scopes
+### 权限范围 [#scopes]
 
-The CLI asks for full access by default. The key it gets never carries more than your role in the chosen workspace allows: the approval screen lists the scopes the key will actually have for that workspace, and anything the CLI asked for beyond your role is left out. If your role allows none of them, the approval is refused with `cli_auth_scopes_role`. Narrow the request with `--scopes`:
+CLI 默认请求完整访问权限。获得的密钥永远不会超出你在所选工作区的角色权限：批准页面会列出密钥实际将获得的权限范围，CLI 请求中超出角色范围的部分会被省略。如果你的角色不允许其中任何一项，批准会被拒绝，错误码为 `cli_auth_scopes_role`。使用 `--scopes` 可以缩小请求范围：
 
 ```bash
 warmbly auth login --scopes read-only
 warmbly auth login --scopes read_campaigns,read_contacts,send_campaigns
 ```
 
-A key's scopes are fixed once created, so widening them means a new key. `warmbly auth refresh --scopes full` runs the sign-in again and revokes the key it replaces, which is why refreshing does not leave a trail of keys behind.
+密钥创建后，其权限范围即固定不变；要扩大权限，需要创建新密钥。`warmbly auth refresh --scopes full` 会重新执行登录并撤销被替换的密钥，因此刷新操作不会遗留一串旧密钥。
 
-Scope names are the ones in the [permissions reference](/api/permissions/), in either case, with `full` and `read-only` as shorthands.
+权限范围名称与[权限参考](/api/permissions/)中的名称一致，不区分大小写，并支持 `full` 和 `read-only` 简写。
 
-### Several instances
+### 管理多个实例 [#several-instances]
 
-The CLI holds one credential per host. The `*` in `auth status` is the one commands use.
+CLI 为每个主机保存一份凭据。`auth status` 中标有 `*` 的主机就是命令当前使用的主机。
 
 ```bash
 warmbly auth login --hostname warmbly.acme.com
@@ -179,7 +179,7 @@ warmbly auth switch warmbly.acme.com
 warmbly campaign list --host warmbly.com   # one command, other host
 ```
 
-`warmbly auth status` also tells you where the token came from, which is the answer nine times out of ten when a command fails unexpectedly:
+`warmbly auth status` 还会显示令牌的来源；命令意外失败时，这通常就是定位原因的关键：
 
 ```
 * warmbly.com
@@ -191,9 +191,9 @@ warmbly campaign list --host warmbly.com   # one command, other host
     - token: wmbly_ab********wxyz
 ```
 
-### In CI
+### 在 CI 中使用 [#in-ci]
 
-Set `WARMBLY_TOKEN` and skip the login entirely. It overrides the file and is never written to it.
+设置 `WARMBLY_TOKEN` 即可完全跳过登录。它会覆盖文件中的凭据，但绝不会写入该文件。
 
 ```yaml
 env:
@@ -202,11 +202,11 @@ env:
 run: warmbly campaign list --json
 ```
 
-`warmbly auth token` prints the active token and nothing else, for handing to another tool.
+`warmbly auth token` 只输出当前使用的令牌，便于将其交给其他工具。
 
-## Output
+## 输出 [#output]
 
-Commands print a table on a terminal and JSON everywhere else, so the same command is readable by a person and parseable by a pipe.
+在终端中，命令会打印表格；在其他环境中则输出 JSON。因此同一个命令既方便人阅读，也便于管道中的程序解析。
 
 ```bash
 warmbly campaign list                      # a table
@@ -216,57 +216,57 @@ warmbly campaign list --fields name,status
 warmbly campaign list --template '{{range .data}}{{.name}}{{"\n"}}{{end}}'
 ```
 
-`--all` walks the cursor on any list command and merges every page into one response.
+在任意列表命令中使用 `--all`，都会沿游标遍历并将所有页合并为一个响应。
 
-## Sending real mail
+## 发送真实邮件 [#sending-real-mail]
 
-Anything that puts mail on the wire asks first, and refuses rather than sending when there is no terminal to ask on:
+任何实际发送邮件的操作都会先请求确认；如果没有可用于询问的终端，则会拒绝操作，不会发送：
 
 ```
 $ warmbly campaign start 6f1c…
 ! `warmbly campaign start` sends real mail. Continue? [y/N]
 ```
 
-`--yes` is the only way past it, which makes it the flag to grep for in a script review. The commands that behave this way are `campaign start`, `campaign test`, `placement test`, `placement batch-start`, `mailbox send`, `inbox reply`, `inbox compose` and `inbox approve-draft`.
+只有 `--yes` 能跳过确认，因此审查脚本时应搜索此选项。采用这种行为的命令包括 `campaign start`、`campaign test`、`placement test`、`placement batch-start`、`mailbox send`、`inbox reply`、`inbox compose` 和 `inbox approve-draft`。
 
-## Commands
+## 命令 [#commands]
 
-Run `warmbly <command> --help` for the flags, and `warmbly <command> <subcommand> --help` for one command's arguments.
+运行 `warmbly <command> --help` 查看选项，运行 `warmbly <command> <subcommand> --help` 查看某个具体命令的参数。
 
-| Command | What it covers |
+| 命令 | 功能范围 |
 |---|---|
-| `auth` | login, logout, status, token, switch, refresh |
-| `status` | one screen: mailboxes needing attention, what is sending, what is unread |
-| `browse` | open the dashboard, or one record, in a browser |
-| `campaign` | list, view, create, edit, steps, senders, segments, preflight, test, start, stop, logs, plan, pause-lead / resume-lead / lead-hold, lead-cc / set-lead-cc / lead-cc-suggestions |
-| `contact` | list, view, create, edit, delete, lookup, timeline, notes, import, export, verify |
-| `mailbox` | list, view, edit, health checks, sync state, send-as addresses, sending behaviour, warmup, hold, send |
-| `inbox` | list, view, threads, read, reply, compose, drafts, scheduled sends, snoozes |
-| `suppression` | the addresses and domains that get no campaign mail |
-| `segment` | live audiences and their conditions |
-| `template` | reply templates |
-| `automation` | automations, their runs and test firing |
-| `form` | lead capture forms, submissions and stats |
-| `deal`, `pipeline`, `task` | the CRM |
-| `analytics` | dashboard, deliverability, warmup, per-mailbox and per-campaign numbers |
-| `placement` | [inbox placement tests](/guides/placement-tests/): overview, test, list, view, cancel, seed inboxes, a campaign's scheduled test, [batches](/guides/placement-tests/#testing-a-fleet-with-batches) across many mailboxes (`batch-preview`, `batch-start`, `batches`, `batch`, `batch-senders`, `batch-cancel`) and fleet `coverage` |
-| `audit` | the workspace's audit trail |
-| `advisor` | recommendations, and applying or dismissing them |
-| `webhook` | endpoints, deliveries, redelivery, event types |
-| `key` | API keys, their scopes and their usage |
-| `oauth-app` | OAuth applications you publish |
-| `integration` | third-party connections |
-| `org` | which workspace this credential belongs to |
-| `team` | named groups of members, for CRM ownership and routing |
-| `settings` | workspace-wide outreach and suppression settings |
-| `warmup-routing` | which mailboxes warm with which |
-| `tool` | the AI tool registry, listed and called |
-| `events` | the live event stream |
-| `api` | any endpoint at all |
-| `upgrade` | replace this binary with the newest release |
-| `config`, `alias`, `completion`, `version` | the CLI itself |
+| `auth` | login、logout、status、token、switch、refresh |
+| `status` | 在一个页面查看需要处理的邮箱、正在发送的内容和未读邮件 |
+| `browse` | 在浏览器中打开控制台或某条记录 |
+| `campaign` | list、view、create、edit、steps、senders、segments、preflight、test、start、stop、logs、plan、pause-lead / resume-lead / lead-hold、lead-cc / set-lead-cc / lead-cc-suggestions |
+| `contact` | list、view、create、edit、delete、lookup、timeline、notes、import、export、verify |
+| `mailbox` | list（列表）、view（详情）、edit（编辑）、健康检查、同步状态、发件身份地址、发送行为、warmup（预热）、hold（暂停限制）、send（发送） |
+| `inbox` | list（列表）、view（详情）、threads（邮件会话）、read（阅读）、reply（回复）、compose（撰写）、drafts（草稿）、定时发送、snoozes（延后处理） |
+| `suppression` | 不会接收营销活动邮件的地址和域名 |
+| `segment` | 动态受众及其条件 |
+| `template` | 回复模板 |
+| `automation` | 自动化流程、运行记录和测试触发 |
+| `form` | 潜在客户收集表单、提交记录和统计信息 |
+| `deal`, `pipeline`, `task` | CRM |
+| `analytics` | 仪表板、邮件送达能力、预热，以及按邮箱和营销活动划分的指标 |
+| `placement` | [收件箱投递位置测试](/guides/placement-tests/)：概览、测试、列表、详情、取消、种子收件箱、营销活动的计划测试、跨多个邮箱的[批量测试](/guides/placement-tests/#testing-a-fleet-with-batches)（`batch-preview`、`batch-start`、`batches`、`batch`、`batch-senders`、`batch-cancel`），以及发件邮箱整体测试覆盖情况 `coverage` |
+| `audit` | 工作区审计记录 |
+| `advisor` | 建议，以及应用或忽略建议 |
+| `webhook` | 端点、投递记录、重新投递、事件类型 |
+| `key` | API 密钥、权限范围和用量 |
+| `oauth-app` | 你发布的 OAuth 应用 |
+| `integration` | 第三方连接 |
+| `org` | 此凭据所属的工作区 |
+| `team` | 有名称的成员分组，用于 CRM 负责人分配和路由 |
+| `settings` | 整个工作区的外联和禁止发送设置 |
+| `warmup-routing` | 哪些邮箱之间进行预热 |
+| `tool` | 列出和调用 AI 工具注册表中的工具 |
+| `events` | 实时事件流 |
+| `api` | 任意端点 |
+| `upgrade` | 将此二进制文件替换为最新版本 |
+| `config`, `alias`, `completion`, `version` | CLI 本身 |
 
-### Examples
+### 示例 [#examples]
 
 ```bash
 # Create a campaign, add a step, check it, start it
@@ -302,19 +302,19 @@ warmbly contact create --email jane@example.com --first-name Jane --company Acme
 warmbly contact list --all --json > contacts.json
 ```
 
-## What needs the dashboard
+## 哪些操作需要使用控制台 [#what-needs-the-dashboard]
 
-Three things the CLI deliberately does not do, because the API does not let a key do them:
+CLI 有意不提供以下三类功能，因为 API 不允许密钥执行这些操作：
 
-- **Connecting a mailbox.** It needs OAuth consent or a credential form in a browser. `warmbly browse mailboxes` opens the right page.
-- **Workspace administration.** Members, roles, invitations, workspace exports and the danger zone are session-only on the API: they depend on a human-bound session and refuse an API key. `warmbly browse members` and `warmbly browse settings` open them.
-- **Billing.** Plans, checkout and credits are session-only for the same reason. `warmbly browse billing`.
+- **连接邮箱。** 需要在浏览器中完成 OAuth 同意授权，或填写凭据表单。`warmbly browse mailboxes` 可打开对应页面。
+- **工作区管理。** 成员、角色、邀请、工作区导出和危险操作区的 API 仅接受会话：这些操作依赖绑定到用户本人的会话，会拒绝 API 密钥。可通过 `warmbly browse members` 和 `warmbly browse settings` 打开对应页面。
+- **账单。** 出于相同原因，套餐、结账和积分功能也仅接受会话。使用 `warmbly browse billing`。
 
-`warmbly org view` still shows which workspace you are in, and `warmbly team`, `warmbly settings` and `warmbly audit` cover the workspace surface a key can reach.
+`warmbly org view` 仍会显示当前所在工作区；`warmbly team`、`warmbly settings` 和 `warmbly audit` 则覆盖密钥可访问的工作区功能。
 
-## Watching events
+## 监听事件 [#watching-events]
 
-`warmbly events tail` streams the developer WebSocket into your terminal: the same events the dashboard runs on, printed as they happen. It is the fastest way to see whether an integration is receiving what you think it is, without standing up a public endpoint first.
+`warmbly events tail` 将开发者 WebSocket 事件流输出到终端：与控制台使用的事件相同，并在发生时立即打印。这是检查集成是否收到预期事件的最快方式，无需先搭建公共端点。
 
 ```bash
 warmbly events tail
@@ -322,11 +322,11 @@ warmbly events tail --intent EMAIL --intent CAMPAIGN
 warmbly events tail --json | jq 'select(.event_type == "EMAIL_REPLIED")'
 ```
 
-It needs a key with `REALTIME_SUBSCRIBE`; `warmbly auth refresh --scopes full` gets one. The stream, its intents and its event types are documented under [Realtime](/api/realtime/).
+此命令需要具有 `REALTIME_SUBSCRIBE` 权限的密钥，可通过 `warmbly auth refresh --scopes full` 获取。事件流、订阅意图和事件类型的文档见[实时服务](/api/realtime/)。
 
-## Calling the API directly
+## 直接调用 API [#calling-the-api-directly]
 
-`warmbly api` reaches every endpoint, including the ones with no command of their own. Paths are relative to `/v1`.
+`warmbly api` 可访问所有端点，包括没有专用命令的端点。路径相对于 `/v1`。
 
 ```bash
 warmbly api /me
@@ -337,16 +337,16 @@ warmbly api /contacts/search -X POST --input filter.json
 warmbly api /webhooks/WEBHOOK_ID -X DELETE
 ```
 
-`-f` keeps a value a string. `-F` guesses the type, so `true`, `false`, `null` and numbers arrive as themselves, `@file` reads a value from a file, `key[sub]=v` nests and repeated `key[]=v` builds an array. `--paginate` follows the cursor, `-i` includes the status and headers, `--idempotency-key` rides the [documented header](/api/authentication/).
+`-f` 会将值保持为字符串。`-F` 会推断类型，因此 `true`、`false`、`null` 和数字会以各自类型传入；`@file` 从文件读取值，`key[sub]=v` 创建嵌套结构，重复的 `key[]=v` 构成数组。`--paginate` 沿游标分页，`-i` 包含状态和响应头，`--idempotency-key` 通过[文档所述请求头](/api/authentication/)传递。
 
-## Configuration
+## 配置 [#configuration]
 
-Two files under `~/.config/warmbly` (or `XDG_CONFIG_HOME`, or `WARMBLY_CONFIG_DIR`):
+在 `~/.config/warmbly`（或 `XDG_CONFIG_HOME`、`WARMBLY_CONFIG_DIR`）下保存两个文件：
 
-- `hosts.yml`, one credential per host, written 0600
-- `config.yml`, preferences and aliases
+- `hosts.yml`：每个主机一份凭据，以 0600 权限写入
+- `config.yml`：偏好设置和别名
 
-Signing in records the instance's own API and dashboard URLs alongside the credential, taken from what the instance reports, so `browse` and `events tail` work on a self-hosted layout without anyone configuring a second address.
+登录时，会在凭据旁保存实例报告的 API URL 和控制台 URL，因此 `browse` 和 `events tail` 在自托管环境中也能工作，无需额外配置第二个地址。
 
 ```bash
 warmbly config list
@@ -355,42 +355,42 @@ warmbly config set confirm always   # confirm every write, not only sends
 warmbly config set browser firefox
 ```
 
-### Aliases
+### 别名 [#aliases]
 
 ```bash
 warmbly alias set hot "campaign list --status active"
 warmbly hot --json
 ```
 
-Anything you type after the alias is appended, so an alias is a starting point rather than a fixed command.
+别名之后输入的所有内容都会追加到命令中，因此别名只是命令的起点，而不是固定不变的完整命令。
 
-### Environment
+### 环境 [#environment]
 
-| Variable | What it does |
+| 变量 | 作用 |
 |---|---|
-| `WARMBLY_TOKEN` | The API key to use. Overrides `hosts.yml` and is never written to it |
-| `WARMBLY_API_KEY` | The same thing under the name `warmblyctl` uses |
-| `WARMBLY_HOST` | Which signed-in host to use |
-| `WARMBLY_API_URL` | The API base URL, when it is not derivable from the host |
-| `WARMBLY_CONFIG_DIR` | Where the two files live |
-| `WARMBLY_NO_UPDATE_CHECK` | Never check for a newer release |
-| `NO_COLOR` | Turns colour off, as everywhere else |
+| `WARMBLY_TOKEN` | 要使用的 API 密钥。覆盖 `hosts.yml` 中的值，但绝不会写入该文件 |
+| `WARMBLY_API_KEY` | 作用相同，但使用 `warmblyctl` 所采用的变量名 |
+| `WARMBLY_HOST` | 选择要使用的已登录主机 |
+| `WARMBLY_API_URL` | 无法从主机推导时使用的 API 基础 URL |
+| `WARMBLY_CONFIG_DIR` | 上述两个文件的存放位置 |
+| `WARMBLY_NO_UPDATE_CHECK` | 不检查更新版本 |
+| `NO_COLOR` | 关闭颜色输出，与其他工具中的用法一致 |
 
-## Exit codes
+## 退出码 [#exit-codes]
 
-| Code | Meaning |
+| 错误码 | 含义 |
 |---|---|
-| `0` | It worked |
-| `1` | The command failed, or you declined a prompt |
-| `2` | The command line was wrong, or an answer was needed with no terminal to ask on |
-| `4` | Not signed in, or the credential was rejected or lacks a scope |
+| `0` | 执行成功 |
+| `1` | 命令失败，或你拒绝了确认提示 |
+| `2` | 命令行参数有误，或需要用户回答但没有可用于询问的终端 |
+| `4` | 未登录，或凭据被拒绝、缺少权限范围 |
 
-Every API failure prints the response's machine-readable `code` and `request_id` to stderr, so a script can branch without reading prose.
+每次 API 失败都会将响应中供程序识别的 `code` 和 `request_id` 打印到标准错误输出，使脚本无需解析说明文字即可判断后续逻辑。
 
-## See also
+## 另请参阅 [#see-also]
 
-- [Authentication](/api/authentication/) for how the device flow mints a key
-- [Permissions](/api/permissions/) for what each scope allows
-- [Endpoint scope map](/api/endpoints/) for what `warmbly api` can reach
-- [Realtime](/api/realtime/) for the stream behind `warmbly events tail`
-- [warmblyctl](/development/warmblyctl/) for the operator's CLI
+- [身份验证](/api/authentication/)：设备流程如何创建密钥
+- [权限](/api/permissions/)：各权限范围允许的操作
+- [端点权限范围表](/api/endpoints/)：`warmbly api` 可访问的接口
+- [实时服务](/api/realtime/)：`warmbly events tail` 所使用的事件流
+- [warmblyctl](/development/warmblyctl/)：运维 CLI

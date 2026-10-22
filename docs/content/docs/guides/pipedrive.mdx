@@ -1,364 +1,364 @@
 ---
-title: Pipedrive
-description: "Run your workspace's CRM on Pipedrive: deals, activities and notes written through, outreach logged on the person, and campaigns that stop when Pipedrive says someone has moved on."
+title: "Pipedrive"
+description: "将 Pipedrive 用作工作区的 CRM：直接写入商机、活动与备注，在人员记录中保存外联活动，并在 Pipedrive 显示联系人已进入后续阶段时停止相关营销活动。"
 ---
 
-Pipedrive mode makes Pipedrive your workspace's CRM. The deals, tasks and notes you see in Warmbly are Pipedrive's records, and your outreach is logged on each person.
+Pipedrive 模式让 Pipedrive 成为工作区的 CRM。你在 Warmbly 中看到的商机、任务和备注都是 Pipedrive 的记录，客户触达活动也会记录到每位人员上。
 
-## Switch to Pipedrive
+## 切换到 Pipedrive [#switch-to-pipedrive]
 
 <Steps>
 
 <Step>
 
-Open **Integrations > Pipedrive** and select **Connect**.
+打开**集成 > Pipedrive**，选择**连接**。
 
 </Step>
 
 <Step>
 
-Sign in to Pipedrive, pick the company, and approve the permissions.
+登录 Pipedrive，选择公司并批准权限。
 
 </Step>
 
 <Step>
 
-In the setup wizard, select **Switch to Pipedrive**, then press **Looks good** through the rest.
+在设置向导中选择**切换到 Pipedrive**，然后在其余步骤点击**确认无误**继续。
 
 </Step>
 
 <Step>
 
-Finish the wizard. The dashboard fills in as the first pull runs, usually within a minute or two.
+完成向导。首次拉取运行时，控制台会逐渐填入数据，通常只需一两分钟。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Every change you make in Warmbly goes to Pipedrive first. If Pipedrive refuses it, nothing is saved.
-- A deal opened in Pipedrive, a label you choose (such as **Customer**) or an unsubscribe holds the person's campaigns.
-- Connect as a Pipedrive admin when you can. Without admin rights, the Warmbly fields are not written and Warmbly checks for changes every five minutes.
-- Opens and clicks are not logged by default.
-- Switching back or disconnecting deletes nothing on either side.
+- 在 Warmbly 中进行的每次修改都会先写入 Pipedrive。如果 Pipedrive 拒绝，任何内容都不会保存。
+- 在 Pipedrive 中创建商机、添加你指定的标签，例如 **Customer（客户）**，或退订，都会暂停该人员的营销活动。
+- 尽可能使用 Pipedrive 管理员身份连接。没有管理员权限时，不会写入 Warmbly 字段，Warmbly 会每五分钟检查一次变更。
+- 默认不记录打开和点击。
+- 切回原模式或断开连接，都不会删除任一侧的数据。
 
 <Fold>
 
-## How Pipedrive mode works
+## Pipedrive 模式的工作方式 [#how-pipedrive-mode-works]
 
-A workspace can use Warmbly's own CRM, [HubSpot](/guides/hubspot/) or Pipedrive. In **Pipedrive mode**, Pipedrive is the system of record. The deals, pipelines, tasks and notes you see in Warmbly are Pipedrive's deals, pipelines, activities and notes, mirrored into Warmbly so lists, search and the board stay fast, and every change you make in Warmbly goes to Pipedrive first. Your outreach is logged as activities on each person, and Pipedrive can stop a campaign when a deal opens or a person is labeled a customer.
+工作区可以使用 Warmbly 自带的 CRM、[HubSpot](/guides/hubspot/)或 Pipedrive。在 **Pipedrive 模式**中，Pipedrive 是权威数据源。你在 Warmbly 中看到的商机、销售管道、任务和备注，分别对应 Pipedrive 的商机、管道、活动和备注，镜像到 Warmbly 以确保列表、搜索和看板响应迅速；在 Warmbly 中执行的每次修改都会先写入 Pipedrive。客户触达记录为每位人员的活动；创建商机或将人员标记为客户时，Pipedrive 可以停止营销活动。
 
-The basic Pipedrive connection (a person upsert from an [automation](/guides/automations/#actions) or **Push to CRM**) works without Pipedrive mode. This page covers the full mode.
+基础 Pipedrive 连接无需启用 Pipedrive 模式即可使用，包括从[自动化流程](/guides/automations/#actions)创建或更新人员，以及**推送到 CRM**。本页介绍完整模式。
 
 </Fold>
 
 <Fold>
 
-## What Pipedrive mode does
+## Pipedrive 模式的功能 [#what-pipedrive-mode-does]
 
-- **Deals, pipelines, activities and notes are Pipedrive's.** A deal you create, move or edit in Warmbly is written to Pipedrive before it is saved here. Warmbly's tasks are Pipedrive activities. If Pipedrive refuses a change (a missing permission, a deleted record), you see Pipedrive's reason and nothing is saved.
-- **Your outreach is logged on the person.** Sends and replies are logged as done **Email** activities with the subject and body, bounces mark the logged email, unsubscribes add a note, and booked meetings become **Meeting** activities.
-- **Warmbly fields** on Pipedrive people carry each person's outreach status, so your team can filter, report and run Pipedrive automations on it.
-- **Pipedrive can stop outreach.** A deal opened in Pipedrive, a label you choose (such as **Customer**) or an unsubscribe holds the person's campaigns.
-- **The contact panel shows Pipedrive's side.** In the contact drawer and the inbox, a contact shows their Pipedrive owner, label, organization and any fields you choose, and you can change the owner and label in place.
+- **商机、销售管道、活动和备注都属于 Pipedrive。** 在 Warmbly 中创建、移动或编辑商机时，会先写入 Pipedrive，再保存到这里。Warmbly 任务对应 Pipedrive 活动。如果 Pipedrive 拒绝变更，例如缺少权限或记录已删除，界面会显示 Pipedrive 给出的原因，且不保存任何修改。
+- **客户触达记录到人员上。** 发送和回复记录为已完成的 **Email（邮件）** 活动，带有主题和正文；退信会标记已记录的邮件；退订会添加备注；已预约会议则成为 **Meeting（会议）** 活动。
+- **Pipedrive 人员上的 Warmbly 字段**保存每个人的触达状态，供团队据此筛选、生成报表和运行 Pipedrive 自动化流程。
+- **Pipedrive 可以停止触达。** 在 Pipedrive 中创建商机、添加指定标签，例如 **Customer（客户）**，或退订，都会暂停该人员的营销活动。
+- **联系人面板展示 Pipedrive 信息。** 在联系人抽屉和收件箱中，可查看 Pipedrive 负责人、标签、组织及所选字段，并可直接修改负责人和标签。
 
 </Fold>
 
 <Fold>
 
-## Connect and set up
+## 连接与设置 [#connect-and-set-up]
 
-1. Open **Integrations > Pipedrive** and select **Connect**. Sign in to Pipedrive, pick the company, and approve the permissions.
-2. The setup wizard opens. Select **Switch to Pipedrive**. Warmbly reads your labels and fills in the rules from them: an interested reply labels the person **Hot lead**, and people labeled **Customer** are never emailed by a campaign. Every other question also has a working default, so you can press **Looks good** through the rest and adjust later.
-3. Finish the wizard. Warmbly adds its fields to Pipedrive, registers for Pipedrive's change notifications, and starts the first pull: users, pipelines, then deals and recent activities. The dashboard fills in as it runs, usually within a minute or two.
+1. 打开**集成 > Pipedrive**并选择**连接**。登录 Pipedrive，选择公司并批准权限。
+2. 设置向导打开后，选择 **切换到 Pipedrive** 。Warmbly 会读取标签，并据此填充规则：感兴趣的回复将人员标记为 **Hot lead（高意向潜客）** ，带有 **Customer（客户）** 标签的人绝不会收到营销活动邮件。其他问题也都有可用的默认值，因此可以在剩余步骤点击 **确认无误** 继续，稍后再调整。
+3. 完成向导。Warmbly 会向 Pipedrive 添加自己的字段，注册 Pipedrive 变更通知，并开始首次拉取：先拉取用户和销售管道，再拉取商机及近期活动。运行过程中，控制台逐渐填入数据，通常只需一两分钟。
 
-After setup the same page holds the settings and the [sync health](#sync-health-and-fixing-errors) panel. Changing them needs the `manage_settings` permission.
+设置完成后，同一页面提供配置选项和[同步健康度](#sync-health-and-fixing-errors)面板。修改设置需要 `manage_settings` 权限。
 
-If the workspace runs on HubSpot when you switch, the wizard says so first. Switching makes Pipedrive the CRM instead: HubSpot's mirrored records stay in Warmbly, nothing is deleted in HubSpot, and HubSpot stays connected for automations.
+如果切换时工作区正在使用 HubSpot，向导会先说明。切换后，Pipedrive 取代 HubSpot 成为 CRM；HubSpot 镜像记录仍留在 Warmbly 中，HubSpot 也不会删除任何数据，并继续保持连接供自动化流程使用。
 
-<Callout type="info" title="Who should connect">
-Connect as a Pipedrive admin when you can. Pipedrive checks every change against the connected user's own permissions, and adding the Warmbly fields and the change notifications needs an admin (or the contact fields and webhooks permissions). Without them the sync still runs: fields are not written, and Warmbly checks Pipedrive every five minutes instead of hearing about changes at once.
+<Callout type="info" title="应由谁建立连接">
+尽可能以 Pipedrive 管理员身份连接。Pipedrive 会根据已连接用户自己的权限检查每次修改；添加 Warmbly 字段和变更通知需要管理员权限，或联系人字段和 Webhook 权限。缺少这些权限时，同步仍会运行，但不会写入字段，Warmbly 会改为每五分钟检查 Pipedrive，而无法即时收到变更通知。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## What syncs
+## 同步的内容 [#what-syncs]
 
-| Record | Direction | How |
+| 记录 | 方向 | 方式 |
 | --- | --- | --- |
-| Deals | Both ways | Warmbly writes through to Pipedrive. Changes in Pipedrive arrive within seconds |
-| Pipelines and stages | Pipedrive to Warmbly | Managed in Pipedrive only. Refreshed when they change, and every six hours |
-| Activities (Warmbly tasks) | Both ways | Warmbly writes through. Activities owned by matched users arrive within seconds |
-| Notes | Both ways | Warmbly writes through. Notes on a linked person arrive within seconds |
-| Activity types | Pipedrive to Warmbly | Your company's own activity types, such as Call, Meeting, Task and Deadline |
-| Users | Pipedrive to Warmbly | Refreshed every six hours and matched to members by email |
-| People | Both ways, per field | Owner, labels, organization, unsubscribe status and the fields you map. See [people and field mapping](#people-and-field-mapping) |
-| Outreach activity | Warmbly to Pipedrive | See [activity logged to Pipedrive](#activity-logged-to-pipedrive) |
+| 商机 | 双向 | Warmbly 直接写入 Pipedrive；Pipedrive 中的变更在数秒内到达 |
+| 销售管道和阶段 | Pipedrive 到 Warmbly | 仅在 Pipedrive 中管理；发生变更时刷新，并每六小时刷新一次 |
+| 活动（Warmbly 任务） | 双向 | Warmbly 直接写入；由已匹配用户负责的活动在数秒内到达 |
+| 备注 | 双向 | Warmbly 直接写入；已关联人员的备注在数秒内到达 |
+| 活动类型 | Pipedrive 到 Warmbly | 使用公司自己的活动类型，例如电话、会议、任务和截止事项 |
+| 用户 | Pipedrive 到 Warmbly | 每六小时刷新一次，并按邮箱匹配成员 |
+| 人员 | 按字段双向同步 | 包括负责人、标签、组织、退订状态和映射字段。参见[人员与字段映射](#people-and-field-mapping) |
+| 触达活动 | Warmbly 到 Pipedrive | 参见[记录到 Pipedrive 的活动](#activity-logged-to-pipedrive) |
 
-Changes made in Pipedrive reach Warmbly through Pipedrive's change notifications, usually within seconds. Warmbly also checks for changes every fifteen minutes in case a notification was missed, or every five minutes when notifications are not available. Opening a contact in Warmbly refreshes their Pipedrive record on the spot, and their deals, activities and notes every few hours.
+Pipedrive 中的变更通过其变更通知到达 Warmbly，通常只需数秒。Warmbly 也会每十五分钟检查一次变更，以防通知遗漏；无法使用通知时，则每五分钟检查一次。在 Warmbly 中打开联系人，会立即刷新其 Pipedrive 人员记录；商机、活动和备注则每隔数小时刷新。
 
-Pipedrive gives each company a daily API budget, shared by every app it uses. Warmbly reads only what changed and spaces its checks so a normal workspace uses a small part of it.
+Pipedrive 为每家公司分配每日 API 额度，由该公司使用的所有应用共享。Warmbly 只读取发生变更的内容，并错开检查时间，因此正常工作区只会使用其中一小部分。
 
-### Deals and pipelines
+### 商机与销售管道 [#deals-and-pipelines]
 
-The Pipelines page lists only your Pipedrive pipelines, and creating, renaming or deleting a pipeline or stage is refused with `crm_managed_externally`: make the change in Pipedrive and it appears in Warmbly within moments. In the wizard you can limit the mirror to some pipelines; deals in the others are not shown.
+销售管道页面只列出 Pipedrive 管道。创建、重命名或删除管道或阶段会以 `crm_managed_externally` 被拒绝：请在 Pipedrive 中修改，片刻后就会显示在 Warmbly 中。在向导中可以将镜像范围限制为部分管道；其他管道中的商机不会显示。
 
-In Pipedrive, won and lost are a deal's status, as in Warmbly: marking a deal won or lost keeps its stage, and moving it between stages does not change its status. Stages carry Pipedrive's deal probability. A deal owned by a Pipedrive user who is not a workspace member shows that user's name.
+Pipedrive 与 Warmbly 一样，将赢单和输单表示为商机状态：标记为赢单或输单时保留原阶段，在阶段之间移动也不会改变状态。阶段携带 Pipedrive 的商机成交概率。如果商机的 Pipedrive 负责人不是工作区成员，仍会显示该用户的姓名。
 
-Deals in a pipeline that only exists in Warmbly are hidden from the deal table and board while Pipedrive is your CRM. They are not deleted: [copy them into Pipedrive](#copying-your-warmbly-crm-into-pipedrive) or [switch back](#switching-back-and-disconnecting) to see them again.
+Pipedrive 作为 CRM 期间，仅存在于 Warmbly 的管道中的商机会从商机表格和看板中隐藏。它们并未删除：[将其复制到 Pipedrive](#copying-your-warmbly-crm-into-pipedrive)或[切回原模式](#switching-back-and-disconnecting)后即可再次看到。
 
-Deals created by an automation's **Create deal** or **Move deal stage** action reach Pipedrive too, through the [sync queue](#sync-health-and-fixing-errors) rather than at once.
+自动化流程通过**创建商机**或**移动商机阶段**操作生成的商机也会写入 Pipedrive，但通过[同步队列](#sync-health-and-fixing-errors)处理，而非立即执行。
 
-### Activities
+### 活动 [#activities]
 
-The Tasks page shows the Pipedrive activities owned by Pipedrive users who are matched to workspace members. The first pull brings in activities changed in the last 90 days. A person's own activities come in when you open them, whoever owns them. Done email activities are records of an email, not to-dos, so they are not shown as tasks; that includes the ones Warmbly logs itself.
+任务页面显示 Pipedrive 用户负责、且该用户已匹配到工作区成员的 Pipedrive 活动。首次拉取包含最近 90 天发生过变化的活动。打开人员记录时，会拉取其自身活动，无论由谁负责。已完成的邮件活动是邮件记录，不是待办事项，因此不会显示为任务；Warmbly 自己记录的邮件活动也包括在内。
 
 | Warmbly | Pipedrive |
 | --- | --- |
-| Type | The activity type with the same name, else the closest one (Call, Meeting, Email, Deadline, Task) |
-| Status `pending` or `in progress` | Not done |
-| Status `completed` or `cancelled` | Done |
-| Due date and time | Due date and due time |
-| Priority | Kept in Warmbly only |
-| Assignee | Activity owner. A member with no matched Pipedrive user cannot be assigned (`crm_owner_unmapped`) |
+| 类型 | 使用同名活动类型，否则选择最接近的类型：电话、会议、邮件、截止事项或任务 |
+| 状态 `pending` 或 `in progress` | 未完成 |
+| 状态 `completed` 或 `cancelled` | 已完成 |
+| 截止日期和时间 | 截止日期和截止时间 |
+| 优先级 | 仅保存在 Warmbly |
+| 被分配成员 | 活动负责人。未匹配 Pipedrive 用户的成员不能被分配活动（`crm_owner_unmapped`） |
 
-Creating, editing or deleting a task type is refused with `crm_managed_externally`, because the types are Pipedrive's activity types. Tasks Warmbly opens by itself, such as [follow-up tasks from replies](/guides/contacts-crm/#follow-up-tasks-from-replies) and an automation's **Create a task**, become Pipedrive activities as well.
+创建、编辑或删除任务类型会以 `crm_managed_externally` 被拒绝，因为这些类型由 Pipedrive 活动类型决定。Warmbly 自动创建的任务也会成为 Pipedrive 活动，例如[由回复产生的跟进任务](/guides/contacts-crm/#follow-up-tasks-from-replies)，以及自动化流程中的**创建任务**。
 
 </Fold>
 
 <Fold>
 
-## People and field mapping
+## 人员与字段映射 [#people-and-field-mapping]
 
-A Warmbly contact is linked to a Pipedrive person by email address. Linking happens when Warmbly emails the contact, when you open it, when a person whose address Warmbly has changes in Pipedrive, and after an [import from a Pipedrive filter](#importing-from-pipedrive-filters).
+Warmbly 联系人通过电子邮件地址与 Pipedrive 人员关联。以下情况会建立关联：Warmbly 向联系人发信、你打开联系人、Pipedrive 中某个人员发生变更且 Warmbly 已有其地址，以及[从 Pipedrive 筛选器导入](#importing-from-pipedrive-filters)之后。
 
-When Warmbly emails someone Pipedrive does not have, it creates the person (on by default), owned by the Pipedrive user matched to the member who owns the sending mailbox. With organization creation on (also the default), the new person is linked to the organization named after their company, or their email domain when the company is blank, and the organization is created when Pipedrive has none. Free mail domains such as `gmail.com` never become organizations. With creating people off, someone Pipedrive does not have is simply not logged there.
+Warmbly 向 Pipedrive 尚未收录的人发信时，会创建人员记录，默认开启；负责人是与发件邮箱所属成员匹配的 Pipedrive 用户。开启创建组织后（同样默认开启），新人员会关联到以其公司名称命名的组织；公司为空时，使用电子邮件域名。若 Pipedrive 中没有该组织，则创建。`gmail.com` 等免费邮箱域名绝不会变成组织。如果关闭创建人员，Pipedrive 中不存在的人就不会在那里记录活动。
 
-Each mapped field has a direction:
+每个映射字段都有同步方向：
 
-| Direction | What happens |
+| 方向 | 行为 |
 | --- | --- |
-| Warmbly wins | Warmbly writes the field to Pipedrive when the contact is edited in Warmbly and each time it emails them |
-| Pipedrive wins | A change in Pipedrive is copied onto the Warmbly contact |
-| Most recent | An edit in Pipedrive is copied onto the Warmbly contact, and an edit in Warmbly is written to Pipedrive |
+| Warmbly 优先 | 在 Warmbly 中编辑联系人时，以及每次向其发信时，将字段写入 Pipedrive |
+| Pipedrive 优先 | 将 Pipedrive 中的变更复制到 Warmbly 联系人 |
+| 最近修改优先 | Pipedrive 中的编辑复制到 Warmbly，Warmbly 中的编辑写入 Pipedrive |
 
-The defaults map first name, last name, company and phone to the person's first name, last name, organization and phone, all **Most recent**. Pipedrive keeps a person's name as one field and splits it itself, so first and last name are written together. A custom Warmbly field maps as `custom:<key>` to any text, number, phone or date field of yours. A blank value in Pipedrive never blanks a Warmbly field, and the email address is never overwritten from Pipedrive.
+默认将名字、姓氏、公司和电话映射到人员的名字、姓氏、组织和电话，均为**最近修改优先**。Pipedrive 将姓名保存在一个字段中并自行拆分，因此名字和姓氏会一起写入。Warmbly 自定义字段使用 `custom:<key>`，可映射到你任意的文本、数字、电话或日期字段。Pipedrive 中的空值不会清空 Warmbly 字段，电子邮件地址也绝不会被 Pipedrive 覆盖。
 
-You can also pick up to 40 of your Pipedrive fields to show on the contact panel.
+还可以选择最多 40 个 Pipedrive 字段，显示在联系人面板中。
 
 </Fold>
 
 <Fold>
 
-## Activity logged to Pipedrive
+## 记录到 Pipedrive 的活动 [#activity-logged-to-pipedrive]
 
-| In Warmbly | In Pipedrive | Default |
+| Warmbly 中的事件 | Pipedrive 中的记录 | 默认 |
 | --- | --- | --- |
-| A campaign email is sent | A done Email activity with the subject, the body, the sending mailbox and the campaign | On |
-| The person replies | A done Email activity titled `Reply: <subject>` | On |
-| An email bounces | The logged email activity is renamed `Bounced: <subject>` | On |
-| The person unsubscribes | A note on the person | On |
-| A meeting is booked through Calendly or Cal.com | A Meeting activity at the booked time | On |
-| An open | The **Warmbly last opened** field updated, no activity | Off |
-| A click | The **Warmbly last clicked** field updated, no activity | Off |
+| 发送营销活动邮件 | 已完成的 Email 活动，包含主题、正文、发件邮箱和营销活动 | 开启 |
+| 人员回复 | 已完成的 Email 活动，标题为 `Reply: <subject>` | 开启 |
+| 邮件退信 | 将已记录的邮件活动重命名为 `Bounced: <subject>` | 开启 |
+| 人员退订 | 人员备注 | 开启 |
+| 通过 Calendly 或 Cal.com 预约会议 | 在预约时间创建 Meeting 活动 | 开启 |
+| 打开邮件 | 更新 **Warmbly last opened**（最近打开）字段，不创建活动 | 关闭 |
+| 点击链接 | 更新 **Warmbly last clicked**（最近点击）字段，不创建活动 | 关闭 |
 
-Each activity is linked to the person, their organization and their open deal. Its owner is the Pipedrive user matched to the member who owns the sending mailbox, otherwise the person's owner. Activity is logged within seconds and never depends on your [webhooks](/guides/webhooks/) or their per-minute limit, so a large send is logged in full.
+每项活动会关联到人员、其组织和未关闭的商机。负责人优先使用与发件邮箱所属成员匹配的 Pipedrive 用户，否则使用该人员的负责人。活动会在数秒内记录，且完全不依赖你的 [Webhook](/guides/webhooks/)及其每分钟限额，因此大批量发送也能完整记录。
 
-Opens and clicks are off by default because mail privacy proxies and security scanners open and click on their own. Turned on, they only update the two fields, at most once a day per person, and never create a person in Pipedrive.
+打开和点击记录默认关闭，因为邮件隐私代理和安全扫描器会自动打开与点击。开启后，它们也只更新这两个字段，每个人每天最多更新一次，且绝不会因此在 Pipedrive 中创建人员。
 
 </Fold>
 
 <Fold>
 
-## Warmbly fields
+## Warmbly 字段 [#warmbly-fields]
 
-Warmbly adds these custom fields to Pipedrive people when you switch, and keeps them up to date (on by default; turning it off stops every field write, including opens and clicks). A field your team already has with the same name is reused.
+切换时，Warmbly 会向 Pipedrive 人员添加以下自定义字段，并持续更新。此功能默认开启；关闭后会停止全部字段写入，包括打开和点击。如果团队已有同名字段，则复用该字段。
 
-| Field | Holds |
+| 字段 | 内容 |
 | --- | --- |
-| Warmbly status | Contacted, Replied, Interested, Not interested, Meeting booked, Bounced or Unsubscribed. A later send never moves a person back from a reply status to Contacted |
-| Warmbly last campaign | The name of the last campaign that emailed the person |
-| Warmbly last contacted | When Warmbly last emailed the person |
-| Warmbly last replied | When the person last replied |
-| Warmbly reply intent | How Warmbly classified the latest reply |
-| Warmbly last opened | Last open, when open logging is on |
-| Warmbly last clicked | Last click, when click logging is on |
-| Open in Warmbly | A link that opens the contact in Warmbly |
+| Warmbly status | 触达状态：Contacted（已联系）、Replied（已回复）、Interested（感兴趣）、Not interested（不感兴趣）、Meeting booked（已预约会议）、Bounced（退信）或 Unsubscribed（已退订）。后续发送绝不会将已回复的人员退回 Contacted 状态 |
+| Warmbly last campaign | 最近一次向该人员发送邮件的营销活动名称 |
+| Warmbly last contacted | Warmbly 最近一次向该人员发信的时间 |
+| Warmbly last replied | 该人员最近回复时间 |
+| Warmbly reply intent | Warmbly 对最新回复的分类 |
+| Warmbly last opened | 开启打开记录时，最近一次打开时间 |
+| Warmbly last clicked | 开启点击记录时，最近一次点击时间 |
+| Open in Warmbly | 在 Warmbly 中打开该联系人的链接 |
 
 </Fold>
 
 <Fold>
 
-## Users
+## 用户 [#users]
 
-Pipedrive's users are matched to workspace members by email address. Where the addresses differ, pick the member by hand on the Pipedrive page; a match you choose is kept and never replaced by the email match. Matching decides:
+Pipedrive 用户按电子邮件地址匹配工作区成员。地址不一致时，可以在 Pipedrive 页面手动选择成员；手动匹配会被保留，不会被邮箱匹配覆盖。匹配关系决定：
 
-- whose activities appear on the Tasks page
-- who owns the email activities a mailbox logs, and the people it creates
-- which Pipedrive user a deal or activity gets when you assign it to a member in Warmbly
-
-</Fold>
-
-<Fold>
-
-## Positive replies
-
-When a reply is classified as interested, Warmbly can:
-
-- **label the person** (by default **Hot lead**, when your company has that label). The label replaces the person's current one
-- **add them to the Leads Inbox** as a lead for the person and their organization, owned by whoever owns the mailbox that got the reply (off by default)
-- **create a deal** in a pipeline and stage you choose (off by default)
-
-The lead and the deal are both skipped when the person already has an open deal. The follow-up task comes from your existing [reply follow-up setting](/guides/contacts-crm/#follow-up-tasks-from-replies) and becomes a Pipedrive activity like any other task.
+- 任务页面显示谁的活动
+- 邮箱记录的邮件活动及创建的人员由谁负责
+- 在 Warmbly 中将商机或活动分配给成员时，对应哪位 Pipedrive 用户
 
 </Fold>
 
 <Fold>
 
-## Exit rules
+## 正向回复 [#positive-replies]
 
-Exit rules hold a person in every campaign they are in when Pipedrive says they have moved on, so nobody gets a follow-up after becoming a deal or a customer. A held lead stays held until someone resumes it; the hold shows the reason, such as "A deal was opened in Pipedrive".
+回复被判定为感兴趣时，Warmbly 可以：
 
-| Rule | Default |
+- **为人员添加标签**：默认使用 **Hot lead（高意向潜客）**，前提是公司存在该标签。该标签会替换人员当前的标签
+- **将其加入 Leads Inbox（潜在客户收件箱）**：为该人员及其组织创建潜在客户，由收到回复的邮箱所属成员负责；默认关闭
+- 在指定管道和阶段中**创建商机**，默认关闭
+
+如果该人员已有未关闭的商机，则创建潜在客户和创建商机都会跳过。跟进任务沿用现有的[回复跟进设置](/guides/contacts-crm/#follow-up-tasks-from-replies)，并与其他任务一样成为 Pipedrive 活动。
+
+</Fold>
+
+<Fold>
+
+## 退出规则 [#exit-rules]
+
+当 Pipedrive 表明人员已进入下一阶段时，退出规则会暂停该人员参与的所有营销活动，避免其已经成为商机或客户后仍收到跟进邮件。被暂停的潜在客户会持续保持暂停，直到有人恢复；暂停状态会显示原因，例如“已在 Pipedrive 中创建商机”。
+
+| 规则 | 默认 |
 | --- | --- |
-| A deal is opened for the person in Pipedrive | On. Only deals created in the last 48 hours count, so the first pull's existing deals stop nobody |
-| The person gets a label you choose | On, for **Customer** when your company has that label |
-| The person unsubscribes in Pipedrive | On. Needs Pipedrive Campaigns, which records email marketing status. The address is added to the [suppression list](/guides/unsubscribe/) |
+| 在 Pipedrive 中为该人员创建商机 | 开启。仅计算最近 48 小时创建的商机，因此首次拉取已有商机不会暂停任何人 |
+| 为人员添加指定标签 | 开启，针对 **Customer（客户）**，前提是公司存在该标签 |
+| 人员在 Pipedrive 中退订 | 开启。需要 Pipedrive Campaigns，由其记录邮件营销状态。地址会加入[禁止发送名单](/guides/unsubscribe/) |
 
-### Import guards
+### 导入保护措施 [#import-guards]
 
-Guards decide who an [import from a Pipedrive filter](#importing-from-pipedrive-filters) leaves out:
+导入保护规则决定[从 Pipedrive 筛选器导入](#importing-from-pipedrive-filters)时排除哪些人：
 
-| Guard | Default |
+| 保护规则 | 默认 |
 | --- | --- |
-| Skip people who unsubscribed in Pipedrive | On |
-| Skip people with these labels | On, for **Customer** when your company has that label |
-| Skip people with an open deal | On |
-| Skip people owned by someone outside the workspace | Off |
+| 跳过已在 Pipedrive 中退订的人员 | 开启 |
+| 跳过带有这些标签的人员 | 开启，针对 **Customer（客户）**，前提是公司存在该标签 |
+| 跳过已有未关闭商机的人员 | 开启 |
+| 跳过由工作区之外的人负责的人员 | 关闭 |
 
 </Fold>
 
 <Fold>
 
-## Working from inside Pipedrive
+## 在 Pipedrive 内开展工作 [#working-from-inside-pipedrive]
 
-The **Warmbly panel** on person and deal pages shows the person's Warmbly status, each campaign they are in with its step, status and last activity, and why a lead is paused, with a link that opens them in Warmbly. Its two actions work from Pipedrive itself:
+人员和商机页面上的 **Warmbly 面板**显示该人员的 Warmbly 状态、所参与的各营销活动及其步骤、状态和最近活动，以及潜在客户暂停的原因，并提供在 Warmbly 中打开联系人的链接。它的两项操作可以直接在 Pipedrive 内完成：
 
-- **Add to Warmbly campaign** opens a picker of your campaigns and adds the person. Someone new to Warmbly is created from the Pipedrive person, unless they unsubscribed in Pipedrive
-- **Pause in Warmbly** pauses or resumes every campaign the person is in
+- **加入 Warmbly 营销活动**打开活动选择器并添加人员。如果该人员尚不存在于 Warmbly，会根据 Pipedrive 人员记录创建，已在 Pipedrive 中退订的除外
+- **在 Warmbly 中暂停**暂停或恢复该人员参与的所有营销活动
 
-On a deal page the panel shows the deal's person. The panel acts as the Warmbly member matched to the Pipedrive user viewing it (see [users](#users)), with that member's role:
+在商机页面中，面板显示该商机关联的人员。面板以查看它的 Pipedrive 用户所匹配的 Warmbly 成员身份和角色运行，参见[用户](#users)：
 
-| In the panel | The member needs |
+| 面板中的操作 | 成员需要的权限 |
 | --- | --- |
-| See the person's Warmbly status and campaigns | View campaigns and view contacts |
-| Add to campaign | Manage campaigns and manage contacts |
-| Pause or resume | Manage campaigns |
+| 查看人员的 Warmbly 状态和营销活动 | 查看营销活动和查看联系人 |
+| 加入营销活动 | 管理营销活动和管理联系人 |
+| 暂停或恢复 | 管理营销活动 |
 
-A Pipedrive user with no matched member, or whose member is still invited, is banned from signing in, or lacks the permission, sees why in the panel and changes nothing. The panel needs the Pipedrive company to be in Pipedrive mode in exactly one Warmbly workspace. On a self-hosted instance the panel is part of your own Pipedrive app; see [self-hosting](#self-hosting).
-
-</Fold>
-
-<Fold>
-
-## Importing from Pipedrive filters
-
-From **Contacts**, choose **Import from Pipedrive** and pick one of your saved people filters. The preview counts who would come in and who is skipped, by reason: unsubscribed, label, open deal, owned by someone outside the workspace, no email address, and duplicate address. Continue, and the filter becomes an ordinary contact import, finished in the usual [import review](/guides/contacts-crm/#importing) where you pick the campaign, labels and duplicate handling.
-
-One import takes up to 25,000 people; a larger filter is cut off at that number and the preview says so. The imported contacts are linked to their Pipedrive persons a couple of minutes later, so their first sends log against the right person.
+如果 Pipedrive 用户没有匹配成员，或对应成员仍处于受邀状态、被禁止登录、缺少权限，面板会说明原因，且不会修改任何内容。面板要求该 Pipedrive 公司恰好在一个 Warmbly 工作区中启用 Pipedrive 模式。在自托管实例中，面板属于你自己的 Pipedrive 应用；参见[自托管](#self-hosting)。
 
 </Fold>
 
 <Fold>
 
-## Copying your Warmbly CRM into Pipedrive
+## 从 Pipedrive 筛选结果导入 [#importing-from-pipedrive-filters]
 
-When a workspace that used Warmbly's CRM switches, its own deals, tasks and notes are not in Pipedrive yet. Records mirrored from a CRM the workspace used before (such as HubSpot) are not counted. The Pipedrive page counts them and copies the kinds you pick, once:
+在**联系人**中选择**从 Pipedrive 导入**，再选择一个已保存的人员筛选器。预览会统计将导入的人数，以及按原因划分的跳过人数：已退订、标签、已有未关闭商机、由工作区之外的人负责、没有电子邮件地址，以及地址重复。继续后，筛选结果会转为普通联系人导入，在常规[导入审阅](/guides/contacts-crm/#importing)中选择营销活动、标签和重复处理方式并完成。
 
-- **Deals** move onto your first Pipedrive pipeline. Each keeps its stage when Pipedrive has a stage with the same name, and otherwise goes to the first stage. Won and lost deals stay won and lost
-- **Tasks** become activities and **notes** become notes, with their person and deal
-
-A record already in Pipedrive is never copied twice, so running it again only picks up what was missed. A Warmbly deal, task or note you edit after switching is also created in Pipedrive at that moment.
+一次最多导入 25,000 人；更大的筛选结果会在该数量处截断，并在预览中说明。导入的联系人会在几分钟后与其 Pipedrive 人员记录关联，确保首次发送记录到正确的人。
 
 </Fold>
 
 <Fold>
 
-## Sync health and fixing errors
+## 将 Warmbly CRM 数据复制到 Pipedrive [#copying-your-warmbly-crm-into-pipedrive]
 
-The Pipedrive page shows what is waiting, what failed in the last runs, how many records are mirrored, and when each pull (users, pipelines, deals, activities, people), the change notifications and the Warmbly fields last ran with any error they hit. **Sync now** starts a full pull; a second one within a minute is refused with `crm_sync_running`.
+原先使用 Warmbly CRM 的工作区切换后，其自有商机、任务和备注还不存在于 Pipedrive。从工作区此前使用的其他 CRM（如 HubSpot）镜像来的记录不计入其中。Pipedrive 页面会统计待复制记录，并一次性复制你选择的类型：
 
-Changes you make in the dashboard go to Pipedrive while you wait. Activity logging, automation-written records, large bulk changes and copies go through a queue that retries a failure with growing gaps (a minute, five minutes, half an hour, up to several hours) before marking it failed. Failed items stay listed for 30 days with a plain-language reason. **Retry** sends them again and **Discard** drops them.
+- **商机**移入第一个 Pipedrive 管道。如果 Pipedrive 存在同名阶段，就保留阶段；否则进入第一个阶段。赢单和输单商机保留原状态
+- **任务**变为活动，**备注**仍为备注，并保留人员和商机关联
 
-| You see | What to do |
+已存在于 Pipedrive 的记录不会重复复制，因此再次运行只会补齐遗漏项。切换后，如果编辑某个 Warmbly 商机、任务或备注，也会在当时将其创建到 Pipedrive。
+
+</Fold>
+
+<Fold>
+
+## 同步状态与错误修复 [#sync-health-and-fixing-errors]
+
+Pipedrive 页面会显示等待处理的内容、最近运行中失败的内容、已镜像的记录数，以及各项拉取（用户、管道、商机、活动、人员）、变更通知和 Warmbly 字段的最近运行时间及错误。**立即同步**启动一次完整拉取；一分钟内再次启动会以 `crm_sync_running` 被拒绝。
+
+在控制台中修改时，会同步等待 Pipedrive 写入。活动记录、自动化流程写入的记录、大规模批量修改和复制操作通过队列处理；失败时以逐渐增长的间隔重试，从一分钟、五分钟、半小时到数小时，之后才标记为失败。失败项会保留在列表中 30 天，并提供通俗的原因说明。**重试**再次发送，**丢弃**则移除该项。
+
+| 提示 | 处理方式 |
 | --- | --- |
-| Reconnect Pipedrive | Pipedrive revoked Warmbly's access, or the connected user may not make that change. Reconnect from **Integrations**, as an admin when you can |
-| Pipedrive refused the change | Pipedrive's own rule, shown in its words. Fix it in Pipedrive or on the record, then retry |
-| This record no longer exists in Pipedrive | It was deleted in Pipedrive. Discard the item |
-| That member is not a Pipedrive user yet | Match the member to a Pipedrive user in [users](#users) |
-| Pipedrive did not answer | Pipedrive was slow, down, or the company used up its daily API budget. It retries by itself |
-| Instant updates need this instance reachable over HTTPS | Pipedrive cannot reach the instance. Warmbly checks every five minutes instead |
+| 重新连接 Pipedrive | Pipedrive 已撤销 Warmbly 访问权限，或已连接用户无权执行该变更。从**集成**重新连接，尽可能使用管理员身份 |
+| Pipedrive 拒绝修改 | 触发了 Pipedrive 自身规则，界面显示其原始说明。在 Pipedrive 或该记录中修复，然后重试 |
+| 此记录已不存在于 Pipedrive | 记录已在 Pipedrive 中删除。丢弃该项 |
+| 该成员尚未对应 Pipedrive 用户 | 在[用户](#users)中将成员匹配到 Pipedrive 用户 |
+| Pipedrive 未响应 | Pipedrive 响应缓慢、服务中断，或公司已耗尽每日 API 额度。系统会自动重试 |
+| 即时更新需要通过 HTTPS 访问此实例 | Pipedrive 无法访问实例。Warmbly 会改为每五分钟检查一次 |
 
-Warmbly keeps its calls well under Pipedrive's burst limit for each company (30 requests every two seconds and 4 searches, shared across every Warmbly process), and waits and retries when Pipedrive asks it to slow down.
-
-</Fold>
-
-<Fold>
-
-## Switching back and disconnecting
-
-Choosing **Warmbly** as the CRM again, switching to HubSpot, or disconnecting Pipedrive stops the sync and the activity logging. Switching removes Warmbly's change notifications from Pipedrive; after a disconnect, Warmbly answers their deliveries as gone and Pipedrive retires them. Nothing is deleted on either side: the deals, pipelines, tasks and notes that were mirrored stay in Warmbly as ordinary records you can edit, the hidden Warmbly-only pipelines come back, and Pipedrive keeps everything that was written there, including the Warmbly fields. Switching back to the same Pipedrive company later picks up the same records rather than duplicating them.
+Warmbly 的调用量始终明显低于 Pipedrive 对每家公司的突发限制，即每两秒 30 次请求和 4 次搜索，额度在所有 Warmbly 进程间共享；Pipedrive 要求降速时，会等待并重试。
 
 </Fold>
 
 <Fold>
 
-## Self-hosting
+## 切换回来与断开连接 [#switching-back-and-disconnecting]
 
-A self-hosted instance uses its own Pipedrive app. Create one in the Pipedrive Developer Hub, then:
-
-1. Set the callback URL to `BACKEND_PUBLIC_URL` plus `/integrations/oauth/callback`, or to the value of `INTEGRATIONS_OAUTH_REDIRECT_URL` when you set one.
-2. Give the app these scopes: deals (full access), contacts (full access), activities (full access), users (read), search (read), leads (full access), contact fields (full access) and webhooks (full access). Pipedrive mode needs the first four; without the others, lead creation, the Warmbly fields or instant updates are skipped.
-3. Set `PIPEDRIVE_OAUTH_CLIENT_ID` and `PIPEDRIVE_OAUTH_CLIENT_SECRET` on the backend and the consumer, and set `APP_URL` so the **Open in Warmbly** field points at your dashboard. See [configuration](/development/configuration/#integrations).
-4. Optionally add the [Warmbly panel](#working-from-inside-pipedrive) under **App extensions**: a JSON panel and two JSON modals, whose schemas are in the repository's `pipedrive-app/` directory. The steps are in [configuration](/development/configuration/#pipedrive-app).
-
-The consumer runs the pull and the sync queue. Change notifications are registered by Warmbly itself when a workspace switches, one set per connection, delivered to `<backend>/api/v1/integrations/pipedrive/webhooks/<connection id>`. They need `BACKEND_PUBLIC_URL` to be an `https` address Pipedrive can reach; without one, Warmbly checks Pipedrive every five minutes instead. Pipedrive authenticates each delivery with a password Warmbly derives for that connection from the client secret, and a delivery only makes Warmbly read the named record sooner: it always reads the record from Pipedrive itself, and removes a mirrored record only when Pipedrive answers that it is gone.
+再次选择 **Warmbly** 作为 CRM、切换到 HubSpot，或断开 Pipedrive，都会停止同步和活动记录。切换会移除 Warmbly 在 Pipedrive 中注册的变更通知；断开连接后，Warmbly 会对通知投递返回资源已不存在，随后 Pipedrive 会停用它们。任一侧都不会删除数据：已镜像的商机、管道、任务和备注留在 Warmbly，成为可编辑的普通记录；之前隐藏、仅属于 Warmbly 的管道会重新出现；Pipedrive 保留所有已写入的内容，包括 Warmbly 字段。以后重新切换到同一家 Pipedrive 公司时，会继续使用原有记录，不会创建重复项。
 
 </Fold>
 
 <Fold>
 
-## Moving a workspace
+## 自托管 [#self-hosting]
 
-A [workspace export](/guides/workspace-export-import/) carries the CRM mode, its setup choices, the user matches, which Warmbly record is which Pipedrive record, and each contact's Pipedrive details, so the destination keeps updating the same Pipedrive records instead of creating duplicates. The sync queue and the pull checkpoints stay behind; the destination starts its own pull and registers its own change notifications. Reconnect Pipedrive on the destination unless it uses the same Pipedrive app and the archive carried credentials.
+自托管实例使用自己的 Pipedrive 应用。在 Pipedrive Developer Hub 创建应用，然后：
+
+1. 将回调 URL 设为 `BACKEND_PUBLIC_URL` 加 `/integrations/oauth/callback`；如果设置了 `INTEGRATIONS_OAUTH_REDIRECT_URL`，则使用该值。
+2. 为应用授予以下权限范围：商机（完全访问）、联系人（完全访问）、活动（完全访问）、用户（读取）、搜索（读取）、潜在客户（完全访问）、联系人字段（完全访问）和 Webhook（完全访问）。Pipedrive 模式需要前四项；缺少其余权限时，会跳过潜在客户创建、Warmbly 字段或即时更新等相关功能。
+3. 在后端和消费者服务中设置 `PIPEDRIVE_OAUTH_CLIENT_ID` 与 `PIPEDRIVE_OAUTH_CLIENT_SECRET`，并设置 `APP_URL`，让 **Open in Warmbly** 字段指向你的控制台。参见[配置](/development/configuration/#integrations)。
+4. 可选：在 **App extensions**（应用扩展） 下添加 [Warmbly 面板](#working-from-inside-pipedrive)，包括一个 JSON 面板和两个 JSON 模态窗口，其架构文件位于仓库的 `pipedrive-app/` 目录。步骤参见[配置](/development/configuration/#pipedrive-app)。
+
+消费者服务负责拉取和同步队列。工作区切换时，Warmbly 会自行注册变更通知，每个连接一组，投递到 `<backend>/api/v1/integrations/pipedrive/webhooks/<connection id>`。要求 `BACKEND_PUBLIC_URL` 是 Pipedrive 可以访问的 `https` 地址；否则 Warmbly 会改为每五分钟检查一次 Pipedrive。Pipedrive 使用 Warmbly 根据客户端密钥为该连接派生的密码，验证每次投递。通知只会让 Warmbly 更早读取指定记录：它始终从 Pipedrive 自身读取数据，且只有 Pipedrive 明确回应记录已不存在时，才会移除镜像记录。
 
 </Fold>
 
 <Fold>
 
-## FAQ
+## 迁移工作区 [#moving-a-workspace]
 
-**Which Pipedrive plans work?** Every plan has the deals, people, activities, notes and filters Pipedrive mode uses. Unsubscribe status is only recorded on companies with Pipedrive Campaigns, so the unsubscribe exit rule and guard do nothing without it.
-
-**Why are emails logged as activities?** Pipedrive only lets an app add email through its own mailbox sync. A done Email activity is the closest Pipedrive record: it sits on the person's timeline with the subject and body, and counts in Pipedrive's activity reports.
-
-**Why are opens off?** Mail privacy proxies and security scanners open and click automatically, so opens are a weak signal. Turned on, they only update the **Warmbly last opened** and **Warmbly last clicked** fields.
-
-**What happens to my data when I disconnect?** Everything that was mirrored stays in Warmbly as ordinary records, and nothing is removed from Pipedrive. See [switching back and disconnecting](#switching-back-and-disconnecting).
-
-**Can I edit pipelines in Warmbly?** No, while Pipedrive is your CRM. Edit them in Pipedrive and they update in Warmbly within moments.
-
-**Does every member need a Pipedrive seat?** No. Members without a matched user still see deals, activities and notes; they cannot be assigned Pipedrive deals or activities, and their mailboxes log email under the person's owner.
+[工作区导出](/guides/workspace-export-import/)包含 CRM 模式、设置选项、用户匹配关系、Warmbly 记录与 Pipedrive 记录的对应关系，以及各联系人的 Pipedrive 详情，因此目标实例会继续更新同一批 Pipedrive 记录，不会重复创建。同步队列和拉取检查点不会迁移；目标实例会开始自己的拉取，并注册自己的变更通知。除非目标使用同一个 Pipedrive 应用，且归档包含凭据，否则需在目标实例重新连接 Pipedrive。
 
 </Fold>
 
-## Next steps
+<Fold>
+
+## 常见问题 [#faq]
+
+**支持哪些 Pipedrive 套餐？** 每个套餐都包含 Pipedrive 模式使用的商机、人员、活动、备注和筛选器。只有启用 Pipedrive Campaigns 的公司才记录退订状态，因此未启用时，退订退出规则和导入保护规则不会产生作用。
+
+**为什么邮件记录为活动？** Pipedrive 只允许应用通过其自身的邮箱同步机制添加邮件。已完成的 Email 活动是最接近的记录形式：它带有主题和正文，出现在人员时间线上，并计入 Pipedrive 活动报表。
+
+**为什么默认关闭打开记录？** 邮件隐私代理和安全扫描器会自动打开与点击，因此打开只是较弱的信号。开启后，也只更新 **Warmbly last opened** 和 **Warmbly last clicked** 字段。
+
+**断开连接后，数据会怎样？** 所有已镜像的内容都作为普通记录保留在 Warmbly 中，Pipedrive 中也不会移除任何内容。参见[切回原模式与断开连接](#switching-back-and-disconnecting)。
+
+**可以在 Warmbly 中编辑销售管道吗？** Pipedrive 作为 CRM 期间不可以。请在 Pipedrive 中编辑，片刻后就会更新到 Warmbly。
+
+**每位成员都需要 Pipedrive 席位吗？** 不需要。没有匹配用户的成员仍可查看商机、活动和备注，只是不能被分配 Pipedrive 商机或活动；其邮箱产生的邮件活动会记录在该人员的负责人名下。
+
+</Fold>
+
+## 后续步骤 [#next-steps]
 
 <Cards>
-  <Card title="Contacts & CRM" href="/guides/contacts-crm/" />
+  <Card title="联系人与 CRM" href="/guides/contacts-crm/" />
   <Card title="HubSpot" href="/guides/hubspot/" />
-  <Card title="Integrations" href="/guides/integrations/" />
+  <Card title="集成" href="/guides/integrations/" />
 </Cards>

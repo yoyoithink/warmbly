@@ -1,199 +1,199 @@
 ---
-title: "Advisor"
-description: "Warmbly watches your sending and tells you what to fix, on the page where the fix lives."
+title: "优化顾问（Advisor）"
+description: "Warmbly 持续监测发送情况，并在对应设置页面指出需要修复的问题。"
 ---
 
-The Advisor checks your workspace for problems that quietly hurt cold outreach, such as climbing complaints or a domain missing DMARC. It says what is wrong and what to do, on the page where the problem is.
+优化顾问会检查工作区中悄然影响冷邮件外联的问题，例如投诉增加或域名缺少 DMARC，并在问题所在页面说明哪里不对、应该如何处理。
 
-## Fix a finding
+## 修复检查发现的问题 [#fix-a-finding]
 
 <Steps>
 
 <Step>
 
-Click the colored flag on a mailbox or campaign row to open its findings.
+点击邮箱或营销活动行上的彩色标记，打开检查结果。
 
 </Step>
 
 <Step>
 
-Read **Why** to see the measured numbers behind the finding.
+阅读**原因**，查看支撑结果的实测数据。
 
 </Step>
 
 <Step>
 
-Check **What changes**, which shows the exact before and after of every field.
+查看**将会更改的内容**，其中列明每个字段修改前后的准确值。
 
 </Step>
 
 <Step>
 
-Apply the fix. **Done** offers **Undo** where the change can be reverted.
+应用修复。对于可还原的更改，**完成**页面会提供**撤销**。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Detection is explicit rules with explicit thresholds, not AI, so it works with no AI configured and never spends AI credits.
-- A check stays quiet until it has enough data, for example `100` sends in 30 days for complaint rate.
-- Nothing is applied until you have seen the **What changes** screen, and the change runs with your permissions.
-- Autopilot, under **Settings > Workspace**, is off by default and only takes bounded fixes that can be undone.
-- **Snooze** hides a finding for a week or a month. **Stop suggesting this** dismisses it until the problem clears and recurs.
+- 检测使用明确的规则和阈值，不依赖 AI，因此没有配置 AI 也能工作，且不消耗 AI 积分。
+- 样本不足时检查不会提示，例如投诉率需要 30 天内至少 `100` 次发送。
+- 只有查看过**将会更改的内容**页面后才会应用修复，并按你的权限执行。
+- **设置 > 工作区**中的自动修复默认关闭，只会执行范围受限、可以撤销的更改。
+- **稍后提醒**可隐藏结果一周或一个月。**不再建议此项**会忽略该结果，直到问题消失后再次发生。
 
 <Fold>
 
-## What the Advisor does
+## 优化顾问的功能 [#what-the-advisor-does]
 
-The Advisor checks your workspace for the things that quietly ruin cold outreach: complaints climbing, a domain missing DMARC, a new mailbox at full volume, a list that is mostly shared inboxes. It says what is wrong, why it matters, and what to do, and where the fix is a setting, it offers to make the change.
+优化顾问检查会悄然损害外联效果的问题：投诉增加、域名缺少 DMARC、新邮箱满负荷发送、名单大多是共享收件箱等。它说明问题、影响和处理方式；若修复只需更改设置，还会提供直接修改。
 
-Advice appears on the page where the problem is, not in a separate inbox you have to check.
+建议出现在问题所在页面，不需要另去一个收件箱查看。
 
 </Fold>
 
 <Fold>
 
-## Where you see it
+## 查看入口 [#where-you-see-it]
 
-| Surface | What appears |
+| 位置 | 显示内容 |
 |---------|--------------|
-| On the row | A colored flag on the mailbox or campaign, opening that row's findings in place. This is the main way you meet the Advisor |
-| Above the list | One summary line ("3 mailboxes could be doing better") that expands to the full set and holds **Fix all**. Stays collapsed unless something is critical or workspace-wide |
-| On the nav tab | A badge counting critical and high-severity findings only |
-| In Remie | It reads your open recommendations, so "why is this campaign not getting replies" is answered from measurements rather than guesses |
-| From Remie | Open findings appear as **Suggested for you** in an empty Remie conversation, and occasionally one rated Needs attention or Critical as a tip under the top-bar blob. See [suggestions and tips](/guides/ai-assistant/#suggestions-and-tips) |
+| 数据行上 | 邮箱或营销活动的彩色标记，原地打开该行检查结果；这是优化顾问最主要的入口 |
+| 列表上方 | 一行摘要，例如“3 个邮箱有改进空间”，展开后显示全部结果和**修复全部**。除非存在严重或工作区范围的问题，否则保持折叠 |
+| 导航标签页上 | 仅统计严重和高严重程度问题的徽标 |
+| Remie 内 | Remie 读取尚未处理的建议，因此“为什么这个活动没有回复”可根据实测数据回答，而非猜测 |
+| Remie 主动提示 | 空白 Remie 会话中的**为你推荐**显示待处理结果；需要关注或严重的问题也可能偶尔出现在顶栏入口下方。参见[建议与提示](/guides/ai-assistant/#suggestions-and-tips) |
 
-A step's copy problem flags its campaign, since a step has no row. When there is nothing to say, nothing renders.
+步骤文案的问题会标记到所属营销活动，因为步骤没有独立列表行。没有建议时，不显示任何元素。
 
-If one check fires on many things, they collapse into a single card ("19 mailboxes are capped above the safe band") that expands to list each affected row with its own **Fix**, plus one **Fix all**.
+同一检查命中多个对象时，会合并成一张卡片，例如“19 个邮箱的上限超过安全范围”。展开后列出各受影响行及其**修复**按钮，并提供**修复全部**。
 
 </Fold>
 
 <Fold>
 
-## How findings are made
+## 如何生成检查结果 [#how-findings-are-made]
 
-**Detection is not AI.** Every check is an explicit rule with an explicit threshold run over your own data, so the same numbers always produce the same result. AI only rewrites the explanation to read more naturally; it cannot create a finding, change its severity, or change what a fix does. The Advisor therefore works fully on a self-hosted install with no AI configured and never spends AI credits. The wording is just plainer.
+**检测不是由 AI 完成的。** 每项检查都以明确规则和阈值运行于你的数据，因此相同数据始终产生相同结果。AI 仅将解释改写得更自然，不能创建问题、改变严重程度或改变修复行为。因此，没有配置 AI 的自托管部署也能完整使用优化顾问，且不消耗 AI 积分；区别只是说明措辞更朴素。
 
-### Sample floors
+### 最低样本量 [#sample-floors]
 
-A check stays quiet until it can be right. Two bounces in thirty sends is not a `7%` bounce rate.
+只有数据足以支持判断时才会提示。30 次发送中有两次退信，不足以认定退信率就是 `7%`。
 
-| Signal | Minimum before anything is said |
+| 信号 | 提示前的最低样本要求 |
 |--------|-------------------------------------------|
-| Complaint rate | `100` sends in 30 days |
-| Bounce rate | `50` sends in 30 days |
-| Spam placement | `20` warmup deliveries in 7 days |
-| Warmup mail not arriving | `5` warmup emails to the mailbox in 7 days, from at least `2` workspaces |
-| Reply rate and copy | `200` sends in 30 days |
-| Per-step comparison | `100` sends on that step |
+| 投诉率 | 30 天内 `100` 次发送 |
+| 退信率 | 30 天内 `50` 次发送 |
+| 垃圾邮件投递位置 | 7 天内 `20` 次预热投递 |
+| 预热邮件未到达 | 7 天内向该邮箱发送 `5` 封预热邮件，来自至少 `2` 个工作区 |
+| 回复率与文案 | 30 天内 `200` 次发送 |
+| 单步骤对比 | 该步骤 `100` 次发送 |
 
-### Severity
+### 严重程度 [#severity]
 
-| Severity | Meaning |
+| 严重程度 | 含义 |
 |----------|---------|
-| **Critical** | Reputation or delivery is being damaged right now |
-| **Needs attention** | Real, and becomes critical if left alone |
-| **Worth fixing** | A meaningful improvement, no immediate risk |
-| **Suggestion** | Polish |
+| **严重** | 当前正在损害信誉或投递 |
+| **需要关注** | 确有问题，放任不管会变严重 |
+| **值得修复** | 有实质改进空间，但无即时风险 |
+| **建议** | 进一步优化 |
 
-Only the first two badge a nav tab.
-
-</Fold>
-
-<Fold>
-
-## What it checks
-
-**Deliverability**: complaint rate per mailbox (warns `0.03%`, critical `0.10%`, matching Google's bulk-sender ceiling); bounce rate (warns `3%`, critical `5%`, where SES opens a review); spam placement on warmup mail at Google, Microsoft and Yahoo (warns `10%`, escalates `20%`, critical `50%`; other mail hosts are not counted, see [how spam placement is judged](/guides/warmup/#how-spam-placement-is-judged)); SPF and DMARC per sending domain (critical while sending cold, since Google requires them; an unchecked domain is never called failing, and DKIM is never reported missing because its selector is not discoverable from DNS); and whether a mailbox has its own verified tracking domain.
-
-**Mailbox configuration**: daily cap above the `50`/day safe band (gently with clean numbers, firmly without); a mailbox under `30` days old sending above `20`/day; a send gap under `5` minutes; unresolved errors on a mailbox campaigns still use; too few mailboxes carrying total volume; an inactive mailbox attached to a running campaign.
-
-**Warmup**: warmup off while sending cold (critical on a new mailbox); warmup left paused; a ceiling too low to balance cold volume (roughly half the cold cap); reply rate under `20%`, making warmup one-way; temporarily throttled sending, reported separately from quarantine or a pool block; none of the pool's warmup mail to the mailbox arriving, which stops the pool sending to it (see [unreachable mailboxes](/guides/warmup/#mailboxes-the-pool-cannot-reach)). Missing or stale Cloud status is reported separately from a real reputation ban, with steps to refresh it without disconnecting mailboxes.
-
-A **throttled** mailbox remains in the warmup pool. The advisor explains the automatic reduced sending pace rather than asking you to remove it from campaigns, wait a fixed week or manually re-enter the pool. Keep warmup running and do not increase its cap to bypass the slowdown. For placement throttles, half volume steps down to watch below `15%` spam placement, and watch lifts below `7.5%`; separate ramp limits still apply. Re-entry probation and other cooldowns follow the reason shown on the mailbox. A throttle alone does not mean the connection has failed or the provider has blocked the mailbox.
-
-The advisor's placement sample covers today and the preceding six UTC dates, matching the Deliverability display and placement-health decisions. After an upgrade, the next advisor evaluation replaces outdated throttle/exclusion guidance automatically. A campaign hold you already applied remains yours to release after checking any other findings.
-
-**Campaigns**: no follow-ups; reply rate under `1%` at volume, escalating under `0.3%`; one step replying below a quarter of the campaign's best (compared only against siblings, which share an audience); one-click unsubscribe off; a daily limit above what its mailboxes can send; no active sender; follow-up spacing outside `2` to `14` days; under `7` days of leads left; no A/B test at high volume; a sending window too narrow for the volume; contacts enrolled in several running campaigns.
-
-**Copy** (conservative, and drafts are skipped): a merge variable that will not resolve, shipping a literal `{{token}}`; two or more bulk-mail phrases (one is never flagged); over `200` words; a subject over `60` characters; more than two links in a first touch; a shouting subject.
-
-Two more copy findings run only when the operator has configured TypeSafe (`TYPESAFE_API_KEY`), a calibrated reader model rather than a language model: a step that **reads as bulk mail** to its recipient, or makes a claim a spam filter objects to (guaranteed results, free money, a prize, pressure to act now); and a step with **no clear ask**, either asking for nothing or for several things. Each step's subject and body are sent to TypeSafe for this, once per version of the copy; the verdict is cached and an unchanged step is never sent again. At most `40` steps are judged per evaluation, and the rest wait for the next run.
-
-**List quality**: shared inboxes (`info@`, `sales@`) above `15%`; consumer domains above `40%` of a B2B list; suppressed contacts above `10%`; missing first names above `10%` when copy personalizes on them; unsubscribed contacts still enrolled.
+只有前两级会在导航标签页显示徽标。
 
 </Fold>
 
 <Fold>
 
-## Fixing something
+## 检查项目 [#what-it-checks]
 
-Opening a recommendation walks three screens: **Why** (with the measured numbers), **What changes** (the exact before and after of every field), and **Done** (with **Undo** where revertible).
+**送达能力**：按邮箱检查投诉率，`0.03%` 警告、`0.10%` 严重，对应 Google 的批量发件人上限；退信率 `3%` 警告、`5%` 严重，即 SES 开始审查的水平；Google、Microsoft 和 Yahoo 收到的预热邮件的垃圾箱占比，`10%` 警告、`20%` 升级、`50%` 严重。其他邮件主机不计入，参见[垃圾邮件投递位置如何判定](/guides/warmup/#how-spam-placement-is-judged)。还会检查每个发信域名的 SPF 和 DMARC，冷邮件发送期间缺失会标为严重，因为 Google 要求具备这些配置；未检查的域名不会被认定为失败，DKIM 也不会被报告为缺失，因为无法从 DNS 自动发现其选择器。此外检查邮箱是否拥有独立且已验证的跟踪域名。
 
-A finding that asks you to stop cold sending from a mailbox, for severe spam placement (`50%` or more on at least `20` major-provider deliveries), quarantine or a pool block, applies [Hold from campaigns](/guides/mailboxes/#holding-a-mailbox-yourself) rather than switching the mailbox off, and leaves its warmup as it is. A recoverable placement slowdown below that severe band does not offer a campaign hold on its own; complaints, bounces and other confirmed problems are still checked separately. The hold is offered only while campaigns can still pick the mailbox, so a mailbox that is already held, resting or switched off gets no fix, and **Undo** never releases a hold someone else set.
+**邮箱配置**：每日上限超过 `50` 封的安全范围，有良好数据时语气较轻，无数据支持时更明确；启用不足 `30` 天的邮箱每日发送超过 `20` 封；发送间隔短于 `5` 分钟；活动仍在使用但错误未解决的邮箱；过少邮箱承担过大发送量；运行中活动关联了未启用邮箱。
 
-Nothing is applied until you have seen the second screen. The change runs as you, with your permissions, and is written to the audit log. If you can see a finding but lack permission for its fix, applying it is refused rather than silently escalated.
+**预热**：发冷邮件时预热关闭，对新邮箱属于严重问题；预热一直暂停；预热上限过低，无法平衡冷邮件量，参考值约为冷邮件上限的一半；回复率低于 `20%`，导致单向预热；临时发送限流，与隔离或预热池封禁分开报告；预热池发给邮箱的邮件全部无法到达，导致池停止向其发送，参见[无法连接的邮箱](/guides/warmup/#mailboxes-the-pool-cannot-reach)。缺失或过时的 Cloud 状态与真实信誉封禁分别报告，并说明如何在不断开邮箱的情况下刷新。
 
-Findings needing a judgement call have no settings preview. Their second screen is the ordered set of manual steps plus a link to the right screen. A missing DMARC record tells you where the `_dmarc` host goes and why the first record should start at `p=none`. Where the remedy is genuinely one sentence, it stays one sentence.
+**限流**邮箱仍保留在预热池中。优化顾问解释自动降低的发送节奏，不会让你从活动移除邮箱、固定等待一周或手动重新加入池。应保持预热运行，不要提高上限绕过降速。投递位置引发的半量限流，在垃圾箱占比低于 `15%` 时降为观察，低于 `7.5%` 时解除观察；独立的递增限制仍然适用。重新加入后的观察期及其他冷却，按邮箱显示的原因处理。仅有限流不表示连接失败，也不表示服务商封禁了邮箱。
 
-### Fix with agent
+优化顾问的投递位置样本覆盖当天及此前六个 UTC 日期，与送达能力页面和投递位置健康判定一致。升级后，下次评估会自动替换过时的限流或排除建议。你此前应用的活动暂停仍需自行检查其他结果后再解除。
 
-Findings whose fix edits something Warmbly owns (copy, sequence shape, list membership) offer **Fix with agent**: it reads the current campaign, step, or list, makes the smallest change that resolves the problem, and reports back.
+**营销活动**：没有跟进邮件；达到样本要求后回复率低于 `1%`，低于 `0.3%` 时升级；某步骤回复表现不足同活动最佳步骤的四分之一，只与共享同一受众的同级步骤比较；关闭一键退订；每日上限超过邮箱实际能力；没有活跃发件邮箱；跟进间隔超出 `2` 至 `14` 天；剩余潜在客户不足 `7` 天；高发送量却未做 A/B 测试；发送窗口相对发送量过窄；联系人同时加入多个运行中的活动。
 
-It runs as you, with your permissions, and only gets the tools that finding's category needs. A copy problem gets read access to the campaign and edit access to that step, nothing more. **No tool set can send mail, delete a campaign or contact, or touch team, billing, or API keys.** Each loop costs one AI credit.
+**文案**检查较保守，跳过草稿：无法解析的合并变量导致原样发送 `{{token}}`；出现两项或以上群发营销措辞，单项不提示；超过 `200` 词；主题超过 `60` 个字符；首次联系含超过两个链接；主题使用大写叫喊式表达。
 
-When it finishes you get its account plus the list of tools it actually called, which you can check against the audit log. An agent that concludes nothing needs changing says so, and the finding stays open rather than being quietly closed.
+另有两项文案检查，仅在运营人员配置 TypeSafe（`TYPESAFE_API_KEY`）后运行。TypeSafe 是经过校准的阅读判定模型，而非语言模型。它检查步骤是否**在收件人看来像群发邮件**，或含有垃圾邮件过滤器不接受的承诺，例如保证结果、免费送钱、中奖、催促立即行动；以及是否**没有明确诉求**，例如没有提出任何请求或同时要求多件事。每个文案版本的主题和正文只发送给 TypeSafe 一次，结果会缓存，内容不变的步骤不会再次发送。每次评估最多判断 `40` 个步骤，其余等待下次运行。
 
-Findings whose fix lives outside Warmbly never offer this, because no agent can reach a DNS record at your registrar.
-
-### Records to paste
-
-Where the fix is a DNS record, it is on screen with one copy button per field, laid out as type, host, value.
-
-- **SPF** arrives with your provider's include filled in. An unrecognized provider leaves an obvious placeholder rather than a guess, because a wrong include looks finished and fails silently.
-- **DMARC** is scoped to your domain and starts at `p=none`, monitoring without affecting delivery. Tighten to `p=quarantine` once reports show legitimate mail passing.
-- **DKIM** is never called missing, since Warmbly cannot see a selector DNS does not list. When a domain is already flagged for SPF or DMARC and DKIM went unverified too, the card adds the host to publish at and names the console screen that generates the value, which is per-domain and cannot be templated honestly.
-- **Tracking domain** gives the full CNAME pointing at this install's tracking host, so self-hosted deployments get their own value.
-
-### Autopilot
-
-Under **Settings > Workspace**, off by default. It only takes fixes that are bounded, move in the safe direction, and can be undone:
-
-- lowering a cap above the safe band, or one a new mailbox jumped to early
-- cutting the cap on a mailbox drawing complaints
-- widening a gap that is too short
-- matching a campaign's daily limit to its mailboxes' real capacity
-- turning on one-click unsubscribe
-
-**It never pauses sending, edits copy, starts or resumes warmup, or acts without an undo.** Eligible findings are marked **Auto** on the card whether or not it is on, so the set is visible before you enable it. It acts as the member who enabled it, with their permissions, logged as them, and stops if that person leaves. At most ten fixes per evaluation.
+**名单质量**：共享收件箱（`info@`、`sales@`）超过 `15%`；B2B 名单中个人邮箱域名超过 `40%`；被禁止发送联系人超过 `10%`；文案使用名字个性化但缺少名字的联系人超过 `10%`；已退订联系人仍留在活动中。
 
 </Fold>
 
 <Fold>
 
-## Making one go away
+## 修复问题 [#fixing-something]
 
-- **Snooze** hides it for a week or a month; the check keeps running.
-- **Stop suggesting this** dismisses it until the problem clears and recurs later.
-- **Useful / not useful** feeds threshold tuning.
+打开建议后依次经过三个页面：**原因**，显示实测数据；**将会更改的内容**，显示各字段准确的前后值；**完成**，可还原时提供**撤销**。
+
+如果因严重垃圾箱占比，即占比达到 `50%` 或以上且基于至少 `20` 次主要服务商投递、隔离或预热池封禁而建议停止某邮箱冷邮件，修复会应用[暂停用于营销活动](/guides/mailboxes/#holding-a-mailbox-yourself)，而非关闭邮箱，并保留预热现状。未达严重等级、可恢复的投递位置降速不会单独提供活动暂停；投诉、退信等已确认问题仍分别检查。只有活动还能选用该邮箱时才提供暂停修复，因此已暂停、休整或关闭的邮箱不会再收到此操作，**撤销**也不会解除别人设置的暂停。
+
+看到第二个页面前，不会应用任何更改。操作以你的身份和权限执行，并写入审计日志。如果可以查看问题但没有修复权限，系统会拒绝操作，而不会悄悄提升权限。
+
+需要人工判断的问题没有设置预览，第二页会列出有序的手动步骤和正确入口链接。例如缺少 DMARC 时，会说明 `_dmarc` 主机记录的位置，以及为何首条记录应从 `p=none` 开始。确实只需一句话的处理方法就保持一句话。
+
+### 通过智能体修复 [#fix-with-agent]
+
+如果修复需要编辑 Warmbly 内的数据，例如文案、序列结构或名单成员，会提供**通过智能体修复**：读取当前活动、步骤或名单，做解决问题所需的最小修改，然后报告结果。
+
+智能体以你的身份和权限运行，只获得该问题类别所需的工具。文案问题只获得活动读取和对应步骤编辑权限，不会得到其他能力。 **任何工具集合都不能发邮件、删除活动或联系人，也不能操作团队、账单或 API 密钥。** 每轮执行消耗一个 AI 积分。
+
+完成后，会提供操作说明和实际调用的工具列表，可与审计日志核对。如果智能体判断无需更改，会明确说明，问题仍保持未解决，而不会悄悄关闭。
+
+修复位置在 Warmbly 外部时不提供此功能，因为智能体无法访问你域名注册商处的 DNS 记录。
+
+### 可直接粘贴的记录 [#records-to-paste]
+
+需要修复 DNS 记录时，页面按类型、主机和值排列，并为每个字段提供复制按钮。
+
+- **SPF** 会预填服务商的 include。无法识别服务商时会保留明显占位符，而不是猜测，因为错误的 include 看似配置完整，实际可能悄悄失效。
+- **DMARC** 针对当前域名生成，从 `p=none` 开始，仅监测而不影响投递。报告确认合法邮件通过后，再收紧为 `p=quarantine`。
+- **DKIM** 不会被认定为缺失，因为 Warmbly 无法发现 DNS 未列出的选择器。当域名因 SPF 或 DMARC 已被标记，且 DKIM 也未验证时，卡片会补充应发布的主机名，并指出生成记录值的控制台页面；值因域名而异，不能凭模板编造。
+- **跟踪域名**会给出指向当前安装跟踪主机的完整 CNAME，自托管部署因此得到自己的配置值。
+
+### 自动修复 [#autopilot]
+
+位于**设置 > 工作区**，默认关闭。只执行边界明确、朝安全方向调整且能撤销的修复：
+
+- 降低超过安全范围的上限，或新邮箱过早设置的高上限；
+- 降低正在产生投诉的邮箱上限；
+- 延长过短的发送间隔；
+- 将活动每日上限与邮箱实际容量匹配；
+- 开启一键退订。
+
+**不会暂停发送、编辑文案、启动或恢复预热，也不会执行无法撤销的操作。** 无论自动修复是否启用，适用问题都会在卡片上标为 **自动** ，使你能事先看清范围。操作以启用该功能的成员身份和权限执行，并以其名义记录；该成员离开后停止。每次评估最多修复十项。
 
 </Fold>
 
 <Fold>
 
-## Settings and timing
+## 隐藏或忽略检查结果 [#making-one-go-away]
 
-Under **Settings > Workspace** you can switch the Advisor off, enable autopilot, mute whole categories, or raise the minimum severity. Changing these needs the manage-settings permission and applies workspace-wide.
-
-Findings refresh in the background and when you open a page whose advice went stale. Adding, changing or removing a mailbox re-checks them right away, and removing a mailbox, campaign or step closes the advice about it in the same action. Updates are live, so a teammate applying a fix clears the card on your screen.
+- **稍后提醒**隐藏一周或一个月，但检查仍继续运行。
+- **不再建议此项**忽略问题，直到它消失后再次发生。
+- **有用 / 无用**反馈用于调整阈值。
 
 </Fold>
 
-## See also
+<Fold>
 
-- [Deliverability](/guides/deliverability/) for the underlying measurements and health bands.
-- [Warmup](/guides/warmup/) for warmup volume and pool standing.
-- [Remie](/guides/ai-assistant/) for follow-up questions about a recommendation.
+## 设置与运行时间 [#settings-and-timing]
+
+在**设置 > 工作区**中，可关闭优化顾问、启用自动修复、静音整个类别或提高最低严重程度。修改需要管理设置权限，并对整个工作区生效。
+
+检查结果在后台刷新，也会在打开建议已过时的页面时刷新。添加、修改或移除邮箱会立即重新检查；移除邮箱、活动或步骤时，同一操作会关闭相关建议。更新实时生效，因此其他成员应用修复后，你屏幕上的卡片也会消失。
+
+</Fold>
+
+## 另请参阅 [#see-also]
+
+- [邮件送达能力](/guides/deliverability/)：基础测量和健康等级。
+- [邮箱预热](/guides/warmup/)：预热发送量和预热池健康状态。
+- [Remie](/guides/ai-assistant/)：进一步询问建议的相关问题。

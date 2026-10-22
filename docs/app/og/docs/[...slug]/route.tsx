@@ -26,7 +26,7 @@ export async function GET(_req: Request, { params }: RouteContext<'/og/docs/[...
     <DefaultImage
       title={page.data.title}
       description={page.data.description}
-      site="Warmbly Docs"
+      site="Warmbly 文档"
       icon={<Mark />}
       primaryColor="rgba(2, 132, 199, 0.45)"
       primaryTextColor="rgb(125, 211, 252)"

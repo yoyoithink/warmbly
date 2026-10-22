@@ -1,257 +1,257 @@
 ---
-title: Salesforce
-description: "Two-way Salesforce sync: activity on the timeline, Lead Status writeback, do-not-email in step, imports from list views and Campaigns, and Salesforce context on every contact."
+title: "Salesforce"
+description: "Salesforce 双向同步：在时间线上记录活动、回写 Lead Status、同步禁止发送邮件标记、从列表视图和 Campaigns 导入，并为每个联系人显示 Salesforce 相关信息。"
 ---
 
-The Salesforce integration keeps your Salesforce org and Warmbly in step. Campaign emails, replies and meetings are logged on the Lead or Contact, and an opt-out on either side stops email on both.
+Salesforce 集成使 Salesforce 组织与 Warmbly 保持同步。营销活动邮件、回复和会议会记录到 Lead 或 Contact 上；任一侧拒收，双方都会停止发送邮件。
 
-## Connect Salesforce
+## 连接 Salesforce [#connect-salesforce]
 
 <Steps>
 
 <Step>
 
-Open **Integrations > Salesforce > Connect**.
+打开**集成 > Salesforce > 连接**。
 
 </Step>
 
 <Step>
 
-Choose where your org lives: **Production**, **Sandbox**, or **Custom domain**.
+选择组织所在环境：**生产环境**、**沙盒**或**自定义域名**。
 
 </Step>
 
 <Step>
 
-Sign in to Salesforce and approve access.
+登录 Salesforce 并批准访问。
 
 </Step>
 
 <Step>
 
-On the connection's page, use **Overview > Run permission check** to see anything missing.
+在连接页面使用**概览 > 运行权限检查**，查看缺少的权限。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Your Salesforce edition needs API access. Essentials has no API.
-- A new connection logs sends, replies, bounces, unsubscribes and meetings, never overwrites a filled field, and only creates a Lead when someone replies.
-- Opens and clicks are not logged by default.
-- Warmbly reads what changed in your org every five minutes.
-- By default Warmbly uses at most a fifth of your org's daily API allocation.
+- Salesforce 版本必须支持 API 访问，Essentials 没有 API。
+- 新连接默认记录发送、回复、退信、退订和会议，不覆盖已有值的字段，且仅在有人回复时创建 Lead。
+- 默认不记录打开和点击。
+- Warmbly 每五分钟读取组织中的变化。
+- 默认最多使用组织每日 API 配额的五分之一。
 
 <Fold>
 
-## What the integration does
+## 集成的功能 [#what-the-integration-does]
 
-The Salesforce integration keeps your org and Warmbly in step without anyone copying data between them. Campaign emails, replies and meetings land on the Lead or Contact timeline as completed Tasks, a reply can move the Lead Status, an opt-out on either side stops email on both, and every contact drawer and inbox thread shows who owns the person in Salesforce and which deals are open.
+Salesforce 集成让组织与 Warmbly 自动保持同步，无需人工复制数据。营销活动邮件、回复和会议以已完成 Task 的形式出现在 Lead（潜在客户）或 Contact（联系人）时间线上；回复可以更新 Lead Status，任一侧拒收会让双方停止发信。每个联系人抽屉和收件箱会话还会显示 Salesforce 中的负责人及未关闭商机。
 
 </Fold>
 
 <Fold>
 
-## What you need
+## 准备条件 [#what-you-need]
 
-- A Salesforce edition with API access: Enterprise, Unlimited, Performance or Developer, or Professional with the API add-on. Essentials has no API.
-- A connecting user with **API Enabled**, read and edit on Leads, Contacts and Tasks, and read on Accounts, Opportunities and Campaigns. Field-level security applies: a field the user cannot edit cannot be written back.
-- If your org restricts connected apps, an admin approves the Warmbly app once (**Setup > Connected Apps OAuth Usage**). Since September 2025 Salesforce refuses an app nobody approved unless the user can approve uninstalled apps.
+- 支持 API 的 Salesforce 版本：Enterprise、Unlimited、Performance、Developer，或购买 API 附加功能的 Professional。Essentials 没有 API。
+- 用于连接的用户需要 **API Enabled**（启用 API）权限，对 Leads、Contacts、Tasks 具有读取和编辑权限，对 Accounts、Opportunities、Campaigns 具有读取权限。字段级安全仍然适用，用户无权编辑的字段不能回写。
+- 如果组织限制已连接应用，管理员需在 **Setup > Connected Apps OAuth Usage**（设置 > 已连接应用 OAuth 使用情况） 中批准 Warmbly 一次。自 2025 年 9 月起，除非用户有权批准未安装应用，否则 Salesforce 会拒绝尚无人批准的应用。
 
-Warmbly acts as the connecting user. Records it creates and Tasks it logs are owned according to the rules below, but every call is made with that user's access, so a dedicated integration user with the permissions above is the cleanest setup.
+Warmbly 以连接用户身份执行。创建的记录和 Task 按下文规则分配所有权，但所有调用都使用该用户的访问权限，因此最清晰的方案是创建具备上述权限的专用集成用户。
 
 </Fold>
 
 <Fold>
 
-## Connect
+## 连接 [#connect]
 
-1. Open **Integrations > Salesforce > Connect**.
-2. Choose where your org lives: **Production**, **Sandbox**, or **Custom domain** for a My Domain such as `acme.my.salesforce.com`.
-3. Sign in to Salesforce and approve access. Warmbly asks for the `api`, `refresh_token` and `id` scopes and nothing else: API access, staying connected, and knowing which user connected.
+1. 打开**集成 > Salesforce > 连接**。
+2. 选择**生产环境**、**沙盒**，或为 `acme.my.salesforce.com` 这样的 My Domain 选择**自定义域名**。
+3. 登录 Salesforce 并批准访问。Warmbly 仅请求 `api`、`refresh_token` 和 `id` 权限，分别用于 API 访问、保持连接和识别连接用户。
 
-You land on the Salesforce page for the connection, where the rest of the setup lives. A new connection starts syncing with safe defaults: it logs sends, replies, bounces, unsubscribes and meetings, never overwrites a filled field, and only creates a Lead when someone replies. A connection made before native sync existed starts with sync off; turn it on from **Overview**.
+随后进入该连接的 Salesforce 页面，继续完成设置。新连接使用安全默认值启动同步：记录发送、回复、退信、退订和会议，不覆盖已有值的字段，仅在有人回复时创建 Lead。在原生同步推出前建立的连接默认关闭同步，需从**概览**开启。
 
-Connecting a sandbox and production at the same time is supported; each is its own connection with its own settings. Disconnecting revokes Warmbly's token in Salesforce at once.
+可以同时连接沙盒和生产环境，两者为独立连接，设置互不影响。断开连接会立即在 Salesforce 撤销 Warmbly 令牌。
 
-<Callout type="info" title="Run the permission check">
-**Overview > Run permission check** describes Leads, Contacts and Tasks as the connected user and says exactly what is missing, for example "Email Opt Out is not editable for this user, so unsubscribes cannot be written back".
+<Callout type="info" title="运行权限检查">
+**概览 > 运行权限检查**以连接用户身份读取 Leads、Contacts 和 Tasks 的对象定义，准确指出缺少的权限，例如“此用户不可编辑 Email Opt Out，因此无法回写退订状态”。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## How people are matched
+## 人员匹配方式 [#how-people-are-matched]
 
-Every Warmbly contact is linked to at most one record per connected org, by email address:
+每个 Warmbly 联系人，在每个已连接组织中最多关联一条记录，按邮箱地址匹配：
 
-- When an address is both a Contact and a Lead, the Contact wins by default. Switch **Matching > Prefer** to Lead for orgs that work Leads first.
-- A converted Lead is never a match. When a linked Lead converts, the link follows it to the Contact it became.
-- When nobody matches, **Create when** decides: never, when they reply or book a meeting (the default), or on the first logged email. A bounce, an unsubscribe, an open or a click never creates anyone. **Create as** picks Lead or Contact. A connection made before native sync existed keeps creating Contacts, as its upsert action did, until you change it.
+- 同一地址同时存在 Contact 和 Lead 时，默认优先 Contact。如果组织优先处理 Leads，可将**匹配 > 优先对象**改为 Lead。
+- 已转换的 Lead 不参与匹配。已关联 Lead 转换后，关联会跟随到转换形成的 Contact。
+- 无匹配时，由**创建时机**决定：从不、对方回复或预约会议时（默认），或首次记录发送邮件时。退信、退订、打开或点击不会触发创建。**创建为**决定创建 Lead 还是 Contact。原生同步推出前建立的连接，仍沿用原创建或更新操作的行为创建 Contact，直到你修改。
 
-A created record gets the contact's name, company (the email domain when there is none, because Salesforce requires one on a Lead), phone and title, the **Lead Source** you set (Warmbly by default) and the initial **Lead Status** you pick. Its owner is the connected user, the Salesforce user whose email matches the sending mailbox, or a fixed user. Turn on **Run assignment rules** to let your org's lead assignment rules decide instead. Duplicate rules that only alert do not block the save.
+新记录带入姓名、公司、电话、职位、所设的 **Lead Source**（潜在客户来源）（默认 Warmbly）以及初始 **Lead Status**（潜在客户状态）。缺少公司时使用邮箱域名，因为 Salesforce 的 Lead 要求公司。负责人可为连接用户、邮箱地址与发件邮箱匹配的 Salesforce 用户，或固定用户。开启**运行分配规则**后，由组织的潜在客户分配规则决定。仅发出提醒的重复规则不会阻止保存。
 
-Links are made as activity flows, when a contact's drawer opens, on import, and from **Push to Salesforce** in Contacts.
+关联会在活动流入、打开联系人抽屉、导入，以及联系人页执行**推送到 Salesforce**时建立。
 
 </Fold>
 
 <Fold>
 
-## Activity on the timeline
+## 时间线中的活动 [#activity-on-the-timeline]
 
-Each event is logged as a completed Task on the Lead or Contact, with the email icon in the timeline:
+每个事件以已完成 Task 记录到 Lead 或 Contact，并在时间线上显示邮件图标：
 
-| Event | Subject | Description | Default |
+| 事件 | 主题 | 描述 | 默认 |
 |---|---|---|---|
-| Campaign email sent | `Email sent: <subject>` | Campaign, step, from, to, and the email text | on |
-| Reply received | `Reply received: <subject>` | From, classified intent, and the reply text | on |
-| Bounce | `Email bounced` | Reason | on |
-| Unsubscribe or spam complaint | `Unsubscribed from Warmbly outreach` | | on |
-| Meeting booked | `Meeting booked: <event>` | When and the join link | on |
-| Open | `Email opened` | | off |
-| Click | `Link clicked: <link>` | The URL | off |
+| 营销活动邮件已发送 | `Email sent: <subject>` | 活动、步骤、发件人、收件人和邮件文本 | 开启 |
+| 收到回复 | `Reply received: <subject>` | 发件人、判定的意图和回复文本 | 开启 |
+| 退信 | `Email bounced` | 原因 | 开启 |
+| 退订或垃圾邮件投诉 | `Unsubscribed from Warmbly outreach` | | 开启 |
+| 会议已预约 | `Meeting booked: <event>` | 时间和加入链接 | 开启 |
+| 打开 | `Email opened` | | 关闭 |
+| 点击 | `Link clicked: <link>` | URL | 关闭 |
 
-Opens and clicks are off by default: each one is an API call and a line on the timeline, and a mail client's prefetch is never counted as an open anyway.
+打开和点击默认关闭，因为每次都会消耗 API 调用并增加时间线条目；邮件客户端预取本来也不会计为打开。
 
-A Contact's Tasks are related to the account's most recently active open opportunity when there is one, so deal reviews see the outreach too. A Task is owned by the record's owner, the sender's Salesforce user, or the connected user. A Lead sitting in a queue falls back to the connected user, since a queue cannot own a Task.
+Contact 的 Task 会关联到所属 Account 最近活跃的未关闭 Opportunity（若存在），让商机复盘也能看到外联记录。Task 的负责人可为记录负责人、发件人的 Salesforce 用户或连接用户。如果 Lead 属于队列，则回退到连接用户，因为队列不能拥有 Task。
 
-Every event is recorded the moment it happens and logged in batches of up to 200, normally within a minute. A send is logged once it has actually gone out, so a send that failed and was retried appears once. Each event is logged once even if it is reported twice. Turn **Include the email text** off to log subjects and metadata only.
-
-</Fold>
-
-<Fold>
-
-## Status writeback
-
-On a Lead (never a converted one), Warmbly can move Lead Status:
-
-- when they are first emailed, for example to **Working - Contacted**;
-- when they reply, per classified intent: interested, not interested, question, neutral, out of office, or any reply. An out-of-office only moves a Lead when you map it explicitly;
-- when they book a meeting.
-
-With **Never move backwards** on, a Lead already further along the status picklist stays where it is.
+事件发生时即被记录，以最多 200 条一批写入，通常在一分钟内完成。发送只在邮件确实发出后记录，因此发送失败后重试也只出现一次。即使事件被上报两次，也只记录一次。关闭**包含邮件文本**后，仅记录主题和元数据。
 
 </Fold>
 
 <Fold>
 
-## Do not email, both ways
+## 状态回写 [#status-writeback]
 
-With **Opt-out sync** set to both (the default):
+对于尚未转换的 Lead，Warmbly 可以更新 Lead Status：
 
-- an unsubscribe or spam complaint in Warmbly sets **Email Opt Out** (`HasOptedOutOfEmail`) on the record;
-- **Email Opt Out** set in Salesforce suppresses the address in Warmbly and unsubscribes the contact, so no campaign mails them again. This applies when it changes, when a contact is first linked to an opted-out record, and on import.
+- 首次发信时，例如改为 **Working - Contacted**（跟进中 — 已联系）；
+- 收到回复时，按判定意图更新：感兴趣、不感兴趣、提问、中立、外出或任意回复。外出自动回复仅在明确配置映射时改变 Lead 状态；
+- 预约会议时。
 
-You can restrict it to one direction or turn it off.
-
-</Fold>
-
-<Fold>
-
-## When Salesforce changes
-
-Warmbly reads what changed in your org every five minutes and refreshes linked contacts: owner, Lead Status, account, conversion and opt-out. It can also pause outreach, the same hold a member sets on a lead, in every campaign the contact is in:
-
-- when a Lead is converted;
-- when a Lead reaches one of the statuses you pick, such as **Qualified** or **Unqualified**;
-- when a new open opportunity appears on a Contact's account, because the deal is already being worked.
-
-A paused lead shows "Paused by Salesforce" with the reason in its campaign drawer and stays paused until someone resumes it. A rule never replaces a pause a member set, and each change triggers it once, so resuming a lead is not undone by the next pull.
+开启**状态不得倒退**后，已经位于状态选项列表更后阶段的 Lead 会保持原状态。
 
 </Fold>
 
 <Fold>
 
-## Field mapping
+## 双向同步禁止发送邮件标记 [#do-not-email-both-ways]
 
-**Field mapping** lists one rule per field, per object:
+**拒收同步**设为双向（默认）时：
 
-| Setting | Options |
+- Warmbly 中的退订或垃圾邮件投诉，会设置记录的 **Email Opt Out**（拒绝接收邮件）（`HasOptedOutOfEmail`）；
+- Salesforce 设置 **Email Opt Out**（拒绝接收邮件） 后，Warmbly 会将地址加入禁止发送名单并取消联系人订阅，所有营销活动都不再向其发信。此规则适用于字段变化、联系人首次关联到已拒收记录，以及导入时。
+
+可限制为单向同步，或关闭。
+
+</Fold>
+
+<Fold>
+
+## Salesforce 数据发生变化时 [#when-salesforce-changes]
+
+Warmbly 每五分钟读取组织变更，更新已关联联系人的负责人、Lead Status、Account、转换和拒收状态。它还可以在联系人参与的每个活动中暂停外联，效果与成员手动暂停潜在客户相同：
+
+- Lead 已转换；
+- Lead 进入你选择的状态，例如 **Qualified**（已确认合格） 或 **Unqualified**（不合格）；
+- Contact 所属 Account 出现新的未关闭 Opportunity，表明商机已经有人跟进。
+
+暂停的潜在客户会在活动抽屉中显示“由 Salesforce 暂停”及原因，直到人工恢复。规则不会覆盖成员设置的暂停，而且每次变化只触发一次，因此恢复后不会被下一次拉取再次暂停。
+
+</Fold>
+
+<Fold>
+
+## 字段映射 [#field-mapping]
+
+**字段映射**按对象为每个字段列出一条规则：
+
+| 设置 | 选项 |
 |---|---|
-| Direction | Warmbly to Salesforce, Salesforce to Warmbly, or two-way |
-| Conflict | Always overwrite, or only fill blanks |
+| 方向 | Warmbly 到 Salesforce、Salesforce 到 Warmbly，或双向 |
+| 冲突处理 | 始终覆盖，或仅填充空白 |
 
-Warmbly fields are first name, last name, company, phone, any contact custom field, and five read-only engagement values you can push into custom fields of your own: last campaign, last emailed, last replied, last reply intent, and outreach status. Salesforce fields come from your org's own field list; formula, roll-up and auto-number fields can only be read. Related fields such as **Account Name** on a Contact are read-only.
+Warmbly 字段包括名、姓、公司、电话、任意联系人自定义字段，以及五个可推送到自有自定义字段的只读互动值：最近营销活动、最近发信时间、最近回复时间、最近回复意图和外联状态。Salesforce 字段来自组织自己的字段列表；公式、汇总和自动编号字段只能读取。Contact 上的 **Account Name**（客户名称） 等关联字段也为只读。
 
-"Only fill blanks" never writes a field Warmbly has not read, so it cannot overwrite a value it never saw. The default rules fill names, phone and company in both directions without overwriting either side.
-
-</Fold>
-
-<Fold>
-
-## Import from Salesforce
-
-**Import > New import** brings people in from:
-
-- a **Lead list view** or **Contact list view**, with its own filters and scope. Views run as the connected user, so "My Leads" means that user's Leads, or
-- a **Salesforce Campaign**, taking each member's Lead, or the Contact a converted Lead became.
-
-Preview shows the count and a sample before anything is written. Choose a Warmbly campaign to enroll them in and tags to apply. People without an email address are counted and skipped, and come in on a later run once they have one. People with **Email Opt Out** set are suppressed instead of imported while opt-out sync reads from Salesforce. Imported contacts are linked to their records and carry a **CRM sync** source.
-
-Turn on **Keep in sync** and the import re-reads the list every 30 minutes, bringing in only people who are new to it, so a teammate's edits in Warmbly are never overwritten by the next run. One run imports up to 10,000 people; the rest come in on the following runs.
+“仅填充空白”不会写入 Warmbly 未读取过的字段，因此不会覆盖从未看到的值。默认规则双向补全姓名、电话和公司，不覆盖任一侧已有内容。
 
 </Fold>
 
 <Fold>
 
-## Contacts and the inbox
+## 从 Salesforce 导入 [#import-from-salesforce]
 
-The contact drawer and every inbox thread show a Salesforce card: the Lead or Contact, owner, Lead Status, account, open opportunities, the latest Salesforce Tasks (Warmbly's own marked), opt-out and conversion badges, and when it last synced. **Open in Salesforce** goes straight to the record. When the person is not in Salesforce yet, **Add to Salesforce** creates them as a Lead or Contact. **Sync now** refreshes the card and pushes mapped fields.
+**导入 > 新建导入**可从以下来源导入人员：
 
-</Fold>
+- **Lead 列表视图**或 **Contact 列表视图**，沿用视图自己的筛选和范围。视图以连接用户运行，因此“My Leads”指该用户的 Leads；
+- **Salesforce Campaign**（Salesforce 营销活动），读取各成员的 Lead，或已转换 Lead 对应的 Contact。
 
-<Fold>
+写入前，预览会显示人数和示例。可选择加入的 Warmbly 营销活动及标签。没有邮箱的人会被计数并跳过，后续拥有邮箱时再导入。如果拒收同步读取 Salesforce，已设置 **Email Opt Out**（拒绝接收邮件） 的人员会加入禁止发送名单，而非导入。导入的联系人与来源记录关联，来源标为 **CRM 同步**。
 
-## Sync health
-
-- **Overview** shows the connection's health, Warmbly's API calls today against its budget, the org's own daily usage, pending and failed activity, and the last pull.
-- **Activity log** lists every event with Salesforce's own error text, such as `REQUIRED_FIELD_MISSING`. Select rows and **Retry**, or **Retry all failed**.
-- Transient errors retry with backoff for up to six attempts. A record Salesforce refuses for good is marked failed and not retried until you ask.
-
-### API budget
-
-Warmbly caps its own daily calls, a fifth of your org's daily allocation by default, and pauses background work when your org as a whole is above 95% of its allocation. Past either, pending activity waits until the next UTC day rather than competing with your other tools. Set **Daily API budget** to a fixed number to change the cap. Opening a contact's card is never blocked by the budget.
-
-### Reconnecting
-
-When Salesforce ends the session (a password reset, a revoked app, a deactivated user), the connection shows **Reconnect** and activity waits. Nothing is lost; it is logged after you reconnect.
+开启**保持同步**后，每 30 分钟重读列表，只导入新出现的人，避免下次运行覆盖团队成员在 Warmbly 中的修改。每次最多导入 10,000 人，其余在后续运行导入。
 
 </Fold>
 
 <Fold>
 
-## Automations
+## 联系人与收件箱 [#contacts-and-the-inbox]
 
-The **Create or update Salesforce record** action in [automations](/guides/automations/) uses the same matching, creation and field rules as the sync, so an automation and the sync never disagree about who someone is.
-
-</Fold>
-
-<Fold>
-
-## What moves with a workspace export
-
-Saved imports travel with the Automations group of a [workspace export](/guides/workspace-export-import/). Links between contacts and records, the activity log and pull progress do not: the destination links contacts again by address the first time it syncs, and Tasks already logged are in Salesforce. Reconnect Salesforce on the destination before anything syncs.
+联系人抽屉和每个收件箱会话显示 Salesforce 卡片：Lead 或 Contact、负责人、Lead Status、Account、未关闭 Opportunity、最近的 Salesforce Tasks（Warmbly 自己创建的会标注）、拒收及转换标记，以及最近同步时间。**在 Salesforce 中打开**直达记录。尚不存在于 Salesforce 时，**添加到 Salesforce**可创建 Lead 或 Contact。**立即同步**刷新卡片并推送已映射字段。
 
 </Fold>
 
 <Fold>
 
-## Self-hosting
+## 同步健康状态 [#sync-health]
 
-A self-hosted instance needs its own Salesforce app. Which kind depends on how many Salesforce orgs will connect:
+- **概览**显示连接健康状态、Warmbly 今日 API 调用与额度、组织整体每日用量、待处理及失败活动，以及最近拉取时间。
+- **活动日志**逐条列出事件和 Salesforce 原始错误文本，例如 `REQUIRED_FIELD_MISSING`。可选中行点击**重试**，或**重试全部失败项**。
+- 临时错误使用退避机制，最多尝试六次。Salesforce 永久拒绝的记录标为失败，只有你要求时才重试。
 
-- **Only your own org.** Create an **External Client App** in that org. Salesforce's default for these is **Local**, which works only in the org it was created in, so a sandbox needs one of its own (or gets a copy when it is created or refreshed from that org).
-- **Several orgs, or orgs you do not administer.** Use a **Connected App**, which any org can authorize. Since Spring '26, creating one needs Salesforce Support to enable it for your org first; then turn on **Allow creation of connected apps** under **Setup > External Client Apps > Settings**. A packaged External Client App works too, but every org has to install your package before it can connect.
+### API 调用额度 [#api-budget]
 
-Whichever you create, configure it with:
+Warmbly 会限制自身每日调用，默认上限为组织每日配额的五分之一；组织整体用量超过 95% 时暂停后台工作。达到任一限制后，待处理活动等待下一个 UTC 日期，不与其他工具争抢额度。可将**每日 API 额度**设为固定值修改上限。打开联系人卡片不会被额度限制阻止。
 
-- callback URL: the value of `INTEGRATIONS_OAUTH_REDIRECT_URL`, or when that is unset, `BACKEND_PUBLIC_URL` (else `API_PUBLIC_URL`) plus `/integrations/oauth/callback`. It must match exactly, including the scheme and no trailing slash;
-- OAuth scopes **Manage user data via APIs (api)**, **Perform requests at any time (refresh_token, offline_access)** and **Access the identity URL service (id, profile, email, address, phone)**;
-- **Require PKCE** on, and the **Web Server Flow** enabled with its client secret required;
-- refresh tokens **valid until revoked**.
+### 重新连接 [#reconnecting]
 
-Copy the consumer key and secret into `SALESFORCE_OAUTH_CLIENT_ID` and `SALESFORCE_OAUTH_CLIENT_SECRET` (see [configuration](/development/configuration/#integrations)) and restart the backend. Salesforce can take a few minutes to activate a new app; until then a connect attempt fails with `invalid_client_id`.
+Salesforce 结束会话时，例如密码重置、应用被撤销或用户停用，连接显示**重新连接**，活动等待处理。数据不会丢失，重新连接后会继续记录。
+
+</Fold>
+
+<Fold>
+
+## 自动化流程 [#automations]
+
+[自动化流程](/guides/automations/)中的**创建或更新 Salesforce 记录**操作，与同步功能使用相同的匹配、创建和字段规则，因此两者不会对人员身份作出不同判断。
+
+</Fold>
+
+<Fold>
+
+## 工作区导出时一并迁移的内容 [#what-moves-with-a-workspace-export]
+
+已保存的导入任务随[工作区导出](/guides/workspace-export-import/)的自动化数据组迁移。联系人与记录的关联、活动日志和拉取进度不会迁移：目标实例首次同步时按邮箱重新关联，已写入的 Tasks 则保留在 Salesforce。开始同步前，需在目标实例重新连接 Salesforce。
+
+</Fold>
+
+<Fold>
+
+## 自托管 [#self-hosting]
+
+自托管实例需要自己的 Salesforce 应用，类型取决于要连接多少个 Salesforce 组织：
+
+- **仅连接自己的组织。** 在该组织创建 **External Client App**（外部客户端应用）。Salesforce 默认将此类应用设为 **Local**（本地），只能在创建它的组织内使用，因此沙盒需要自己的应用，或在由原组织创建、刷新沙盒时获得副本。
+- **连接多个组织，或不由你管理的组织。** 使用任意组织均可授权的 **Connected App**（已连接应用）。自 Spring '26 起，创建前需请 Salesforce Support 为组织启用，再到 **Setup > External Client Apps > Settings**（设置 > 外部客户端应用 > 设置） 开启 **Allow creation of connected apps**（允许创建已连接应用）。打包的 External Client App 也可以，但每个组织都必须先安装你的包才能连接。
+
+无论创建哪种应用，都需配置：
+
+- 回调 URL：使用 `INTEGRATIONS_OAUTH_REDIRECT_URL`；若未设置，则使用 `BACKEND_PUBLIC_URL`，再不行使用 `API_PUBLIC_URL`，并追加 `/integrations/oauth/callback`。必须完全一致，包括协议，且不能有尾部斜杠。
+- OAuth 权限：**Manage user data via APIs (api)**（通过 API 管理用户数据）、**Perform requests at any time (refresh_token, offline_access)**（随时执行请求） 和 **Access the identity URL service (id, profile, email, address, phone)**（访问身份 URL 服务）。
+- 开启 **Require PKCE**（要求 PKCE） 和 **Web Server Flow**（Web 服务器流程），并要求客户端密钥。
+- 刷新令牌设置为 **valid until revoked**，即撤销前持续有效。
+
+将 consumer key 和 secret 分别填入 `SALESFORCE_OAUTH_CLIENT_ID` 和 `SALESFORCE_OAUTH_CLIENT_SECRET`，参见[配置](/development/configuration/#integrations)，然后重启后端。Salesforce 可能需要几分钟激活新应用，此前连接会报 `invalid_client_id`。
 
 </Fold>

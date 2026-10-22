@@ -1,22 +1,22 @@
 ---
-title: Self-hosting
-description: A step-by-step guide to running the whole Warmbly platform yourself, from one Docker command to a distributed worker fleet.
+title: "自托管"
+description: "从一条 Docker 命令到分布式工作节点集群，分步介绍如何自行运行整个 Warmbly 平台。"
 ---
 
-Warmbly self-hosts with **no cloud account of any kind**: no AWS, no GCP, no Stripe, no Kafka. One `docker-compose.yml` runs everything on local, open-source pieces, and every external dependency is an environment variable you can flip later.
+自托管 Warmbly **完全不需要任何云账户**：不需要 AWS、GCP、Stripe 或 Kafka。一个 `docker-compose.yml` 即可使用本地开源组件运行全部服务；每项外部依赖都由环境变量控制，之后随时可以切换。
 
-Using **Coolify**? Follow [Deploy on Coolify](/development/coolify/) for an image-only Compose stack, exact domain/port mappings, and setup without running an installer on the host.
+使用 **Coolify**？请按照[在 Coolify 上部署](/development/coolify/)操作，了解仅使用镜像的 Compose 服务栈、准确的域名与端口映射，以及无须在主机上运行安装程序的配置方式。
 
-<Callout title="Just want it running?">
+<Callout title="只希望尽快运行起来？">
 ```bash
 curl -fsSL https://warmbly.com/install.sh | sh
 ```
-That pulls the published release images and skips everything on this page: no clone, no compiler, under two minutes. Add `--wizard` and it asks where your data lives, what is kept and for how long, and how it is backed up. See [Install](/development/install/).
+该命令会拉取已发布的版本镜像，跳过本页其余步骤：无须克隆仓库或编译，耗时不到两分钟。添加 `--wizard` 后，程序会询问数据存放位置、保留内容和期限，以及备份方式。参见[安装](/development/install/)。
 
-This page is the build-from-source path, and the reference for every setting either path writes. Take it when you want to run modified code, a platform we publish no image for, or a build you produced yourself.
+本页介绍从源码构建的方式，也列出两种安装方式所写入的全部设置。如果希望运行修改后的代码、使用尚无官方镜像的平台，或运行自行构建的版本，请采用此方式。
 </Callout>
 
-Three commands give you a working install. Everything after them is optional, and nothing below is needed before you have seen it running.
+三个命令即可得到可用安装。之后的内容均为可选项，先确认系统运行，再进行后续配置。
 
 <Mermaid
   chart={`
@@ -39,40 +39,40 @@ flowchart LR
 `}
 />
 
-## Before you start
+## 开始前的准备 [#before-you-start]
 
-| You need | Why |
+| 要求 | 原因 |
 |----------|-----|
-| Docker 20.10+ with Compose v2 | Everything runs as containers |
-| Git | To clone the repository |
-| ~10 GB free disk | The first build produces about 3.7 GB of images plus 2.5 GB of build cache |
-| 4 GB RAM | The running stack idles near 300 MB; the first build is the demanding part |
-| Free ports | 5173, 5174, 8080, 4000, 3000, 4222, 8222, 15432, 16379 |
+| Docker 20.10+ 和 Compose v2 | 全部服务以容器运行 |
+| Git | 用于克隆仓库 |
+| 约 10 GB 可用磁盘空间 | 首次构建会产生约 3.7 GB 镜像及 2.5 GB 构建缓存 |
+| 4 GB 内存 | 服务栈空闲时约占 300 MB；首次构建的资源需求较高 |
+| 空闲端口 | 5173, 5174, 8080, 4000, 3000, 4222, 8222, 15432, 16379 |
 
-`3000` is worth checking before you start: it is the default for a lot of other self-hosted software, and a collision there stops the tracking service from publishing. Set `TRACKING_PORT` to move the host side and point your reverse proxy at the new port.
+开始前请检查 `3000`：许多自托管软件默认使用此端口，冲突会导致跟踪服务无法发布端口。可设置 `TRACKING_PORT` 更改主机侧端口，并将反向代理指向新端口。
 
-The first build compiles Go, Rust, and Elixir services and builds two frontends. On a modern laptop that takes about **6 minutes**. Later builds reuse the cache and are much faster.
+首次构建需要编译 Go、Rust 和 Elixir 服务，并构建两个前端。在现代笔记本电脑上约需 **6 分钟**。后续构建会复用缓存，速度快得多。
 
-That is the whole list. No SMTP relay, no captcha keys, no cloud account, and no `.env` to write before the first run.
+要求仅此而已。首次运行前不需要 SMTP 中继、验证码密钥或云账户，也无须编写 `.env`。
 
-Two things come from outside Warmbly, and both can wait until after you have it running:
+有两项配置来自 Warmbly 之外，但都可以等系统运行后再设置：
 
-- **An SMTP relay** for password resets, invitations and digests. Without one those messages go to the backend logs, and signing in never needs them. See [platform email](#platform-email).
-- **OAuth clients** if you want to connect Gmail, Google Workspace or Microsoft 365 mailboxes. Plain SMTP and IMAP mailboxes need nothing. See [connect mailboxes](#connect-mailboxes).
+- **SMTP 中继**用于密码重置、邀请和摘要通知。未配置时，这些邮件会写入后端日志；登录本身不依赖它们。参见[平台邮件](#platform-email)。
+- 如需连接 Gmail、Google Workspace 或 Microsoft 365 邮箱，需要 **OAuth 客户端**。普通 SMTP 和 IMAP 邮箱无须此配置。参见[连接邮箱](#connect-mailboxes)。
 
-All configuration lives in a single `.env` at the repository root, covered in [environment configuration](#environment-configuration) with a [complete example](#a-complete-env).
+全部配置集中在仓库根目录的一份 `.env` 中，[环境配置](#environment-configuration)一节提供说明和[完整示例](#a-complete-env)。
 
-<Callout type="warn" title="Do not run the build on a nearly full disk">
-Building seven images at once is the single most common way a first install fails. If Docker runs out of space mid-build you get a confusing `no space left on device` from whichever service happened to be compiling. See [troubleshooting](#troubleshooting).
+<Callout type="warn" title="不要在磁盘接近满载时运行构建">
+同时构建七个镜像是首次安装失败最常见的原因。如果 Docker 在构建过程中耗尽空间，正在编译的任意服务都可能报出令人困惑的 `no space left on device`。参见[故障排查](#troubleshooting)。
 </Callout>
 
-## Install it
+## 安装平台 [#install-it]
 
 <Steps>
 
 <Step>
 
-### Get the code
+### 获取源码 [#get-the-code]
 
 ```bash
 git clone https://github.com/warmbly/warmbly && cd warmbly
@@ -82,61 +82,61 @@ git clone https://github.com/warmbly/warmbly && cd warmbly
 
 <Step>
 
-### Start it
+### 启动服务 [#start-it]
 
 ```bash
 make up
 ```
 
-That is `docker compose -p warmbly up -d --build`. It builds the images and starts ten containers in the background, then waits for the backend and prints the link that claims your instance. The first run is the slow one.
+实际执行的是 `docker compose -p warmbly up -d --build`。它会构建镜像，在后台启动十个容器，然后等待后端就绪，并输出用于认领实例的链接。首次运行会较慢。
 
-Only what a running install needs is started. The mail catcher and the local IMAP server belong to the demo environment and stay out of the way until you ask for them with `make sandbox`.
+只启动正式运行所需的组件。邮件捕获器和本地 IMAP 服务器属于演示环境，只有通过 `make sandbox` 明确请求时才会启动。
 
 </Step>
 
 <Step>
 
-### Claim it
+### 认领实例 [#claim-it]
 
-`make up` prints a one-time link when it finishes. Open it, pick a password, and you are the owner and platform admin of the instance. `make claim` prints it again.
+`make up` 完成后会输出一次性链接。打开链接、设置密码，你就成为该实例的所有者和平台管理员。`make claim` 可再次输出该链接。
 
-Two things you get for free at this point: the dashboard at `http://localhost:5173`, and the admin panel at `http://localhost:5174` with the same account, because the owner is already an admin. Signing in never depends on mail: the emailed login code is off on a self-hosted install.
+此时可直接访问 `http://localhost:5173` 上的控制台，以及 `http://localhost:5174` 上的管理面板；两者使用同一账户，因为所有者已是管理员。登录始终不依赖邮件：自托管安装默认关闭邮件登录验证码。
 
-<Callout title="No link, or the link is gone?">
-An instance whose database already has accounts is already claimed, so no link is issued. That is the usual outcome when a previous `make dev` seeded the same database. [First run](/development/first-run/) covers reissuing the link, provisioning the owner unattended, and what to do when accounts already exist.
+<Callout title="没有链接，或链接已丢失？">
+如果实例数据库中已有账户，就视为已认领，不会再生成链接。此前使用 `make dev` 向同一数据库填充过数据时，通常会出现这种情况。[首次运行](/development/first-run/)介绍了重新签发链接、无人值守创建所有者，以及已有账户时的处理方式。
 </Callout>
 
 </Step>
 
 <Step>
 
-### Load demo data (optional)
+### 加载演示数据（可选） [#load-demo-data-optional]
 
-To explore a populated workspace instead of an empty one:
+如需体验已有数据的工作区，而非空白工作区：
 
 ```bash
 make seed-demo
 ```
 
-That creates `dev@warmbly.com` / `password123` along with mailboxes, campaigns, contacts, and two weeks of history. It builds the seed image each time on purpose: `compose run` otherwise reuses a stale one, which fails against a newer database schema.
+这会创建账户 `dev@warmbly.com`／`password123`，以及邮箱、营销活动、联系人和两周历史数据。每次都会有意重新构建种子数据镜像，否则 `compose run` 会复用旧镜像，导致无法适配新版数据库结构。
 
-<Callout type="warn" title="The demo seed plants a published super-admin credential">
-It also inserts `admin@warmbly.local` with a published password, every platform admin permission, and a full-access API key whose secret is a constant in this repository. Never run it on an instance anyone else can reach. Detail in [first run](/development/first-run/#demo-data).
+<Callout type="warn" title="演示数据会写入已公开的超级管理员凭据">
+它还会插入 `admin@warmbly.local`，该账户使用公开密码，拥有全部平台管理员权限，并配有密钥固定写在此仓库中的全权限 API 密钥。绝不要在其他人能够访问的实例上运行此命令。详见[首次运行](/development/first-run/#demo-data)。
 </Callout>
 
-For a demo where mail actually flows end to end, with sends, replies, opens, and clicks, see the [sandbox](/development/sandbox/).
+如需邮件能够端到端流转、支持发送、回复、打开和点击的演示环境，请参见[沙盒](/development/sandbox/)。
 
 </Step>
 
 </Steps>
 
-![The dashboard after your first login](/dashboard-campaigns.png)
+![首次登录后的控制台](/dashboard-campaigns.png)
 
-## Before you expose it
+## 对外开放前的准备 [#before-you-expose-it]
 
-Everything above works with zero configuration because the compose file ships working defaults for every secret. Those defaults are published in this repository, so they protect nothing. Once `APP_ENV` is anything other than `dev` the backend refuses to start on them, naming each one and telling you that `ALLOW_INSECURE_DEFAULTS=true` is the override you should not be using.
+以上步骤无须配置即可运行，因为 Compose 文件为所有密钥提供了可用默认值。这些默认值已公开在仓库中，因此不提供任何保护。当 `APP_ENV` 不是 `dev` 时，后端会拒绝使用这些值启动，并逐一指出问题，同时说明 `ALLOW_INSECURE_DEFAULTS=true` 是不应使用的绕过选项。
 
-Before anyone else can reach the instance, generate real values into a `.env` next to `docker-compose.yml`:
+在允许其他人访问实例之前，请在 `docker-compose.yml` 旁的 `.env` 中生成真正的随机值：
 
 ```bash
 cat > .env <<EOF
@@ -149,31 +149,31 @@ CREDENTIALS_ENCRYPTION_KEY=$(openssl rand -hex 32)
 EOF
 ```
 
-| Variable | Format | What it protects |
+| 变量 | 格式 | 保护对象 |
 |----------|--------|------------------|
-| `AUTH_SECRET` | 32+ chars | JWT signing. The realtime service reads the same value as `JWT_SECRET`, and compose wires that for you |
-| `INTERNAL_API_TOKEN` | any random string | The backend's internal API, which workers and the tracking service authenticate against |
-| `SECRET_KEY_BASE` | 64+ chars | Phoenix session signing in the realtime service |
-| `KMS_LOCAL_MASTER_KEY` | base64, exactly 32 bytes | The root key that seals every per-organization data key |
-| `CREDENTIALS_ENCRYPTION_KEY` | exactly 64 hex chars | Mailbox credentials at rest: SMTP and IMAP passwords, and Gmail and Outlook OAuth access and refresh tokens |
+| `AUTH_SECRET` | 至少 32 个字符 | JWT 签名。实时服务通过 `JWT_SECRET` 读取同一值，Compose 会自动完成映射 |
+| `INTERNAL_API_TOKEN` | 任意随机字符串 | 后端内部 API，工作节点和跟踪服务使用它进行身份验证 |
+| `SECRET_KEY_BASE` | 至少 64 个字符 | 实时服务中的 Phoenix 会话签名 |
+| `KMS_LOCAL_MASTER_KEY` | base64 编码，恰好 32 字节 | 用于加密各组织数据密钥的根密钥 |
+| `CREDENTIALS_ENCRYPTION_KEY` | 恰好 64 个十六进制字符 | 静态存储的邮箱凭据：SMTP、IMAP 密码，以及 Gmail、Outlook 的 OAuth 访问令牌和刷新令牌 |
 
-`APP_ENV=prod` requires no cloud account. Error reporting and GeoIP lookups are used when configured and skipped with a logged note when they are not.
+`APP_ENV=prod` 不需要云账户。配置后才会使用错误上报和 GeoIP 查询；未配置时会记录说明并跳过。
 
-<Callout type="warn" title="Back up the last two keys before you store a single mailbox">
-`KMS_LOCAL_MASTER_KEY` and `CREDENTIALS_ENCRYPTION_KEY` seal every stored credential. Losing them is unrecoverable, and a database backup without them cannot be decrypted.
+<Callout type="warn" title="保存任何邮箱之前，先备份最后两项密钥">
+`KMS_LOCAL_MASTER_KEY` 和 `CREDENTIALS_ENCRYPTION_KEY` 用于加密所有存储的凭据。丢失后无法恢复，只有数据库备份而没有它们也无法解密。
 </Callout>
 
-Rotating the secrets means recreating the containers, which `make up` does. Changing the two encryption keys after mailboxes exist does not: those credentials were sealed with the old values.
+轮换密钥后需要重新创建容器，`make up` 会执行此操作。但已有邮箱后，不能直接更换两把加密密钥：原有凭据是使用旧值加密的。
 
-## Checking the stack
+## 检查服务栈 [#checking-the-stack]
 
 ```bash
 make status
 ```
 
-`backend`, `forms`, `postgres`, `redis` and `nats` report `(healthy)`. The backend applies its migrations on boot, so it takes a few seconds longer than the rest. `realtime` and `tracking` have no healthcheck and show as `running`.
+`backend`、`forms`、`postgres`、`redis` 和 `nats` 应显示 `(healthy)`。后端在启动时应用数据库迁移，因此比其他服务多需几秒。`realtime` 和 `tracking` 没有健康检查，显示为 `running`。
 
-Each entry point answers on its own port:
+每个入口使用各自的端口响应：
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8080/health   # backend
@@ -183,67 +183,67 @@ curl -s -o /dev/null -w '%{http_code}\n' http://localhost:4000/health   # realti
 curl -s -o /dev/null -w '%{http_code}\n' http://localhost:5173          # dashboard
 ```
 
-If one does not print `200`, `make logs backend` (or the service in question) will say why, and [troubleshooting](#troubleshooting) covers the usual causes.
+如果某项未返回 `200`，可用 `make logs backend`（或对应服务的日志命令）查看原因；常见原因见[故障排查](#troubleshooting)。
 
-The admin panel's **Instance > Setup and health > Services** tab shows the same probes plus the platform mail transport, with a live connection check and a send-test button.
+管理面板的 **实例 > 设置与健康 > 服务** 选项卡显示相同的探测结果，以及平台邮件传输状态，并提供实时连接检查和测试发送按钮。
 
-## What is running
+## 正在运行的组件 [#what-is-running]
 
-| Service | Port | Purpose |
+| 服务 | 端口 | 用途 |
 |---------|------|---------|
-| web / admin | 5173 / 5174 | Dashboard and admin panel (static nginx builds, URLs injected at container start) |
-| backend | 8080 | REST API; applies migrations on every boot; `GET /health` |
-| tracking | 3000 | Open pixels and click redirects; `GET /health` |
-| forms | 8090 | Hosted form pages, embeds and public submissions; `GET /health` |
-| realtime | 4000 | WebSocket fanout; `GET /health` |
-| consumer / worker | none | Event processor; send and sync executor |
-| postgres / redis | 15432 / 16379 | PostgreSQL 16; cache and realtime bridge |
-| nats | 4222 (monitoring 8222) | Event bus (JetStream) |
-| mailpit | 18025 (SMTP 11025), bound to localhost | Not started by `make up`. An SMTP sink for the demo environment, in the `sandbox` profile. Its UI has no authentication, so it is never published to the network |
+| web / admin | 5173 / 5174 | 控制台和管理面板（由 nginx 提供的静态构建，URL 在容器启动时注入） |
+| backend | 8080 | REST API；每次启动时应用迁移；`GET /health` |
+| tracking | 3000 | 打开跟踪像素和点击重定向；`GET /health` |
+| forms | 8090 | 托管表单页面、嵌入和公开提交；`GET /health` |
+| realtime | 4000 | WebSocket 消息分发；`GET /health` |
+| consumer / worker | 无 | 事件处理器；发送和同步执行器 |
+| postgres / redis | 15432 / 16379 | PostgreSQL 16；缓存和实时消息桥接 |
+| nats | 4222（监控端口 8222） | 事件总线（JetStream） |
+| mailpit | 18025（SMTP 11025），绑定 localhost | 不会由 `make up` 启动。它是演示环境中的 SMTP 邮件接收器，位于 `sandbox` 配置组。其界面没有身份验证，因此绝不会向网络公开 |
 
-Eleven containers, idling near 300 MB in total. Nothing that only the demo environment needs is started: the mail catcher and the local IMAP server sit in the `sandbox` profile and come up only when `make sandbox`, `make dev` or `make infra` name them.
+共十一个容器，空闲时合计约占 300 MB。不会启动仅演示环境需要的组件：邮件捕获器和本地 IMAP 服务器位于 `sandbox` 配置组，只有 `make sandbox`、`make dev` 或 `make infra` 指定时才启动。
 
-There is no separate migration step. Migrations are embedded in the backend binary, and a standalone `/app/migrate` binary ships in the image as well.
+无须单独执行迁移。迁移已嵌入后端二进制文件，镜像中还提供独立的 `/app/migrate` 二进制文件。
 
-## Environment configuration
+## 环境配置 [#environment-configuration]
 
-Everything is configured by environment variable. With compose, put your values in the `.env` next to `docker-compose.yml` and they reach the right services automatically; compose fans a shared block out to backend, consumer, and worker, and maps the handful of names the realtime and tracking services use.
+全部配置均使用环境变量。使用 Compose 时，将值写入 `docker-compose.yml` 旁的 `.env`，即可自动传递给对应服务；Compose 将共享配置块分发给后端、消费者和工作节点，并映射实时服务与跟踪服务使用的少量不同变量名。
 
-Nothing below is required to start. The compose defaults boot a working stack, and each section here is what you change to move past "works on my machine."
+以下内容都不是启动前的必需配置。Compose 默认值即可启动可用服务栈；本节各项用于进一步满足实际部署要求。
 
-### Values that must agree across services
+### 各服务必须保持一致的配置值 [#values-that-must-agree-across-services]
 
-These are the ones that break things quietly when they drift, because each service reads its own copy. Compose keeps them in sync for you; a hand-rolled deployment must do it deliberately.
+各服务分别读取自己的配置副本，因此以下值不一致时，系统可能悄然出错。Compose 会自动保持一致；手动部署时必须自行确保同步。
 
-| Value | Read by | If it drifts |
+| 值 | 读取方 | 不一致的后果 |
 |-------|---------|--------------|
-| `AUTH_SECRET`, seen by realtime as `JWT_SECRET` | backend, realtime | The dashboard loads but never goes live: the websocket rejects every token |
-| `INTERNAL_API_TOKEN`, seen by workers as `ENCRYPTED_KEYS_WORKER_TOKEN` unless `NODE_BROKER_TOKEN` is set | backend, worker, tracking, forms | Workers cannot fetch decryption keys and tracking cannot resolve click tickets. Both fail closed with `401` |
-| `KMS_LOCAL_MASTER_KEY` | backend, consumer, worker | Sealed data keys cannot be opened. Mailbox credentials stop decrypting |
-| `CREDENTIALS_ENCRYPTION_KEY` | backend, worker | Stored SMTP and IMAP passwords and OAuth tokens stop decrypting, so no mailbox can send or sync |
-| `EVENTBUS_PROVIDER` and `NATS_URL` | every service | Producers and consumers land on different buses and work silently disappears |
-| `CODEC_PROVIDER` | every service | Events are written in one format and read in another |
-| `PUBSUB_ENABLED` | backend, consumer, realtime | Realtime events are published to a transport nobody is listening on |
+| `AUTH_SECRET`，实时服务以 `JWT_SECRET` 读取 | backend、realtime | 控制台可加载，但实时功能始终不可用：WebSocket 拒绝所有令牌 |
+| `INTERNAL_API_TOKEN`，工作节点通过 `ENCRYPTED_KEYS_WORKER_TOKEN` 读取，除非设置了 `NODE_BROKER_TOKEN` | backend、worker、tracking、forms | 工作节点无法获取解密密钥，跟踪服务无法解析点击票据；两者均以 `401` 拒绝访问 |
+| `KMS_LOCAL_MASTER_KEY` | backend、consumer、worker | 无法解密已封装的数据密钥，邮箱凭据也无法再解密 |
+| `CREDENTIALS_ENCRYPTION_KEY` | backend、worker | 无法解密已存 SMTP、IMAP 密码及 OAuth 令牌，导致所有邮箱都无法发送或同步 |
+| `EVENTBUS_PROVIDER` 和 `NATS_URL` | 所有服务 | 生产者和消费者连接到不同总线，任务会悄然丢失 |
+| `CODEC_PROVIDER` | 所有服务 | 事件写入和读取使用不同格式 |
+| `PUBSUB_ENABLED` | backend、consumer、realtime | 实时事件被发布到无人监听的传输渠道 |
 
-### What each service needs
+### 各服务所需配置 [#what-each-service-needs]
 
-| Service | Needs |
+| 服务 | 所需配置 |
 |---------|-------|
-| backend | Everything: the five secrets, `PRIMARY_DB`, `REDIS`, the provider switches, and the public URLs |
-| consumer | The same shared block as the backend. It writes to Postgres, so it needs `PRIMARY_DB` and the encryption keys |
-| worker | No database. It needs the event bus, `REDIS`, the encryption keys, `ENCRYPTED_KEYS_BACKEND_URL` plus the internal token, and the `BOX_*` OAuth clients |
-| tracking | The event bus, `BACKEND_INTERNAL_URL`, and `INTERNAL_API_TOKEN` |
-| forms | No database and no event bus: only `BACKEND_INTERNAL_URL` and `INTERNAL_API_TOKEN` |
+| backend | 全部配置：五项密钥、`PRIMARY_DB`、`REDIS`、服务提供方切换项，以及公开 URL |
+| consumer | 与后端相同的共享配置块。它需要写入 Postgres，因此需要 `PRIMARY_DB` 和加密密钥 |
+| worker | 不需要数据库。需要事件总线、`REDIS`、加密密钥、`ENCRYPTED_KEYS_BACKEND_URL` 及内部令牌，以及 `BOX_*` OAuth 客户端 |
+| tracking | 事件总线、`BACKEND_INTERNAL_URL` 和 `INTERNAL_API_TOKEN` |
+| forms | 不需要数据库或事件总线：仅需 `BACKEND_INTERNAL_URL` 和 `INTERNAL_API_TOKEN` |
 | realtime | `JWT_SECRET`, `SECRET_KEY_BASE`, `DATABASE_URL`, `REDIS_URL`, `PHX_HOST` |
-| web / admin | Only `WARMBLY_*` URLs, read at container start and written into `/config.js`. The same image runs anywhere |
+| web / admin | 仅需 `WARMBLY_*` URL，容器启动时读取并写入 `/config.js`。同一镜像可在任意环境运行 |
 
-`APP_ENV` accepts `dev` or `prod`. No other value turns on production behavior. `prod` needs no cloud account: error tracking stays optional in every environment, and `GEODB_PATH` must be *set* on the backend everywhere while the file it points at is optional (the consumer reads it too, optionally, for the location on opens and clicks).
+`APP_ENV` 接受 `dev` 或 `prod`，其他值均不会启用生产环境行为。`prod` 不需要云账户：任何环境中的错误跟踪均为可选。所有环境中的后端都必须*设置* `GEODB_PATH`，但其指向的文件可以不存在（消费者也可选读取该文件，为打开和点击事件补充地理位置）。
 
-The complete list of variables, with defaults and whether a change needs a restart, is the [configuration reference](/development/configuration/).
+包含默认值及是否需要重启的完整变量列表，请参见[配置参考](/development/configuration/)。
 
-### A complete `.env`
+### 完整的 `.env` 文件 [#a-complete-env]
 
-Everything a real deployment usually sets, in one file. Delete any line to fall back to its default.
+实际部署通常需要的所有设置集中在一个文件中。删除任意一行即可回退到默认值。
 
 ```bash
 # ── Where it lives ────────────────────────────────────────────────
@@ -341,27 +341,27 @@ DEPLOYMENT_MODE=self_hosted
 # APP_ENV=prod                      # refuses the published default secrets
 ```
 
-The template to copy for a Compose install is [`.env.example`](https://github.com/warmbly/warmbly/blob/main/.env.example) at the repository root: `cp .env.example .env` boots as-is, and every line it ships commented out is commented out on purpose. [`deploy/config/env.example`](https://github.com/warmbly/warmbly/blob/main/deploy/config/env.example) is the Kubernetes and bare-binary variant, where nothing substitutes a default for you. The exhaustive per-variable reference, with defaults and restart requirements, is the [configuration reference](/development/configuration/).
+Compose 安装应复制仓库根目录的 [`.env.example`](https://github.com/warmbly/warmbly/blob/main/.env.example) 模板：执行 `cp .env.example .env` 后即可原样启动，模板中被注释掉的每一行都有其原因。[`deploy/config/env.example`](https://github.com/warmbly/warmbly/blob/main/deploy/config/env.example) 适用于 Kubernetes 和直接运行二进制文件的部署，这些环境不会自动替你填入默认值。逐个变量的完整说明、默认值及重启要求请参见[配置参考](/development/configuration/)。
 
-## Reaching it from your network
+## 通过自己的网络访问 [#reaching-it-from-your-network]
 
-Set one variable in `.env` and every URL (app, CORS, websocket, tracking, blobs, frontend config) derives from it:
+在 `.env` 中设置一个变量，所有 URL（应用、CORS、WebSocket、跟踪、Blob、前端配置）都会由它派生：
 
 ```bash
 PUBLIC_HOST=192.168.1.50        # your machine's LAN IP, or a domain
 ```
 
-Recreate the containers with `make up` and open `http://192.168.1.50:5173`.
+使用 `make up` 重新创建容器，然后打开 `http://192.168.1.50:5173`。
 
-Once `PUBLIC_HOST` is set, every derived URL uses it and `http://localhost:5173` stops working: the browser sends a `localhost` origin, which is no longer in `CORS_ALLOW_ORIGINS`, so the API answers `403`. Use the address you configured. To keep both, list them yourself:
+设置 `PUBLIC_HOST` 后，所有派生 URL 都会使用它，`http://localhost:5173` 将无法使用：浏览器发送的来源是 `localhost`，而它已不在 `CORS_ALLOW_ORIGINS` 中，因此 API 返回 `403`。请使用你配置的地址。如需同时保留两者，请自行列出：
 
 ```bash
 CORS_ALLOW_ORIGINS=http://192.168.1.50:5173,http://192.168.1.50:5174,http://localhost:5173,http://localhost:5174
 ```
 
-### Behind a reverse proxy with HTTPS
+### 在支持 HTTPS 的反向代理后运行 [#behind-a-reverse-proxy-with-https]
 
-Compose only derives plain `http://` URLs from `PUBLIC_HOST`, so terminate TLS in a proxy (Caddy, nginx, Traefik) and set each URL explicitly instead:
+Compose 只会根据 `PUBLIC_HOST` 派生普通 `http://` URL，因此请在代理（Caddy、nginx、Traefik）上终止 TLS，并显式设置各 URL：
 
 ```bash
 APP_URL=https://app.example.com                       # proxy to :5173
@@ -372,31 +372,31 @@ TRACKING_DOMAIN=t.example.com                         # proxy to :3000; separate
 PHX_HOST=ws.example.com
 ```
 
-Give the admin panel its own host proxied to `:5174`, and list it in `CORS_ALLOW_ORIGINS` as above. It reads its API base from `API_PUBLIC_URL`, so it needs nothing else.
+为管理面板设置独立主机名，代理到 `:5174`，并按上例将其加入 `CORS_ALLOW_ORIGINS`。管理面板从 `API_PUBLIC_URL` 读取 API 基础地址，无须其他配置。
 
-Every origin that talks to the API has to appear in `CORS_ALLOW_ORIGINS`. Anything not listed is answered with `403` on preflight, which in a browser looks like the app loading and then every request failing.
+所有调用 API 的来源都必须列入 `CORS_ALLOW_ORIGINS`。未列出的来源会在预检请求中收到 `403`，在浏览器中表现为应用能够加载，但随后所有请求都失败。
 
-Make sure the proxy serves the websocket host over HTTP/1.1. The upgrade handshake cannot be expressed in HTTP/2, so a proxy that forces h2 to the client on that hostname breaks realtime while leaving everything else working.
+请确保代理通过 HTTP/1.1 提供 WebSocket 主机服务。升级握手无法通过 HTTP/2 表达，因此如果代理强制该主机名的客户端连接使用 h2，实时功能会失效，而其他功能仍可运行。
 
-## Platform email
+## 平台邮件 [#platform-email]
 
-The platform's own mail is registration codes, password resets, team invitations, notification digests, and login codes where those are enabled. It is separate from campaign mail, which goes out through the mailboxes you connect.
+平台自身发送的邮件包括注册验证码、密码重置、团队邀请、通知摘要，以及启用时的登录验证码。这与营销活动邮件相互独立；后者通过你连接的邮箱发送。
 
-`MAIL_TRANSPORT` selects how it is sent.
+`MAIL_TRANSPORT` 决定发送方式。
 
-| Transport | What it does |
+| 传输方式 | 作用 |
 |-----------|--------------|
-| `log` | Writes every message to the backend logs and delivers nothing. The compose default, so a fresh install works before you have a relay. A bare binary with neither `MAIL_TRANSPORT` nor `SMTP_HOST` falls back to `ses` instead |
-| `smtp` | A real submission relay |
-| `ses` | AWS SES; needs AWS credentials and a verified sending identity |
+| `log` | 将每封邮件写入后端日志，不实际投递。这是 Compose 默认值，使新安装在尚无中继时也能运行。直接运行二进制文件时，如果既没有 `MAIL_TRANSPORT` 也没有 `SMTP_HOST`，则回退到 `ses` |
+| `smtp` | 实际的邮件提交中继 |
+| `ses` | AWS SES；需要 AWS 凭据和已验证的发信身份 |
 
-The default is deliberate. Nothing about signing in requires mail on a self-hosted install, so an unconfigured relay costs you password resets and invitations, not access. Read a code out of the logs with:
+这一默认设置经过有意设计。自托管安装的登录不依赖邮件，因此未配置中继只会影响密码重置和邀请，不会阻止访问。可使用以下命令从日志中读取验证码：
 
 ```bash
 docker compose -p warmbly logs backend | grep -B2 -A12 "MAIL_TRANSPORT=log"
 ```
 
-### Using a real relay
+### 使用真实邮件中继 [#using-a-real-relay]
 
 ```bash
 MAIL_TRANSPORT=smtp
@@ -407,31 +407,31 @@ EMAIL_NAME=Warmbly
 EMAIL_ADDRESS=noreply@example.com
 ```
 
-`SMTP_SECURITY` picks the transport security, and the port follows from it:
+`SMTP_SECURITY` 决定传输安全模式，端口会随之确定：
 
-| `SMTP_SECURITY` | Port | When |
+| `SMTP_SECURITY` | 端口 | 调用时机 |
 |-----------------|------|------|
-| `starttls` | 587 | The default, and what almost every provider wants |
-| `tls` | 465 | Implicit TLS |
-| `none` | 25 | Cleartext. Only legitimate for a sink or a relay on the same host |
+| `starttls` | 587 | 默认值，几乎所有服务商都要求此模式 |
+| `tls` | 465 | 隐式 TLS |
+| `none` | 25 | 明文。仅适用于邮件接收器或同一主机上的中继 |
 
-Set either the security mode or the port and the other follows, so `SMTP_PORT=465` alone is enough.
+设置安全模式或端口中的任意一项，另一项会自动推导，因此只设置 `SMTP_PORT=465` 即可。
 
-Credentials are never sent over an unencrypted connection. If the relay does not offer STARTTLS and you have set a username, the send fails rather than transmitting the password in the clear. `SMTP_AUTH` defaults to `auto`, which picks the strongest mechanism the relay advertises; set it explicitly to `plain`, `login` or `cram-md5` if you need to pin one. `SMTP_TLS_INSECURE_SKIP_VERIFY=true` exists for an internal relay with a private CA and should not be used with a public provider.
+凭据绝不会通过未加密连接发送。如果中继不提供 STARTTLS，而你设置了用户名，发送会失败，不会明文传输密码。`SMTP_AUTH` 默认为 `auto`，会选择中继声明支持的最强机制；如需固定机制，可显式设置为 `plain`、`login` 或 `cram-md5`。`SMTP_TLS_INSECURE_SKIP_VERIFY=true` 用于采用私有 CA 的内部中继，不应对公共服务商使用。
 
-### Checking it works
+### 检查是否正常工作 [#checking-it-works]
 
-The backend dials the relay once at boot and logs the result, so a broken configuration shows up in `docker compose logs backend` rather than as a failed password reset weeks later.
+后端启动时会尝试连接中继一次并记录结果，因此配置问题会出现在 `docker compose logs backend` 中，而不会等到数周后密码重置失败才暴露。
 
-The admin panel's **Instance > Setup and health > Services** tab has a Platform mail card with the current transport, a live connection check that shows the SMTP error verbatim, and a send-test button.
+管理面板的 **实例 > 设置与健康 > 服务** 选项卡包含平台邮件卡片，显示当前传输方式，提供会原样显示 SMTP 错误的实时连接检查，以及测试发送按钮。
 
-### Deliverability
+### 邮件送达能力 [#deliverability]
 
-Mail from a self-hosted instance is subject to the same rules as any other sender. Publish SPF and DKIM for the domain in `EMAIL_ADDRESS`, and use a domain you control: a `From` address on a domain with no records is the most common reason reset links land in spam.
+自托管实例发出的邮件与其他发件人一样，受相同规则约束。请为 `EMAIL_ADDRESS` 中的域名发布 SPF 和 DKIM，并使用你控制的域名：`From` 地址使用没有相关记录的域名，是重置链接落入垃圾邮件最常见的原因。
 
-### Branding
+### 品牌设置 [#branding]
 
-Transactional email carries Warmbly's name and legal footer by default. Override it with the `EMAIL_BRAND_*` variables, which is worth doing on an instance your own users receive mail from:
+事务性邮件默认包含 Warmbly 名称和法律页脚。可使用 `EMAIL_BRAND_*` 变量覆盖；如果实例会向你的用户发邮件，建议设置：
 
 ```bash
 EMAIL_BRAND_NAME=Acme
@@ -440,57 +440,57 @@ EMAIL_BRAND_WEBSITE_URL=https://acme.example.com
 EMAIL_BRAND_SUPPORT_EMAIL=support@acme.example.com
 ```
 
-Every emailed link (password reset, invitation, the dashboard button in the welcome mail) is built from `APP_URL`. Set it, or those links point somewhere that is not your deployment.
+邮件中的所有链接（密码重置、邀请、欢迎邮件中的控制台按钮）都由 `APP_URL` 构建。请设置此值，否则这些链接可能指向你的部署之外的位置。
 
-## Connect mailboxes
+## 连接邮箱 [#connect-mailboxes]
 
-This is the first thing you will actually want to do after installing, and the only part that needs credentials from outside Warmbly.
+安装后通常首先需要连接邮箱，这也是唯一需要 Warmbly 之外凭据的环节。
 
-There are several ways to attach a sending mailbox. Only the OAuth and whole-domain ones need setup.
+有多种方式可以连接发信邮箱，只有 OAuth 和整域连接需要额外设置。
 
-| Mailbox type | Setup needed | Variables |
+| 邮箱类型 | 所需设置 | 变量 |
 |--------------|--------------|-----------|
-| Any SMTP + IMAP provider | None | none |
-| Gmail / Google Workspace | None with an app password (the default). A Google Cloud OAuth client to offer per-mailbox Google sign-in, which is being retired | `BOX_GOOGLE_OAUTH_CONNECT`, `BOX_GOOGLE_CLIENT_ID`, `BOX_GOOGLE_CLIENT_SECRET` |
-| Outlook / Microsoft 365 | An Entra ID app registration | `BOX_OUTLOOK_CLIENT_ID`, `BOX_OUTLOOK_CLIENT_SECRET` |
-| A whole Google Workspace domain or Microsoft 365 organization | A Google Cloud service account for Google; the Outlook app above, with three application permissions, for Microsoft. See [whole-domain mailbox connects](/development/whole-domain-connect/) | `GOOGLE_WORKSPACE_DELEGATION_KEY_FILE` (or `GOOGLE_WORKSPACE_DELEGATION_KEY`), `BOX_OUTLOOK_CLIENT_ID`, `BOX_OUTLOOK_CLIENT_SECRET` |
+| 任意 SMTP + IMAP 服务商 | 无 | 无 |
+| Gmail / Google Workspace | 使用应用密码（默认方式）无须设置。如需提供正逐步停用的逐邮箱 Google 登录，则需要 Google Cloud OAuth 客户端 | `BOX_GOOGLE_OAUTH_CONNECT`, `BOX_GOOGLE_CLIENT_ID`, `BOX_GOOGLE_CLIENT_SECRET` |
+| Outlook / Microsoft 365 | 注册 Entra ID 应用 | `BOX_OUTLOOK_CLIENT_ID`, `BOX_OUTLOOK_CLIENT_SECRET` |
+| 整个 Google Workspace 域名或 Microsoft 365 组织 | Google 需要 Google Cloud 服务账户；Microsoft 使用上述 Outlook 应用，并添加三项应用权限。参见[整域邮箱连接](/development/whole-domain-connect/) | `GOOGLE_WORKSPACE_DELEGATION_KEY_FILE`（或 `GOOGLE_WORKSPACE_DELEGATION_KEY`）、`BOX_OUTLOOK_CLIENT_ID`、`BOX_OUTLOOK_CLIENT_SECRET` |
 
-<Callout type="warn" title="These are not the sign-in variables">
-`BOX_GOOGLE_*` connects **mailboxes you send from**. `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` (no `BOX_` prefix) are a different thing entirely: they enable "Sign in with Google" for logging into Warmbly. You can set either, both, or neither, and one never substitutes for the other. The one overlap: a Google Workspace administrator proving a domain for a [whole-domain connect](/development/whole-domain-connect/#proving-the-domain) signs in through the `GOOGLE_CLIENT_ID` client when it is set, and through the `BOX_GOOGLE_*` client otherwise.
+<Callout type="warn" title="这些不是用于登录的变量">
+`BOX_GOOGLE_*` 用于连接**用于发信的邮箱**。`GOOGLE_CLIENT_ID`／`GOOGLE_CLIENT_SECRET`（没有 `BOX_` 前缀）的用途完全不同：它们启用登录 Warmbly 的“使用 Google 登录”。可以配置任意一组、两组或都不配置，两者无法相互替代。唯一的交叉点是：Google Workspace 管理员为[整域连接](/development/whole-domain-connect/#proving-the-domain)证明域名时，如已设置 `GOOGLE_CLIENT_ID` 客户端，就通过该客户端登录，否则使用 `BOX_GOOGLE_*` 客户端。
 </Callout>
 
-### SMTP and IMAP
+### SMTP 与 IMAP [#smtp-and-imap]
 
-Nothing to configure. Add the mailbox in the dashboard with its host, port, username, and password. SMTP must be port `587` or `465`; IMAP is typically `993`.
+无须预先配置。在控制台中填写主机、端口、用户名和密码即可添加邮箱。SMTP 必须使用 `587` 或 `465` 端口；IMAP 通常使用 `993`。
 
-### Gmail and Google Workspace
+### Gmail 与 Google Workspace [#gmail-and-google-workspace]
 
-Nothing to configure by default: the connect dialog walks users through a Google app password over `smtp.gmail.com` and `imap.gmail.com`, see [the mailbox guide](/guides/mailboxes/#gmail-and-google-workspace). For Google Workspace, the recommended path is a [whole-domain connect](/development/whole-domain-connect/), which needs a service account rather than an OAuth client. Per-mailbox Google sign-in is [being retired](/guides/mailboxes/#moving-off-per-mailbox-google-sign-in). Set up a Google OAuth client only if you want to offer it for new Gmail mailboxes, which also needs `BOX_GOOGLE_OAUTH_CONNECT=true`; without it the client still serves the mailboxes already connected that way, both refreshing their tokens and re-authorizing them when Google invalidates a grant.
+默认无须配置：连接对话框会引导用户通过 `smtp.gmail.com` 和 `imap.gmail.com` 使用 Google 应用密码，详见[邮箱指南](/guides/mailboxes/#gmail-and-google-workspace)。对于 Google Workspace，推荐[整域连接](/development/whole-domain-connect/)，需要服务账户而非 OAuth 客户端。逐邮箱 Google 登录正在[逐步停用](/guides/mailboxes/#moving-off-per-mailbox-google-sign-in)。只有希望为新 Gmail 邮箱提供该方式时才需要配置 Google OAuth 客户端，同时还需设置 `BOX_GOOGLE_OAUTH_CONNECT=true`；未开启时，客户端仍会为已通过此方式连接的邮箱刷新令牌，并在 Google 使授权失效后支持重新授权。
 
 <Steps>
 
 <Step>
-In the [Google Cloud console](https://console.cloud.google.com/), create (or pick) a project and enable the **Gmail API**.
+在 [Google Cloud 控制台](https://console.cloud.google.com/) 中创建或选择项目，并启用 **Gmail API**。
 </Step>
 
 <Step>
-Configure the OAuth consent screen. For a Workspace domain, choose **Internal** to skip Google's verification review. For personal Gmail accounts you need **External**, which stays limited to test users until verified.
+配置 OAuth 同意屏幕。Workspace 域名可选择**内部（Internal）**，跳过 Google 验证审核。个人 Gmail 账户需要选择**外部（External）**；通过验证前仅限测试用户使用。
 </Step>
 
 <Step>
-Create credentials of type **OAuth client ID**, application type **Web application**, and set the authorized redirect URI to your API base plus the callback path:
+创建类型为 **OAuth 客户端 ID**、应用类型为**Web 应用**的凭据，将授权重定向 URI 设为 API 基础地址加回调路径：
 
 ```
 https://api.example.com/addresses/google/callback
 ```
 
-On a stock local install that is `http://localhost:8080/addresses/google/callback`.
+默认本地安装中，该地址是 `http://localhost:8080/addresses/google/callback`。
 
-The base Warmbly actually sends is `API_PUBLIC_URL`, so it has to match what you register here. Behind a reverse proxy that means the public API host, not the address the container binds to. Leave `API_PUBLIC_URL` unset and the base falls back to `http://localhost:8080`, which is right for a local install and wrong for every proxied one.
+Warmbly 实际发送的基础地址是 `API_PUBLIC_URL`，因此必须与此处注册的地址一致。使用反向代理时，应填写公开 API 主机，而非容器绑定的地址。如果未设置 `API_PUBLIC_URL`，基础地址会回退到 `http://localhost:8080`；这适合本地安装，但不适合任何代理部署。
 </Step>
 
 <Step>
-Put the client id and secret in your root `.env`:
+将客户端 ID 和密钥写入根目录的 `.env`：
 
 ```bash
 BOX_GOOGLE_CLIENT_ID=1234567890-abc123.apps.googleusercontent.com
@@ -498,21 +498,21 @@ BOX_GOOGLE_CLIENT_SECRET=GOCSPX-your-secret-here
 BOX_GOOGLE_OAUTH_CONNECT=true
 ```
 
-Then `make up` to recreate the containers with the new values.
+然后运行 `make up`，使用新值重新创建容器。
 </Step>
 
 </Steps>
 
-### Outlook and Microsoft 365
+### Outlook 与 Microsoft 365 [#outlook-and-microsoft-365]
 
 <Steps>
 
 <Step>
-In the [Entra ID portal](https://entra.microsoft.com/), go to **App registrations** and create a new registration.
+在 [Entra ID 门户](https://entra.microsoft.com/) 中进入**应用注册**，创建新的注册。
 </Step>
 
 <Step>
-Add a **Web** redirect URI pointing at your API base:
+添加一个指向 API 基础地址的 **Web** 重定向 URI：
 
 ```
 https://api.example.com/addresses/outlook/callback
@@ -520,11 +520,11 @@ https://api.example.com/addresses/outlook/callback
 </Step>
 
 <Step>
-Under **API permissions**, add the Microsoft Graph **delegated** permissions the mailbox needs, and no others: `User.Read`, `Mail.Send`, `Mail.ReadWrite`, and `offline_access` so refresh tokens are issued. Graph is the transport for both send and sync, so the legacy `IMAP.AccessAsUser.All` and `SMTP.Send` permissions are not requested and should not be added: each one is admin-consent-only and adding it turns a sign-in every user could complete into one only a tenant admin can.
+在**API 权限**下，仅添加邮箱所需的 Microsoft Graph **委托**权限：`User.Read`、`Mail.Send`、`Mail.ReadWrite`，以及用于签发刷新令牌的 `offline_access`，不要添加其他权限。发送和同步均通过 Graph，因此不会请求旧版 `IMAP.AccessAsUser.All` 和 `SMTP.Send` 权限，也不应手动添加：它们都只能由管理员同意，添加后原本每位用户都能完成的登录将变成只有租户管理员才能完成。
 </Step>
 
 <Step>
-Under **Certificates & secrets**, create a client secret, then set both values in your root `.env`:
+在**证书和密码**下创建客户端密码，然后在根目录 `.env` 中设置两个值：
 
 ```bash
 BOX_OUTLOOK_CLIENT_ID=00000000-0000-0000-0000-000000000000
@@ -534,22 +534,22 @@ BOX_OUTLOOK_CLIENT_SECRET=your-client-secret-value
 
 </Steps>
 
-<Callout title="Non-admin users and tenant-wide consent">
-None of the four permissions above is admin-only, but whether an ordinary user may approve them is each Microsoft 365 organization's decision, not yours. Two things send a user to Microsoft's **Need admin approval** screen:
+<Callout title="非管理员用户与租户级授权">
+上述四项权限均不是管理员专属，但普通用户是否可以同意，由各 Microsoft 365 组织决定，不能由你决定。有两种情况会将用户带到 Microsoft 的**需要管理员批准**页面：
 
-- **An unverified app.** Microsoft's risk-based step-up consent treats a multitenant app registered after November 2020 with no verified publisher as risky when it asks for mail permissions, and sends every user to an administrator. [Verify the publisher](https://learn.microsoft.com/entra/identity-platform/publisher-verification-overview) of the app registration (a free Microsoft AI Cloud Partner Program account) and users of organizations with the default consent settings can approve it themselves.
-- **An organization that allows no user consent**, or only for permissions its administrator classified as low impact. Nothing on your side changes that.
+- **应用未经验证。** 对于 2020 年 11 月之后注册、没有已验证发布者的多租户应用，如果请求邮件权限，Microsoft 基于风险的升级同意机制会将其视为高风险，要求所有用户联系管理员。为应用注册[验证发布者](https://learn.microsoft.com/entra/identity-platform/publisher-verification-overview)（需免费 Microsoft AI Cloud Partner Program 账户）后，使用默认同意设置的组织中的用户即可自行批准。
+- **组织不允许用户同意**，或仅允许用户同意被管理员归类为低影响的权限。你这一侧的设置无法改变该限制。
 
-Either way, an administrator approves once for the whole organization and every mailbox in it then signs in on its own. The **Sign in one mailbox** panel shows a member the approval link to send them after a first try, and an administrator can also use **Enterprise applications > your app > Permissions > Grant admin consent**. Warmbly's authorize request asks for `prompt=select_account`, never `prompt=consent`, so that grant is honoured for everyone afterwards.
+无论哪种情况，管理员为整个组织批准一次后，其中各邮箱即可自行登录。**登录单个邮箱**面板会在首次尝试后向成员展示可发送给管理员的批准链接；管理员也可进入**企业应用程序 > 你的应用 > 权限 > 授予管理员同意**操作。Warmbly 的授权请求使用 `prompt=select_account`，从不使用 `prompt=consent`，因此后续所有用户都会沿用该授权。
 </Callout>
 
-<Callout type="warn" title="Workers need these too">
-The backend starts the OAuth flow, but **each worker refreshes the token** when it expires. Compose passes the `BOX_*` values to the worker automatically, and remote workers receive them in their enrollment config. If a worker is missing them, the mailbox connects fine and then silently stops about an hour later when its first access token expires.
+<Callout type="warn" title="工作节点也需要这些配置">
+后端发起 OAuth 流程，但令牌到期时**由各工作节点刷新令牌**。Compose 会自动将 `BOX_*` 值传给工作节点，远程工作节点也会在注册配置中收到它们。如果节点缺少这些值，邮箱连接时看似正常，但约一小时后首个访问令牌过期时就会悄然停止。
 </Callout>
 
-### Sign in with Google or Apple (optional)
+### 使用 Google 或 Apple 登录（可选） [#sign-in-with-google-or-apple-optional]
 
-Separate from mailboxes, and unrelated to sending. Email and password plus passkeys work without any of this.
+该功能与邮箱相互独立，与发送无关。邮箱地址和密码登录以及通行密钥，无须以下任何配置即可使用。
 
 ```bash
 GOOGLE_CLIENT_ID=...
@@ -565,56 +565,56 @@ APPLE_KEY_SECRET=...        # the Sign in with Apple .p8, as PEM or base64 (base
 APPLE_REDIRECT_URI=https://api.example.com/v1/auth/apple/callback
 ```
 
-<Callout type="warn" title="The redirect URI belongs to the API, not the dashboard">
-The provider returns the browser to a route the **backend** serves, which is why the default derives from `API_PUBLIC_URL`. Registering `https://app.example.com/auth/google/callback` at the provider gives you a correctly configured OAuth client and a sign-in button that lands on a dashboard route that does not exist. Warmbly logs the exact URI to register at boot: `Sign in with Google enabled (redirect ...)`.
+<Callout type="warn" title="重定向 URI 属于 API，而非控制台">
+服务商会将浏览器重定向到**后端**提供的路由，因此默认地址由 `API_PUBLIC_URL` 派生。如果在服务商处注册 `https://app.example.com/auth/google/callback`，OAuth 客户端本身可能配置成功，但登录按钮会跳转到不存在的控制台路由。Warmbly 启动时会记录需要注册的准确 URI：`Sign in with Google enabled (redirect ...)`。
 </Callout>
 
-Register that URI as an authorized redirect URI on a **Web application** client in the Google Cloud console, and as a Return URL on the Services ID in the Apple developer console. Apple additionally requires HTTPS, so Sign in with Apple cannot run against a plain-http local install.
+在 Google Cloud 控制台的**Web 应用**客户端中，将该 URI 注册为授权重定向 URI；在 Apple 开发者控制台的 Services ID 中，将其注册为返回 URL。Apple 还要求 HTTPS，因此“使用 Apple 登录”无法用于普通 HTTP 本地安装。
 
-On the Apple side, group the Services ID and the key under the iOS app's App ID as their primary App ID, so a person gets the same Apple identity on the web and in the app and both sign in to one account. Register your sending domain and from address under **Sign in with Apple for Email Communication** too, or people who choose Hide My Email never receive their sign-in codes.
+在 Apple 侧，将 Services ID 和密钥归到 iOS 应用的 App ID 下，并将其设为主要 App ID。这样，同一用户在网页和应用中会获得相同的 Apple 身份，并登录同一账户。还需在 **用于邮件通信的 Apple 登录（Sign in with Apple for Email Communication）** 下注册发信域名和发件地址，否则选择“隐藏邮件地址”的用户将收不到登录验证码。
 
-Once either is configured, `GET /auth/config` advertises it and the login screen renders the button. First sign-in provisions the account, its organization and its trial, and answers to `DISABLE_REGISTRATION` and `SSO_AUTO_PROVISION` exactly like a password signup does.
+配置任意一种后，`GET /auth/config` 会公布其可用状态，登录页面就会显示对应按钮。首次登录会创建账户、所属组织和试用，并与密码注册一样遵循 `DISABLE_REGISTRATION` 和 `SSO_AUTO_PROVISION`。
 
-## Authentication
+## 身份验证 [#authentication]
 
-Self-hosted defaults differ from the hosted product, because a deployment you run yourself should not depend on infrastructure you have not set up. `DEPLOYMENT_MODE=self_hosted` picks them; each one is independently overridable.
+自托管默认值与托管产品不同，因为自行运行的部署不应依赖尚未配置的基础设施。`DEPLOYMENT_MODE=self_hosted` 会选择这些默认值；每项都可单独覆盖。
 
-The full treatment lives on [accounts and access](/development/accounts-and-access/): the three registration modes and the first-launch exemption, how to invite teammates with or without a mail relay, single sign-on provisioning, platform admins, and every command for recovering a locked-out instance.
+完整说明请参见[账户与访问](/development/accounts-and-access/)：包括三种注册模式和首次启动豁免、有无邮件中继时邀请团队成员的方式、单点登录自动创建账户、平台管理员，以及恢复被锁定实例所需的全部命令。
 
-| Setting | Self-host default | What it does |
+| 设置 | 自托管默认值 | 作用 |
 |---------|-------------------|--------------|
-| `AUTH_LOGIN_CODE` | `off` | `always`, `new_device` or `off`. Whether a login also requires a code emailed to the account |
-| `REQUIRE_EMAIL_VERIFICATION` | `false` | Whether a signup must confirm an emailed code before the account exists |
-| `DISABLE_REGISTRATION` | `invite_only` | `true`, `false` or `invite_only`. Who may create an account from the sign-up form. Single sign-on provisioning follows the same setting, plus `SSO_AUTO_PROVISION` |
-| `DISABLE_PASSWORD_LOGIN` | `false` | Turns off email and password entirely, for SSO-only deployments |
-| `SSO_AUTO_PROVISION` | `false` | Whether a verified identity provider assertion alone may create an account |
-| `AUTH_IP_RATE_LIMIT` | `60` | Unauthenticated auth requests allowed per source IP per 15 minutes |
+| `AUTH_LOGIN_CODE` | `off` | `always`、`new_device` 或 `off`。控制登录是否还需要发送到账户邮箱的验证码 |
+| `REQUIRE_EMAIL_VERIFICATION` | `false` | 注册时是否必须先确认邮件验证码，才创建账户 |
+| `DISABLE_REGISTRATION` | `invite_only` | `true`、`false` 或 `invite_only`。控制谁可以通过注册表单创建账户。单点登录自动创建账户遵循相同设置，并受 `SSO_AUTO_PROVISION` 控制 |
+| `DISABLE_PASSWORD_LOGIN` | `false` | 完全关闭邮箱地址和密码登录，用于仅允许 SSO 的部署 |
+| `SSO_AUTO_PROVISION` | `false` | 是否允许仅凭已验证身份提供方的断言创建账户 |
+| `AUTH_IP_RATE_LIMIT` | `60` | 每个来源 IP 在每 15 分钟内允许发起的未登录身份验证请求数 |
 
-### Why the login code is off by default
+### 为何默认关闭登录验证码 [#why-the-login-code-is-off-by-default]
 
-Emailing a code on every sign-in makes the mail relay a single point of failure for all authentication, and it is not a second factor: NIST SP 800-63B states that email is not to be used for out-of-band authentication, and OWASP ASVS says the same. Codes remain in use for the things email is appropriate for, which are verifying an address at signup and recovering an account.
+每次登录都发送验证码，会让邮件中继成为所有身份验证的单点故障，而且邮件并非第二因素：NIST SP 800-63B 规定不得将电子邮件用于带外身份验证，OWASP ASVS 也有相同要求。验证码仍用于适合电子邮件的场景，即注册时验证地址和恢复账户。
 
-Set `AUTH_LOGIN_CODE=new_device` to require one only from a device that has not signed in before, or `always` for the hosted behavior. TOTP and passkeys are both stronger and both available.
+设置 `AUTH_LOGIN_CODE=new_device` 后，只有从未登录过的设备才需要验证码；设置为 `always` 则采用托管产品的行为。TOTP 和通行密钥都更强，且均可使用。
 
-### Stronger factors
+### 更强的身份验证因素 [#stronger-factors]
 
-TOTP applies to every sign-in path, including Google, Apple and single sign-on. A passkey does not additionally prompt for TOTP: a user-verified passkey is already a possession factor bound to this origin.
+TOTP 适用于所有登录方式，包括 Google、Apple 和单点登录。使用通行密钥时不会额外要求 TOTP：通过用户验证的通行密钥已经是绑定当前来源的持有因素。
 
-Passkeys need a secure context, so they are only available when `APP_URL` is HTTPS or a `localhost` address. A LAN IP over plain HTTP cannot be a WebAuthn relying-party ID; the backend detects this, logs it at boot, and the login screen hides the option instead of failing in the browser. Changing `APP_URL` after passkeys are enrolled invalidates all of them.
+通行密钥需要安全上下文，因此仅在 `APP_URL` 使用 HTTPS 或 `localhost` 地址时可用。通过普通 HTTP 访问的局域网 IP 不能作为 WebAuthn 依赖方 ID；后端会检测并在启动时记录，登录页面会隐藏该选项，避免在浏览器中失败。注册通行密钥后更改 `APP_URL`，会使所有已注册通行密钥失效。
 
-### Behind a reverse proxy
+### 在反向代理后运行 [#behind-a-reverse-proxy]
 
-Set `TRUSTED_PROXIES` to the CIDRs your proxy connects from:
+将 `TRUSTED_PROXIES` 设置为代理连接所使用的 CIDR 网段：
 
 ```bash
 TRUSTED_PROXIES=10.0.0.0/8,172.16.0.0/12
 ```
 
-Empty means no proxy header is trusted, which is correct for a directly exposed backend. Without this a client can set `X-Forwarded-For` to anything, which forges the address used for rate limits, session records, audit entries, and API-key IP restrictions.
+留空表示不信任任何代理头，适合直接暴露后端的情况。缺少这项保护时，客户端可以任意设置 `X-Forwarded-For`，伪造限流、会话记录、审计条目和 API 密钥 IP 限制所使用的地址。
 
-## Single sign-on
+## 单点登录 [#single-sign-on]
 
-Generic OpenID Connect works with Authentik, Keycloak, Zitadel, Pocket ID, Dex, and anything else that publishes a discovery document. It is in the standard build, not a paid tier, and it is the sign-in path with no dependency on outbound mail, which makes it the recommended posture when you have no relay.
+通用 OpenID Connect 支持 Authentik、Keycloak、Zitadel、Pocket ID、Dex，以及任何发布发现文档的身份提供方。它包含在标准构建中，不属于付费功能，而且登录不依赖对外邮件，因此在没有邮件中继时推荐使用。
 
 ```bash
 OIDC_ISSUER_URL=https://id.example.com/application/o/warmbly/
@@ -625,29 +625,29 @@ OIDC_ALLOWED_DOMAINS=example.com
 OIDC_DEFAULT_ORG=<organization uuid>
 ```
 
-The redirect URI is `/v1/auth/oidc/callback`, not `/api/v1/auth/oidc/callback`. Providers match it by exact string, so it has to be identical on both sides.
+重定向 URI 是 `/v1/auth/oidc/callback`，不是 `/api/v1/auth/oidc/callback`。服务商按完整字符串匹配，因此两侧必须完全一致。
 
-Single sign-on obeys `DISABLE_REGISTRATION` like every other signup path, with `SSO_AUTO_PROVISION` as the separate opt-in that lets a verified assertion create an account regardless of the mode. The rest, including domain restrictions and how accounts bind to the provider's subject claim, is on [accounts and access](/development/accounts-and-access/#single-sign-on).
+与其他注册方式一样，单点登录遵循 `DISABLE_REGISTRATION`；另行启用 `SSO_AUTO_PROVISION` 后，可允许已验证断言在任何注册模式下创建账户。域名限制及账户如何绑定服务商 subject 声明等其余内容，请参见[账户与访问](/development/accounts-and-access/#single-sign-on)。
 
-Pair it with `DISABLE_PASSWORD_LOGIN=true` for an SSO-only deployment.
+配合 `DISABLE_PASSWORD_LOGIN=true` 可部署为仅允许 SSO 登录。
 
-## Provider switches
+## 服务商开关 [#provider-switches]
 
-| Subsystem | Compose default | Opt-in |
+| 子系统 | Compose 默认值 | 可选方案 |
 |-----------|-----------------|--------|
-| Event bus | NATS JetStream (`EVENTBUS_PROVIDER=nats`) | Kafka (`=kafka`, needs a `kafka`-tagged build) |
-| Codec | JSON (`CODEC_PROVIDER=json`) | Avro plus Schema Registry (`=avro`, same tag) |
-| Root key | Local AES (`KMS_PROVIDER=local`) | AWS KMS (`=aws`) |
-| Blob storage | Filesystem (`BLOB_PROVIDER=filesystem`) | S3, MinIO, R2 (`=s3` plus `BLOB_BUCKET`) |
-| Task scheduler | In-process poller (`TASKS_PROVIDER=local`) | GCP Cloud Tasks (`=gcloud`) |
-| Billing | Off (`BILLING_PROVIDER=none`, everything unlocked, AI credits unmetered) | Stripe (`=stripe`) |
-| Captcha | Off (`CAPTCHA_PROVIDER=none`) | Cloudflare Turnstile (`=turnstile`) |
-| Realtime transport | Redis pub/sub (`PUBSUB_ENABLED=false`) | Google Cloud Pub/Sub (`=true` plus `GCP_PROJECT_ID`) |
+| 事件总线 | NATS JetStream（`EVENTBUS_PROVIDER=nats`） | Kafka（`=kafka`，需要带 `kafka` 标签的构建） |
+| 编解码器 | JSON（`CODEC_PROVIDER=json`） | Avro 与 Schema Registry（`=avro`，需要相同构建标签） |
+| 根密钥 | 本地 AES（`KMS_PROVIDER=local`） | AWS KMS（`=aws`） |
+| Blob 存储 | 文件系统（`BLOB_PROVIDER=filesystem`） | S3、MinIO、R2（`=s3`，并设置 `BLOB_BUCKET`） |
+| 任务调度器 | 进程内轮询程序（`TASKS_PROVIDER=local`） | GCP Cloud Tasks（`=gcloud`） |
+| 计费 | 关闭（`BILLING_PROVIDER=none`，全部功能开放，AI 积分不限量） | Stripe（`=stripe`） |
+| 人机验证 | 关闭（`CAPTCHA_PROVIDER=none`） | Cloudflare Turnstile（`=turnstile`） |
+| 实时传输 | Redis 发布／订阅（`PUBSUB_ENABLED=false`） | Google Cloud Pub/Sub（`=true`，并设置 `GCP_PROJECT_ID`） |
 
-Three things to know:
+需要了解三点：
 
-- **Bare binaries default to the cloud values** (`kafka`, `avro`, `s3`, `aws`). Compose, the Makefile, and both env templates set the local values for you. A hand-rolled environment must set them or the process exits at boot.
-- Kafka and Avro are build-time opt-ins, so `EVENTBUS_PROVIDER=kafka` needs a build that has them. Each release publishes those builds as a second tag on the same image, suffixed `-kafka`, for the four services that touch the bus:
+- **直接运行二进制文件时默认使用云端方案**（`kafka`、`avro`、`s3`、`aws`）。Compose、Makefile 和两份环境模板会替你设置本地值。自行配置环境时必须设置这些值，否则进程会在启动时退出。
+- Kafka 和 Avro 是构建时可选功能，因此 `EVENTBUS_PROVIDER=kafka` 需要包含它们的构建。对于四个使用事件总线的服务，每次发布都会在同一镜像上提供带 `-kafka` 后缀的第二组标签：
 
   ```
   ghcr.io/warmbly/warmbly/backend:prod-kafka
@@ -656,24 +656,24 @@ Three things to know:
   ghcr.io/warmbly/warmbly/tracking:prod-kafka
   ```
 
-  `forms`, `updater`, `realtime`, `web`, and `admin` never read the bus and have one image each. To build your own instead, pass `--build-arg GO_TAGS=kafka` (Go) or `--build-arg CARGO_FEATURES=kafka` (tracking); cgo cannot cross-compile, so each architecture has to be built on a machine of that architecture.
-- `PUBSUB_ENABLED` must match across backend, consumer, and realtime.
+  `forms`、`updater`、`realtime`、`web` 和 `admin` 不读取事件总线，各自只有一种镜像。如需自行构建，请传入 `--build-arg GO_TAGS=kafka`（Go）或 `--build-arg CARGO_FEATURES=kafka`（tracking）；cgo 无法交叉编译，因此每种架构都需要在对应架构的机器上构建。
+- 后端、消费者和实时服务的 `PUBSUB_ENABLED` 必须一致。
 
-## Optional subsystems
+## 可选子系统 [#optional-subsystems]
 
-| Feature | Enable with |
+| 功能 | 启用方式 |
 |---------|-------------|
-| Stripe billing | `BILLING_PROVIDER=stripe` plus `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `STRIPE_PUBLISHABLE_KEY`. All three are read at boot and the backend exits if any is missing |
-| Turnstile captcha | `CAPTCHA_PROVIDER=turnstile` plus `TURNSTILE_SECRET` (backend) and `WARMBLY_TURNSTILE_KEY` (web and admin). Compose pins captcha off, so use a `docker-compose.override.yml` |
-| Sign in with Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` (defaults to `<API_PUBLIC_URL>/v1/auth/google/callback`) |
-| Sign in with Apple | `APPLE_APP_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_KEY_SECRET` |
-| Mobile push (APNs) | `APNS_KEY_PATH` (or `APNS_KEY`), `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_TOPIC` on backend and consumer. Partial config disables push with a warning, never a crash |
-| Notification tuning | `NOTIFICATION_PUSH_WINDOW` (default `5h`), `NOTIFICATION_EMAIL_DAILY_CAP` (default `25`, `0` means uncapped) |
-| Error tracking | `POSTHOG_KEY` (plus `POSTHOG_HOST` for a PostHog you run) or `SENTRY_DSN`, and `WARMBLY_POSTHOG_KEY` / `WARMBLY_SENTRY_DSN` for the browser apps. Either, both or neither; optional in every environment, including `prod` |
+| Stripe 计费 | 设置 `BILLING_PROVIDER=stripe`，以及 `STRIPE_SECRET_KEY`、`STRIPE_WEBHOOK_SECRET`、`STRIPE_PUBLISHABLE_KEY`。这三项均在启动时读取，缺少任意一项，后端都会退出 |
+| Turnstile 人机验证 | 设置 `CAPTCHA_PROVIDER=turnstile`，以及 `TURNSTILE_SECRET`（后端）和 `WARMBLY_TURNSTILE_KEY`（Web 与管理面板）。Compose 固定关闭人机验证，因此需使用 `docker-compose.override.yml` 覆盖 |
+| 使用 Google 登录 | `GOOGLE_CLIENT_ID`、`GOOGLE_CLIENT_SECRET`、`GOOGLE_REDIRECT_URI`（默认为 `<API_PUBLIC_URL>/v1/auth/google/callback`） |
+| 使用 Apple 登录 | `APPLE_APP_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_KEY_SECRET` |
+| 移动推送（APNs） | 在后端和消费者上设置 `APNS_KEY_PATH`（或 `APNS_KEY`）、`APNS_KEY_ID`、`APNS_TEAM_ID`、`APNS_TOPIC`。配置不完整时会禁用推送并给出警告，不会导致崩溃 |
+| 通知调优 | `NOTIFICATION_PUSH_WINDOW`（默认 `5h`）、`NOTIFICATION_EMAIL_DAILY_CAP`（默认 `25`，`0` 表示不限量） |
+| 错误跟踪 | `POSTHOG_KEY`（自行运行 PostHog 时还需 `POSTHOG_HOST`）或 `SENTRY_DSN`，浏览器应用使用 `WARMBLY_POSTHOG_KEY`／`WARMBLY_SENTRY_DSN`。可以任选一种、两者都用或都不用；包括 `prod` 在内的任何环境中均为可选 |
 
-## AI provider
+## AI 服务提供方 [#ai-provider]
 
-Omit all AI variables to run with AI off: AI endpoints return a clean `503` and everything else works. Set these on the backend and the consumer:
+省略全部 AI 变量即可关闭 AI：AI 端点会明确返回 `503`，其他功能正常运行。在后端和消费者上设置以下变量：
 
 ```bash
 AI_PROVIDER=openai       # openai | openrouter | groq | ollama | anthropic | custom
@@ -682,56 +682,56 @@ AI_MODEL=                # blank uses the provider's preset
 AI_BASE_URL=             # required for custom (any OpenAI-compatible endpoint)
 ```
 
-| `AI_PROVIDER` | Endpoint | Notes |
+| `AI_PROVIDER` | 端点 | 说明 |
 |---|---|---|
-| `openai` | api.openai.com | defaults to `gpt-6-luna`; also the only provider for warmup content batch generation |
-| `openrouter` | openrouter.ai | one key fronts every vendor; switch via `AI_MODEL` |
-| `groq` | api.groq.com | fast, free tier |
-| `ollama` | localhost:11434 | no key, free local model (`AI_FREE` is automatically true) |
-| `anthropic` | api.anthropic.com | Anthropic connector |
-| `custom` | your `AI_BASE_URL` | vLLM, LocalAI, LM Studio |
+| `openai` | api.openai.com | 默认使用 `gpt-6-luna`；也是唯一支持批量生成预热内容的提供方 |
+| `openrouter` | openrouter.ai | 一个密钥访问所有厂商，通过 `AI_MODEL` 切换 |
+| `groq` | api.groq.com | 速度快，提供免费额度 |
+| `ollama` | localhost:11434 | 无须密钥的免费本地模型（`AI_FREE` 自动为 true） |
+| `anthropic` | api.anthropic.com | Anthropic 连接器 |
+| `custom` | 你设置的 `AI_BASE_URL` | vLLM、LocalAI、LM Studio |
 
-`AI_MODEL_TRIAL` and `AI_MODEL_PAID` optionally split models by plan. Web search for the assistant is `SEARCH_PROVIDER=serper` (plus `SEARCH_API_KEY`) or `=searxng` (plus `SEARCH_API_URL`).
+可选用 `AI_MODEL_TRIAL` 和 `AI_MODEL_PAID` 按套餐区分模型。助手网页搜索使用 `SEARCH_PROVIDER=serper`（配合 `SEARCH_API_KEY`），或 `=searxng`（配合 `SEARCH_API_URL`）。
 
-## Workers
+## 工作节点 [#workers]
 
-Outbound mail leaves through each mailbox's own provider, so the source IP is the provider's, not the worker's. Workers are interchangeable executors with no database: commands in from the event bus, encrypted keys over the backend's internal API, and a heartbeat back every 90 seconds.
+发出邮件通过各邮箱自身的服务商投递，因此源 IP 属于服务商，而非工作节点。工作节点是可相互替换、无需数据库的执行器：从事件总线接收命令，通过后端内部 API 获取加密密钥，并每 90 秒发送一次心跳。
 
-A worker leaves rotation the moment it stops: on shutdown it sends a farewell beat that marks it inactive. If it dies without one (hard kill, machine loss), placement stops considering it once its heartbeat is more than 10 minutes stale. Either way nothing is placed onto a machine that is no longer answering.
+工作节点一停止就会退出调度：关闭时发送告别心跳，将自身标记为不活跃。如果未发送便意外退出（强制终止、机器失联），心跳超过 10 分钟未更新后，分配程序便不再考虑该节点。无论哪种情况，都不会继续向不再响应的机器分配任务。
 
-More workers on the same host:
+在同一主机上运行更多工作节点：
 
 ```bash
 docker compose -p warmbly up -d --scale worker=3
 ```
 
-### Worker identity
+### 工作节点身份 [#worker-identity]
 
-Each worker needs a stable UUID. It is resolved at boot in this order:
+每个工作节点需要稳定的 UUID，启动时按以下顺序确定：
 
-1. `WORKER_ID` if set, used as-is
-2. a UUID derived from `WORKER_BIND_IP`, so each IP on a multi-IP box is its own worker
-3. the hostname, if the hostname is itself a UUID
-4. a persisted id claimed from `WORKER_STATE_DIR`, when that variable is set
-5. otherwise a **freshly generated UUID**
+1. 如设置了 `WORKER_ID`，直接使用原值
+2. 从 `WORKER_BIND_IP` 派生 UUID，使多 IP 主机上的各 IP 分别对应一个工作节点
+3. 如果主机名本身是 UUID，则使用主机名
+4. 如设置了 `WORKER_STATE_DIR`，从该目录领取持久化 ID
+5. 否则使用**新生成的 UUID**
 
-The compose worker hits case 4: the shipped compose file mounts a `worker_state` volume at `/data/state` and sets `WORKER_STATE_DIR` to it. On boot each replica claims an id file from that volume under an exclusive lock and holds it for the life of the process, so a recreated container gets its predecessor's UUID back, and `--scale worker=3` still works because each replica locks a different file (the pool grows to the replica count). The id survives anything short of deleting the volume.
+Compose 工作节点使用第 4 种情况：随附 Compose 文件在 `/data/state` 挂载 `worker_state` 卷，并将 `WORKER_STATE_DIR` 指向该目录。启动时，每个副本以独占锁领取卷中的一个 ID 文件，并在进程整个生命周期内持有锁，因此重建的容器能重新获得前一个容器的 UUID。`--scale worker=3` 也仍可使用，因为各副本锁定不同文件，ID 池会增长到副本数量。只要不删除卷，ID 就会一直保留。
 
-If the state volume is removed (or `WORKER_STATE_DIR` unset), every recreate registers as a new worker and leaves the previous row behind, still holding the mailboxes that were assigned to it. Sending recovers on its own: placement skips a worker once its heartbeat goes stale, and the reconciler releases any mailbox still pointing at one and places it on a live worker within its interval. Until that happens, sends from those mailboxes fail with `email account not found in worker`.
+如果删除状态卷或取消设置 `WORKER_STATE_DIR`，每次重建都会注册新工作节点，并留下仍持有原邮箱分配的旧记录。发送会自行恢复：心跳过期后分配程序会跳过旧节点，协调器会在其运行间隔内释放仍指向旧节点的邮箱，并将其分配给活跃节点。在此之前，这些邮箱发送时会报 `email account not found in worker`。
 
-Pinning the identity explicitly also works:
+也可以显式固定身份：
 
 ```bash
 WORKER_ID=<a uuid you generate once>     # uuidgen
 ```
 
-Set it only when you run a single worker per host. Scaled replicas share one environment, so a pinned `WORKER_ID` would make them collide; leave it unset when using `--scale` and let the state volume handle it.
+仅在每台主机运行一个工作节点时设置。扩容副本共享同一环境，因此固定 `WORKER_ID` 会导致身份冲突；使用 `--scale` 时请保持未设置，让状态卷管理身份。
 
-The join script handles this for you: it records the node id the control plane assigned and reuses it when you re-run the command, so a rebuild on the same machine keeps the same identity and its mailboxes.
+加入脚本会自动处理身份：它记录控制平面分配的节点 ID，并在重新运行命令时复用，因此同一机器重建后仍保留相同身份及其邮箱。
 
-### Adding a machine
+### 添加主机 [#adding-a-machine]
 
-Every Warmbly process that runs on a machine you own is a node. Adding one is two commands: issue a join token, then run one command on the machine.
+在你拥有的机器上运行的每个 Warmbly 进程都属于节点。添加节点只需两步：签发加入令牌，然后在机器上运行一个命令。
 
 ```bash
 # On the instance
@@ -745,25 +745,25 @@ curl -fsSL https://api.example.com/join.sh | sh -s -- \
   --region eu-central
 ```
 
-`--role` is `worker` (sends and syncs mail) or `consumer` (processes events). `--region` is optional and only affects worker placement: a mailbox scores better on a worker near where its provider expects sign-ins.
+`--role` 可以是 `worker`（收发及同步邮件）或 `consumer`（处理事件）。`--region` 可选，只影响工作节点分配：节点越接近服务商预期的邮箱登录位置，该邮箱在该节点上的分配评分就越高。
 
-Nothing connects back to the machine, before or after. It needs no inbound port, no SSH key and no cloud account; the only credential involved is the join token, which the machine uses once and never stores. A token joins any number of machines for seven days by default (`--ttl` sets up to 30 days); after that, or once you issue another, it joins nothing. Re-running the same command on the same machine re-joins it under the same identity, keeping its history and its mailboxes.
+无论加入前后，都不会有任何组件反向连接该机器。它不需要入站端口、SSH 密钥或云账户；唯一涉及的凭据是加入令牌，机器只使用一次且不保存。一个令牌默认可在七天内加入任意数量机器（`--ttl` 最多设为 30 天）；过期或签发新令牌后，旧令牌就无法再加入机器。在同一机器上重新运行相同命令，会以原有身份重新加入，并保留历史和邮箱。
 
-The script enrols the node, writes the config the control plane hands back to `/etc/warmbly/node.env`, installs a systemd service and an update timer, and starts it. Add `--dry-run` to see what it would write without changing anything.
+脚本会注册节点，将控制平面返回的配置写入 `/etc/warmbly/node.env`，安装 systemd 服务及更新定时器，并启动服务。添加 `--dry-run` 可预览将写入的内容，不做任何更改。
 
-<Callout type="warn" title="The node inherits the backend's addresses">
-The config handed to a node is generated from the backend's own environment. On a stock local install that means `ENCRYPTED_KEYS_BACKEND_URL=http://localhost:8080`, `NATS_URL=nats://nats:4222`, and `REDIS=redis://redis:6379`, none of which resolve on another machine. Before adding a remote node, set `API_PUBLIC_URL`, `NATS_URL`, and `REDIS` on the backend to addresses the machine can actually reach, and open those ports.
+<Callout type="warn" title="节点会继承后端的地址">
+节点配置由后端自身环境生成。默认本地安装会生成 `ENCRYPTED_KEYS_BACKEND_URL=http://localhost:8080`、`NATS_URL=nats://nats:4222` 和 `REDIS=redis://redis:6379`，这些地址均无法在另一台机器上解析。添加远程节点前，请在后端将 `API_PUBLIC_URL`、`NATS_URL` 和 `REDIS` 设置为目标机器实际可访问的地址，并开放相应端口。
 </Callout>
 
-That config carries the decryption material the node needs: the internal API token, `KMS_LOCAL_MASTER_KEY`, and `CREDENTIALS_ENCRYPTION_KEY`. Serve the API over HTTPS before adding a node across a network you do not control.
+该配置携带节点所需的解密材料：内部 API 令牌、`KMS_LOCAL_MASTER_KEY` 和 `CREDENTIALS_ENCRYPTION_KEY`。如果节点通过不受你控制的网络加入，请先为 API 启用 HTTPS。
 
-`PRIMARY_DB` reaches a consumer, which opens Postgres itself, and never a worker, which reaches relational data through the internal API and nothing else.
+`PRIMARY_DB` 只会传递给直接访问 Postgres 的消费者，绝不会传递给工作节点；工作节点只能通过内部 API 访问关系数据。
 
-Nothing else in the config needs a credential either. An instance running `KMS_PROVIDER=aws` or `BLOB_PROVIDER=s3` hands its nodes the brokered form of each, so a machine in the fleet opens sealed keys and signs blob operations through the internal API rather than carrying a cloud credential of its own. Blob bytes still go directly between the node and the object store. [Split deployment](/development/split-deployment/) covers the whole shape.
+配置中的其他部分也无须云凭据。运行 `KMS_PROVIDER=aws` 或 `BLOB_PROVIDER=s3` 的实例会向节点提供相应的代理访问形式，因此集群机器通过内部 API 解密密钥和签署 Blob 操作，而不自行持有云凭据。Blob 数据本身仍直接在节点和对象存储之间传输。完整架构见[分拆部署](/development/split-deployment/)。
 
-`/etc/warmbly/node.local.env`, next to the generated file, is created once and never rewritten, and the container reads it second. Anything you add there survives a re-join and wins over the generated value.
+生成配置旁的 `/etc/warmbly/node.local.env` 只创建一次，之后绝不重写，容器会在第二步读取它。写入其中的内容会在重新加入后保留，并覆盖自动生成的值。
 
-`BLOB_PROVIDER=filesystem` does not survive a fleet. A worker reads the message body the backend wrote, so the two need the same storage with permissions that let both reach it, and a node on another machine has neither. The join script creates and mounts `BLOB_FS_ROOT` so the node starts, and warns you, but sends will fail when the worker cannot read the body. Use `BLOB_PROVIDER=s3` with a bucket both sides can reach before running nodes off-host.
+`BLOB_PROVIDER=filesystem` 不适用于跨主机节点集群。工作节点要读取后端写入的正文，因此两者需要能够共同访问的相同存储及权限，另一台机器上的节点并不具备这些条件。加入脚本会创建并挂载 `BLOB_FS_ROOT`，使节点可以启动，同时给出警告；但节点读取不到正文时，发送仍会失败。在其他主机上运行节点前，请使用 `BLOB_PROVIDER=s3`，并配置双方均可访问的存储桶。
 
 <Mermaid
   chart={`
@@ -781,9 +781,9 @@ sequenceDiagram
 `}
 />
 
-### Keeping nodes current
+### 保持节点更新 [#keeping-nodes-current]
 
-Nodes update themselves. Each heartbeat asks the control plane what version it should be running; when the answer differs from what it is running, the host-side timer pulls that image and restarts the service. Nothing is pushed.
+节点自行更新。每次心跳都会询问控制平面应运行的版本；如果与当前版本不同，主机侧定时器会拉取对应镜像并重启服务。整个过程不向节点推送。
 
 ```bash
 warmblyctl fleet version            # what the fleet should be on
@@ -792,13 +792,13 @@ warmblyctl fleet channel stable     # follow releases again
 warmblyctl fleet pin <node> v1.4.1  # hold or canary one machine
 ```
 
-Setting a tag also pins the channel, so a release landing later does not silently undo a deliberate rollback. `fleet channel stable` resumes following releases.
+设置标签也会固定更新渠道，因此后续发布不会悄然撤销有意执行的回滚。`fleet channel stable` 可恢复跟随正式发布。
 
-The version a node is told to run also names which build of the image it runs. An instance on `EVENTBUS_PROVIDER=kafka` hands its nodes `v1.4.2-kafka`, because the default images are CGO-free and carry no librdkafka: a node running one would take `EVENTBUS_PROVIDER=kafka` from its config and fail at boot. The suffix is added to whatever the version resolved to, including a pin, so `fleet pin <node> v1.4.1` still reaches the machine as something it can run. Set `FLEET_IMAGE_VARIANT` on the backend to change or disable it if you publish your own images under a different convention; setting it empty turns it off.
+下发给节点的版本同时决定镜像构建变体。使用 `EVENTBUS_PROVIDER=kafka` 的实例会下发 `v1.4.2-kafka`，因为默认镜像不含 CGO 和 librdkafka；节点如果运行默认镜像，却从配置读取到 `EVENTBUS_PROVIDER=kafka`，会在启动时失败。无论版本如何解析，包括固定版本，都会添加该后缀，因此 `fleet pin <node> v1.4.1` 最终仍会下发节点能够运行的镜像。如果自行发布的镜像采用不同命名方式，可在后端设置 `FLEET_IMAGE_VARIANT` 更改或禁用此行为；设为空值即可关闭。
 
-The backend is deliberately excluded: it is the thing that tells every node what version to be, so it is upgraded the same way as the rest of your infrastructure. Upgrade the backend, and the fleet follows.
+后端被有意排除在自动更新之外：它负责告诉所有节点应使用哪个版本，因此应与其他基础设施一样手动升级。后端升级后，节点集群会随之跟进。
 
-### Watching the fleet
+### 监控节点集群 [#watching-the-fleet]
 
 ```bash
 warmblyctl fleet list
@@ -810,51 +810,51 @@ worker    box-1     live   v1.4.2            eu-central  128MB  12s ago  de434ce
 consumer  events-1  live   v1.0.0 -> v1.4.2  -           96MB   30s ago  2b334317-...
 ```
 
-`STATE` is `live` (beating), `unreachable` (enrolled but silent) or `stopped` (told us it was shutting down). A version shown as `a -> b` is a node that has not picked up the target yet. The same view is in the admin panel under Fleet.
+`STATE` 可以是 `live`（正在发送心跳）、`unreachable`（已注册但无响应）或 `stopped`（已报告关闭）。版本显示为 `a -> b` 表示节点尚未切换到目标版本。管理面板的节点集群页面提供相同视图。
 
-A node leaves rotation the moment it stops: on shutdown it sends a farewell beat that marks it inactive. If it dies without one (hard kill, machine loss), placement stops considering it once its heartbeat goes stale. Either way nothing is placed onto a machine that is no longer answering.
+节点一停止就会退出调度：关闭时发送告别心跳，将自身标记为不活跃。如果未发送便意外退出（强制终止、机器失联），心跳过期后分配程序便不再考虑该节点。无论哪种情况，都不会继续向不再响应的机器分配任务。
 
 
-## Images and releases
+## 镜像与发布版本 [#images-and-releases]
 
-CI publishes multi-arch images to `ghcr.io/<owner>/warmbly/`, which works on any fork with `packages: write`:
+CI 将多架构镜像发布到 `ghcr.io/<owner>/warmbly/`；任何具备 `packages: write` 权限的分叉仓库都可使用：
 
-| Trigger | Images | Tags |
+| 触发条件 | 镜像 | 标签 |
 |---------|--------|------|
-| Push to `main` | backend, consumer, worker, forms, updater, tracking, realtime | `:<sha>`, `:dev` |
-| Tag `vX.Y.Z` | all of the above plus web and admin | `:vX.Y.Z`, `:vX.Y`, `:vX`, `:prod` |
+| 推送到 `main` | backend、consumer、worker、forms、updater、tracking、realtime | `:<sha>`, `:dev` |
+| 创建 `vX.Y.Z` 标签 | 上述全部镜像，以及 web 和 admin | `:vX.Y.Z`, `:vX.Y`, `:vX`, `:prod` |
 
-One thing to know if you are running a fork: GHCR creates each package private and does not inherit your repository's visibility, so images published by a green workflow stay unreadable to everyone else until you make each package public by hand. On a personal fork that is the package's own settings page, reached from the Packages tab on your profile. On an organization fork it is the same page reached from the org's Packages, and public packages have to be permitted in the org's package settings first, or the control is greyed out. There is no API for either. `make images-check` tells you where a given tag stands, with no credentials, and it is the same check the release runs before it publishes.
+运行分叉仓库时请注意：GHCR 创建的软件包默认私有，不继承仓库可见性。因此即使工作流成功，其他人仍无法读取发布的镜像，直到你逐个手动将软件包设为公开。个人分叉可从个人资料的 Packages 选项卡进入各软件包设置；组织分叉可从组织的 Packages 进入同一页面，并且必须先在组织软件包设置中允许公开软件包，否则控件会不可用。这两项均无对应 API。`make images-check` 可在不使用凭据的情况下检查指定标签的状态，发布流程在正式发布前也会执行相同检查。
 
-Every app service in `docker-compose.yml` carries both an `image:` and a `build:` key, so the same file serves both paths. `docker compose pull && docker compose up -d` runs the published images and compiles nothing; `docker compose up --build` still builds this checkout. Pin a release with `WARMBLY_TAG=v1.4.2` in `.env`, or point `WARMBLY_IMAGE_PREFIX` at your own registry.
+`docker-compose.yml` 中每个应用服务都同时包含 `image:` 和 `build:`，因此同一文件支持两种方式。`docker compose pull && docker compose up -d` 运行已发布镜像，不执行编译；`docker compose up --build` 仍会构建当前检出的源码。可在 `.env` 中设置 `WARMBLY_TAG=v1.4.2` 固定版本，或将 `WARMBLY_IMAGE_PREFIX` 指向你自己的镜像仓库。
 
-To move a fleet onto a new release, set the target once with `warmblyctl fleet version vX.Y.Z`. Nothing is pushed: each node asks what it should be running on its next heartbeat and its own update timer pulls and restarts it. Control-plane migrations are forward-only, so prefer rolling forward over rolling back.
+要让节点集群升级到新版本，只需通过 `warmblyctl fleet version vX.Y.Z` 设置一次目标版本。不会主动推送：各节点在下次心跳时询问目标版本，再由自身更新定时器拉取并重启。控制平面迁移只能向前执行，因此优先通过后续修复版本解决问题，而非回滚。
 
-## Upgrading and backups
+## 升级与备份 [#upgrading-and-backups]
 
-The admin panel tells you when a newer version exists: the version pill at the foot of its sidebar lights up, and **Update and restart** in it pulls the checkout, rebuilds, restarts what changed and reconnects once the backend is back. `make up` starts the updater that makes the button work. The whole flow, what it does and how to run it without Docker, is on [Updates](/development/updates/).
+管理面板会提示新版本：侧栏底部的版本标记亮起，其中的 **更新并重启** 会拉取源码、重新构建、重启发生变化的服务，并在后端恢复后重新连接。`make up` 会启动使该按钮生效的更新器。完整流程、执行内容及无 Docker 时的运行方式，见[更新](/development/updates/)。
 
-By hand it is the same two steps:
+手动执行时同样只有两步：
 
 ```bash
 make upgrade                 # git pull --ff-only, then make up; migrations apply on backend boot
 ```
 
-Upgrading is safe with data in place: migrations are forward-only and apply on backend boot.
+保留现有数据进行升级是安全的：迁移只向前执行，并在后端启动时应用。
 
-### Updates without lost work
+### 更新时保留进行中的工作 [#updates-without-lost-work]
 
-A service being replaced finishes what it started, as long as the platform gives it the time to:
+只要平台给予足够时间，被替换的服务就会完成已开始的工作：
 
-- **Backend.** On a stop signal it takes no new import rows, hands back a row that had not started yet so the next instance starts it at once, and waits up to 45 seconds for the mailbox connects and import rows already under way. A connect someone started keeps going when they refresh or close the page. Anything cut off anyway resumes on the next instance: an import row after its 2-minute lease, a mailbox that was saved but not placed through the worker reconciler.
-- **Workers and consumers.** The command being handled when the stop arrives is finished before the process exits; only reading the next one stops. A credential check on a worker that went away is sent to another worker, and a restarted worker has its mailboxes shipped back on its first heartbeat.
-- **Vendor authorizations and sign-ins** in progress live in the database and Redis, not in a process, so a restart does not affect them.
+- **后端。** 收到停止信号后，不再领取新的导入行；对于尚未开始处理的行，会交还任务，让下一个实例立即接手；对于正在执行的邮箱连接和导入行，最多等待 45 秒。用户已发起的连接不会因刷新或关闭页面而停止。仍被中断的工作会在下一实例恢复：导入行在两分钟租约到期后继续，已保存但尚未分配的邮箱由工作节点协调器恢复。
+- **工作节点和消费者。** 收到停止信号时正在处理的命令会在进程退出前完成，只停止读取下一条命令。原工作节点已离线的凭据检查会转发给其他节点；重启的工作节点在首次心跳时会重新收到其邮箱。
+- **进行中的供应商授权和登录**状态保存在数据库和 Redis 中，而不是进程内，因此重启不会影响它们。
 
-Give each service at least 60 seconds between the stop signal and a forced kill. The `docker-compose.yml` in the repository and the stack the installer writes set `stop_grace_period: 60s`; nodes that joined with `warmbly join` stop with a 45-second `docker stop` (nodes joined before this release keep a 10-second stop until they join again). On Railway, set `RAILWAY_DEPLOYMENT_DRAINING_SECONDS=60` on the backend, consumer and any worker service; on Kubernetes, `terminationGracePeriodSeconds: 60`.
+从停止信号到强制终止，至少为每个服务预留 60 秒。仓库中的 `docker-compose.yml` 和安装程序生成的服务栈均设置 `stop_grace_period: 60s`；通过 `warmbly join` 加入的节点使用 45 秒的 `docker stop`（在此版本之前加入的节点仍使用 10 秒停止等待，需重新加入才会更新）。在 Railway 上，为后端、消费者和所有工作节点服务设置 `RAILWAY_DEPLOYMENT_DRAINING_SECONDS=60`；在 Kubernetes 上设置 `terminationGracePeriodSeconds: 60`。
 
-### Backing up
+### 创建备份 [#backing-up]
 
-One command writes all three of the things that only restore together:
+一个命令即可写出必须一起恢复的三项内容：
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl backup --out /data/blobs/warmbly.tar.gz
@@ -862,25 +862,25 @@ docker compose -p warmbly cp backend:/data/blobs/warmbly.tar.gz ./warmbly.tar.gz
   && docker compose -p warmbly exec -T backend rm -f /data/blobs/warmbly.tar.gz
 ```
 
-That bundle holds the database, the blob root and the encryption keys, and `warmblyctl restore` puts it back on another host, refusing to run when that host's keys are not the ones the bundle was sealed with. [Data control](/development/data-control/#backups) covers scheduling it and moving an instance.
+备份包包含数据库、Blob 根目录和加密密钥。`warmblyctl restore` 可在另一台主机上恢复；如果该主机密钥与备份包使用的密钥不同，命令会拒绝执行。备份调度和实例迁移见[数据控制](/development/data-control/#backups)。
 
-By hand, if you would rather assemble it yourself, it is these three and no fewer:
+如果希望自行手动组装备份，以下三项缺一不可：
 
 ```bash
 docker compose -p warmbly exec -T postgres pg_dump -U warmbly warmbly_dev > backup.sql
 ```
 
-1. **Postgres**, with the command above
-2. **The `blobs` volume**, which holds uploads and stored message bodies on the filesystem provider
-3. **Your `.env`**, above all the two encryption keys
+1. **Postgres**：使用上述命令备份
+2. **`blobs` 卷**：使用文件系统存储时，它保存上传文件和邮件正文
+3. **你的 `.env`**：尤其是其中的两把加密密钥
 
-<Callout type="warn" title="A database backup without the keys is unreadable">
-`KMS_LOCAL_MASTER_KEY` and `CREDENTIALS_ENCRYPTION_KEY` are what every mailbox credential is sealed with. Restore the database with different keys and the rows are all still there, all still undecryptable.
+<Callout type="warn" title="缺少密钥的数据库备份无法读取">
+所有邮箱凭据都使用 `KMS_LOCAL_MASTER_KEY` 和 `CREDENTIALS_ENCRYPTION_KEY` 加密。如果使用不同密钥恢复数据库，记录虽然都在，却全部无法解密。
 </Callout>
 
-### Restoring
+### 恢复备份 [#restoring]
 
-Restore into an empty database **before the backend starts**. The dump carries its own schema and its `schema_migrations` row, so a backend that has already migrated will collide with it.
+请在**后端启动之前**恢复到空数据库。转储自带数据库结构及其 `schema_migrations` 记录，如果后端已经执行迁移，就会与转储冲突。
 
 ```bash
 # 1. Put your .env back first, with the original encryption keys.
@@ -896,29 +896,29 @@ docker compose -p warmbly exec -T postgres psql -U warmbly -d warmbly_dev < back
 make up
 ```
 
-Restoring into a database that already has tables fails with "already exists" errors part-way through and leaves a half-populated schema. If that happens, `make reset` and start again from step 2.
+恢复到已有表的数据库时，会在途中报出“already exists”错误，留下只恢复了一部分的数据库结构。遇到这种情况，请执行 `make reset`，然后从第 2 步重新开始。
 
-## Beyond compose
+## Compose 以外的部署方式 [#beyond-compose]
 
-The compose file is a template, not a requirement. The Dockerfiles in `deploy/docker/` plus `tracking/`, `web/`, and `admin/` are the deployment units, and any container host works with the environment reference above. The frontends are configured at container start from `WARMBLY_*` variables, so the same images run anywhere.
+Compose 文件是模板，并非强制要求。`deploy/docker/` 中的 Dockerfile，以及 `tracking/`、`web/` 和 `admin/`，构成各部署单元；配合上述环境变量参考，任何容器平台均可运行。前端在容器启动时读取 `WARMBLY_*` 变量，因此同一镜像可在任意环境使用。
 
-No containers at all is also supported: every service is a static binary or a static build. [Deploying without Docker](/development/bare-metal/) builds them from source and runs them under systemd with nginx in front, using the units in `deploy/systemd/` and the site in `deploy/nginx/`.
+也支持完全不用容器：每项服务都是静态二进制文件或静态构建。[不使用 Docker 部署](/development/bare-metal/)介绍从源码构建并在 systemd 下运行、由 nginx 提供前置代理的方式，使用 `deploy/systemd/` 中的服务单元和 `deploy/nginx/` 中的站点配置。
 
-## After you install
+## 安装完成后 [#after-you-install]
 
-Three pages carry the day-two answers, so they are not duplicated here:
+日常运维问题由以下三页说明，本页不再重复：
 
-- **[First run](/development/first-run/)** for claiming the instance, reissuing the setup link, and provisioning the owner without a browser
-- **[Accounts and access](/development/accounts-and-access/)** for registration modes, inviting teammates, single sign-on and recovering a locked-out instance
-- **[Instance health](/development/instance-health/)** for the checks the admin panel runs against this deployment, and `make doctor`
+- **[首次运行](/development/first-run/)**：认领实例、重新签发设置链接，以及无浏览器创建所有者
+- **[账户与访问权限](/development/accounts-and-access/)**：注册模式、邀请团队成员、单点登录及恢复被锁定的实例
+- **[实例健康状态](/development/instance-health/)**：管理面板对当前部署执行的检查，以及 `make doctor`
 
-## Troubleshooting
+## 故障排查 [#troubleshooting]
 
-Every symptom self-hosters actually hit, with the command that fixes it, is on **[troubleshooting](/development/troubleshooting/)**: build failures, the first-run 403, sign-in problems, workers that never register, and realtime that never goes live.
+自托管用户实际遇到的常见症状和修复命令都在 **[故障排查](/development/troubleshooting/)** 中：构建失败、首次运行出现 403、登录问题、工作节点始终无法注册，以及实时功能始终不可用。
 
-Start with `make doctor`, which runs the full health check set and exits non-zero when something is at error severity. `make logs` follows everything, and `make logs backend` follows one service.
+先运行 `make doctor`，它会执行完整健康检查，并在发现错误级别问题时返回非零退出码。`make logs` 跟踪全部日志，`make logs backend` 跟踪单个服务。
 
-## Quick reference
+## 快速参考 [#quick-reference]
 
 ```bash
 make up          # build and start the platform, then print the claim link
@@ -940,7 +940,7 @@ make dev         # local development stack instead (native Go, hot reload)
 make sandbox     # live end-to-end demo environment
 ```
 
-Inside the backend container:
+在后端容器内执行：
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl status
@@ -950,10 +950,10 @@ docker compose -p warmbly exec backend warmblyctl user reset-password --email yo
 docker compose -p warmbly exec backend warmblyctl org export --org you@example.com --out /tmp/workspace.warmbly.zip
 ```
 
-## Moving a workspace off this instance
+## 将工作区迁出此实例 [#moving-a-workspace-off-this-instance]
 
-`warmblyctl org export` writes a whole workspace to one file, and `org import` reads it back on another instance. That is the supported route between a self-hosted install and the hosted service, in either direction, and between two self-hosted installs.
+`warmblyctl org export` 将整个工作区写入一个文件，`org import` 则在另一实例读回。自托管安装与托管服务之间的双向迁移，以及两个自托管实例之间的迁移，都支持此方式。
 
-Mailbox credentials are sealed under an instance-local key, so they only travel when you pass `--with-credentials` and a passphrase; without it, mailboxes arrive on the destination needing a reconnect. See [export and import](/guides/workspace-export-import/) for what an archive contains, and the [warmblyctl reference](/development/warmblyctl/#org-export) for every flag.
+邮箱凭据使用实例本地密钥加密，因此只有同时传入 `--with-credentials` 和口令才会迁移；否则导入目标中的邮箱需要重新连接。归档内容见[导出与导入](/guides/workspace-export-import/)，全部选项见 [warmblyctl 参考](/development/warmblyctl/#org-export)。
 
-See also: [configuration reference](/development/configuration/), [local development](/development/local-development/), [architecture](/development/architecture/), [event system](/development/events/).
+另请参见：[配置参考](/development/configuration/)、[本地开发](/development/local-development/)、[架构](/development/architecture/)、[事件系统](/development/events/)。

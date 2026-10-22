@@ -1,163 +1,163 @@
 ---
-title: "Automatic inbox tagging"
-description: "Label and score inbound mail as it arrives, keep automated mail out of the inbox, and let a confident verdict hold, stop, follow up or suppress. Optional, off by default."
+title: "收件箱自动打标签"
+description: "新邮件到达时自动分类打标签并评分，将自动生成的邮件排除在收件箱之外，并依据高置信度的判定暂停、停止、跟进或禁止发送。此功能可选，默认关闭。"
 ---
 
-Automatic tagging reads each inbound message, files it under workspace labels and scores how much it deserves your attention. It is optional and off until an operator turns it on.
+自动标签会读取每封入站邮件，将其归入工作区标签，并评估它值得你投入多少注意力。这是可选功能，默认关闭，只有运维人员开启后才运行。
 
-## Turn on tagging
+## 启用标签分类 [#turn-on-tagging]
 
 <Steps>
 
 <Step>
 
-An operator sets `TYPESAFE_API_KEY` to a key from typesafe.ai.
+运维人员将 `TYPESAFE_API_KEY` 设为从 typesafe.ai 获取的密钥。
 
 </Step>
 
 <Step>
 
-The operator sets `INBOX_TAGGING_ENABLED=true`, since tagging stays off even when a key is present.
+运维人员设置 `INBOX_TAGGING_ENABLED=true`；仅提供密钥并不会开启标签功能。
 
 </Step>
 
 <Step>
 
-Open **Settings > Inbox tagging** to see every decision and what it did.
+打开**设置 > 收件箱标签**，查看每次判断及其执行的操作。
 
 </Step>
 
 <Step>
 
-After watching it for a week, turn on the suppression under **Settings > Sending > Classified replies** if you want it.
+观察一周后，如有需要，再到**设置 > 发送 > 已分类回复**中开启禁止发送操作。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Classification sends message content to TypeSafe, so nothing is sent until an operator adds a key and switches the feature on.
-- Mail nobody wrote, such as sign-in codes, receipts, bounces and auto-replies, moves to the **Automated** view.
-- Automated mail that needs your action stays in the inbox, labelled **Action required**.
-- When the classifier is unsure, the thread is labelled **Needs review** and stays in the inbox.
-- Holding, stopping and opening a task are on by default; suppressing a sender is off until you turn it on.
+- 分类会将邮件内容发送到 TypeSafe，因此运维人员同时添加密钥并开启功能之前，不会发送任何内容。
+- 登录验证码、收据、退信和自动回复等非人工撰写的邮件，会移到**自动邮件**视图。
+- 需要你处理的自动邮件会留在收件箱中，并标记为**需要处理**。
+- 分类器没有把握时，会为会话标记**需要审阅**，并留在收件箱中。
+- 暂缓、停止和创建任务默认开启；将发件人加入禁止发送名单则默认关闭，需主动开启。
 
 <Fold>
 
-## What tagging is and what it sends out
+## 标签分类的作用与对外发送的数据 [#what-tagging-is-and-what-it-sends-out]
 
-Automatic tagging reads each inbound message and files it under workspace labels, then scores how much it deserves your attention. It is optional and off until an operator turns it on.
+自动标签读取每封入站邮件，将其归入工作区标签，再评估它值得你投入多少注意力。这是可选功能，默认关闭，只有运维人员开启后才运行。
 
-Classification sends message content to TypeSafe, so it is opt-in twice: an operator supplies a key, and separately switches the feature on. An instance that does neither never calls TypeSafe and behaves exactly as it did before. Other optional AI features can also send content to their configured provider; see [data control](/development/data-control/).
+分类会把邮件内容发送到 TypeSafe，因此需要两次明确启用：运维人员先提供密钥，再单独打开功能。两者都未配置的实例绝不会调用 TypeSafe，行为与以前完全相同。其他可选 AI 功能也可能向各自配置的提供商发送内容；参见[数据控制](/development/data-control/)。
 
 </Fold>
 
 <Fold>
 
-## What it does
+## 功能说明 [#what-it-does]
 
-It writes labels and a relevance score for every inbound message, and moves mail nobody wrote (sign-in codes, receipts, notifications, bounces, auto-replies) out of the inbox into the **Automated** view. Automated mail that needs your action, such as a failed payment or a suspended account, stays in the inbox labelled **Action required**. That part needs nothing from you beyond turning the feature on.
+它为每封入站邮件写入标签和相关性分数，将非人工撰写的邮件，例如登录验证码、收据、通知、退信和自动回复，从收件箱移到**自动邮件**视图。需要你采取行动的自动邮件，例如付款失败或账户被停用，会留在收件箱并标记为**需要处理**。这部分只需开启功能，无需其他操作。
 
-It can also act on a confident verdict: hold a contact who said not now, stop a contact who declined, open a task when someone asks for a call, and suppress a sender who asked to be removed. Each of those is its own switch under **Settings > Sending > Classified replies**. The three reversible ones are on from the start; the suppression is off until you turn it on, because it is the one the system cannot undo. See [Acting on a verdict](#acting-on-a-verdict).
-
-</Fold>
-
-<Fold>
-
-## Nothing to set up
-
-The whole label set is created when a workspace is created (and, on an instance that turned the feature on later, within the hour by the follow-up sweep), so the inbox can filter for **Unsubscribe** before anyone has asked. The premade **Views** in the inbox rail (Action required, Hot leads, Needs a reply, Follow up, Declined, Automated) are built on those labels and fill as mail is classified; see [Unified inbox](/guides/unibox/). Every label has a hover explanation, so nobody has to learn the taxonomy first.
+它还可以根据有把握的判定采取行动：暂缓表示“现在不合适”的联系人，停止已拒绝的联系人，为要求通话的人创建任务，以及将要求移除的发件人加入禁止发送名单。每项操作在**设置 > 发送 > 已分类回复**中都有独立开关。三项可逆操作从一开始就开启；禁止发送默认关闭，需主动启用，因为这是系统无法自行撤销的一项。参见[根据判定采取行动](#acting-on-a-verdict)。
 
 </Fold>
 
 <Fold>
 
-## The labels
+## 无需配置 [#nothing-to-set-up]
 
-Labels are plain words, so anyone on the team can read them without learning a taxonomy first. They are ordinary workspace labels: the inbox filters on them like any label you made yourself. A workspace that already had a label with the same name keeps it and the automatic one files under it.
+完整标签集会在创建工作区时建立；如果实例稍后才开启功能，则由跟进扫描在一小时内补齐。因此，即使尚无人提出退订，收件箱也已经可以按**退订**筛选。收件箱侧栏中的预设**视图**，包括需要处理、热门潜客、需要回复、跟进、已拒绝和自动邮件，都基于这些标签构建，并随邮件分类逐渐填充；参见[统一收件箱](/guides/unibox/)。每个标签都有悬停说明，无需先学习一整套分类体系。
 
-**What the message is.** At most one: **Bounced**, **Out of office**, **Auto-reply**, **Notification** or **Sales pitch**. A reply from a person carries no label for being a reply, because nearly every thread is one. A notification that needs your action also carries **Action required**; see [Mail that needs your action](#mail-that-needs-your-action).
+</Fold>
 
-**What a reply wants.** Only on a person's reply:
+<Fold>
 
-| Label | Means |
+## 标签分类 [#the-labels]
+
+标签使用直白词语，团队任何成员都能理解，无需先学习分类术语。它们是普通工作区标签，收件箱可像筛选你自行创建的标签一样使用。如果工作区已有同名标签，会保留原标签，自动分类也使用它。
+
+**邮件是什么。** 最多一个：**退信**、**休假**、**自动回复**、**通知**或**推销**。人工回复不会仅因为是回复就获得一个标签，因为几乎每个会话都属于回复。需要你处理的通知还会带上**需要处理**；参见[需要你处理的邮件](#mail-that-needs-your-action)。
+
+**回复想表达什么。** 只适用于人工回复：
+
+| 标签 | 含义 |
 |---|---|
-| **Interested** | They said yes to the call, the partnership or the next step |
-| **Meeting** | They asked for a call or meeting, or proposed or confirmed a time |
-| **Pricing** | They asked about price, terms or commercials |
-| **Question** | Open to it, but asking questions before deciding |
-| **Update** | News on something already agreed, or the answer to something you asked |
-| **Not now** | Interested in principle, but the timing is wrong |
-| **Not interested** | They declined |
-| **Wrong person** | Not the right contact, or they named someone else |
-| **Unsubscribe** | They asked to stop receiving email, or complained |
-| **Legal threat** | They threatened legal action or named a regulator |
+| **感兴趣** | 同意通话、合作或下一步 |
+| **会议** | 要求通话或会议，或提出、确认时间 |
+| **价格** | 询问价格、条款或商务条件 |
+| **问题** | 持开放态度，但希望先了解问题再决定 |
+| **进展更新** | 提供已约定事项的进展，或回答你提出的问题 |
+| **暂时不需要** | 原则上感兴趣，但时机不合适 |
+| **不感兴趣** | 已拒绝 |
+| **找错人** | 不是合适联系人，或指出了其他人 |
+| **退订** | 要求停止接收邮件，或提出投诉 |
+| **法律威胁** | 威胁采取法律行动，或提及监管机构 |
 
-The classifier answers more questions than this (whether the sender is the decision maker, mentions a competitor, is hostile, and a dozen more). Those feed the relevance score without becoming labels, because a thread wearing fifteen chips is not easier to read than one wearing two. A reply whose intent genuinely cannot be read gets no intent label rather than a wrong one.
+分类器回答的问题比这些更多，例如发件人是否为决策者、是否提及竞争对手、是否带有敌意等十余项。这些答案参与相关性评分，但不生成标签，因为一个会话挂十五个标签并不会比两个更易读。无法明确理解意图的回复不会获得意图标签，以免贴错。
 
-**Needs review** means the classifier was not sure. See below.
-
-</Fold>
-
-<Fold>
-
-## Automated mail stays out of the inbox
-
-Sign-in and verification codes, routine security, account and billing notices, receipts, newsletters, bounces and auto-replies are not mail anyone has to answer. When the verdict is that no person wrote a message, its conversation leaves **Inbox**, Unread, every mailbox and tag view and the unread badge, and is listed under the **Automated** view instead. **All mail** still shows everything.
-
-Only a confident verdict moves a conversation: a message the classifier was unsure about stays in the inbox. A conversation counts as automated only while every message in it that is not yours was judged automated, so a reply from a person brings it back to the inbox the moment it arrives, before it is even classified. Nothing is moved in the mailbox itself; the provider's folders are untouched.
-
-Common senders and headers (no-reply addresses, bulk mail, out-of-office subjects, delivery failures) are decided offline. Everything else is judged by the model.
+**需要审阅**表示分类器没有把握，详见下文。
 
 </Fold>
 
 <Fold>
 
-## Mail that needs your action
+## 自动生成的邮件不会进入统一收件箱 [#automated-mail-stays-out-of-the-inbox]
 
-Mailboxes used only for campaigns still receive mail a person has to deal with: a failed payment for the mailbox's subscription, a suspended or restricted account, a suspicious sign-in, a sending limit or policy notice from the provider, a domain or service about to expire. Nobody logs into those mailboxes one by one, so if that mail went to Automated with the receipts it would never be seen.
+登录与验证代码、常规安全/账户/账单通知、收据、新闻简报、退信和自动回复，都不是需要人工回答的邮件。当判定为非人工撰写时，其会话会离开**收件箱**、未读、各邮箱和标签视图，也不计入未读标记，改为列在**自动邮件**视图。**全部邮件**仍显示所有内容。
 
-So every notification is also asked one question: does it tell the recipient about a problem with their own account, payment, domain or service that they must act on? When the answer is yes:
+只有有把握的判定才会移动会话：分类器不确定的邮件继续留在收件箱。只有会话中每封非你自己发送的邮件都被判定为自动邮件时，整个会话才算自动会话；因此人工回复一到达，甚至尚未分类，就会将会话带回收件箱。邮箱本身不会移动任何邮件，服务商文件夹保持不变。
 
-- the conversation **stays in the inbox**, and in Unread and the unread badge, instead of moving to Automated
-- it is labelled **Action required** (next to **Notification**), and the **Action required** view in the rail lists every such conversation with its unread count
-- it sorts with the replies due today when the inbox is sorted by relevance
-- members who can both manage mailboxes and use the inbox get a **Mail that needs action** [notification](/guides/notifications/), by email too unless they turned it off. It names the mailbox and links to the conversation but never quotes the message, since mail that claims an account is suspended is also what phishing looks like. It is tied to the message, so reading the message reads the notification
-
-Routine notices are not affected: a sign-in code, a receipt, a newsletter or a "your settings were changed" confirmation still goes to Automated. Archive the conversation once the problem is dealt with. The label is an ordinary label: removing it takes the conversation out of the **Action required** view but leaves it in the inbox.
-
-A notification recognised offline by its sender alone costs one small call for this question and nothing else; a notification the model judged has it in the same call as every other question. If that call fails, the notification is filed under Automated as it was before the check existed, and `--recheck-notifications` (below) asks it later.
-
-It is on by default for every workspace. To turn it off, clear **Keep mail that needs action in the inbox** under **Settings > Sending > Automated mail**; notifications then go to Automated as before and no call is made for them. To file other automated mail your own way, ask one of [your own questions](#your-own-questions) of notifications too.
+常见发件人和邮件头特征，例如 no-reply 地址、群发邮件、休假主题和投递失败，会在本地判定。其余内容由模型判断。
 
 </Fold>
 
 <Fold>
 
-## Follow-ups: who owes whom a reply
+## 需要你处理的邮件 [#mail-that-needs-your-action]
 
-Three labels answer the question a pipeline actually turns on, which is not "what is this message" but "what have I dropped".
+只用于营销活动的邮箱也会收到必须由人处理的邮件：邮箱订阅付款失败、账户停用或受限、可疑登录、服务商的发送限额或政策通知、域名或服务即将到期。通常没有人逐个登录这些邮箱，因此若这些邮件与收据一起进入自动邮件视图，就可能永远没人看到。
 
-| Label | Means |
+所以，每条通知还会回答一个问题：它是否告知收件人，其自己的账户、付款、域名或服务出现了必须处理的问题？答案为是时：
+
+- 会话**留在收件箱**、未读列表和未读标记中，不移入自动邮件
+- 除**通知**外，还标记为**需要处理**；侧栏的**需要处理**视图列出这些会话及其未读数量
+- 收件箱按相关性排序时，它会与今日应回复的会话排在一起
+- 同时拥有管理邮箱和使用收件箱权限的成员会收到**需要处理的邮件**[通知](/guides/notifications/)，默认也发邮件，除非已关闭。通知指明邮箱并链接到会话，但绝不引用邮件正文，因为声称账户被停用的邮件也可能是网络钓鱼。通知与邮件绑定，阅读邮件也会将通知标记为已读
+
+常规通知不受影响：登录验证码、收据、新闻简报或“设置已修改”确认仍进入自动邮件。处理完问题后，可归档会话。该标签是普通标签：移除它会使会话退出**需要处理**视图，但仍留在收件箱中。
+
+仅凭发件人在本地识别出的通知，只为这一个问题进行一次小型调用，不询问其他问题；由模型判定的通知，则将该问题放在同一次调用中。如果调用失败，通知仍按这项检查推出之前的方式归入自动邮件，之后可使用下文的 `--recheck-notifications` 重新判断。
+
+每个工作区默认开启此行为。要关闭，请在**设置 > 发送 > 自动邮件**中取消**将需要处理的邮件保留在收件箱**；此后通知恢复进入自动邮件，也不再为它们发起这项调用。若想按自己的方式处理其他自动邮件，也可对通知提出[自定义问题](#your-own-questions)。
+
+</Fold>
+
+<Fold>
+
+## 跟进：谁需要回复谁 [#follow-ups-who-owes-whom-a-reply]
+
+以下三个标签回答销售推进真正关心的问题：哪些事情被遗漏，需要你补上跟进。
+
+| 标签 | 含义 |
 |---|---|
-| **Needs reply** | They replied and you have not answered for two days or more |
-| **Follow up** | You sent last, five days ago, and heard nothing |
-| **Gone quiet** | They were interested, then went quiet for ten days |
+| **需要回复** | 对方已回复，而你至少两天尚未回答 |
+| **跟进** | 五天前最后发信的是你，此后没有收到消息 |
+| **沉默已久** | 对方曾表示感兴趣，之后安静了十天 |
 
-A thread you wrote to recently wears nothing: there is nothing to do yet, and the **Awaiting reply** scope already lists it.
+你最近才发信的会话不带这些标签：目前还没有需要做的事，而且**等待回复**范围已经列出它。
 
-**Gone quiet** is separate from **Follow up** on purpose. A stalled deal and an unanswered cold email need different things from you, and someone who already said yes has earned more patience than someone who never answered. That is why its fuse is longer.
+**沉默已久**刻意与**跟进**分开。停滞的商机与无人回答的冷邮件，需要你采取不同处理；已经表示过同意的人，比从未回答的人值得更多耐心，所以等待时间更长。
 
-**The sweep makes no additional model calls.** When automatic tagging is enabled, it reuses stored classifications so bounces, autoresponders, and platform notices are not treated as human replies.
+**扫描不会额外调用模型。** 开启自动标签时，它复用已存储分类，因此退信、自动回复和平台通知不会被当作人工回复。
 
-**Threads that said no are never chased.** A reply classified Not interested, Unsubscribe, Wrong person or Not now gets no follow-up label, ever. Nagging someone who declined is rude, and nagging someone who asked to be removed is a compliance problem rather than a missed opportunity. Automated mail is skipped too: there is nobody on the other end to chase.
+**已经拒绝的会话绝不继续催促。** 判定为不感兴趣、退订、找错人或暂时不需要的回复，绝不会获得跟进标签。催促已经拒绝的人很失礼；催促要求移除的人更是合规问题，而非错过的商机。自动邮件也会跳过，因为另一端没有需要跟进的人。
 
-These labels change as the calendar moves, so they are recomputed hourly and **replaced rather than added**. A thread is never wearing both **Follow up** and **Needs reply**; it wears its state, not its history. A reply clears the follow-up label within the hour.
+这些标签随时间变化，因此每小时重新计算，并且**替换而非叠加**。同一会话不会同时带着**跟进**和**需要回复**，标签代表当前状态，而非历史。收到回复后，跟进标签会在一小时内清除。
 
-Every conversation with activity in the last 90 days is checked, however many there are. A large workspace is checked a page at a time: each hourly pass spends a few minutes at most and picks up where the previous one stopped, including after a restart. An older conversation therefore gets its label within one full sweep of the workspace after its day comes, which is one pass for most workspaces and several for a very large one. Each pass first checks every conversation that received mail or had a reply classified since the previous pass, whatever date the message carries, so a reply that synced late still clears its label on the next pass.
+最近 90 天有过活动的每个会话都会被检查，不论数量多少。大型工作区按页检查：每次小时扫描最多运行几分钟，并从上次停止的位置继续，重启后也一样。因此，较旧会话到达对应日期后，会在工作区完成一轮完整扫描时获得标签；多数工作区一轮即可，极大的工作区可能需要数轮。每次扫描会优先检查自上轮以来收到邮件或完成回复分类的所有会话，不受邮件自身日期限制，因此较晚才同步的回复也会在下一轮清除标签。
 
-To recompute on demand (this checks every conversation in one run and leaves the hourly sweep's place alone):
+要按需重新计算，可运行以下命令。它会一次检查所有会话，不改变每小时扫描的当前位置：
 
 ```bash
 warmblyctl inbox-tag follow-ups --org you@example.com
@@ -167,157 +167,157 @@ warmblyctl inbox-tag follow-ups --org you@example.com
 
 <Fold>
 
-## Relevance and priority
+## 相关性与优先级 [#relevance-and-priority]
 
-Each message gets a score from 0 to 100, and a priority of `now`, `today`, `whenever` or `ignore`. Sorting the inbox by relevance puts the person who said yes above the person who is thinking about it, above a bounce.
+每封邮件获得 0 至 100 的分数，以及 `now`、`today`、`whenever` 或 `ignore` 优先级。收件箱按相关性排序时，已表示同意的人排在仍在考虑的人前面，后者又排在退信前面。
 
-The score is arithmetic over the answers, computed in Warmbly rather than asked. Asking for a single "how relevant is this" rating hides four independent judgments inside one question, and the model correctly refuses those: it returns a flat distribution at zero confidence.
+分数由 Warmbly 根据各项答案进行算术计算，不直接向模型询问。单独问“这封邮件有多相关”，会将四项独立判断藏进一个问题，模型会正确地拒绝这种提问，返回零置信度的均匀分布。
 
 </Fold>
 
 <Fold>
 
-## Acting on a verdict
+## 根据判定结果采取操作 [#acting-on-a-verdict]
 
-Four actions, each behind its own switch under **Settings > Sending > Classified replies**. The hold, the stop and the task are on by default; the suppression is off. Only a confident human reply may act: a verdict marked **Needs review**, a bounce, an autoresponder or a cold pitch never does, whatever its signals say. The intent has to clear the same `0.70` floor the labels use, because an action on an intent the labels did not trust is an action on a coin toss.
+共有四项操作，在**设置 > 发送 > 已分类回复**中各有独立开关。暂缓、停止和创建任务默认开启，禁止发送默认关闭。只有有把握的人工回复才能触发操作；标记为**需要审阅**的判定、退信、自动回复或冷推销，无论其他信号如何，都不会触发。意图必须达到与标签相同的 `0.70` 阈值，因为对连标签都不信任的意图采取行动，无异于猜测。
 
-| Switch | Fires on | What happens |
+| 开关 | 触发条件 | 结果 |
 |---|---|---|
-| Hold a contact who says not now | **Not now** | The contact's sequences are parked, in every campaign they are in, for the number of days you set (default 30, between 1 and 90). The hold shows on the campaign's Leads tab and lifts on its own |
-| Stop a contact who declines | **Not interested**, **Wrong person** | The contact's sequences are parked for a year, in every campaign they are in. Nothing is unsubscribed and nothing is deleted; resume the lead from the Leads tab if the reply was misread |
-| Open a task when they ask for a call | **Meeting** | A high-priority CRM task for the mailbox owner, due in 24 hours, titled with what they asked |
-| Suppress a contact who asks to be removed | requests removal at `0.80` or above | The sender goes on the suppression list with the reason, and the contact's subscription flag is cleared, exactly as a reply that says "unsubscribe" does today |
+| 暂缓表示“暂时不需要”的联系人 | **暂时不需要** | 在联系人参与的所有活动中暂停其序列，持续你设置的天数，默认 30 天，可设 1 至 90 天。暂停显示在活动的潜在客户标签页，并会自动解除 |
+| 停止已拒绝的联系人 | **不感兴趣**、**找错人** | 在联系人参与的所有活动中暂停其序列一年。不退订，也不删除任何内容；如果误判，可以从潜在客户标签页恢复 |
+| 要求通话时创建任务 | **会议** | 为邮箱所有者创建高优先级 CRM 任务，24 小时内到期，标题说明对方请求 |
+| 将要求移除的联系人加入禁止发送名单 | 要求移除的置信度达到 `0.80` 或以上 | 将发件地址及原因加入禁止发送名单，并清除联系人的订阅标志，与目前收到“unsubscribe”回复的处理相同 |
 
-The suppression follows the same rule as a reply that says "unsubscribe": it only fires for someone replying in one of your campaign threads, or one of your contacts writing in, and never for mail sent to a list. It is the one irreversible action, so it reads its own yes/no question ("the sender asks to be removed") at the strong floor rather than the eight-way intent, and when it fires nothing else does: a suppressed address has no sequence left to hold or chase. A hold written by a classified reply never overrides a hold a member set by hand, and never cuts a longer automatic hold short. A call request opens one task, whichever of the tagging switch and the reply follow-up setting would have opened it.
+禁止发送遵循与“unsubscribe”回复相同的规则：只对回复了你营销活动会话的人，或主动来信的已有联系人执行，绝不对发送到邮件列表的邮件执行。这是唯一不可逆操作，因此使用独立的是非问题“发件人要求被移除”，并采用较高阈值，而不依赖八选一的意图分类。一旦执行，就不再执行其他操作，因为被禁止发送的地址已没有需要暂停或跟进的序列。已分类回复设置的暂停绝不覆盖成员手动设置的暂停，也不会缩短已有的更长自动暂停。通话请求只创建一个任务，无论是自动标签开关还是回复跟进设置原本会创建它。
 
-Your own questions can act too; see [Your own questions](#your-own-questions).
+自定义问题也可以触发操作；参见[自定义问题](#your-own-questions)。
 
-Every action is recorded on the verdict, so the review page shows what was done next to the answer that caused it, and the **Actions taken** count at the top tells you how often the switches fire. Actions run on mail as it arrives; a backfill over history labels and never acts.
-
-</Fold>
-
-<Fold>
-
-## Your own questions
-
-The built-in labels answer what every workspace needs to know. Anything more specific to yours, you can ask yourself under **Settings > Sending > Tagging languages and questions**. For example: "The sender says there is no suitable position right now but they will get back later", labelled **Later maybe**, holding the contact for 60 days.
-
-A question is one of two kinds:
-
-- **Yes or no.** One plain statement about the message. When the answer is yes, the thread gets the question's label.
-- **Pick one.** A question with two to eight options, each with its own label and a one-line description of when it applies. The thread gets the label of the option the classifier picked. A reply that fits none of them gets no label, so no option has to be a catch-all.
-
-Write each question the way the classifier reads it: literally. One judgment per question, no double negatives, no "unless". Labels are plain words like the built-in ones: letters (in any script) and digits, with single spaces or hyphens between them, up to 40 characters. A label cannot reuse a built-in name in any capitalization.
-
-Each label, or each option, can also act, with the same primitives as the switches above: **hold** the contact's sequences for 1 to 365 days, **stop** them for a year, or **open a task** for the mailbox owner. These run whatever the built-in switches say, and follow the same rules: only a confident human reply acts, never a verdict marked **Needs review**, and a suppression ends every other action. A yes/no question labels at 60% and acts at 80%; an option labels and acts at the 70% floor. When two holds apply, the longer one wins.
-
-A question can also be asked of automated notifications: tick **Also ask about automated notifications** on it. Notifications are otherwise never asked your questions, since they are about what a person said. A notification the question matches gets its label and stays in the inbox instead of the Automated view, like one that needs your action. It never holds, stops or opens a task: those still apply to replies only. A notification recognised offline by its sender is asked only these questions and the action check, in one small call.
-
-Your questions ride in the same call as the built-in ones, so they cost input tokens on every classified message but never a second request. A workspace can ask up to 10. They add labels and nothing else to a verdict: the kind, the intent and the relevance score are calibrated on the built-in questions alone and are never moved by yours. The labels are created the first time they apply, or within the hour by the hourly sweep. Questions are part of the workspace settings, so they travel with a [workspace export](/guides/workspace-export-import/).
+每个操作都会记录在判定结果上，因此审阅页面会在触发它的答案旁显示执行内容，顶部的**已采取操作**计数展示各开关触发频率。操作只对实时到达邮件执行；回填历史只添加标签，绝不采取这些行动。
 
 </Fold>
 
 <Fold>
 
-## Tagging languages
+## 自定义判定问题 [#your-own-questions]
 
-Tagging reads English, German, French, Spanish, Italian and Dutch replies out of the box. If your mail also arrives in other languages, add them under **Settings > Sending > Tagging languages and questions**. Nothing about a language is used until a workspace adds it: a language nobody on your team writes in only adds patterns that could misread someone's mail, so leave it off. The setting changes inbox tagging only; campaign reply handling reads replies the same way whatever it says.
+内置标签回答每个工作区普遍需要了解的问题。针对自己业务的特殊问题，可以在**设置 > 发送 > 标签语言与问题**中自定义。例如：“发件人表示目前没有合适职位，但之后会再联系”，标记为**以后可能有机会**，并暂停联系人 60 天。
 
-Adding a language does two things:
+问题分为两类：
 
-- **It is named to the classifier**, alongside each message, so it knows what to expect. It is a hint, not a translation: nothing about the message or the questions changes, and the built-in questions stay in English. Any of 44 languages can be named: Arabic, Bengali, Bulgarian, Catalan, Chinese, Croatian, Czech, Danish, Dutch, English, Estonian, Filipino, Finnish, French, German, Greek, Hebrew, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Latvian, Lithuanian, Malay, Norwegian, Persian, Polish, Portuguese, Romanian, Russian, Serbian, Slovak, Slovenian, Spanish, Swahili, Swedish, Tamil, Thai, Turkish, Ukrainian, Urdu and Vietnamese.
-- **It adds that language to the reading done before any call**, for every one of them. English is always read.
+- **是或否。** 对邮件提出一条简单陈述。答案为是时，会话获得该问题的标签。
+- **选择一项。** 提供二至八个选项，每项有自己的标签，以及一句说明适用情况的描述。会话获得分类器选中项的标签。如果回复不符合任何一项，则不添加标签，因此无需设置包罗一切的兜底选项。
 
-The reading before any call covers:
+请按分类器逐字理解的方式编写问题：每个问题只包含一个判断，不使用双重否定或“除非”。标签与内置标签一样使用普通词语：支持任意文字系统的字母和数字，中间可用单个空格或连字符，最多 40 个字符。不能以任何大小写形式重复使用内置名称。
 
-- **Quoted history**, cut from a reply so the classifier reads what the person wrote and not your own message quoted under it: the reply line each mail client writes ("Den ... skrev", "W dniu ... pisze:", "于 ... 写道：" and the like), Outlook's quoted `From: / Sent:` block in that language (`Von: / Gesendet:`, `De : / Envoyé :`, `差出人: / 送信日時:`), and the dashed "Original message" and "Forwarded message" lines.
-- **Out-of-office replies**, recognized by the subject their mail provider writes (`Автоматический ответ`, `自動応答`, `자동 회신`, `رد تلقائي` and so on) and decided with no call at all.
-- **Non-delivery notices**, by the subject Exchange writes in Spanish, Italian, Dutch and Portuguese. A notice carrying a delivery-status report is recognized in any language without this.
+每个标签或选项也可以执行操作，与上面的开关使用相同基本动作：**暂缓**联系人序列 1 至 365 天，**停止**一年，或为邮箱所有者**创建任务**。这些操作不受内置开关影响，但遵循相同规则：只对有把握的人工回复执行，绝不对**需要审阅**的判定执行，且禁止发送会终止其他所有操作。是非问题在 60% 时添加标签、80% 时采取行动；选项问题的标签和操作都使用 70% 阈值。如果两个暂停同时适用，采用较长者。
 
-Tagging languages are part of the workspace settings, so they travel with a [workspace export](/guides/workspace-export-import/).
+也可以对自动通知提出问题：在该问题上勾选**同时询问自动通知**。默认不对通知询问自定义问题，因为它们通常针对人工表达。匹配问题的通知会获得标签，并像需要处理的邮件一样留在收件箱，而非自动邮件视图。它绝不会暂停、停止或创建任务，这些操作仍只适用于回复。通过发件人在本地识别的通知，只会在一次小型调用中回答这些问题和需要处理检查。
 
-</Fold>
-
-<Fold>
-
-## What else reads the verdict
-
-Three other features reuse a stored verdict rather than paying for a second judgment:
-
-- **Campaign reply handling.** The reply classifier that drives `stop_on_reply` and the reply branches reads the stored kind and intent when one exists, so an interested reply routes as positive and a declined one as negative with the classifier's real confidence. The intent itself is also stored on the contact's progress, and a sequence can branch on it with the `reply_intent` condition (see [Campaigns](/guides/campaigns/)). Without tagging, the classifier asks TypeSafe one three-way question instead, and without a key it falls back to the platform LLM as before.
-- **Reply automations and webhooks.** The `campaign.reply_received` event carries the verdict as `ai_labels`, `ai_intent`, `ai_intent_confidence`, `ai_kind`, `ai_relevance` and `ai_needs_review`, held to the same confidence floor as the labels, so an automation can notify you about Interested or Meeting replies (see [Automations](/guides/automations/#filtering-replies-on-inbox-tagging)).
-- **The inbox agent.** A reply the verdict shows as closed (Not interested, Unsubscribe, Wrong person, Not now), a one-line acknowledgement, a legal threat or a message that needs a person to read it is not drafted, so no credits are spent answering it.
+自定义问题与内置问题放在同一次调用中，因此会增加每封被分类邮件的输入 token，但不会增加第二次请求。每个工作区最多 10 个问题。它们只向判定添加标签，不改变其他结果：邮件类型、意图和相关性分数只依据内置问题校准，不受自定义问题影响。标签在首次适用时创建，或由每小时扫描在一小时内补齐。问题属于工作区设置，会随[工作区导出](/guides/workspace-export-import/)迁移。
 
 </Fold>
 
 <Fold>
 
-## Confirming an away message's return date
+## 标签分类语言 [#tagging-languages]
 
-When an [out-of-office reply holds a lead](/guides/campaigns/#out-of-office-and-pausing-one-lead), the day it resumes comes from rules that read the return date out of the away message. Rules can pick the wrong date near a cue: `ab dem 4.9. nicht im Büro` names the first day away, not the last. So when tagging is on and the hold is on, an away message whose date the rules read is asked one more yes/no question: whether the phrase the date came from (`ab dem 4.9.`, `bis KW 41`, `until 12 September`) says when the sender will be back.
+自动标签默认支持英语、德语、法语、西班牙语、意大利语和荷兰语回复。如果还收到其他语言的邮件，可以在**设置 > 发送 > 标签语言与问题**中添加。只有工作区添加某种语言后，才会使用该语言的处理规则；团队无人使用的语言只会增加可能误读邮件的模式，因此应保持关闭。此设置只影响收件箱标签，营销活动的回复处理不受影响。
 
-The question is about the phrase as written, never a date Warmbly worked out from it. Turning `bis einschließlich 18.9.` into "back on the 19th", or a calendar week into its Monday, stays with the rules, because date arithmetic is what the model is worst at.
+添加语言会带来两项变化：
 
-Below `0.40` the hold uses the workspace's fallback instead of the date. That is the mirror of the `0.60` a signal needs: the rules already reached this date, so an unsure answer is no evidence against it, and only a model fairly sure the date is wrong overrules them. An unsure answer or a failed call keeps the date, as before the question existed. The answer never changes a label.
+- **随每封邮件告知分类器该语言**，使其了解预期语言。这只是提示，不是翻译：邮件和问题的内容都不改变，内置问题仍为英文。可指定以下 44 种语言：阿拉伯语、孟加拉语、保加利亚语、加泰罗尼亚语、中文、克罗地亚语、捷克语、丹麦语、荷兰语、英语、爱沙尼亚语、菲律宾语、芬兰语、法语、德语、希腊语、希伯来语、印地语、匈牙利语、印度尼西亚语、意大利语、日语、韩语、拉脱维亚语、立陶宛语、马来语、挪威语、波斯语、波兰语、葡萄牙语、罗马尼亚语、俄语、塞尔维亚语、斯洛伐克语、斯洛文尼亚语、西班牙语、斯瓦希里语、瑞典语、泰米尔语、泰语、土耳其语、乌克兰语、乌尔都语和越南语。
+- **在任何模型调用之前的本地解析中启用该语言**，上述每种语言都支持。英语始终解析。
 
-An away message recognised offline costs one small call carrying only the message and the phrase, and only when the rules found a date and the workspace holds on out-of-office. When the model decides the kind, the question rides in the same call as the rest. A backfill never asks it, since it labels history and holds nobody. The review page shows the date and the answer next to the verdict, struck through when the hold used the fallback.
+调用之前的本地解析覆盖：
 
-</Fold>
+- **引用历史。** 从回复中截去引用，让分类器读取对方新写的内容，而非下方引用的你的原邮件。识别内容包括各客户端生成的回复行，例如“Den ... skrev”“W dniu ... pisze:”和“于 ... 写道：”；该语言的 Outlook `From: / Sent:` 引用块，例如 `Von: / Gesendet:`、`De : / Envoyé :`、`差出人: / 送信日時:`；以及带分隔线的“Original message”和“Forwarded message”等原始/转发邮件标记。
+- **休假回复。** 根据邮件服务商生成的主题识别，例如 `Автоматический ответ`、`自動応答`、`자동 회신`、`رد تلقائي` 等，完全无需模型调用。
+- **未投递通知。** 根据 Exchange 使用西班牙语、意大利语、荷兰语和葡萄牙语生成的主题识别。携带投递状态报告的通知，无论什么语言都可识别，不依赖此设置。
 
-<Fold>
-
-## When it declines to decide
-
-Every classification carries a confidence. If the message kind is below 0.70, the thread is labelled **Needs review**, no other label is applied, and the conversation stays in the inbox. If the kind is confident but the intent is below 0.70, the trusted kind and relevance remain, the uncertain intent label is omitted, and **Needs review** is added.
-
-That floor is not caution for its own sake. A low-confidence answer is not merely uncertain, it is not reproducible: the same ambiguous message run three times returned a different winning label each time while confidence stayed near 0.2. A label that would not survive being asked again is not one to file mail under.
+标签语言属于工作区设置，会随[工作区导出](/guides/workspace-export-import/)迁移。
 
 </Fold>
 
 <Fold>
 
-## What it never asks
+## 还有哪些功能使用判定结果 [#what-else-reads-the-verdict]
 
-Anything Warmbly already knows is established in code and never sent as a question: which direction a message travelled, which mailbox it belongs to, which campaign it answers, whether the sender is already suppressed.
+另外三项功能复用已存储判定，避免为第二次判断付费：
 
-The campaign is what separates a reply to your outreach from someone pitching you, so it is resolved from every fact the mailbox holds: a Message-ID the reply names, your sent copy in the thread, and on Gmail the conversation the send landed in. Gmail can replace the Message-ID a message is sent with by its own, so the thread is what still ties a Gmail reply to its campaign.
-
-This matters more than it sounds. Given only a message body, the model classified one of our own outbound sends as a human reply at 0.94 confidence. The answer was reasonable for the question; the question should never have been asked. Your own sends are filtered out before anything is asked about them.
-
-Common out-of-office subject prefixes and automated sender addresses are checked offline. When one is decisive, the kind is not asked; only a notification is still asked whether it needs your action, and an away message whether its [return date](#confirming-an-away-messages-return-date) is the day the sender is back. The review page shows which verdicts were decided offline and which came from the model.
+- **营销活动回复处理。** 驱动 `stop_on_reply` 和回复分支的分类器，会在已有判定时读取存储的类型和意图，因此感兴趣的回复按积极路由，拒绝按消极路由，并使用分类器的真实置信度。意图本身也存储在联系人进度中，序列可使用 `reply_intent` 条件分支，参见[营销活动](/guides/campaigns/)。没有自动标签时，分类器改为向 TypeSafe 提出一个三选一问题；没有密钥时，则与以前一样回退到平台 LLM。
+- **回复自动化和 Webhook。** `campaign.reply_received` 事件以 `ai_labels`、`ai_intent`、`ai_intent_confidence`、`ai_kind`、`ai_relevance` 和 `ai_needs_review` 携带判定，采用与标签相同的置信度阈值，因此自动化流程可以针对感兴趣或会议回复通知你，参见[自动化流程](/guides/automations/#filtering-replies-on-inbox-tagging)。
+- **收件箱代理。** 判定显示已结束的回复，包括不感兴趣、退订、找错人和暂时不需要，以及一句话确认、法律威胁或需要人工阅读的邮件，都不会起草回复，避免为回答它们消耗积分。
 
 </Fold>
 
 <Fold>
 
-## Follow-ups without TypeSafe
+## 确认外出自动回复中的返岗日期 [#confirming-an-away-messages-return-date]
 
-With no `TYPESAFE_API_KEY`, Warmbly can still compute **Follow up** locally from sent-message dates. It makes no external call. **Needs reply** and **Gone quiet** also need a trusted stored classification so an automated message is not mistaken for a person and a weak intent is not treated as interest, and without classification nothing leaves the inbox as automated.
+[休假回复暂停潜在客户](/guides/campaigns/#out-of-office-and-pausing-one-lead)时，恢复日期由规则从休假邮件中提取。规则有时会误选提示词附近的日期：`ab dem 4.9. nicht im Büro` 指的是离开的第一天，而非最后一天。因此，开启自动标签和休假暂停时，如果规则读出了日期，还会对这封休假邮件提出一个额外的是非问题：日期所在的短语，例如 `ab dem 4.9.`、`bis KW 41` 或 `until 12 September`，是否说明发件人何时返回。
 
-The key and switch add message classification. When both are unset, automatic inbox tagging sends no message content to TypeSafe. Other optional AI features use their separately configured provider; see [data control](/development/data-control/).
+问题针对短语原文，绝不针对 Warmbly 推算后的日期。把 `bis einschließlich 18.9.` 转为“19 日返回”，或将某个日历周转换为该周星期一，仍由规则完成，因为日期运算是模型最不擅长的部分。
+
+答案低于 `0.40` 时，暂停改用工作区的后备时长，而非该日期。这与信号通常需要的 `0.60` 阈值相对应：规则已经得出了这个日期，因此不确定的答案不足以反驳它，只有模型较有把握认为日期不对，才覆盖规则。不确定或调用失败时，会像此问题引入之前一样保留原日期。该答案绝不会改变标签。
+
+本地识别的休假邮件只需一次小型调用，携带邮件和短语；而且只有规则找到了日期、工作区又开启休假暂停时才调用。如果邮件类型由模型判断，该问题会放在同一次调用中。历史回填从不询问它，因为回填只添加历史标签，不暂停任何人。审阅页面会在判定旁显示日期和答案；若暂停使用了后备值，日期会加删除线。
 
 </Fold>
 
 <Fold>
 
-## Turning it on
+## 无法作出判定的情况 [#when-it-declines-to-decide]
 
-Two environment variables:
+每次分类都带有置信度。邮件类型低于 0.70 时，会话标记为**需要审阅**，不应用其他标签，并留在收件箱。如果类型可靠但意图低于 0.70，则保留可信的类型和相关性，省略不确定的意图标签，并添加**需要审阅**。
+
+这个阈值并非单纯为了保守。低置信答案不仅不确定，还不可复现：同一封含糊邮件运行三次，每次胜出的标签都不同，而置信度始终接近 0.2。一个重新问一次就可能改变的标签，不适合用来整理邮件。
+
+</Fold>
+
+<Fold>
+
+## 不会询问的内容 [#what-it-never-asks]
+
+Warmbly 已知的信息都由代码确定，不会作为问题发送：邮件方向、所属邮箱、回复了哪个营销活动，以及发件人是否已被禁止发送。
+
+营销活动关联用于区分“回复你的触达”与“别人向你推销”，因此会利用邮箱中的所有事实解析：回复引用的 Message-ID、会话中你发送的副本，以及 Gmail 上原发送进入的会话。Gmail 可能用自己的 Message-ID 替换原发送 ID，因此会话关联仍能把 Gmail 回复连回营销活动。
+
+这一点比看起来更重要。仅提供正文时，模型曾以 0.94 置信度，将我们自己的一封出站邮件判为人工回复。对于给出的问题，答案并非不合理；问题本身就不应被提出。所有自己的发送都会在询问模型之前排除。
+
+常见休假主题前缀和自动发件地址会在本地检查。能够明确判断时，不再询问邮件类型；只有通知仍需回答是否需要你处理，休假邮件仍需确认其[返回日期](#confirming-an-away-messages-return-date)是否真的表示发件人返回之日。审阅页面会显示哪些判定来自本地规则，哪些来自模型。
+
+</Fold>
+
+<Fold>
+
+## 不使用 TypeSafe 时的跟进 [#follow-ups-without-typesafe]
+
+没有 `TYPESAFE_API_KEY` 时，Warmbly 仍可根据已发送邮件日期，在本地计算**跟进**标签，不发起外部调用。**需要回复**和**沉默已久**还需要可信的已存储分类，避免把自动邮件当作人，把弱意图当作感兴趣；没有分类时，也不会把任何邮件作为自动邮件移出收件箱。
+
+密钥和开关共同启用邮件分类。两者均未设置时，自动收件箱标签不会向 TypeSafe 发送任何邮件内容。其他可选 AI 功能使用各自单独配置的提供商；参见[数据控制](/development/data-control/)。
+
+</Fold>
+
+<Fold>
+
+## 启用 [#turning-it-on]
+
+设置两个环境变量：
 
 ```bash
 TYPESAFE_API_KEY=...        # from typesafe.ai
 INBOX_TAGGING_ENABLED=true  # off by default even when a key is present
 ```
 
-Then **Settings > Inbox tagging** shows every decision: the labels, the relevance, the confidence, where the verdict came from, and what it did. Watch it for a week before enabling the suppression under **Settings > Sending > Classified replies**; the reversible actions are already on and every one of them is visible on the Leads tab or the Tasks page.
+随后，**设置 > 收件箱标签**会展示每次判断，包括标签、相关性、置信度、判定来源及执行的操作。建议观察一周，再在**设置 > 发送 > 已分类回复**中启用禁止发送；可逆操作已经开启，每一项都可在潜在客户标签页或任务页面查看。
 
 </Fold>
 
 <Fold>
 
-## Backfilling mail you already have
+## 补充处理已有邮件 [#backfilling-mail-you-already-have]
 
-A classifier that only sees new arrivals is no use on the day you switch it on: the inbox you want sorted is the one already sitting there. Run it over your history:
+只处理新到邮件的分类器，在开启当天无法整理已经积压的收件箱。可以对历史运行回填：
 
 ```bash
 # See what it would cover, and what it would cost. Calls nothing, writes nothing.
@@ -327,50 +327,50 @@ warmblyctl inbox-tag backfill --org you@example.com --days 30 --dry-run
 warmblyctl inbox-tag backfill --org you@example.com --days 30 --limit 200
 ```
 
-It is bounded and resumable. Every message is idempotent on its Message-ID, so hitting the limit, pressing Ctrl-C, or running it twice all behave the way you would want: work already done is kept, and the next run picks up where the last one stopped. Nothing is classified twice.
+回填有明确边界，并可恢复。每封邮件以 Message-ID 保证幂等，因此达到限额、按 Ctrl-C 或运行两遍，都会保留已完成工作，下次从上次停止的位置继续。不会对同一邮件重复分类。
 
-Only inbound mail is covered. Your own sends are excluded, and so is mail from one of your connected mailboxes to another, which lands in the second one's inbox and is still yours.
+只处理入站邮件。你自己的发送会排除，从一个已连接邮箱发往另一个已连接邮箱的邮件也会排除；即使它进入第二个邮箱的收件箱，仍属于你自己的邮件。
 
-A backfill fills in the previous message in each thread from your sent mail, so a reply reading "yes, let's do it" is judged against the thing it is agreeing to.
+回填会从已发送邮件中补齐各会话的上一封消息，让“好的，就这么办”之类回复，能够结合其同意的具体事项判断。
 
-A reply classified before its campaign could be found can be labelled **Sales pitch** instead of being read as a reply. To ask again about those, with the campaign in front of the classifier this time:
+如果回复在找到所属营销活动之前就完成分类，可能被标记为**推销**，而非按回复理解。要让分类器这次带着营销活动上下文重新判断，可运行：
 
 ```bash
 warmblyctl inbox-tag backfill --org you@example.com --days 30 --recheck-cold-inbound
 ```
 
-Only messages stored as a sales pitch in a thread one of your campaign sends belongs to are asked again; nothing else is sent. Any automatic label the old verdict wrote and the new one does not comes off the thread, unless another message in it still carries it. A label a teammate applied by hand is never removed. A message the classifier still reads as a sales pitch with the campaign in front of it keeps that verdict, and is asked about again if you run the command again. Like any backfill, it labels and never acts.
+只有原本存为推销，且所在会话包含某封营销活动发送的邮件会被重新询问；其他内容不会发送。旧判定添加、新判定不再需要的自动标签会从会话移除，除非同一会话的其他邮件仍带有该标签。队友手动添加的标签绝不会移除。如果分类器在看到营销活动后仍判为推销，会保留该判定；再次运行命令时仍会重新询问。与所有回填一样，它只添加或调整标签，不采取行动。
 
-Notifications classified before the action check existed are sitting in Automated without having been asked. To ask them now, so a failed payment among them comes back to the inbox:
+在“需要处理”检查推出之前分类的通知，可能尚未经过询问，就留在自动邮件中。要现在检查它们，让其中的付款失败等通知回到收件箱，可运行：
 
 ```bash
 warmblyctl inbox-tag backfill --org you@example.com --days 30 --recheck-notifications
 ```
 
-Only messages stored as a notification by a verdict that never asked the action check are covered, and each is asked again, so the ones that need action return to the inbox labelled **Action required**. The command refuses when **Keep mail that needs action in the inbox** is off. A notification with no text to read is skipped. A message whose call fails is offered again by the next run, or by a plain backfill. Like any backfill, it labels, moves and never notifies.
+仅处理被存为通知、且原判定从未询问过需要处理检查的邮件，每封都会重新判断；需要处理的通知回到收件箱，并标记为**需要处理**。如果关闭了**将需要处理的邮件保留在收件箱**，命令会拒绝运行。没有可读文字的通知会跳过。调用失败的邮件会在下一次运行或普通回填中重试。与所有回填一样，它可以调整标签和移动视图，但绝不发送通知。
 
 </Fold>
 
 <Fold>
 
-## What it costs
+## 费用 [#what-it-costs]
 
-One call contains every question for a message and currently uses about 1,300 input tokens on the recorded fixture set. A notification recognised offline costs one smaller call, for the action check and any of your questions asked of notifications, and nothing when neither is on. An away message recognised offline costs one small call when its return date is checked, and nothing otherwise. TypeSafe evaluates the questions in parallel, but each question still contributes tokens, so check its current pricing before a large backfill. Output tokens are not billed.
+一次调用包含某封邮件的全部问题，在当前记录的测试样本集上约使用 1,300 个输入 token。本地识别的通知使用一次更小的调用，检查是否需要处理及你为通知设置的问题；两者均未开启时，不调用。本地识别的休假邮件，仅在检查返回日期时产生一次小型调用，否则不调用。TypeSafe 并行评估各问题，但每个问题仍会贡献 token，因此大规模回填前请查看其当前价格。输出 token 不计费。
 
-The same configured API key also serves reply classification, campaign-copy checks, generated warmup-content review, form triage, bounce classification and import helpers. These all count against the key's TypeSafe account, not just inbox tagging. Self-hosts use their own key and billing account when configured; there is no shared hosted key supplied by default.
+同一个已配置 API 密钥还用于回复分类、营销文案检查、生成预热内容的审阅、表单分类、退信分类和导入辅助。这些都计入该密钥的 TypeSafe 账户，而非只有收件箱标签。自托管实例配置后使用自己的密钥和计费账户；默认不提供共享托管密钥。
 
-Operators can filter backend and consumer logs by `event=typesafe_usage`. Each request attempt records its feature, question count and HTTP status (zero when no usable API response was received). Successful responses also record the model and input tokens, with the workspace identifier when available. Sum `input_tokens` on successful responses to compare features; failed attempts have no reported token usage. Logs contain no message content, question text, credentials or API keys. Saved inbox and copy verdicts alone are not an account-wide billing ledger: some features do not persist usage, and the TypeSafe console remains the authority for the balance and charges.
+运维人员可以按 `event=typesafe_usage` 筛选后端和消费者日志。每次请求尝试都记录功能、问题数量和 HTTP 状态；未收到可用 API 响应时，状态为零。成功响应还记录模型和输入 token，若有工作区标识也会附上。汇总成功响应的 `input_tokens` 可比较各功能消耗；失败尝试没有服务端报告的 token 用量。日志不包含邮件内容、问题文字、凭据或 API 密钥。仅靠已保存的收件箱和文案判定，并不能构成全账户账本：某些功能不持久化用量，余额和费用仍以 TypeSafe 控制台为准。
 
-If TypeSafe returns a billing error (HTTP 402), paid judgments pause for five minutes. The next eligible request after that interval becomes a single recovery probe; a successful probe resumes requests, and a failed probe pauses them again. Backend and consumer coordinate this through their existing Redis connection for the same API key. If Redis is unavailable, each process retains its own bounded pause. This prevents repeated failing requests, but does not replenish credits or lower the price of successful judgments.
+如果 TypeSafe 返回计费错误 HTTP 402，付费判断会暂停五分钟。此后下一条符合条件的请求成为唯一的恢复探测；成功则恢复请求，失败则再次暂停。后端和消费者通过现有 Redis 连接，按同一个 API 密钥协调。如果 Redis 不可用，各进程保留各自有时限的暂停。这可防止重复失败请求，但不会补充积分，也不会降低成功判断的价格。
 
-Incoming mail is still saved during the pause. Offline rules and already stored verdicts remain available; unavailable model answers are not invented. After restoring credits, a plain backfill can classify skipped historical mail, and `--recheck-notifications` can check notifications filed without an action answer. Recovery probes happen on demand, not by sending paid synthetic health checks.
+暂停期间，入站邮件仍正常保存。本地规则和已有判定继续可用，不会编造无法获得的模型答案。补充积分后，普通回填可分类之前跳过的历史邮件，`--recheck-notifications` 可检查未获得需要处理答案就被归档到相应视图的通知。恢复探测按需发生，不通过发送付费的模拟健康检查实现。
 
-A message with no Message-ID is skipped. A database claim prevents two concurrent deliveries of the same Message-ID from making duplicate calls, and an abandoned claim becomes eligible for retry after 15 minutes.
+没有 Message-ID 的邮件会跳过。数据库占用记录可防止同一 Message-ID 的并发投递重复调用；被遗弃的占用记录在 15 分钟后重新允许重试。
 
 </Fold>
 
-## Related guides
+## 相关指南 [#related-guides]
 
-- [Unified inbox](/guides/unibox/): where the labels appear and how to filter on them
-- [Campaigns](/guides/campaigns/): reply handling and the `reply_intent` branch condition
-- [Inbox agent](/guides/inbox-agent/): the drafts a verdict can skip
+- [统一收件箱](/guides/unibox/)：标签出现的位置，以及如何按标签筛选
+- [营销活动](/guides/campaigns/)：回复处理和 `reply_intent` 分支条件
+- [收件箱代理](/guides/inbox-agent/)：哪些判定会让系统跳过草稿

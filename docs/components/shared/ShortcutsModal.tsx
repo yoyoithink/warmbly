@@ -63,21 +63,21 @@ export function ShortcutsModal({ open, onOpenChange }: ShortcutsModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Keyboard Shortcuts</DialogTitle>
+          <DialogTitle>键盘快捷键</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-6">
-            <ShortcutGroup title="Navigation" shortcuts={shortcutDefinitions.navigation} />
+            <ShortcutGroup title="导航" shortcuts={shortcutDefinitions.navigation} />
           </div>
           <div className="space-y-6">
-            <ShortcutGroup title="Scroll" shortcuts={shortcutDefinitions.scroll} />
-            <ShortcutGroup title="Actions" shortcuts={shortcutDefinitions.actions} />
+            <ShortcutGroup title="滚动" shortcuts={shortcutDefinitions.scroll} />
+            <ShortcutGroup title="操作" shortcuts={shortcutDefinitions.actions} />
           </div>
         </div>
 
         <div className="mt-4 text-center text-sm text-fd-muted-foreground">
-          Press <KeyboardKey>?</KeyboardKey> anytime to show this dialog
+          随时按 <KeyboardKey>?</KeyboardKey> 即可打开此对话框
         </div>
       </DialogContent>
     </Dialog>

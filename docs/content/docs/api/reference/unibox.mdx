@@ -1,41 +1,41 @@
 ---
-title: Unified inbox
-description: Read, search, and triage incoming mail across every mailbox, then reply, label, snooze, and manage scheduled sends.
+title: "统一收件箱"
+description: "集中读取、搜索和分类处理所有邮箱的来信，进行回复、添加标签、稍后处理，并管理定时发送。"
 ---
 
-The unified inbox (unibox) is the org-wide view of everything that lands in your connected mailboxes. These endpoints power the dashboard's inbox list, thread view, scope rail, conversation labels, snoozes, and scheduled-send queue. Every route is gated on the unified-inbox feature, so the calling organization needs an active trial or paid subscription; without it the endpoint returns `403`.
+统一收件箱（unibox）集中展示组织内所有已连接邮箱收到的内容。这些端点为控制台的收件箱列表、邮件会话视图、范围筛选栏、会话标签、稍后提醒和计划发送队列提供支持。每条路由均受统一收件箱功能权限约束，因此调用组织需要有效试用或付费订阅；否则端点返回 `403`。
 
-The list, thread, overview, conversation-label, and snooze data is org-scoped, not per-user. Two members of the same organization see the same inbox, the same unread badge, the same threads, and the same conversation labels, whoever applied them. Snoozes are the one exception: they are attached to the calling user.
+列表、邮件会话、概览、会话标签和稍后提醒相关数据以组织为范围，而非按用户隔离。同一组织的两位成员会看到相同的收件箱、未读标记、邮件会话和会话标签，无论标签由谁添加。稍后提醒是唯一例外：它绑定到调用用户。
 
-The list, thread, message, overview, unread-count and conversation-label reads are bounded at 30 seconds, including any wait for a database connection; a read that runs past it is abandoned and answers with the standard `500` error body.
+列表、邮件会话、单封邮件、概览、未读计数和会话标签读取均有 30 秒超时，包含等待数据库连接的时间；超时的读取会被终止，并返回标准 `500` 错误体。
 
-## List incoming mail
+## 列出来信 [#list-incoming-mail]
 
 `GET /unibox`
 
-Returns the inbox list, collapsed to one row per thread (the newest message), with filtering and cursor pagination. Auth: **Scope** `READ_UNIBOX` · **Org permission** `access_unibox`.
+返回收件箱列表，每个会话折叠为一行，展示最新邮件，支持筛选和游标分页。身份验证：**权限范围** `READ_UNIBOX` · **组织权限** `access_unibox`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `cursor` | query | string | Opaque pagination cursor from a previous response. |
-| `limit` | query | integer | Page size. Clamped to the server's min/max. |
-| `from` | query | string | Filter by sender address (substring). |
-| `folder` | query | string | One of `inbox`, `sent`, `drafts`, `archive`, `spam`, `trash`. Omit for every folder except `spam` and `trash` (junk never bleeds into the combined view). An unknown value returns `400`. |
-| `subject` | query | string | Filter by subject (substring). |
-| `unseen` | query | boolean | `true` returns only threads with unread messages. |
-| `awaiting_reply` | query | boolean | `true` returns only threads where the latest message was sent by you (recipient has not replied). |
-| `snoozed` | query | string | `true` returns only snoozed threads. Omit to exclude snoozed threads (default). |
-| `since` | query | string | Lower bound on date, `YYYY-MM-DD`. |
-| `until` | query | string | Upper bound on date, `YYYY-MM-DD`. |
-| `email_id` | query | string | Restrict to a single mailbox by UUID. |
-| `email_ids` | query | string | Comma-separated mailbox UUIDs. A thread matches if it landed in any of them. Invalid UUIDs are dropped. |
-| `category_ids` | query | string | Comma-separated conversation-label UUIDs. A thread matches if it carries any of them. |
-| `uncategorized` | query | boolean | `true` returns only threads carrying no conversation labels. |
-| `automated` | query | boolean | `true` returns only conversations no person wrote in: security alerts, notifications, bounces and auto-replies, as judged by [automatic inbox tagging](/guides/inbox-tagging/). `false` leaves them out, which is how the dashboard's Inbox reads. Omit for both. A conversation counts as automated only while every message in it that is not yours was judged automated, so a reply brings it back. |
+| `cursor` | query | string | 上一次响应中的不透明分页游标。 |
+| `limit` | query | integer | 每页数量，会限制在服务器允许的最小值与最大值之间。 |
+| `from` | query | string | 按发件地址筛选，采用子字符串匹配。 |
+| `folder` | query | string | 取值为 `inbox`、`sent`、`drafts`、`archive`、`spam`、`trash` 之一。省略时包含除 `spam` 和 `trash` 外的所有文件夹，垃圾邮件不会混入合并视图。未知值返回 `400`。 |
+| `subject` | query | string | 按主题筛选，采用子字符串匹配。 |
+| `unseen` | query | boolean | `true` 仅返回含未读邮件的会话。 |
+| `awaiting_reply` | query | boolean | `true` 仅返回最新一封邮件由你发送、收件人尚未回复的会话。 |
+| `snoozed` | query | string | `true` 仅返回已设置稍后提醒的会话。默认省略时排除这些会话。 |
+| `since` | query | string | 日期下限，格式为 `YYYY-MM-DD`。 |
+| `until` | query | string | 日期上限，格式为 `YYYY-MM-DD`。 |
+| `email_id` | query | string | 按 UUID 限定为单个邮箱。 |
+| `email_ids` | query | string | 逗号分隔的邮箱 UUID。会话只要到达其中任意邮箱即匹配。无效 UUID 会被丢弃。 |
+| `category_ids` | query | string | 逗号分隔的会话标签 UUID。会话只要具有其中任意标签即匹配。 |
+| `uncategorized` | query | boolean | `true` 仅返回未添加任何会话标签的会话。 |
+| `automated` | query | boolean | `true` 仅返回没有人工撰写内容的会话，包括安全警报、通知、退信和自动回复，由[收件箱自动标记](/guides/inbox-tagging/)判断。`false` 会排除这些会话，控制台的收件箱视图采用此方式。省略则同时包含两类。只有会话中所有非本人发送的邮件均被判定为自动邮件时，会话才算自动会话，因此收到人工回复后便会重新显示。 |
 
-The response is a `data` plus `pagination` envelope. Each row summarises the whole thread behind it (`message_count`, `has_unread`) plus the conversation's labels.
+响应采用 `data` 加 `pagination` 封装。每行汇总对应的完整会话（`message_count`、`has_unread`），并包含会话标签。
 
-### Response
+### 响应 [#response]
 
 ```json
 {
@@ -64,17 +64,17 @@ The response is a `data` plus `pagination` envelope. Each row summarises the who
 }
 ```
 
-## Get unread count
+## 获取未读数量 [#get-unread-count]
 
 `GET /unibox/count`
 
-Returns the number of unread conversations in the Inbox folder, optionally scoped to one mailbox. Snoozed conversations, automated conversations (see `automated` above) and mail in other folders (sent, drafts, archive, spam, trash) are not counted, so the number matches what the Inbox view lists as unread. Backs the inbox badge. Auth: **Scope** `READ_UNIBOX` · **Org permission** `access_unibox`.
+返回收件箱文件夹中的未读会话数，可选择限定为一个邮箱。不计入已设置稍后提醒的会话、自动会话（见上方 `automated`）及其他文件夹中的邮件（已发送、草稿、归档、垃圾邮件、废纸篓），因此与收件箱视图列出的未读数量一致。用于收件箱未读标记。身份验证：**权限范围** `READ_UNIBOX` · **组织权限** `access_unibox`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `email_id` | query | string | Optional mailbox UUID to count unread for a single mailbox. |
+| `email_id` | query | string | 可选的邮箱 UUID，用于只统计一个邮箱的未读数。 |
 
-### Response
+### 响应 [#response-1]
 
 ```json
 {
@@ -82,13 +82,13 @@ Returns the number of unread conversations in the Inbox folder, optionally scope
 }
 ```
 
-## Get inbox overview
+## 获取收件箱概览 [#get-inbox-overview]
 
 `GET /unibox/overview`
 
-Rolls up the scope rail and top metric strip in one call: unread, today, week, snoozed, awaiting-reply, and pending-scheduled counts, plus per-folder, per-mailbox, per-tag, and per-conversation-label breakdowns. The `folders` array always lists all six canonical folders, zero-filled, in sidebar order; the headline counts exclude `spam` and `trash`. All counts are threads, not messages, except `scheduled_pending`, which counts the sends queued from the organization's mailboxes against the workspace cap in `scheduled_pending_max`. Automated conversations are counted in `automated` and `automated_unread` and left out of `unread`, `today`, `week`, the `inbox` folder and the per-mailbox and per-tag counts; `total` and the label counts still include them. Concurrent requests from the same organization share one computation, and its result is served for up to one second after it started (`generated_at` is when it started). Auth: **Scope** `READ_UNIBOX` · **Org permission** `access_unibox`.
+一次调用汇总范围筛选栏和顶部指标区：未读、今天、本周、稍后提醒、等待回复和待发送计划邮件的数量，以及按文件夹、邮箱、邮箱标签和会话标签划分的明细。`folders` 数组始终按侧边栏顺序列出六个标准文件夹，缺失数量补零；顶部汇总计数排除 `spam` 和 `trash`。除 `scheduled_pending` 外，所有计数均统计会话，而非单封邮件；该字段统计从组织邮箱排队发送的邮件数，并对应 `scheduled_pending_max` 中的工作区上限。自动会话计入 `automated` 和 `automated_unread`，不计入 `unread`、`today`、`week`、`inbox` 文件夹，以及按邮箱和邮箱标签的计数；`total` 和会话标签计数仍包含它们。同一组织的并发请求共用一次计算，结果最多使用到计算开始后一秒，`generated_at` 即计算开始时间。身份验证：**权限范围** `READ_UNIBOX` · **组织权限** `access_unibox`。
 
-### Response
+### 响应 [#response-2]
 
 ```json
 {
@@ -143,22 +143,22 @@ Rolls up the scope rail and top metric strip in one call: unread, today, week, s
 }
 ```
 
-## Get a thread
+## 获取邮件会话 [#get-a-thread]
 
 `GET /unibox/thread`
 
-Returns every message in a single conversation, oldest-first style message rows, with cursor pagination. The mailbox filter is optional: with no `email_id` the thread is read across every mailbox in the organization (the natural unified view). Auth: **Scope** `READ_UNIBOX` · **Org permission** `access_unibox`.
+返回单个会话中的所有邮件，以较早邮件在前的方式展示邮件记录，支持游标分页。邮箱筛选可选：不提供 `email_id` 时，会跨组织内所有邮箱读取该会话，形成自然的统一视图。身份验证：**权限范围** `READ_UNIBOX` · **组织权限** `access_unibox`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `thread_id` | query | string | Required. The thread to read. Also accepted as `id`. |
-| `email_id` | query | string | Optional mailbox UUID to scope the thread to one mailbox. Also accepted as `email`. |
-| `cursor` | query | string | Opaque pagination cursor. |
-| `limit` | query | integer | Page size. Out-of-range values return `400`. |
+| `thread_id` | query | string | 必填。要读取的会话。也接受参数名 `id`。 |
+| `email_id` | query | string | 可选的邮箱 UUID，将会话限定到单个邮箱。也接受参数名 `email`。 |
+| `cursor` | query | string | 不透明分页游标。 |
+| `limit` | query | integer | 每页数量。超出范围返回 `400`。 |
 
-The response is a `data` plus `pagination` envelope. Each item is a full message (envelope plus body). A message that answers an email sent from another workspace mailbox, as a reply in a [shared reply inbox](/guides/mailboxes/#a-shared-reply-inbox) does, carries that mailbox's id in `answers_mailbox_id`; the field is absent otherwise.
+响应采用 `data` 加 `pagination` 封装。每项为一封完整邮件，包含信封信息和正文。如果邮件回复的是由工作区另一个邮箱发送的邮件，例如[共享回复收件箱](/guides/mailboxes/#a-shared-reply-inbox)中的回复，则 `answers_mailbox_id` 包含那个发件邮箱的 ID；其他情况下省略此字段。
 
-### Response
+### 响应 [#response-3]
 
 ```json
 {
@@ -200,19 +200,19 @@ The response is a `data` plus `pagination` envelope. Each item is a full message
 }
 ```
 
-## Get thread labels
+## 获取会话标签 [#get-thread-labels]
 
 `GET /unibox/thread/labels`
 
-Returns the labels attached to a thread, drawn from the same workspace list as contact labels (managed through `/categories`). Auth: **Scope** `READ_UNIBOX` · **Org permission** `access_unibox`.
+返回附加到会话的标签，与联系人标签来自同一工作区列表，通过 `/categories` 管理。身份验证：**权限范围** `READ_UNIBOX` · **组织权限** `access_unibox`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `thread_id` | query | string | Required. The thread to read labels for. Also accepted as `id`. |
+| `thread_id` | query | string | 必填。要读取标签的会话。也接受参数名 `id`。 |
 
-The response wraps the labels in a `data` array.
+响应将标签放在 `data` 数组中。
 
-### Response
+### 响应 [#response-4]
 
 ```json
 {
@@ -222,18 +222,18 @@ The response wraps the labels in a `data` array.
 }
 ```
 
-## Set thread labels
+## 设置会话标签 [#set-thread-labels]
 
 `PUT /unibox/thread/labels`
 
-Replaces the full conversation-label set on a thread, for the whole workspace. The body's `category_ids` is the desired set, so the call is idempotent and retries are naturally safe. Only the workspace's own labels are attached; an id belonging to another organization is dropped. Auth: **Scope** `WRITE_UNIBOX` · **Org permission** `access_unibox`.
+替换会话的完整标签集合，对整个工作区生效。请求体中的 `category_ids` 表示期望的完整集合，因此调用具有幂等性，可直接安全重试。只会附加工作区自己的标签；属于其他组织的 ID 会被丢弃。身份验证：**权限范围** `WRITE_UNIBOX` · **组织权限** `access_unibox`。
 
-### Request body
+### 请求体 [#request-body]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `thread_id` | string | Yes | The thread to label. |
-| `category_ids` | string[] | No | The full desired set of label UUIDs. An empty array clears all labels. |
+| `thread_id` | string | 是 | 要设置标签的会话。 |
+| `category_ids` | string[] | 否 | 期望的完整标签 UUID 集合。空数组会清除全部标签。 |
 
 ```json
 {
@@ -245,9 +245,9 @@ Replaces the full conversation-label set on a thread, for the whole workspace. T
 }
 ```
 
-### Response
+### 响应 [#response-5]
 
-Returns the resulting label set in a `data` array.
+在 `data` 数组中返回最终标签集合。
 
 ```json
 {
@@ -258,24 +258,24 @@ Returns the resulting label set in a `data` array.
 }
 ```
 
-## Mark messages seen
+## 将邮件标为已读 [#mark-messages-seen]
 
 `PATCH /unibox/seen`
 
-Marks messages as read or unread, org-wide: an explicit batch of up to 500 message ids, up to 500 conversations, or a whole canonical folder at once. `email_ids` and `thread_ids` can be sent together; `folder` cannot be combined with either and returns `400`. Auth: **Scope** `WRITE_UNIBOX` · **Org permission** `access_unibox`.
+在整个组织范围内，将邮件标为已读或未读：可显式指定最多 500 个邮件 ID、最多 500 个会话，或一次处理一个完整标准文件夹。`email_ids` 和 `thread_ids` 可同时发送；`folder` 不能与任一 ID 列表组合，否则返回 `400`。身份验证：**权限范围** `WRITE_UNIBOX` · **组织权限** `access_unibox`。
 
-Marking a conversation read reads every message in it. Marking one unread marks only its newest received message unread (one outside spam and trash when there is one). If it has no received message, its newest sent copy turns unread instead; otherwise sent copies stay read. Drafts are never marked unread. Explicit `email_ids` and `folder` sweeps never mark sent or draft copies unread.
+将会话标为已读会将其中所有邮件标为已读。将会话标为未读只会将最新收到的邮件标为未读；如果存在不在垃圾邮件和废纸篓中的收件，则优先选择该邮件。如果会话没有收到的邮件，则将最新的已发送副本标为未读；其他情况下，已发送副本保持已读。草稿永远不会标为未读。显式 `email_ids` 批量操作和 `folder` 整体处理也不会将已发送或草稿副本标为未读。
 
-The change is also carried out to the mailbox itself, so a message marked read here stops showing as unread in Gmail, Outlook or an IMAP mailbox. Opening a message with `GET /unibox/:id` marks it read the same way, relay included. Only messages whose state actually changed are relayed, and the relay is best-effort: it happens after the response, on the worker holding the mailbox, and a mailbox that is unplaced at that moment keeps its own read state until something changes it again. [Filing a conversation](/guides/unibox/#filing-in-the-mailbox-too) is relayed the same way.
+变更也会同步到邮箱本身，因此在这里标为已读的邮件，在 Gmail、Outlook 或 IMAP 邮箱中也会停止显示为未读。通过 `GET /unibox/:id` 打开邮件时，同样会将其标为已读并同步。只同步实际发生状态变化的邮件，且同步采用尽力执行方式：响应后，由持有该邮箱的工作节点处理；如果当时邮箱未分配到工作节点，它会保留自身已读状态，直到再次发生变更。[移动会话到文件夹](/guides/unibox/#filing-in-the-mailbox-too)也以相同方式同步。
 
-### Request body
+### 请求体 [#request-body-1]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `email_ids` | string[] | No | Message UUIDs to update (max 500). |
-| `thread_ids` | string[] | No | Conversations to update (max 500). |
-| `folder` | string | No | Sweep every message in this folder instead of an id list: one of `inbox`, `sent`, `drafts`, `archive`, `spam`, `trash`. |
-| `seen` | boolean | No | `true` marks as read, `false` marks as unread. |
+| `email_ids` | string[] | 否 | 要更新的邮件 UUID，最多 500 个。 |
+| `thread_ids` | string[] | 否 | 要更新的会话，最多 500 个。 |
+| `folder` | string | 否 | 处理该文件夹中的全部邮件，替代 ID 列表。取值为 `inbox`、`sent`、`drafts`、`archive`、`spam`、`trash` 之一。 |
+| `seen` | boolean | 否 | `true` 标为已读，`false` 标为未读。 |
 
 ```json
 {
@@ -287,9 +287,9 @@ The change is also carried out to the mailbox itself, so a message marked read h
 }
 ```
 
-### Response
+### 响应 [#response-6]
 
-Echoes the request back.
+原样回显请求。
 
 ```json
 {
@@ -301,28 +301,28 @@ Echoes the request back.
 }
 ```
 
-## Reply from the inbox
+## 从收件箱回复 [#reply-from-the-inbox]
 
 `POST /unibox/reply`
 
-Sends or schedules a reply or a forward from any mailbox in the organization. The send is routed through the per-mailbox scheduler according to `send_mode`. Requires an active organization. Auth: **Scope** `WRITE_UNIBOX` · **Org permission** `access_unibox`.
+从组织中的任意邮箱立即发送或安排发送回复、转发邮件。发送按 `send_mode` 通过各邮箱调度器路由。要求组织处于有效状态。身份验证：**权限范围** `WRITE_UNIBOX` · **组织权限** `access_unibox`。
 
-### Request body
+### 请求体 [#request-body-2]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `email_account_id` | string | Yes | UUID of the sending mailbox. Any active mailbox in the organization, not only the one holding the thread. |
-| `to` | string[] | Yes | Recipient addresses (at least one). |
-| `cc` | string[] | No | CC addresses. |
-| `bcc` | string[] | No | BCC addresses. |
-| `subject` | string | Yes | Subject line. |
-| `body_html` | string | No | HTML body. |
-| `body_plain` | string | No | Plain-text body. Leave it empty with `body_html` set and the plain-text part is rendered from the HTML, link destinations included. |
-| `in_reply_to` | string[] | No | Message-ID(s) this reply threads under. When omitted, the newest Message-ID in `thread_id` is used. |
-| `thread_id` | string | No | The conversation being answered. Not used with `forward_message_id`; see [Forwarding a message](#forwarding-a-message). |
-| `send_mode` | string | No | `instant` (default), `smart` (next mailbox gap), or `scheduled` (use `scheduled_at`). |
-| `scheduled_at` | string | No | RFC 3339 timestamp. Required when `send_mode` is `scheduled`; must be in the future. |
-| `forward_message_id` | string | No | UUID of a stored message (the `id` from `GET /unibox/:id`) to forward. See [Forwarding a message](#forwarding-a-message). |
+| `email_account_id` | string | 是 | 发件邮箱 UUID。可使用组织中任意有效邮箱，不限于持有该会话的邮箱。 |
+| `to` | string[] | 是 | 收件地址，至少一个。 |
+| `cc` | string[] | 否 | 抄送地址。 |
+| `bcc` | string[] | 否 | 密送地址。 |
+| `subject` | string | 是 | 邮件主题。 |
+| `body_html` | string | 否 | HTML 正文。 |
+| `body_plain` | string | 否 | 纯文本正文。如果此字段为空且设置了 `body_html`，会根据 HTML 生成纯文本部分，包含链接目标地址。 |
+| `in_reply_to` | string[] | 否 | 此回复所归属的父邮件 Message-ID。省略时，使用 `thread_id` 中最新的 Message-ID。 |
+| `thread_id` | string | 否 | 要回复的会话。不与 `forward_message_id` 一同使用；参阅[转发邮件](#forwarding-a-message)。 |
+| `send_mode` | string | 否 | `instant`（默认）、`smart`（邮箱的下一个发送空档），或 `scheduled`（使用 `scheduled_at`）。 |
+| `scheduled_at` | string | 否 | RFC 3339 时间戳。`send_mode` 为 `scheduled` 时必填，且必须是未来时间。 |
+| `forward_message_id` | string | 否 | 要转发的已存储邮件 UUID，即 `GET /unibox/:id` 返回的 `id`。参阅[转发邮件](#forwarding-a-message)。 |
 
 ```json
 {
@@ -336,7 +336,7 @@ Sends or schedules a reply or a forward from any mailbox in the organization. Th
 }
 ```
 
-### Response
+### 响应 [#response-7]
 
 ```json
 {
@@ -346,32 +346,32 @@ Sends or schedules a reply or a forward from any mailbox in the organization. Th
 }
 ```
 
-Instant sends are held for the sender's undo window (5 to 120 seconds, default 30) before they actually leave, so `scheduled_at` is that far in the future. Within the window the send can still be cancelled with `DELETE /unibox/scheduled/:task_id`.
+即时发送会先等待发件人的撤销窗口，范围为 5 至 120 秒，默认 30 秒，然后才真正发出，因此 `scheduled_at` 会设为相应延迟后的时间。窗口内仍可通过 `DELETE /unibox/scheduled/:task_id` 取消发送。
 
-A reply to an address on the workspace [suppression list](/guides/unsubscribe/#the-suppression-list), directly or through its domain, answers `400` with `code: "recipient_suppressed"` and a `message` naming the address, and nothing is queued. A forward is not checked against the list.
+如果回复地址直接或因所属域名命中工作区的[禁止发送名单](/guides/unsubscribe/#the-suppression-list)，将返回 `400`，包含 `code: "recipient_suppressed"` 和指明该地址的 `message`，不会将任何邮件加入队列。转发不检查此名单。
 
-Only Gmail has a provider thread handle, and it belongs to the mailbox that holds the thread. So the reply files into the Gmail thread `thread_id` names only when `email_account_id` holds a message in it; a mailbox that already replied into the conversation from outside continues the thread that reply started. Otherwise it goes out with the same In-Reply-To and References headers and the conversation's subject, which keeps it in the same conversation for the recipient, and starts a conversation of its own in the sending mailbox. The queued send still belongs to `thread_id`, so it is listed with that conversation's scheduled sends.
+只有 Gmail 提供服务商会话标识，且该标识属于持有会话的邮箱。因此，只有 `email_account_id` 在该会话中持有邮件时，回复才会归入 `thread_id` 指定的 Gmail 会话；如果某个邮箱之前曾从外部参与回复，则会继续使用那次回复创建的会话。其他情况下，邮件仍携带相同的 In-Reply-To、References 请求头和会话主题，使收件方仍将其归入同一会话，而发件邮箱中会创建独立会话。排队发送任务仍属于 `thread_id`，因此会列在该会话的计划发送列表中。
 
-### Forwarding a message
+### 转发邮件 [#forwarding-a-message]
 
-Set `forward_message_id` to forward a message from the inbox. Warmbly attaches the stored message itself, so `body_html` and `body_plain` are an optional note and can be left empty. The message is copied when the request is accepted, so a scheduled forward still carries it if the original is later deleted. What goes out, in both the HTML and the plain-text part:
+设置 `forward_message_id` 可转发收件箱中的邮件。Warmbly 会附上已保存的邮件本身，因此 `body_html` 和 `body_plain` 仅作为可选附言，可留空。请求被接受时即复制邮件，因此即使原邮件后来被删除，计划转发仍会携带它。HTML 和纯文本部分均按以下内容发送：
 
-1. your note, if any
-2. the sending mailbox's signature, when signature sync is on (a forward is signed even without a note)
-3. a `---------- Forwarded message ---------` block with the original From, Date, Subject, To and Cc lines, then the original body
+1. 你的附言，如有；
+2. 开启签名同步时，包含发件邮箱签名，即使没有附言，转发也会添加签名；
+3. 一个 `---------- Forwarded message ---------` 区块，包含原始 From、Date、Subject、To 和 Cc 行，然后是原始正文。
 
-The Date line is written in the sending mailbox's time zone (its own, else the workspace's, else UTC). The original HTML keeps its formatting: its stylesheet is folded into inline styles and it is sanitized like a message opened in Unibox, so scripts, event handlers and Warmbly's own open-tracking pixels are dropped. When the original has only a text part, it is forwarded as text. Links in the forwarded message are never rewritten for click tracking; only your note is tracked, when the mailbox tracks direct mail. Forwarding one of your own tracked sends (from Sent, say) swaps its tracked links back to their real destinations, so the new recipient's clicks are not counted against the original send.
+Date 行采用发件邮箱的时区：优先使用邮箱自身时区，其次工作区时区，最后回退到 UTC。原始 HTML 保留格式：样式表合并为内联样式，并像在统一收件箱打开邮件一样进行清理，移除脚本、事件处理器和 Warmbly 自身的打开跟踪像素。如果原邮件只有文本部分，则以文本形式转发。转发内容中的链接永远不会改写为点击跟踪链接；只有在邮箱跟踪直接发送邮件时，才会跟踪你的附言。转发自己已跟踪的发件，例如从“已发送”中转发时，会将跟踪链接还原为真实目标，避免新收件人的点击计入原始发送。
 
-A forward goes out as a new conversation for its recipient: no provider thread, and no In-Reply-To or References unless you set `in_reply_to` yourself. A `thread_id` sent with it is not used for either. Inside Unibox the forward belongs to the conversation of the message it forwards (that message's `thread_id`), whichever mailbox sends it: it is listed with that conversation's scheduled sends while queued, and once the sending mailbox's Sent folder syncs, the sent copy is returned by `GET /unibox/thread` for that conversation, stored once. A forward in a conversation is never picked as the parent Message-ID for a later reply into it.
+对收件人而言，转发会形成新会话：不使用服务商会话标识，也不携带 In-Reply-To 或 References，除非你自行设置 `in_reply_to`。同时传入的 `thread_id` 不用于这两项用途。在统一收件箱内部，无论由哪个邮箱发送，转发都属于被转发邮件的会话，即该邮件的 `thread_id`：排队期间列在该会话的计划发送中；发件邮箱的“已发送”文件夹同步后，`GET /unibox/thread` 会在该会话中返回已发送副本，且只保存一次。后续向该会话回复时，绝不会选取转发邮件作为父 Message-ID。
 
-The [suppression list](/guides/unsubscribe/#the-suppression-list) does not apply to a forward: it passes on mail already received to recipients chosen by hand, so it may go to an address or domain the list keeps out of campaigns. Fair use still counts its recipients.
+[禁止发送名单](/guides/unsubscribe/#the-suppression-list)不适用于转发：转发将已收到的邮件传给人工选择的收件人，因此可以发送到名单中禁止接收营销活动邮件的地址或域名。公平使用额度仍会统计其收件人。
 
-Two limits:
+有两项限制：
 
-- attachments on the original are not forwarded
-- a message whose full body is not stored (the reader shows "Only a preview of this message is stored") is forwarded with that preview
+- 原邮件中的附件不会转发；
+- 如果未保存邮件完整正文，阅读器会显示“仅保存了此邮件的预览”，此时仅转发该预览。
 
-Forwarding discloses the message, so it takes `READ_UNIBOX` as well as `WRITE_UNIBOX` (for a dashboard session, the `access_unibox` permission covers both), and an API key restricted to certain mailboxes must be allowed the mailbox the message belongs to as well as the sending mailbox. Either missing answers `403`. A `forward_message_id` that names no message in the organization answers `404`.
+转发会披露邮件内容，因此除 `WRITE_UNIBOX` 外，还需要 `READ_UNIBOX`；控制台会话的 `access_unibox` 权限涵盖二者。对于仅允许访问特定邮箱的 API 密钥，必须同时获准访问原邮件所属邮箱和发件邮箱，缺少任一权限都返回 `403`。如果 `forward_message_id` 指向的邮件在组织中不存在，则返回 `404`。
 
 ```json
 {
@@ -383,15 +383,15 @@ Forwarding discloses the message, so it takes `READ_UNIBOX` as well as `WRITE_UN
 }
 ```
 
-## List active snoozes
+## 列出当前稍后处理的会话 [#list-active-snoozes]
 
 `GET /unibox/snoozes`
 
-Returns your active thread snoozes. Auth: **Scope** `READ_UNIBOX` · **Org permission** `access_unibox`.
+返回你当前有效的会话稍后提醒。身份验证：**权限范围** `READ_UNIBOX` · **组织权限** `access_unibox`。
 
-The response wraps the snoozes in a `data` array.
+响应将稍后提醒放在 `data` 数组中。
 
-### Response
+### 响应 [#response-8]
 
 ```json
 {
@@ -408,18 +408,18 @@ The response wraps the snoozes in a `data` array.
 }
 ```
 
-## Snooze a thread
+## 将会话设为稍后处理 [#snooze-a-thread]
 
 `POST /unibox/snooze`
 
-Hides a thread from your inbox until `snoozed_until` passes. Upsert semantics: a second call on the same thread updates the time in place. Auth: **Scope** `WRITE_UNIBOX` · **Org permission** `access_unibox`.
+从你的收件箱隐藏某个会话，直到 `snoozed_until` 所示时间。采用插入或更新语义：对同一会话再次调用会直接更新时间。身份验证：**权限范围** `WRITE_UNIBOX` · **组织权限** `access_unibox`。
 
-### Request body
+### 请求体 [#request-body-3]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `thread_id` | string | Yes | The thread to snooze. |
-| `snoozed_until` | string | Yes | RFC 3339 timestamp to un-hide the thread. |
+| `thread_id` | string | 是 | 要设置稍后提醒的会话。 |
+| `snoozed_until` | string | 是 | 取消隐藏会话的时间，RFC 3339 时间戳。 |
 
 ```json
 {
@@ -428,7 +428,7 @@ Hides a thread from your inbox until `snoozed_until` passes. Upsert semantics: a
 }
 ```
 
-### Response
+### 响应 [#response-9]
 
 ```json
 {
@@ -441,33 +441,33 @@ Hides a thread from your inbox until `snoozed_until` passes. Upsert semantics: a
 }
 ```
 
-## Unsnooze a thread
+## 取消会话的稍后处理 [#unsnooze-a-thread]
 
 `DELETE /unibox/snooze`
 
-Un-snoozes a thread immediately. Idempotent: deleting a snooze that does not exist still succeeds with `204`. Auth: **Scope** `WRITE_UNIBOX` · **Org permission** `access_unibox`.
+立即取消会话的稍后提醒。此操作具有幂等性：删除不存在的提醒也会成功，返回 `204`。身份验证：**权限范围** `WRITE_UNIBOX` · **组织权限** `access_unibox`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `thread_id` | query | string | Required. The thread to un-snooze. |
+| `thread_id` | query | string | 必填。要取消稍后提醒的会话。 |
 
-### Response
+### 响应 [#response-10]
 
-`204 No Content` with an empty body.
+`204 No Content`，响应体为空。
 
-## List scheduled sends
+## 列出定时发送任务 [#list-scheduled-sends]
 
 `GET /unibox/scheduled`
 
-Returns the outbound emails queued from the organization's mailboxes but not yet sent, whichever member queued them. An API key limited to certain mailboxes sees only their sends. Pass `thread_id` to scope to a single conversation (used to render queued replies inline); the response shape is identical either way. Auth: **Scope** `READ_UNIBOX` · **Org permission** `access_unibox`.
+返回从组织邮箱排队、但尚未发出的邮件，无论由哪位成员加入队列。仅允许访问特定邮箱的 API 密钥只能看到这些邮箱的发送任务。传入 `thread_id` 可限定为单个会话，用于在会话内显示排队回复；两种方式的响应结构相同。身份验证：**权限范围** `READ_UNIBOX` · **组织权限** `access_unibox`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `thread_id` | query | string | Optional. Restrict to scheduled sends queued into one thread. |
+| `thread_id` | query | string | 可选。限定为某个会话中排队的计划发送任务。 |
 
-The response wraps the items in a `data` array. Each item is a preview of the queued message.
+响应将条目放在 `data` 数组中。每项为排队邮件的预览。
 
-### Response
+### 响应 [#response-11]
 
 ```json
 {
@@ -488,31 +488,31 @@ The response wraps the items in a `data` array. Each item is a preview of the qu
 }
 ```
 
-## Cancel a scheduled send
+## 取消定时发送 [#cancel-a-scheduled-send]
 
 `DELETE /unibox/scheduled/:task_id`
 
-Cancels a pending scheduled send from any of the organization's mailboxes (for an API key limited to certain mailboxes, from those) before it fires. The queued task is marked cancelled and short-circuits to a no-op when its run time arrives. Auth: **Scope** `WRITE_UNIBOX` · **Org permission** `access_unibox`.
+在发送执行前，取消组织任意邮箱中的待发送计划任务；对于仅允许访问特定邮箱的 API 密钥，则限于这些邮箱。队列任务会标为已取消，运行时间到达时直接跳过，不执行任何操作。身份验证：**权限范围** `WRITE_UNIBOX` · **组织权限** `access_unibox`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `task_id` | path | string | UUID of the scheduled task to cancel. |
+| `task_id` | path | string | 要取消的计划任务 UUID。 |
 
-### Response
+### 响应 [#response-12]
 
-`204 No Content` with an empty body.
+`204 No Content`，响应体为空。
 
-## Get a message by id
+## 按 ID 获取邮件 [#get-a-message-by-id]
 
 `GET /unibox/:id`
 
-Returns a single message by its UUID, including the full envelope and body. Auth: **Scope** `READ_UNIBOX` · **Org permission** `access_unibox`.
+按 UUID 返回单封邮件，包含完整信封信息和正文。身份验证：**权限范围** `READ_UNIBOX` · **组织权限** `access_unibox`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | string | UUID of the message. |
+| `id` | path | string | 邮件 UUID。 |
 
-### Response
+### 响应 [#response-13]
 
 ```json
 {
@@ -539,9 +539,9 @@ Returns a single message by its UUID, including the full envelope and body. Auth
 }
 ```
 
-## Errors
+## 错误 [#errors]
 
-All error responses follow the standard envelope. See [error codes](/api/error-codes/) for the full list.
+所有错误响应均采用标准封装。完整列表见[错误码](/api/error-codes/)。
 
 ```json
 {
@@ -552,4 +552,4 @@ All error responses follow the standard envelope. See [error codes](/api/error-c
 }
 ```
 
-Common cases: `403` when the organization lacks unified-inbox access, `400` for a missing `thread_id`, an invalid cursor or limit, or no organization selected, and `400` when marking more than 500 messages seen in one call.
+常见情况：组织无统一收件箱访问权限时返回 `403`；缺少 `thread_id`、游标或每页数量无效、未选择组织时返回 `400`；一次调用将超过 500 封邮件标为已读时返回 `400`。

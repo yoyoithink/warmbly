@@ -1,31 +1,31 @@
 ---
-title: MCP server
-description: Connect any MCP client (Claude Code, Claude Desktop, Cursor) to Warmbly and use your data and workflows as tools. Sign in with OAuth, or scope a static API key.
+title: "MCP 服务器"
+description: "将任意 MCP 客户端（Claude Code、Claude Desktop、Cursor）连接到 Warmbly，将数据和工作流程作为工具使用。可通过 OAuth 登录，也可为静态 API 密钥设置权限范围。"
 ---
 
-Warmbly speaks the [Model Context Protocol](https://modelcontextprotocol.io). Point any MCP client at Warmbly's server and it can search contacts, check campaigns, read your inbox, draft replies, and create draft campaigns and automations, all scoped to what you grant it.
+Warmbly 支持[模型上下文协议（Model Context Protocol）](https://modelcontextprotocol.io)。将任意 MCP 客户端连接到 Warmbly 服务器后，它即可在你授予的权限范围内搜索联系人、查看营销活动、读取收件箱、起草回复，以及创建营销活动和自动化流程的草稿。
 
 - **URL**: `https://api.warmbly.com/v1/mcp`
-- **Transport**: streamable HTTP
-- **Auth**: an OAuth 2.1 access token (browser sign-in) or a static API key (bearer header).
+- **传输方式**：可流式传输的 HTTP
+- **身份验证**：OAuth 2.1 访问令牌（通过浏览器登录），或静态 API 密钥（通过 Bearer 请求头传入）。
 
-There are two ways to connect. OAuth is the one-command path: you run a single `add` command, approve access in the browser, and the client holds a short-lived token it can refresh. An API key is the static path: you mint a key and paste it into the client config. Both reach the exact same tools, gated the exact same way.
+有两种连接方式。OAuth 只需一条命令：运行 `add` 命令，在浏览器中批准访问后，客户端即可持有可刷新的短期令牌。API 密钥则是静态凭据方式：创建密钥并将其粘贴到客户端配置中。两种方式可访问完全相同的工具，也采用完全相同的权限检查。
 
-## Connect with OAuth
+## 通过 OAuth 连接 [#connect-with-oauth]
 
-This is the recommended path. You do not paste a key anywhere: the client discovers Warmbly's authorization server, opens a browser for you to sign in and approve the scopes, and stores the resulting token itself.
+推荐使用此方式。无需在任何地方粘贴密钥：客户端会发现 Warmbly 的授权服务器，打开浏览器供你登录并批准权限范围，然后自行保存生成的令牌。
 
-### Claude Code
+### Claude Code [#claude-code]
 
 ```
 claude mcp add --transport http warmbly https://api.warmbly.com/v1/mcp
 ```
 
-Then run `/mcp` inside Claude Code and pick **Authenticate**. A browser opens, you sign in to Warmbly, approve the requested scopes, and you are connected. No header, no key.
+然后在 Claude Code 中运行 `/mcp` 并选择 **Authenticate（身份验证）**。浏览器打开后，登录 Warmbly，批准请求的权限范围，即可建立连接。无需配置请求头或密钥。
 
-### Claude Desktop and Cursor
+### Claude Desktop 和 Cursor [#claude-desktop-and-cursor]
 
-Add the server with just its URL, and the client runs the OAuth flow on first use:
+仅使用 URL 添加服务器，客户端会在首次使用时执行 OAuth 流程：
 
 ```json
 {
@@ -35,32 +35,32 @@ Add the server with just its URL, and the client runs the OAuth flow on first us
 }
 ```
 
-<Callout type="info" title="What you are approving">
-The consent screen marks a self-registered client as **Not affiliated with Warmbly**, names where approving sends access, and shows exactly which scopes the client will get: the ones it asks for that your role in the workspace covers, so a connected client never does more than you could yourself. Sending real mail is never one of them: `SEND_CAMPAIGNS` and API-key management are excluded from OAuth-connected MCP clients by design, and the assistant only ever drafts. You can revoke a connected client at any time from your dashboard under connected apps.
+<Callout type="info" title="你将授权哪些操作">
+同意授权页面会将自行注册的客户端标记为 **Not affiliated with Warmbly（与 Warmbly 无关联）**，说明批准后访问权限将授予哪个应用，并明确列出客户端将获得的权限范围：即它所请求、且你的工作区角色允许的权限，因此连接后的客户端绝不会执行超出你自身权限的操作。实际发送邮件的权限不在其中：按设计，通过 OAuth 连接的 MCP 客户端不会获得 `SEND_CAMPAIGNS` 和 API 密钥管理权限，助手也始终只生成草稿。你可以随时在控制台的已连接应用中撤销客户端的访问权限。
 </Callout>
 
-## Connect with an API key
+## 使用 API 密钥连接 [#connect-with-an-api-key]
 
-Prefer a static, long-lived credential (CI, a shared script, a client that does not implement OAuth)? Mint an API key and send it as a bearer token:
+希望使用静态的长期凭据，例如用于 CI、共享脚本，或不支持 OAuth 的客户端？创建 API 密钥并将其作为 Bearer 令牌发送：
 
 ```
 Authorization: Bearer wmbly_...
 ```
 
-<Callout type="info" title="Scope your key">
-Create a dedicated API key for each MCP client and grant it only the scopes it needs (see [Permissions](/api/permissions/)). Grant the read/write scopes for the data you want the client to reach, and `AI_AGENT` if it should search the web or read your playbooks.
+<Callout type="info" title="限制密钥的权限范围">
+为每个 MCP 客户端创建专用 API 密钥，仅授予其所需的权限范围（参阅[权限](/api/permissions/)）。根据客户端需要访问的数据授予读取或写入权限；如果需要搜索网页或读取操作手册，还应授予 `AI_AGENT`。
 </Callout>
 
-### Claude Code
+### Claude Code [#claude-code-1]
 
 ```
 claude mcp add --transport http warmbly https://api.warmbly.com/v1/mcp \
   --header "Authorization: Bearer wmbly_..."
 ```
 
-### Claude Desktop
+### Claude Desktop [#claude-desktop]
 
-Add to your `claude_desktop_config.json`:
+添加到 `claude_desktop_config.json`：
 
 ```json
 {
@@ -74,9 +74,9 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-### Cursor
+### Cursor [#cursor]
 
-Add to `.cursor/mcp.json`:
+添加到 `.cursor/mcp.json`：
 
 ```json
 {
@@ -89,98 +89,98 @@ Add to `.cursor/mcp.json`:
 }
 ```
 
-## What is exposed
+## 提供哪些能力 [#what-is-exposed]
 
-The server exposes exactly the tools your credential is allowed to use, whether that credential is an OAuth token or an API key. Each tool checks its own scope, and an OAuth token or API key also needs its member to hold the matching organization permission today. A credential with only read scopes sees only the read tools; one with write scopes sees those too, so an MCP client acts with precisely the permissions you granted, and nothing more.
+无论使用 OAuth 令牌还是 API 密钥，服务器都只提供该凭据有权使用的工具。每个工具都会检查自身所需的权限范围；此外，OAuth 令牌或 API 密钥所属的成员在当前时点也必须具有对应的组织权限。只有读取权限的凭据只能看到读取工具，具有写入权限的凭据还会看到相应写入工具，因此 MCP 客户端只能在你明确授予的权限范围内操作。
 
-This is a subset of what the in-product assistant can do. Two categories are dashboard-only and never reachable by an API key or OAuth token: sending email (`send_reply`, `compose_email`), and workspace governance (team, workspace settings, and billing). Those routes are session-only and have no API scope to grant, so they never appear over MCP.
+这只是产品内置助手功能的子集。有两类操作仅限控制台，API 密钥和 OAuth 令牌始终无法访问：发送邮件（`send_reply`、`compose_email`），以及工作区治理（团队、工作区设置和账单）。这些路由仅接受会话身份验证，没有可授予的 API 权限范围，因此不会通过 MCP 提供。
 
-Every tool is gated by its API permission. `tools/list` returns only the tools your mask allows. Sending-class tools (anything that transmits a message to a recipient) are never exposed over MCP regardless of scope; over MCP the assistant only produces drafts (`draft_reply`).
+每个工具都受其对应的 API 权限约束。`tools/list` 仅返回权限掩码允许使用的工具。无论权限范围如何，发送类工具（任何向收件人传送邮件的工具）都不会通过 MCP 提供；通过 MCP 使用助手时，只会生成草稿（`draft_reply`）。
 
-| Tool | Does | Required scope |
+| 工具 | 用途 | 所需权限范围 |
 |------|------|----------------|
-| `search_contacts` | Find contacts by text | `READ_CONTACTS` |
-| `get_contact` | Read one contact | `READ_CONTACTS` |
-| `update_contact_fields` | Update contact fields | `WRITE_CONTACTS` |
-| `add_tag` / `remove_tag` | Add or remove a label on a contact | `WRITE_CONTACTS` |
-| `list_campaigns` | List campaigns | `READ_CAMPAIGNS` |
-| `get_campaign_stats` | Campaign stats, all time or for the emails sent from `from` to `to` | `READ_ANALYTICS` |
-| `list_campaign_leads` | A campaign's leads with derived status + totals | `READ_CONTACTS` |
-| `create_campaign_draft` | Create a draft campaign | `WRITE_CAMPAIGNS` |
-| `set_campaign_status` | Start or stop a campaign | `SEND_CAMPAIGNS` |
-| `set_lead_hold` | Hold or resume one contact's flow in one campaign, without unsubscribing them | `WRITE_CAMPAIGNS` |
-| `get_dashboard_analytics` | Sending stats for a period, org-wide or for chosen campaigns and campaign folders | `READ_ANALYTICS` |
-| `list_mailboxes` | Sender mailboxes with health + warmup state | `READ_ANALYTICS` |
-| `list_placement_tests` / `get_placement_test` | Inbox placement tests and where each copy landed | `READ_ANALYTICS` |
-| `run_placement_test` | Send a step or template to the seed inboxes from one mailbox | `SEND_CAMPAIGNS` |
-| `list_placement_batches` / `get_placement_batch` | Placement batches, their progress, and placement by sending domain, sending provider and recipient provider | `READ_ANALYTICS` |
-| `run_placement_batch` | Run the same placement test from a campaign's senders or the whole workspace, optionally sampled. Signed-in members only: an API key starts a batch with `POST /placement/batches`, which applies the key's mailbox limits | `SEND_CAMPAIGNS` |
-| `add_contact` / `delete_contact` | Create or delete a contact | `WRITE_CONTACTS` |
-| `bulk_edit_contacts` | Label or subscribe many contacts at once | `BULK_CONTACTS` |
-| `get_contact_timeline` / `get_contact_sent_emails` | Read a contact's activity and sent mail | `READ_CONTACTS` |
-| `list_segments` / `get_segment` / `list_segment_fields` | Read saved audiences, and the fields a condition can name | `READ_CONTACTS` |
-| `preview_segment` | Count what a set of conditions would match, saving nothing | `READ_CONTACTS` |
-| `create_segment` / `update_segment` / `delete_segment` | Manage saved audiences | `WRITE_CONTACTS` |
-| `set_segment_members` | Pin contacts into or out of a segment | `WRITE_CONTACTS` |
-| `list_campaign_segments` | Read the segments feeding a campaign | `READ_CAMPAIGNS` |
-| `set_campaign_segments` / `add_segment_to_campaign` | Link an audience to a campaign, or enrol its members once | `WRITE_CAMPAIGNS` |
-| `list_forms` / `get_form` / `list_form_submissions` / `get_form_stats` | Read hosted forms, their submissions, and their funnel | `READ_CONTACTS` |
-| `create_form` / `update_form` / `delete_form` | Manage hosted forms | `WRITE_CONTACTS` |
-| `mint_form_link` | Get one contact's personalized form URL | `WRITE_CONTACTS` |
-| `get_campaign_forms` | How a campaign's forms performed for its recipients | `READ_CAMPAIGNS` |
-| `list_suppressions` | Read the do-not-contact list, and why each entry is on it | `READ_CONTACTS` |
-| `add_suppressions` / `remove_suppression` | Suppress an address or domain, or lift one | `WRITE_CONTACTS` |
-| `list_pipelines` / `list_deals` / `get_deal` / `list_deals_by_contact` | Read CRM pipelines and deals | `READ_CRM` |
-| `create_task` / `create_deal` | Create CRM records | `WRITE_CRM` |
-| `update_deal` / `move_deal_stage` / `delete_deal` | Edit, move, or delete a deal | `WRITE_CRM` |
-| `list_tasks` / `list_task_types` | Read CRM tasks and task types | `READ_CRM` |
-| `update_task` / `complete_task` / `delete_task` | Edit, complete, or delete a task | `WRITE_CRM` |
-| `add_contact_note` / `list_contact_notes` | Add or read contact notes | `WRITE_CRM` / `READ_CRM` |
-| `update_contact_note` / `delete_contact_note` | Edit or delete a note | `WRITE_CRM` |
-| `create_pipeline` / `update_pipeline` / `delete_pipeline` | Manage CRM pipelines | `WRITE_CRM` |
-| `create_pipeline_stage` / `update_pipeline_stage` / `delete_pipeline_stage` | Manage pipeline stages | `WRITE_CRM` |
-| `get_campaign` / `list_campaign_senders` / `get_campaign_logs` | Read a campaign's config, senders, and logs | `READ_CAMPAIGNS` |
-| `update_campaign` / `delete_campaign` | Edit or delete a campaign | `WRITE_CAMPAIGNS` |
-| `set_campaign_senders` / `verify_campaign_tracking_domain` | Set senders, verify tracking domain | `WRITE_CAMPAIGNS` |
-| `list_campaign_steps` | Read a campaign's sequence steps | `READ_CAMPAIGNS` |
-| `add_campaign_step` / `update_campaign_step` / `delete_campaign_step` | Edit a campaign's sequence steps | `WRITE_CAMPAIGNS` |
-| `list_threads` / `get_thread` | Read the unified inbox | `READ_UNIBOX` |
-| `draft_reply` | Draft a reply (never sends) | `READ_UNIBOX` |
-| `list_scheduled_sends` | List queued outbound messages | `READ_UNIBOX` |
-| `mark_thread_seen` / `set_thread_labels` | Mark seen, set thread labels | `WRITE_UNIBOX` |
-| `snooze_thread` / `unsnooze_thread` / `cancel_scheduled_send` | Snooze a thread, cancel a queued send | `WRITE_UNIBOX` |
-| `get_mailbox` / `get_warmup_ban_status` | Read a mailbox's config and warmup standing | `READ_EMAILS` |
-| `update_mailbox` / `set_mailbox_warmup` / `set_mailbox_send_hold` / `set_mailbox_tracking_domain` | Edit mailbox settings, warmup, the campaign hold, tracking domain | `WRITE_EMAILS` |
-| `submit_warmup_appeal` / `disconnect_mailbox` | Appeal a warmup ban, disconnect a mailbox | `WRITE_EMAILS` |
-| `create_automation_draft` / `list_automations` / `get_automation` | Read automations, create a disabled draft | `INTEGRATIONS` |
-| `update_automation` / `set_automation_enabled` / `delete_automation` | Edit, enable, or delete an automation | `INTEGRATIONS` |
-| `list_api_keys` / `create_api_key` / `update_api_key` / `revoke_api_key` | Manage API keys | `API_KEYS` |
-| `list_webhooks` / `list_webhook_deliveries` | Read webhook endpoints and deliveries | `WEBHOOKS` |
-| `create_webhook` / `update_webhook` / `delete_webhook` / `rotate_webhook_secret` / `verify_webhook` | Manage webhook endpoints | `WEBHOOKS` |
-| `search_web` / `fetch_url` | Search and read public pages | `AI_AGENT` |
-| `load_skill` | Read one of your playbooks | `AI_AGENT` |
+| `search_contacts` | 按文本搜索联系人 | `READ_CONTACTS` |
+| `get_contact` | 读取单个联系人 | `READ_CONTACTS` |
+| `update_contact_fields` | 更新联系人字段 | `WRITE_CONTACTS` |
+| `add_tag` / `remove_tag` | 为联系人添加或移除标签 | `WRITE_CONTACTS` |
+| `list_campaigns` | 列出营销活动 | `READ_CAMPAIGNS` |
+| `get_campaign_stats` | 营销活动统计，可涵盖全部时间，也可仅统计 `from` 至 `to` 期间发送的邮件 | `READ_ANALYTICS` |
+| `list_campaign_leads` | 营销活动的潜在客户，以及推导状态和汇总数量 | `READ_CONTACTS` |
+| `create_campaign_draft` | 创建营销活动草稿 | `WRITE_CAMPAIGNS` |
+| `set_campaign_status` | 启动或停止营销活动 | `SEND_CAMPAIGNS` |
+| `set_lead_hold` | 暂停或恢复某位联系人在某个营销活动中的流程，且不取消其订阅 | `WRITE_CAMPAIGNS` |
+| `get_dashboard_analytics` | 指定时段的发送统计，可覆盖整个组织，也可限定为选定的营销活动和营销活动文件夹 | `READ_ANALYTICS` |
+| `list_mailboxes` | 发件邮箱及其健康状况和预热状态 | `READ_ANALYTICS` |
+| `list_placement_tests` / `get_placement_test` | 收件箱投递位置测试，以及每封测试邮件实际到达的位置 | `READ_ANALYTICS` |
+| `run_placement_test` | 从一个邮箱向种子收件箱发送某个步骤或模板的邮件 | `SEND_CAMPAIGNS` |
+| `list_placement_batches` / `get_placement_batch` | 投递位置测试批次、进度，以及按发件域名、发件服务商和收件服务商划分的投递位置结果 | `READ_ANALYTICS` |
+| `run_placement_batch` | 从营销活动的发件邮箱或整个工作区运行相同的投递位置测试，可选择抽样。仅限已登录成员：API 密钥通过 `POST /placement/batches` 启动批次，该端点会应用密钥的邮箱限制 | `SEND_CAMPAIGNS` |
+| `add_contact` / `delete_contact` | 创建或删除联系人 | `WRITE_CONTACTS` |
+| `bulk_edit_contacts` | 批量为联系人添加标签或订阅 | `BULK_CONTACTS` |
+| `get_contact_timeline` / `get_contact_sent_emails` | 读取联系人的活动记录和已发送邮件 | `READ_CONTACTS` |
+| `list_segments` / `get_segment` / `list_segment_fields` | 读取已保存的受众，以及条件中可引用的字段 | `READ_CONTACTS` |
+| `preview_segment` | 统计一组条件可匹配的记录数，不保存任何内容 | `READ_CONTACTS` |
+| `create_segment` / `update_segment` / `delete_segment` | 管理已保存的受众 | `WRITE_CONTACTS` |
+| `set_segment_members` | 将联系人固定纳入或排除于某个分群 | `WRITE_CONTACTS` |
+| `list_campaign_segments` | 读取为营销活动提供联系人的分群 | `READ_CAMPAIGNS` |
+| `set_campaign_segments` / `add_segment_to_campaign` | 将受众关联到营销活动，或将其成员一次性加入活动 | `WRITE_CAMPAIGNS` |
+| `list_forms` / `get_form` / `list_form_submissions` / `get_form_stats` | 读取托管表单、提交记录和转化漏斗 | `READ_CONTACTS` |
+| `create_form` / `update_form` / `delete_form` | 管理托管表单 | `WRITE_CONTACTS` |
+| `mint_form_link` | 获取某位联系人的个性化表单 URL | `WRITE_CONTACTS` |
+| `get_campaign_forms` | 营销活动表单在其收件人中的表现 | `READ_CAMPAIGNS` |
+| `list_suppressions` | 读取禁止联系名单，以及各条目进入名单的原因 | `READ_CONTACTS` |
+| `add_suppressions` / `remove_suppression` | 禁止向某个地址或域名发送邮件，或解除该限制 | `WRITE_CONTACTS` |
+| `list_pipelines` / `list_deals` / `get_deal` / `list_deals_by_contact` | 读取 CRM 销售管道和商机 | `READ_CRM` |
+| `create_task` / `create_deal` | 创建 CRM 记录 | `WRITE_CRM` |
+| `update_deal` / `move_deal_stage` / `delete_deal` | 编辑、移动或删除商机 | `WRITE_CRM` |
+| `list_tasks` / `list_task_types` | 读取 CRM 任务和任务类型 | `READ_CRM` |
+| `update_task` / `complete_task` / `delete_task` | 编辑、完成或删除任务 | `WRITE_CRM` |
+| `add_contact_note` / `list_contact_notes` | 添加或读取联系人备注 | `WRITE_CRM` / `READ_CRM` |
+| `update_contact_note` / `delete_contact_note` | 编辑或删除备注 | `WRITE_CRM` |
+| `create_pipeline` / `update_pipeline` / `delete_pipeline` | 管理 CRM 销售管道 | `WRITE_CRM` |
+| `create_pipeline_stage` / `update_pipeline_stage` / `delete_pipeline_stage` | 管理销售管道阶段 | `WRITE_CRM` |
+| `get_campaign` / `list_campaign_senders` / `get_campaign_logs` | 读取营销活动配置、发件邮箱和日志 | `READ_CAMPAIGNS` |
+| `update_campaign` / `delete_campaign` | 编辑或删除营销活动 | `WRITE_CAMPAIGNS` |
+| `set_campaign_senders` / `verify_campaign_tracking_domain` | 设置发件邮箱、验证跟踪域名 | `WRITE_CAMPAIGNS` |
+| `list_campaign_steps` | 读取营销活动的邮件序列步骤 | `READ_CAMPAIGNS` |
+| `add_campaign_step` / `update_campaign_step` / `delete_campaign_step` | 编辑营销活动的邮件序列步骤 | `WRITE_CAMPAIGNS` |
+| `list_threads` / `get_thread` | 读取统一收件箱 | `READ_UNIBOX` |
+| `draft_reply` | 起草回复（绝不发送） | `READ_UNIBOX` |
+| `list_scheduled_sends` | 列出排队等待发送的邮件 | `READ_UNIBOX` |
+| `mark_thread_seen` / `set_thread_labels` | 标记为已读、设置邮件会话标签 | `WRITE_UNIBOX` |
+| `snooze_thread` / `unsnooze_thread` / `cancel_scheduled_send` | 稍后提醒某个邮件会话、取消排队中的发送任务 | `WRITE_UNIBOX` |
+| `get_mailbox` / `get_warmup_ban_status` | 读取邮箱配置和预热状况 | `READ_EMAILS` |
+| `update_mailbox` / `set_mailbox_warmup` / `set_mailbox_send_hold` / `set_mailbox_tracking_domain` | 编辑邮箱设置、预热设置、营销活动暂停限制和跟踪域名 | `WRITE_EMAILS` |
+| `submit_warmup_appeal` / `disconnect_mailbox` | 对预热封禁提出申诉、断开邮箱连接 | `WRITE_EMAILS` |
+| `create_automation_draft` / `list_automations` / `get_automation` | 读取自动化流程、创建停用状态的草稿 | `INTEGRATIONS` |
+| `update_automation` / `set_automation_enabled` / `delete_automation` | 编辑、启用或删除自动化流程 | `INTEGRATIONS` |
+| `list_api_keys` / `create_api_key` / `update_api_key` / `revoke_api_key` | 管理 API 密钥 | `API_KEYS` |
+| `list_webhooks` / `list_webhook_deliveries` | 读取 Webhook 端点和投递记录 | `WEBHOOKS` |
+| `create_webhook` / `update_webhook` / `delete_webhook` / `rotate_webhook_secret` / `verify_webhook` | 管理 Webhook 端点 | `WEBHOOKS` |
+| `search_web` / `fetch_url` | 搜索和读取公开网页 | `AI_AGENT` |
+| `load_skill` | 读取某份操作手册 | `AI_AGENT` |
 
-Two form surfaces are deliberately absent: brand-asset uploads (logo, cover, background) are multipart images with dimension and MIME limits that a tool call cannot express, and the custom forms domain is workspace-wide branding behind a DNS check, so it lives in settings rather than in a tool.
+有意未提供两类表单功能：品牌素材上传（徽标、封面、背景）采用多部分图片上传，并有尺寸和 MIME 类型限制，工具调用无法表达这些要求；自定义表单域名则属于整个工作区的品牌设置，并须通过 DNS 检查，因此位于设置中，不以工具形式提供。
 
-Rate limits apply to MCP calls exactly as they do to the rest of the API (per-key for API keys, per-user for OAuth tokens). `SEND_CAMPAIGNS` appears in the table because `set_campaign_status` and the placement tools need it. A self-registered MCP client is never granted it, so only an API key or app that holds the scope can start or stop a campaign over MCP. Tools that send a message to a recipient (`send_reply`, `compose_email`) are never exposed over the MCP transport regardless of scope.
+MCP 调用与其他 API 调用遵循相同的速率限制：API 密钥按密钥限流，OAuth 令牌按用户限流。表中包含 `SEND_CAMPAIGNS`，是因为 `set_campaign_status` 和投递位置测试工具需要此权限。自行注册的 MCP 客户端永远不会获得该权限，因此只有持有此权限范围的 API 密钥或应用，才能通过 MCP 启动或停止营销活动。无论权限范围如何，向收件人发送邮件的工具（`send_reply`、`compose_email`）都不会通过 MCP 传输方式提供。
 
-Tools that return a secret (`create_webhook` and `rotate_webhook_secret`) return it to the MCP client that called them, which is the caller asking for it. The in-product assistant never sees these values.
+会返回密钥的工具（`create_webhook` 和 `rotate_webhook_secret`）会将密钥返回给发起调用的 MCP 客户端，也就是请求该密钥的调用方。产品内置助手始终无法看到这些值。
 
-## How OAuth discovery works
+## OAuth 发现机制 [#how-oauth-discovery-works]
 
-The one-command flow is standard MCP authorization, so any spec-compliant client works without Warmbly-specific setup. On a request with no valid token, `/v1/mcp` returns `401` with a `WWW-Authenticate` header pointing at the protected-resource metadata. The client then walks:
+单命令连接流程采用标准 MCP 授权机制，因此任何符合规范的客户端都可以使用，无需针对 Warmbly 特别配置。请求未携带有效令牌时，`/v1/mcp` 会返回 `401`，并在 `WWW-Authenticate` 响应头中指向受保护资源的元数据。随后客户端依次执行：
 
-- `GET /.well-known/oauth-protected-resource`: the resource and its authorization server ([RFC 9728](https://www.rfc-editor.org/rfc/rfc9728)).
-- `GET /.well-known/oauth-authorization-server`: the authorize, token, and registration endpoints ([RFC 8414](https://www.rfc-editor.org/rfc/rfc8414)).
-- `POST /v1/oauth/register`: dynamic client registration, so the client mints a public (PKCE) `client_id` with no manual app setup ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)).
-- Authorization code with PKCE (S256) in the browser, then `POST /v1/oauth/token` for a short-lived access token and a rotating refresh token.
+- `GET /.well-known/oauth-protected-resource`：获取资源及其授权服务器（[RFC 9728](https://www.rfc-editor.org/rfc/rfc9728)）。
+- `GET /.well-known/oauth-authorization-server`：获取授权、令牌和注册端点（[RFC 8414](https://www.rfc-editor.org/rfc/rfc8414)）。
+- `POST /v1/oauth/register`：动态注册客户端，使客户端无需手动配置应用即可创建公共客户端（PKCE）的 `client_id`（[RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)）。
+- 在浏览器中执行带 PKCE（S256）的授权码流程，然后调用 `POST /v1/oauth/token` 获取短期访问令牌和轮换式刷新令牌。
 
-The same discovery drives Warmbly's OAuth server for any client. See the [OAuth 2.1](/api/oauth/) page for the full authorization-server reference.
+所有客户端都通过同一发现机制访问 Warmbly 的 OAuth 服务器。完整的授权服务器参考见 [OAuth 2.1](/api/oauth/) 页面。
 
-## See also
+## 另请参阅 [#see-also]
 
-- [Agent tools (REST)](/api/agent-tools/) for the same registry over plain HTTP, for Hermes and OpenAI-style function-calling agents that do not speak MCP.
-- [OAuth 2.1](/api/oauth/) for the authorization-server endpoints, scopes, and dynamic registration.
-- [Authentication](/api/authentication/) for how API keys and OAuth tokens work.
-- [Permissions](/api/permissions/) for the full scope list.
-- To connect Warmbly to external MCP servers instead (the other direction), see the [Connect MCP tools](/guides/connect-mcp-tools/) guide.
+- [智能体工具（REST）](/api/agent-tools/)：通过普通 HTTP 提供同一工具注册表，适用于不支持 MCP 的 Hermes 和 OpenAI 风格函数调用智能体。
+- [OAuth 2.1](/api/oauth/)：授权服务器端点、权限范围和动态注册。
+- [身份验证](/api/authentication/)：API 密钥与 OAuth 令牌的工作方式。
+- [权限](/api/permissions/)：完整的权限范围列表。
+- 如果你需要反向连接，即让 Warmbly 连接到外部 MCP 服务器，请参阅[连接 MCP 工具](/guides/connect-mcp-tools/)指南。

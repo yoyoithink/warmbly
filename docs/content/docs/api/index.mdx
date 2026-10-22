@@ -1,17 +1,17 @@
 ---
-title: API overview
-description: Base URL, conventions, and a quickstart for the Warmbly API.
+title: "API 概览"
+description: "Warmbly API 的基础 URL、接口约定和快速入门。"
 ---
 
-The Warmbly API lets you drive everything you can do in the dashboard programmatically: mailboxes, campaigns, contacts, the unibox, and more. It is a JSON API over HTTPS.
+通过 Warmbly API，你可以以编程方式完成控制台中的所有操作，包括管理邮箱、营销活动、联系人、统一收件箱等。这是一套通过 HTTPS 提供的 JSON API。
 
 ```
 https://api.warmbly.com/v1
 ```
 
-## Quickstart
+## 快速入门 [#quickstart]
 
-Create an API key in your dashboard under Settings, then pass it as a Bearer token on every request:
+在控制台的“设置”中创建 API 密钥，然后在每次请求中将其作为 Bearer 令牌传入：
 
 ```bash
 curl -X GET "https://api.warmbly.com/v1/campaigns" \
@@ -19,22 +19,22 @@ curl -X GET "https://api.warmbly.com/v1/campaigns" \
   -H "Content-Type: application/json"
 ```
 
-See [Authentication](/api/authentication/) for the key format, scoping, and security guidance.
+有关密钥格式、权限范围和安全建议，请参阅[身份验证](/api/authentication/)。
 
-## Versioning
+## 版本管理 [#versioning]
 
-The API is versioned in the URL. The current version is `v1`, and the base URL includes it: every endpoint path in these docs is relative to `https://api.warmbly.com/v1`.
+API 的版本号包含在 URL 中。当前版本为 `v1`，基础 URL 中也包含该版本号：本文档中的所有端点路径均相对于 `https://api.warmbly.com/v1`。
 
-- **Stability**: within a version, changes are additive (new fields, new endpoints). A breaking change ships as a new version, so code written against `v1` keeps working.
-- **Version header**: every response carries an `API-Version` header so you can confirm which version answered.
-- **No unversioned alias**: every endpoint lives under `/v1`; there are no bare, unversioned paths. A future breaking change will ship as `/v2` while `/v1` keeps working.
+- **稳定性**：同一版本内的变更均为增量更新，例如新增字段或端点。破坏兼容性的变更会以新版本发布，因此面向 `v1` 编写的代码可以继续运行。
+- **版本请求头**：每个响应均包含 `API-Version` 响应头，便于确认实际响应请求的版本。
+- **不提供无版本号的别名**：所有端点均位于 `/v1` 下，不提供省略版本号的路径。未来的破坏性变更将以 `/v2` 发布，同时 `/v1` 继续可用。
 
-## Conventions
+## 约定 [#conventions]
 
-- **Permissions**: every key carries an explicit permission set; a request beyond the key's permissions returns `403`. The full list is in the [permissions reference](/api/permissions/).
-- **List responses**: list endpoints return a consistent `data` plus `pagination` shape with opaque cursors.
-- **Errors**: error responses carry a machine-readable `code` and a `request_id` alongside the human-readable text. Client logic should branch on `code` and HTTP status, never on message text. See [error codes](/api/error-codes/).
-- **Endpoint coverage**: the [endpoint scope map](/api/endpoints/) lists every route, whether it accepts API keys, and which permission it requires. The [endpoint reference](/api/reference/mailboxes/) documents each route's request and response structures, grouped by resource.
+- **权限**：每个密钥都具有明确的权限集；超出密钥权限的请求会返回 `403`。完整列表见[权限参考](/api/permissions/)。
+- **列表响应**：列表端点采用一致的 `data` 与 `pagination` 响应结构，并使用不透明游标。
+- **错误**：错误响应除便于阅读的说明文字外，还包含供程序识别的 `code` 和 `request_id`。客户端应始终根据 `code` 与 HTTP 状态码判断后续逻辑，不应依据消息文本。请参阅[错误码](/api/error-codes/)。
+- **端点覆盖范围**：[端点权限范围对照表](/api/endpoints/)列出了所有路由、各路由是否接受 API 密钥，以及所需权限。[端点参考](/api/reference/mailboxes/)按资源分类，说明每条路由的请求和响应结构。
 
 ```json
 {
@@ -43,8 +43,8 @@ The API is versioned in the URL. The current version is `v1`, and the base URL i
 }
 ```
 
-## Client libraries
+## 客户端库 [#client-libraries]
 
-Warmbly publishes official, typed SDKs for JavaScript and TypeScript, Python, and Go. They wrap the REST API, the OAuth2 flows, and the realtime gateway, with auto-pagination, retries, and typed errors built in. Any HTTP client also works against the API directly.
+Warmbly 提供适用于 JavaScript 和 TypeScript、Python 及 Go 的官方强类型 SDK。它们封装了 REST API、OAuth2 流程和实时网关，内置自动分页、重试及具有明确类型的错误。你也可以使用任意 HTTP 客户端直接调用 API。
 
-See [SDKs](/api/sdks/) for install commands and quickstarts.
+安装命令和快速入门示例见 [SDK](/api/sdks/)。

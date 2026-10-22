@@ -1,33 +1,33 @@
 ---
-title: Analytics and audit
-description: Read dashboard, deliverability, warmup, campaign, account, and usage analytics, plus your organization's audit trail.
+title: "分析与审计"
+description: "读取控制台、邮件送达能力、邮箱预热、营销活动、邮箱账户和用量分析数据，以及组织的审计记录。"
 ---
 
-The analytics endpoints expose the same rollups that power the dashboard: an org-wide overview, deliverability posture, warmup progress, per-campaign performance (with daily and hourly breakdowns and side-by-side comparison), mailbox health, and account usage. The audit endpoint returns your organization's activity trail ("who did what, when, from where"). All of these are read-only.
+分析端点提供与控制台相同的汇总数据：组织整体概览、邮件送达状况、预热进度、各营销活动表现（包括每日和每小时明细，以及并排比较）、邮箱健康状况和账户用量。审计端点返回组织的活动记录，即谁在何时、从哪里做了什么。所有端点均为只读。
 
-Every analytics route shares one auth gate: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`. The audit route uses the same org permission with a dedicated scope. See [permissions](/api/permissions/) for the scope reference and [authentication](/api/authentication/) for how to present credentials.
+所有分析路由共用一套身份验证要求：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`。审计路由使用相同的组织权限，但有独立的 API 权限范围。权限范围参考见[权限](/api/permissions/)，凭据传入方式见[身份验证](/api/authentication/)。
 
-Dates are parsed as `YYYY-MM-DD` unless noted. Errors follow the standard `{error, message, code, request_id}` envelope documented in [error codes](/api/error-codes/).
+除非另有说明，日期按 `YYYY-MM-DD` 解析。错误采用[错误码](/api/error-codes/)中说明的标准 `{error, message, code, request_id}` 封装。
 
-## Get dashboard analytics
+## 获取控制台分析数据 [#get-dashboard-analytics]
 
 `GET /analytics/dashboard`
 
-Returns the main dashboard overview for the active organization: aggregate stats, recent activity, top campaigns, account health, and a daily trend series. Sent and engagement totals include email steps only; completed wait and action steps do not inflate them. Account-health buckets are mutually exclusive and use the most severe current connection, sync, or warmup-reputation state. Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`.
+返回当前组织的主仪表板概览，包括汇总统计、近期活动、表现最佳的营销活动、邮箱健康状况和每日趋势序列。发送和互动总数只统计邮件步骤，已完成的等待和操作步骤不会使这些数字增加。邮箱健康分组互斥，并使用当前连接、同步或预热信誉状态中最严重的一项。身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `period` | query | string | One of `7d`, `30d`, `90d`, measured as UTC calendar days including today. Defaults to `7d`; any other value falls back to `7d`. |
-| `campaign_ids` | query | string | Optional. Comma-separated campaign ids (or the parameter repeated) to narrow the campaign sections to. At most `100`. |
-| `folder_ids` | query | string | Optional. Comma-separated campaign folder ids. Each one stands for the campaigns in that folder when the request is made. At most `100`. |
+| `period` | query | string | 取值为 `7d`、`30d`、`90d` 之一，按包含今天的 UTC 自然日计算。默认 `7d`；其他值均回退为 `7d`。 |
+| `campaign_ids` | query | string | 可选。以逗号分隔营销活动 ID，或重复传入此参数，将营销活动相关部分限定到这些活动。最多 `100` 个。 |
+| `folder_ids` | query | string | 可选。以逗号分隔营销活动文件夹 ID。每个文件夹表示请求时其中的所有营销活动。最多 `100` 个。 |
 
-### Filtering by campaign or folder
+### 按营销活动或文件夹筛选 [#filtering-by-campaign-or-folder]
 
-Without `campaign_ids` and `folder_ids` the dashboard covers every campaign in the workspace. With either, the server resolves them to one set: the named campaigns plus every campaign currently in a named folder. A campaign named both ways, or sitting in two named folders, is counted once.
+未提供 `campaign_ids` 和 `folder_ids` 时，仪表板覆盖工作区的所有营销活动。提供任一参数时，服务器会将它们解析为一个集合：明确指定的营销活动，加上当前位于指定文件夹中的所有营销活动。通过两种方式重复指定，或同时位于两个指定文件夹中的营销活动，只统计一次。
 
-The filter narrows everything built from campaign sends: `overall_stats` (sends, opens, clicks, replies, bounces, their rates and `active_campaigns`), `daily_trend`, `top_campaigns` and `recent_activity`. It does not narrow `account_health`, `overall_stats.active_accounts` or `capacity_today`, which describe the workspace's mailboxes, or [direct mail](/guides/analytics/#direct-mail), which belongs to no campaign.
+筛选会缩小所有基于营销活动发件计算的内容：`overall_stats`（发送、打开、点击、回复、退信、相应比率及 `active_campaigns`）、`daily_trend`、`top_campaigns` 和 `recent_activity`。它不会缩小描述工作区邮箱的 `account_health`、`overall_stats.active_accounts` 或 `capacity_today`，也不会影响不属于任何营销活动的[直接发送邮件](/guides/analytics/#direct-mail)。
 
-An id that does not belong to the active organization, or no longer exists, is dropped and never widens the filter: if nothing named belongs to the workspace, every campaign figure is zero. A malformed id, or more than `100` of either, is a `400`. A filtered response echoes what it was computed for in `scope`:
+不属于当前组织或已不存在的 ID 会被丢弃，绝不会扩大筛选范围：如果指定项均不属于工作区，所有营销活动指标都为零。ID 格式错误，或任一类超过 `100` 个，返回 `400`。经过筛选的响应会在 `scope` 中回显本次计算范围：
 
 ```json
 {
@@ -39,9 +39,9 @@ An id that does not belong to the active organization, or no longer exists, is d
 }
 ```
 
-`campaigns` and `folders` list the requested ones that belong to the workspace; `campaign_count` is how many distinct campaigns they cover together. `scope` is absent when the request was not filtered.
+`campaigns` 和 `folders` 列出请求项中属于该工作区的部分；`campaign_count` 表示它们合计覆盖的不重复营销活动数。未筛选的请求不会返回 `scope`。
 
-### Response
+### 响应 [#response]
 
 ```json
 {
@@ -105,22 +105,22 @@ An id that does not belong to the active organization, or no longer exists, is d
 }
 ```
 
-An `opened` or `clicked` entry in `recent_activity` carries `origin` when the person's first open or click on that step was logged: the same client, device and location object a [contact timeline](/api/reference/contacts/#list-a-contacts-timeline) event carries.
+`recent_activity` 中的 `opened` 或 `clicked` 条目在记录到联系人对该步骤的首次打开或点击时，会带有 `origin`，其客户端、设备和位置对象与[联系人时间线](/api/reference/contacts/#list-a-contacts-timeline)事件中的对象相同。
 
-Every entry names the mailbox the step was sent from in `sender_id` and `sender_email` (its send-as alias when it has one). A reply credits that mailbox even when it landed in the [shared reply inbox](/guides/mailboxes/#a-shared-reply-inbox) the sender's reply-to names.
+每个条目通过 `sender_id` 和 `sender_email` 标明该步骤的发件邮箱；如果存在发件身份别名，则使用别名。即使回复到达发件人 reply-to 指定的[共享回复收件箱](/guides/mailboxes/#a-shared-reply-inbox)，也仍归因于该发件邮箱。
 
-## Get deliverability dashboard
+## 获取邮件送达能力看板 [#get-deliverability-dashboard]
 
 `GET /analytics/deliverability`
 
-Returns the organization's deliverability posture for a time window: bounce, complaint, open, click, and reply counts and rates, suppression and dead-letter pressure, reply-intent breakdown, seed inbox-placement (overall and per recipient provider), warmup-derived placement per recipient mail host, an overall health band and a `0-100` composite score (both from the documented thresholds), a daily timeseries, and per-mailbox and per-campaign breakdowns. Requires an organization context. Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`.
+返回组织在指定时间窗口内的邮件送达状况：退信、垃圾邮件投诉、打开、点击和回复的数量及比率，禁止发送和死信积压情况，回复意图分布，种子邮箱投递位置（整体及按收件服务商划分），从预热推导出的各收件邮件托管服务商投递位置，整体健康等级及 `0-100` 综合评分（均基于文档所述阈值），每日时间序列，以及按邮箱和营销活动划分的明细。需要组织上下文。身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `from` | query | string | Window start as an RFC 3339 timestamp. Defaults to 7 days ago (UTC). |
-| `to` | query | string | Window end as an RFC 3339 timestamp. Defaults to now (UTC). |
+| `from` | query | string | 时间窗口起点，RFC 3339 时间戳。默认为七天前，采用 UTC。 |
+| `to` | query | string | 时间窗口终点，RFC 3339 时间戳。默认为当前时间，采用 UTC。 |
 
-### Response
+### 响应 [#response-1]
 
 ```json
 {
@@ -215,27 +215,27 @@ Returns the organization's deliverability posture for a time window: bounce, com
 }
 ```
 
-The `intent_*` counters and `reply_count` are two different things and do not add up to each other. `reply_count` counts `reply` deliverability events, which are the ones a provider or your own integration reports to [record an event](/api/reference/deliverability-ops/). The `intent_*` counters are the replies Warmbly classified as they arrived in a connected mailbox, one per reply, including the machine ones: a vacation notice lands in `intent_out_of_office` and an autoresponder, ticket acknowledgement or bounce notice in `intent_automated`. A workspace that reports no reply events sees `reply_count` at zero with intents counted normally.
+`intent_*` 计数与 `reply_count` 是两种不同指标，彼此不构成汇总关系。`reply_count` 统计 `reply` 类型的邮件送达事件，即服务商或你自己的集成向[记录事件](/api/reference/deliverability-ops/)接口报告的事件。`intent_*` 则统计 Warmbly 在已连接邮箱收到回复时进行分类的结果，每封回复计一次，也包含机器回复：休假通知归入 `intent_out_of_office`，自动回复、工单确认或退信通知归入 `intent_automated`。如果工作区没有上报回复事件，`reply_count` 会保持为零，但意图仍正常计数。
 
-`spam_placement_rate` and `inbox_placement_rate` are omitted when there are no seed samples in the window. Seed samples are the copies of the workspace's [placement tests](/api/reference/placement/) that got a verdict in the window: `inbox`, `promotions`, `other` (another Gmail tab), `spam`, or `missing` (never arrived); copies that failed to send or were cancelled are not samples. `by_provider` rolls the same samples up per seed's provider family, where `provider` is the family id (`gmail`, `google_workspace`, `microsoft365`, `outlook`, `yahoo` and so on) and `label` its display name, and the rates are percentages of `samples`; `warmup_placement` is the continuous warmup signal per recipient mail host, where `provider` is the host id (`google_workspace`, `microsoft365`, `zoho`, `hostinger`, `other` and so on, or the provider group `google`, `microsoft`, `yahoo` or `other` for an arrival whose host was not detected), `label` its display name, `delivered` counts verified warmup arrivals and `spam` the subset the recipient's provider filed into junk. Warmup recipients are mostly other workspaces' mailboxes, so no recipient address or domain is reported. `score` starts at `100` and subtracts saturating penalties for bounce rate (up to `40` points, maxed at `10%`), complaint rate (up to `30` points, maxed at `0.30%`), and spam placement (up to `40` points, maxed at `40%`).
+窗口内没有种子样本时，会省略 `spam_placement_rate` 和 `inbox_placement_rate`。种子样本指工作区[投递位置测试](/api/reference/placement/)中在该窗口内获得判定结果的测试邮件副本：`inbox`、`promotions`、`other`（其他 Gmail 分类标签页）、`spam` 或 `missing`（始终未到达）；发送失败或已取消的副本不计为样本。`by_provider` 按种子邮箱的服务商类别汇总同一批样本，其中 `provider` 为类别 ID（`gmail`、`google_workspace`、`microsoft365`、`outlook`、`yahoo` 等），`label` 为显示名称，比率为占 `samples` 的百分比。`warmup_placement` 提供按收件邮件托管服务商划分的持续预热信号，其中 `provider` 是托管服务商 ID（`google_workspace`、`microsoft365`、`zoho`、`hostinger`、`other` 等；无法检测托管服务商时，使用服务商分组 `google`、`microsoft`、`yahoo` 或 `other`），`label` 为显示名称，`delivered` 统计已验证到达的预热邮件，`spam` 为其中被收件服务商归入垃圾邮件的数量。预热收件人大多是其他工作区的邮箱，因此不会报告收件地址或域名。`score` 从 `100` 开始，分别扣除达到上限后不再增加的惩罚分：退信率最多扣 `40` 分，在 `10%` 时达到上限；投诉率最多扣 `30` 分，在 `0.30%` 时达到上限；垃圾邮件投递比例最多扣 `40` 分，在 `40%` 时达到上限。
 
-## Get warmup analytics
+## 获取邮箱预热分析数据 [#get-warmup-analytics]
 
 `GET /analytics/warmup`
 
-Returns warmup send and reply statistics over a date range, with a summary and per-day series. Optionally scoped to a single mailbox. Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`.
+返回日期范围内的预热发送和回复统计，包含摘要及每日序列。可选择限定为单个邮箱。身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`。
 
-Results are scoped to the selected workspace, so every member with access sees the same mailbox history. Workspace-wide results combine all mailboxes into one row per date. `average_daily` uses active days (dates with a warmup statistics row) as its denominator. `target_progress` is total sends divided by total planned target volume across those active days and may exceed `100` when sends beat the plan.
+结果限定在所选工作区，因此所有有权限的成员都会看到相同的邮箱历史。工作区整体结果将所有邮箱汇总为每日一行。`average_daily` 以活跃天数，即存在预热统计记录的日期数为分母。`target_progress` 为这些活跃日的总发送量除以计划目标总量；发送超过计划时可能大于 `100`。
 
-`total_received` and each day's `emails_received` count verified warmup mail that arrived from pool partners, bucketed on the UTC day it was verified. A day with arrivals but no warmup plan is listed with zero sends and does not count towards `days_active`.
+`total_received` 和每日 `emails_received` 统计从预热池伙伴收到且已验证的预热邮件，按验证时所在的 UTC 日期分桶。某天有收件但没有预热计划时，该日发送量列为零，且不计入 `days_active`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `from` | query | string | Required. Range start (`YYYY-MM-DD`). |
-| `to` | query | string | Required. Range end (`YYYY-MM-DD`). |
-| `email_id` | query | string (uuid) | Optional. Limit to one email account. Invalid UUIDs are ignored. |
+| `from` | query | string | 必填。范围起始日期（`YYYY-MM-DD`）。 |
+| `to` | query | string | 必填。范围结束日期（`YYYY-MM-DD`）。 |
+| `email_id` | query | string (uuid) | 可选。限定为一个邮箱账户。无效 UUID 会被忽略。 |
 
-### Response
+### 响应 [#response-2]
 
 ```json
 {
@@ -260,29 +260,29 @@ Results are scoped to the selected workspace, so every member with access sees t
 }
 ```
 
-`email_account_id` is the zero UUID when no `email_id` filter is supplied.
+未提供 `email_id` 筛选时，`email_account_id` 为全零 UUID。
 
-## Get warmup placement
+## 获取预热邮件投递位置 [#get-warmup-placement]
 
 `GET /analytics/warmup/placement`
 
-Returns where warmup mail landed in partners' mailboxes over a date range: the primary inbox, a Gmail category tab (Promotions, Updates, Social or Forums), or spam. Counts are per UTC day, per recipient provider, and, on the workspace report, per mailbox. Requires an organization context. Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`.
+返回日期范围内，预热邮件在伙伴邮箱中的到达位置：主收件箱、Gmail 分类标签页（推广、动态、社交或论坛），或垃圾邮件。按 UTC 日期和收件服务商计数；工作区报告还按邮箱划分。需要组织上下文。身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`。
 
-Every figure is measured, not estimated: a delivery is counted when the recipient's own sync finds the warmup email and records the folder it arrived in. `rescued` counts spam placements the recipient's mailbox was told to move back to the inbox; the move itself is not confirmed back, so it is the rescues requested, not a verified count. `unconfirmed` counts completed sends more than 24 hours old that no recipient has reported seeing, bucketed on the day they were sent; a provider filter cannot split it, so it is only reported unfiltered.
+所有数字均为实测，而非估算：只有收件邮箱自身的同步发现预热邮件并记录其到达文件夹后，才会计为一次投递。`rescued` 统计已要求收件邮箱移回收件箱的垃圾邮件投递；实际移动不会回传确认，因此该指标是请求挽救的数量，而非已验证的完成数量。`unconfirmed` 统计发送完成超过 24 小时、但尚无收件方报告发现的邮件，按发送日期分桶；服务商筛选无法拆分此项，因此仅在未筛选时报告。
 
-`rate` is the headline deliverability figure the dashboard shows next to each mailbox: `inbox_rate` is inbox plus tabs over what was delivered in the trailing 7 UTC days, and stays `null` until `min_sample` (`20`) deliveries are in. `scope` is always `major`: the rate is taken over Google, Microsoft and Yahoo recipients only, the providers that filter on sender reputation. A mailbox whose warmup mail reached only other hosts has no rate (`delivered` `0`, `band` `none`). Other hosts are always in `summary`, `daily` and `providers`, and `other_delivered` and `other_inbox_rate` give their share of the same window (`0` and `null` with none). `band` is `good` at `90` or above, `fair` from `80`, `poor` below `80`, `collecting` below the sample floor and `none` with no deliveries. Each day's `rolling_inbox_rate` is the trailing 7-day figure at the same three providers ending on that day; the day's counts cover every host, so filter by provider to read one. Rates are percentages with two decimals.
+`rate` 是控制台在每个邮箱旁显示的主要送达指标：`inbox_rate` 为最近 7 个 UTC 日中，到达收件箱或分类标签页的邮件占已投递邮件的比例；在投递样本达到 `min_sample`（`20`）之前，保持为 `null`。`scope` 始终为 `major`：该比率只统计 Google、Microsoft 和 Yahoo 收件方，因为这些服务商会依据发件人信誉筛选邮件。若邮箱的预热邮件只到达其他托管服务商，则没有该比率（`delivered` 为 `0`，`band` 为 `none`）。其他托管服务商始终包含在 `summary`、`daily` 和 `providers` 中，`other_delivered` 与 `other_inbox_rate` 表示它们在同一窗口内的对应指标；没有相关投递时分别为 `0` 和 `null`。`band` 在 `90` 及以上为 `good`，从 `80` 起为 `fair`，低于 `80` 为 `poor`，低于最低样本量为 `collecting`，没有投递为 `none`。每日 `rolling_inbox_rate` 是截至该日、同样三个服务商最近七天的比率；每日数量覆盖全部托管服务商，可按服务商筛选以查看单个服务商。比率为保留两位小数的百分比。
 
-Recipient providers are grouped as `google` (Gmail and Google Workspace), `microsoft` (Outlook.com and Microsoft 365), `yahoo` (Yahoo and AOL) and `other`; each group lists its `hosts`, where an empty `host` means the recipient's host was not detected yet.
+收件服务商分组为 `google`（Gmail 和 Google Workspace）、`microsoft`（Outlook.com 和 Microsoft 365）、`yahoo`（Yahoo 和 AOL）及 `other`；每组列出其 `hosts`，其中 `host` 为空表示尚未检测到收件方的邮件托管服务商。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `from` | query | string | Optional. Range start (`YYYY-MM-DD`). Defaults to 29 days before `to`. |
-| `to` | query | string | Optional. Range end (`YYYY-MM-DD`). Defaults to today (UTC). |
-| `email_id` | query | string (uuid) | Optional. Limit to one email account in the workspace. Omit for the workspace report, which adds `mailboxes`. |
+| `from` | query | string | 可选。范围起始日期（`YYYY-MM-DD`）。默认为 `to` 前 29 天。 |
+| `to` | query | string | 可选。范围结束日期（`YYYY-MM-DD`）。默认为今天，采用 UTC。 |
+| `email_id` | query | string (uuid) | 可选。限定为工作区中的一个邮箱账户。省略则返回工作区报告，并额外包含 `mailboxes`。 |
 
-A range longer than 366 days, `from` after `to`, a malformed date or an invalid `email_id` returns `400`; an `email_id` outside the workspace returns `404`.
+范围超过 366 天、`from` 晚于 `to`、日期格式错误或 `email_id` 无效时，返回 `400`；`email_id` 不属于工作区时返回 `404`。
 
-### Response
+### 响应 [#response-3]
 
 ```json
 {
@@ -321,29 +321,29 @@ A range longer than 366 days, `from` after `to`, a malformed date or an invalid 
 }
 ```
 
-The workspace report (no `email_id`) omits `email_account_id` and adds `mailboxes`, one row per mailbox with activity in the range, ordered worst `rate.inbox_rate` first, then mailboxes still collecting. Each row carries the window counts, its own `rate`, and `daily_inbox_rate`, one entry per day of the range (`null` on a day with no deliveries).
+工作区报告，即未传入 `email_id` 的报告，会省略 `email_account_id` 并添加 `mailboxes`，范围内每个有活动的邮箱对应一行，先按 `rate.inbox_rate` 从低到高排列，再列出仍在收集样本的邮箱。每行包含窗口内的计数、自身的 `rate` 和 `daily_inbox_rate`；后者在范围内每天对应一个条目，无投递的日期为 `null`。
 
-Placement history is kept for the life of the mailbox, like warmup volume history, and moves with a workspace export. Deliveries recorded before this report existed, and any arrival the live count missed, are counted by a background pass from the receipts still on file within minutes; those read as inbox or spam only, with category tabs and rescues as `0`.
+与预热数量历史一样，投递位置历史会在邮箱的整个生命周期内保留，并随工作区导出迁移。在此报告功能推出前记录的投递，以及实时计数遗漏的到达记录，会由后台任务根据仍保存的回执在数分钟内补计；这些记录只能区分收件箱或垃圾邮件，分类标签页和挽救数量均为 `0`。
 
-## Get campaign analytics
+## 获取营销活动分析数据 [#get-campaign-analytics]
 
 `GET /analytics/campaigns/:id`
 
-Returns a single campaign's performance summary plus per-sequence-step stats, for the campaign's whole history or for the emails sent in a date range. `total_contacts` counts enrolled leads, and `emails_pending` is the remaining planned email-step sends across those leads. The campaign must belong to the selected workspace. Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`.
+返回单个营销活动的表现摘要，以及各邮件序列步骤的统计，可涵盖活动全部历史，或仅统计某个日期范围内发送的邮件。`total_contacts` 统计已加入活动的潜在客户，`emails_pending` 为这些潜在客户剩余计划执行的邮件步骤发送量。营销活动必须属于所选工作区。身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | string (uuid) | Campaign id. |
-| `from` | query | string | Optional. First day of the period (`YYYY-MM-DD`, UTC). Requires `to`. |
-| `to` | query | string | Optional. Last day of the period (`YYYY-MM-DD`, UTC), included. Requires `from`. |
+| `id` | path | string (uuid) | 营销活动 ID。 |
+| `from` | query | string | 可选。统计时段首日（`YYYY-MM-DD`，UTC）。必须同时提供 `to`。 |
+| `to` | query | string | 可选。统计时段末日（`YYYY-MM-DD`，UTC），包含当天。必须同时提供 `from`。 |
 
-Leave out both `from` and `to` for the campaign's whole history. Supplying only one of them, a date in another format, or a `from` after `to` returns `400` with code `bad_request`.
+同时省略 `from` 和 `to` 时，统计营销活动全部历史。仅提供其中一个、日期采用其他格式，或 `from` 晚于 `to`，会返回 `400`，错误码为 `bad_request`。
 
-A period is a send cohort: it selects the emails sent on its days, from the start of `from` to the end of `to` in UTC, and counts every open, click, reply and bounce those emails earned, whenever it arrived. An email sent on September 5 that is replied to on September 10 counts in a September 1 to 7 period; a reply that arrives on September 3 to an email sent in August does not. That keeps each rate's numerator and denominator the same emails. The period scopes `emails_sent`, the open, click, reply, positive reply and bounce counts and rates, `interested_leads`, `reply_breakdown`, every row in `steps` and every bucket in `engagement` (an open or click counts when the email it answers was sent in the period). `total_contacts` and `emails_pending` describe the campaign as it stands now and are the same whatever the period.
+统计时段按发送批次定义：选择 UTC 时间从 `from` 当日开始至 `to` 当日结束期间发出的邮件，并统计这些邮件产生的所有打开、点击、回复和退信，无论互动何时到达。9 月 5 日发送、9 月 10 日收到回复的邮件，会计入 9 月 1 日至 7 日的时段；8 月发送、9 月 3 日收到回复的邮件则不会计入。这样可确保各比率的分子和分母针对同一批邮件。时段影响 `emails_sent`、打开、点击、回复、正向回复和退信的数量及比率、`interested_leads`、`reply_breakdown`、`steps` 中的每行，以及 `engagement` 中的每个分桶；只要对应邮件在该时段发送，打开或点击就会计入。`total_contacts` 和 `emails_pending` 描述营销活动当前状态，不随统计时段变化。
 
-`date_range` is the period the figures cover, as midnight UTC on its first and last day: the `from` and `to` you sent, or for the whole history the day of the campaign's first send (its creation day before anything is sent) through today.
+`date_range` 表示指标覆盖的时段，以首日和末日的 UTC 零点表示：即传入的 `from` 和 `to`；统计全部历史时，则从营销活动首次发送日开始，尚未发送时从创建日开始，一直到今天。
 
-### Response
+### 响应 [#response-4]
 
 ```json
 {
@@ -408,35 +408,35 @@ A period is a send cohort: it selects the emails sent on its days, from the star
 }
 ```
 
-`engagement` groups the campaign's human opens and clicks by country (ISO code), mail client, device type (`desktop`, `mobile`, `tablet`) and surface, counting distinct contacts per bucket. A `clients` key is the mail client (`Gmail`, `Apple Mail`, `Outlook`), `Webmail in <browser>` for an open read in a browser that named no client, or for a click the browser the link opened in. `surfaces` joins device and app or webmail: `mobile_app`, `desktop_app`, `tablet_app`, `webmail`, the bare device type when neither is known (a click, unless a mail app made the request itself), and `hidden` when a mailbox provider's image proxy fetched the email and the device cannot be known. Each list holds the busiest eight; an empty `key` is unknown. Country needs the GeoLite2 database on the consumer, otherwise every country row is unknown.
+`engagement` 按国家或地区（ISO 代码）、邮件客户端、设备类型（`desktop`、`mobile`、`tablet`）和使用环境对营销活动的人工打开与点击分组，每个分桶统计不重复联系人。`clients` 的键可以是邮件客户端（`Gmail`、`Apple Mail`、`Outlook`）；若在浏览器打开且未识别客户端，则为 `Webmail in <browser>`；若是点击，则为链接打开时使用的浏览器。`surfaces` 结合设备与应用或网页邮箱，取值包括 `mobile_app`、`desktop_app`、`tablet_app`、`webmail`；两者均未知时仅使用设备类型，点击通常属于这种情况，除非请求由邮件应用自身发出；如果由邮箱服务商的图片代理获取邮件、无法判断设备，则为 `hidden`。每个列表只保留最活跃的八项；`key` 为空表示未知。识别国家或地区需要消费者进程安装 GeoLite2 数据库，否则所有相关行均为未知。
 
-`unique_opens`, `opens`, `total_opens` and every open rate count a person's opens only. `machine_opens` is the separate count of steps whose only open came from an automated fetcher (UA-less clients, known scanner networks, and opens inside the instance's automated-open window, which starts when the step is dispatched to a worker); it is not part of the open counts. Apple Mail Privacy Protection's relay (a user agent of just `Mozilla/5.0`) and the stripped WebKit signature Mail on a Mac and the new Outlook for Windows share are counted as a prefetch only inside that window; by themselves they do not prove automation. A person's later open on a machine-opened step moves it from `machine_opens` into the open count. `machine_clicks` counts the contacts whose only clicks on a step were automated (a security gateway walking the links); those are not part of `unique_clicks` or `total_clicks`, which only ever count a person's click.
+`unique_opens`、`opens`、`total_opens` 及所有打开率只统计人工打开。`machine_opens` 单独统计仅由自动抓取程序打开过的步骤，包括没有 UA 的客户端、已知扫描器网络，以及发生在实例自动打开判定窗口内的打开；该窗口从步骤分派到工作节点时开始。这些不计入打开数量。Apple Mail 隐私保护的中继（用户代理仅为 `Mozilla/5.0`），以及 Mac 上的 Mail 与新版 Windows Outlook 共用的简化 WebKit 特征，只有在该窗口内才被计为预取；它们本身不能证明是自动操作。对于曾被机器打开的步骤，之后若发生人工打开，会从 `machine_opens` 移入人工打开计数。`machine_clicks` 统计在某个步骤上只有自动点击的联系人，例如安全网关逐个访问链接；这些不计入只统计人工点击的 `unique_clicks` 或 `total_clicks`。
 
-`replies` counts human replies, one per step a contact answered; out-of-office notices and autoresponders are never part of it. `positive_replies` is the subset the [reply classifier](/guides/inbox-tagging/) judged positive, and `positive_reply_rate` is that count as a percentage of `emails_sent`, the same denominator as `reply_rate`. `interested_leads` counts distinct contacts with at least one positive reply, so a lead who answered two steps positively counts once. A step's classification is its latest reply's: a lead who answered positively and later wrote back to say no is counted under `negative`.
+`replies` 统计人工回复，联系人每回复一个步骤计一次；外出通知和自动回复永远不计入。`positive_replies` 是其中被[回复分类器](/guides/inbox-tagging/)判定为正向的子集；`positive_reply_rate` 是该数量占 `emails_sent` 的百分比，与 `reply_rate` 使用相同分母。`interested_leads` 统计至少有一次正向回复的不重复联系人，因此对两个步骤作出正向回复的潜在客户只计一次。步骤的分类以最新回复为准：先表示有兴趣、后来又回复拒绝的潜在客户，会计入 `negative`。
 
-`reply_breakdown` splits the same replies by classification. `positive`, `neutral`, `negative`, `unsubscribe` (a reply asking to stop) and `unclassified` (a reply the classifier could not place, or one received before replies were classified) add up to `replies`. `out_of_office` and `auto_reply` count the automated answers, which are not replies and are listed only so the split is complete. The steps and daily series count positive replies the same way, so they add up to the summary for the same period.
+`reply_breakdown` 按分类拆分同一批回复。`positive`、`neutral`、`negative`、`unsubscribe`（要求停止联系的回复）和 `unclassified`（分类器无法归类，或在启用回复分类之前收到的回复）合计为 `replies`。`out_of_office` 和 `auto_reply` 统计自动应答，不属于人工回复，仅为完整呈现分类而列出。步骤和每日序列对正向回复采用相同计数方式，因此同一时段内可汇总到摘要。
 
-`steps` lists the campaign's email steps in sequence order, the order the steps list returns them. `position` is the step's 1-based number among those email steps, the `N` the canvas shows as `Email N`. It is not the step's own `position` field: action steps are not counted and a deleted step leaves no gap. Match a row to its step by `step_id`.
+`steps` 按邮件序列顺序列出营销活动的邮件步骤，与步骤列表返回的顺序一致。`position` 是步骤在这些邮件步骤中从 1 开始的序号，即画布以 `Email N` 显示的 `N`。它不是步骤自身的 `position` 字段：操作步骤不参与编号，删除步骤后不会留空号。应通过 `step_id` 将统计行对应到步骤。
 
-Each entry in `steps` carries that step's own rates: `open_rate`, `click_rate`, `reply_rate`, `positive_reply_rate` and `bounce_rate` are percentages of that step's `emails_sent`, not of the campaign's, so a follow-up that reached a tenth of the contacts still compares against the first touch. They are `0` while the step has sent nothing. `machine_opens` and `machine_clicks` follow the same rules as their summary counterparts, scoped to the step.
+`steps` 中每项都包含该步骤自身的比率：`open_rate`、`click_rate`、`reply_rate`、`positive_reply_rate` 和 `bounce_rate` 均以该步骤的 `emails_sent` 为分母，而不是以整个营销活动的发送量为分母，因此即使跟进步骤只触达十分之一的联系人，也能与首次联系作比较。步骤尚未发送任何邮件时，这些比率为 `0`。`machine_opens` 和 `machine_clicks` 遵循与摘要对应字段相同的规则，但范围限定为该步骤。
 
-## Get campaign daily stats
+## 获取营销活动每日统计 [#get-campaign-daily-stats]
 
 `GET /analytics/campaigns/:id/daily`
 
-Returns per-day send, open, click, reply and positive reply counts for one campaign over a date range. The campaign must belong to the caller. Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`.
+返回单个营销活动在日期范围内每天的发送、打开、点击、回复和正向回复数量。营销活动必须属于调用者。身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | string (uuid) | Campaign id. |
-| `from` | query | string | Required. First day (`YYYY-MM-DD`, UTC). |
-| `to` | query | string | Required. Last day (`YYYY-MM-DD`, UTC), included. |
+| `id` | path | string (uuid) | 营销活动 ID。 |
+| `from` | query | string | 必填。首日（`YYYY-MM-DD`，UTC）。 |
+| `to` | query | string | 必填。末日（`YYYY-MM-DD`，UTC），包含当天。 |
 
-Each row is one UTC day with at least one send, and its opens, clicks, replies and positive replies are those earned by that day's sends, whenever they arrived. The rows for a period add up to the [campaign analytics](#get-campaign-analytics) for the same `from` and `to`.
+每行表示至少有一次发送的 UTC 日期；该行的打开、点击、回复和正向回复均归属于当天发送的邮件，无论互动何时到达。某时段各行汇总后，与相同 `from` 和 `to` 的[营销活动分析](#get-campaign-analytics)一致。
 
-### Response
+### 响应 [#response-5]
 
-The series is returned under a `data` envelope.
+序列通过 `data` 封装返回。
 
 ```json
 {
@@ -447,20 +447,20 @@ The series is returned under a `data` envelope.
 }
 ```
 
-## Get campaign hourly stats
+## 获取营销活动每小时统计 [#get-campaign-hourly-stats]
 
 `GET /analytics/campaigns/:id/hourly`
 
-Returns per-hour stats for one campaign on a single day. The campaign must belong to the caller. Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`.
+返回单个营销活动在某一天的每小时统计。营销活动必须属于调用者。身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | string (uuid) | Campaign id. |
-| `date` | query | string | Day to report (`YYYY-MM-DD`, UTC). Defaults to today. |
+| `id` | path | string (uuid) | 营销活动 ID。 |
+| `date` | query | string | 要报告的日期（`YYYY-MM-DD`，UTC）。默认为今天。 |
 
-### Response
+### 响应 [#response-6]
 
-The series is returned under a `data` envelope, with the resolved `date` echoed back. Each item's `hour` is the UTC hour, `0`-`23`, so a day's rows add up to that day's row in the [daily stats](#get-campaign-daily-stats).
+序列通过 `data` 封装返回，并回显解析后的 `date`。每项的 `hour` 是 UTC 小时，范围 `0` 至 `23`，因此一天中的各行汇总后，与[每日统计](#get-campaign-daily-stats)中该日的记录一致。
 
 ```json
 {
@@ -472,21 +472,21 @@ The series is returned under a `data` envelope, with the resolved `date` echoed 
 }
 ```
 
-## Compare campaigns
+## 比较营销活动 [#compare-campaigns]
 
 `GET /analytics/campaigns/compare`
 
-Returns side-by-side performance for up to 10 campaigns over a date range. Every requested campaign must belong to the caller. Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`.
+返回日期范围内最多 10 个营销活动的并排表现比较。请求中的每个营销活动都必须属于调用者。身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `ids` | query | string | Required. Comma-separated campaign UUIDs. Invalid entries are dropped; the list is capped at 10. At least one valid id is required. |
-| `from` | query | string | Required. First day (`YYYY-MM-DD`, UTC). |
-| `to` | query | string | Required. Last day (`YYYY-MM-DD`, UTC), included. |
+| `ids` | query | string | 必填。逗号分隔的营销活动 UUID。无效条目会被丢弃，列表上限为 10 个。至少需要一个有效 ID。 |
+| `from` | query | string | 必填。首日（`YYYY-MM-DD`，UTC）。 |
+| `to` | query | string | 必填。末日（`YYYY-MM-DD`，UTC），包含当天。 |
 
-Each campaign's figures are the emails it sent from the start of `from` to the end of `to`, with every open, click, reply and bounce they earned, the same send cohort as [campaign analytics](#get-campaign-analytics) for that period.
+每个营销活动的指标基于从 `from` 当日开始至 `to` 当日结束期间发送的邮件，以及这些邮件产生的所有打开、点击、回复和退信，与该时段[营销活动分析](#get-campaign-analytics)使用同一发送批次。
 
-### Response
+### 响应 [#response-7]
 
 ```json
 {
@@ -519,23 +519,23 @@ Each campaign's figures are the emails it sent from the start of `from` to the e
 }
 ```
 
-## List account statuses
+## 列出邮箱状态 [#list-account-statuses]
 
 `GET /analytics/accounts`
 
-Returns the health and usage status of email accounts in the selected workspace, one bounded page at a time. The per-mailbox reads are batched across the page, so a page's cost does not grow with the size of the whole inventory. The request fails if a page's usage read cannot be completed, so clients never receive a silently incomplete page. Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`.
+返回所选工作区中邮箱账户的健康和用量状态，每次只返回有数量上限的一页。各邮箱读取会在页内批量执行，因此单页成本不会随全部邮箱数量增长。如果无法完成该页的用量读取，请求会失败，客户端不会收到未明确提示的不完整页面。身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`。
 
-### Query parameters
+### 查询参数 [#query-parameters]
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `email_ids` | query | string | Comma-separated mailbox UUIDs to return the status of (up to 200). Use this to ask only for the mailboxes a page shows. A foreign-workspace id matches nothing. Invalid or over-limit returns `400`. |
-| `limit` | query | integer | Page size when walking the whole inventory, `1`-`1000`, default `1000`. Invalid returns `400`. Ignored in spirit when `email_ids` is set, since that set is already bounded. |
-| `cursor` | query | string | Opaque keyset cursor from a previous response's `pagination.next_cursor`. Invalid returns `400`. |
+| `email_ids` | query | string | 逗号分隔的邮箱 UUID，最多 200 个，用于返回这些邮箱的状态。可用它仅请求当前页面显示的邮箱。其他工作区的 ID 不会匹配任何内容。无效或超限时返回 `400`。 |
+| `limit` | query | integer | 遍历全部邮箱时的每页数量，范围 `1` 至 `1000`，默认 `1000`。无效值返回 `400`。设置 `email_ids` 时，该集合本身已有数量限制，因此实际上不再依赖此参数限制范围。 |
+| `cursor` | query | string | 上一次响应 `pagination.next_cursor` 中的不透明键集游标。无效时返回 `400`。 |
 
-### Response
+### 响应 [#response-8]
 
-Returned under the standard `data` plus `pagination` envelope. `pagination.next_cursor` is an opaque token for the next page, or `null` on the last page. Each item in `data` has the same shape as [get account status](#get-account-status). A workspace with more mailboxes than one page follows `next_cursor` to reach the rest, rather than having the overflow silently dropped.
+采用标准 `data` 加 `pagination` 封装返回。`pagination.next_cursor` 是下一页的不透明令牌，最后一页为 `null`。`data` 中每项的结构与[获取邮箱状态](#get-account-status)相同。工作区邮箱数超过一页时，应沿 `next_cursor` 获取余下内容，超出部分不会被静默丢弃。
 
 ```json
 {
@@ -566,17 +566,17 @@ Returned under the standard `data` plus `pagination` envelope. `pagination.next_
 }
 ```
 
-## Get account status
+## 获取邮箱状态 [#get-account-status]
 
 `GET /analytics/accounts/:id`
 
-Returns the detailed status for one email account: a combined health score (folding in warmup-pool reputation and measured warmup placement), active errors, today's UTC usage, warmup status, warmup-pool health, and the trailing warmup inbox rate. The account must belong to the selected workspace. Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`.
+返回单个邮箱账户的详细状态：综合健康评分（包含预热池信誉和实测预热投递位置）、当前错误、UTC 当日用量、预热状态、预热池健康情况，以及最近一段时间的预热收件箱到达率。账户必须属于所选工作区。身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `id` | path | string (uuid) | Email account id. |
+| `id` | path | string (uuid) | 邮箱账户 ID。 |
 
-### Response
+### 响应 [#response-9]
 
 ```json
 {
@@ -644,29 +644,29 @@ Returns the detailed status for one email account: a combined health score (fold
 }
 ```
 
-`send_recovery_reason` is present only while a send safety hold pauses the mailbox's sending: `authentication` (cleared by reconnecting the mailbox), `permanent`, `conflict` or `unknown`. `warmup_status` is present only when warmup has ever been enabled, and its `next_send_at` is when the mailbox's next warmup send is queued for (absent while nothing is queued, for example while warmup is paused); `warmup_health` is present only when the mailbox is in a warmup pool. `in_campaign` reports whether the mailbox currently backs a live campaign.
+仅在发送安全限制暂停邮箱发送时出现 `send_recovery_reason`，取值为 `authentication`（重新连接邮箱可清除）、`permanent`、`conflict` 或 `unknown`。只有曾启用预热时才会出现 `warmup_status`；其 `next_send_at` 是邮箱下一次已排队预热发送的计划时间，没有排队任务时省略，例如预热暂停期间。只有邮箱处于预热池中时才出现 `warmup_health`。`in_campaign` 表示邮箱当前是否为正在运行的营销活动提供发送支持。
 
-`warmup_placement` is the mailbox's measured warmup inbox rate over the trailing 7 UTC days, the same figure [Get warmup placement](#get-warmup-placement) reports as `rate`, and is absent when nothing was delivered in that window. Once `inbox_rate` is present, `health.score` is capped at it (rounded down), so a mailbox landing any mail in spam no longer reads `100`, and a rate below `90` also sets `health.status` to at least `warning` with an issue naming the rate.
+`warmup_placement` 是邮箱最近 7 个 UTC 日的实测预热收件箱到达率，与[获取预热邮件投递位置](#get-warmup-placement)返回的 `rate` 相同；该窗口没有任何投递时省略。一旦有 `inbox_rate`，`health.score` 就不能超过该值，向下取整，因此只要邮箱有邮件落入垃圾邮件，评分就不会再显示为 `100`；低于 `90` 时，还会将 `health.status` 至少设为 `warning`，并附上说明该比率的问题。
 
-`daily_usage.warmup_sent` and `campaign_sent` both count sends the mailbox completed on that date, which is what the caps are enforced against, so neither can read above the target in force.
+`daily_usage.warmup_sent` 和 `campaign_sent` 都统计邮箱当天实际完成的发送量，这也是强制执行发送上限所依据的值，因此两者都不会超过当前生效的目标。
 
-The three `partner_*_7d` counters are the distinct partners reached by confirmed warmup sends over the last seven days: mailboxes, their domains, and the workspaces behind them. Failed and still-pending attempts do not count. `partner_organizations_7d` of `1` over a full week means the mailbox is only warming inside one workspace, which is expected on a self-hosted instance that is not linked to Warmbly Cloud and worth investigating anywhere else.
+三个 `partner_*_7d` 计数表示最近七天内，通过已确认预热发送触达的不重复伙伴：邮箱、其域名及其所属工作区。失败或仍待完成的尝试不计入。如果整周 `partner_organizations_7d` 都为 `1`，表示邮箱只在一个工作区内部预热；对于未连接 Warmbly Cloud 的自托管实例，这是预期情况，其他环境则值得排查。
 
-`received_7d` and `senders_7d` are the other direction over the same window: verified warmup arrivals and the distinct partners they came from. Only mail that the mailbox's own sync verifies counts. A mailbox with many partners on the sending side and few on the receiving side is being written to less than it writes; the pool favours it on every draw until the two even out.
+`received_7d` 和 `senders_7d` 表示同一窗口内的相反方向：已验证到达的预热邮件，以及这些邮件来自的不重复伙伴。只有邮箱自身同步验证的邮件才计入。如果邮箱在发送侧伙伴很多、接收侧很少，说明它收到的邮件少于发出的邮件；预热池会在每次选择收件方时优先考虑它，直到两侧趋于均衡。
 
-## Get usage overview
+## 获取用量概览 [#get-usage-overview]
 
 `GET /analytics/usage`
 
-Returns account, campaign, and contact usage counters for the selected workspace. `campaigns.emails_sent` counts sent email steps in the requested period; wait and action steps do not count. Auth: **Scope** `READ_ANALYTICS` · **Org permission** `view_analytics`.
+返回所选工作区的邮箱账户、营销活动和联系人用量计数。`campaigns.emails_sent` 统计请求时段内已发送的邮件步骤，不计入等待和操作步骤。身份验证：**权限范围** `READ_ANALYTICS` · **组织权限** `view_analytics`。
 
-The `api` object is a compatibility placeholder. For real API-key request totals, error rates, latency, and endpoint breakdowns use `GET /api-keys/usage/summary` and the API-key analytics endpoints.
+`api` 对象是兼容性占位符。如需真实的 API 密钥请求总数、错误率、延迟和端点明细，请使用 `GET /api-keys/usage/summary` 及 API 密钥分析端点。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `period` | query | string | `day` counts from 00:00 UTC today, `week` is a rolling seven-day window, and `month` is a rolling one-month window. Defaults to `day`; any other value falls back to `day`. |
+| `period` | query | string | `day` 从今天 UTC 00:00 开始统计，`week` 为滚动七天窗口，`month` 为滚动一个月窗口。默认 `day`；其他值回退为 `day`。 |
 
-### Response
+### 响应 [#response-10]
 
 ```json
 {
@@ -679,27 +679,27 @@ The `api` object is a compatibility placeholder. For real API-key request totals
 }
 ```
 
-## List audit logs
+## 列出审计日志 [#list-audit-logs]
 
 `GET /audit-logs`
 
-Returns the organization-wide activity trail for the caller's current organization ("who did what, when, from where"). The organization is always taken from the session and never from a client parameter, so one organization can never read another's trail. Auth: **Scope** `READ_AUDIT_LOGS` · **Org permission** `view_analytics`.
+返回调用者当前组织的完整活动记录，即谁在何时、从哪里做了什么。组织始终从会话获取，不接受客户端参数指定，因此一个组织无法读取另一个组织的记录。身份验证：**权限范围** `READ_AUDIT_LOGS` · **组织权限** `view_analytics`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `limit` | query | int | Page size. Defaults to `50`; must be between `10` and `200` or a `400` is returned. |
-| `cursor` | query | string (uuid) | Opaque cursor from `pagination.next_cursor`. Invalid cursors return `400`. |
-| `actor_id` | query | string (uuid) | Filter to a single acting member. |
-| `entity_id` | query | string (uuid) | Filter to a single entity. |
-| `entity_type` | query | string | Filter by entity type (for example `campaign`, `contact`, `email_account`, `api_key`, `webhook`). |
-| `action` | query | string | Filter by action (for example `create`, `update`, `delete`, `send`, `revoke`). |
-| `date` | query | string | Single-day filter (`YYYY-MM-DD`), expanded to that whole UTC day. |
-| `start_date` | query | string | Range start. RFC 3339 or `YYYY-MM-DD`. Overrides `date`. |
-| `end_date` | query | string | Range end. RFC 3339 or `YYYY-MM-DD`. Overrides `date`. |
+| `limit` | query | int | 每页数量。默认 `50`；必须在 `10` 至 `200` 之间，否则返回 `400`。 |
+| `cursor` | query | string (uuid) | 来自 `pagination.next_cursor` 的不透明游标。无效游标返回 `400`。 |
+| `actor_id` | query | string (uuid) | 限定为某个执行操作的成员。 |
+| `entity_id` | query | string (uuid) | 限定为某个实体。 |
+| `entity_type` | query | string | 按实体类型筛选，例如 `campaign`、`contact`、`email_account`、`api_key`、`webhook`。 |
+| `action` | query | string | 按操作筛选，例如 `create`、`update`、`delete`、`send`、`revoke`。 |
+| `date` | query | string | 按单日筛选（`YYYY-MM-DD`），扩展为该 UTC 日期的全天。 |
+| `start_date` | query | string | 范围起点。RFC 3339 或 `YYYY-MM-DD`。覆盖 `date`。 |
+| `end_date` | query | string | 范围终点。RFC 3339 或 `YYYY-MM-DD`。覆盖 `date`。 |
 
-### Response
+### 响应 [#response-11]
 
-A `data` plus `pagination` envelope with an opaque cursor. `actor` is null when the acting user has since been deleted; `entity_id`, `changes`, and `metadata` are omitted when empty.
+`data` 加 `pagination` 响应封装，使用不透明游标。如果执行操作的用户之后已被删除，`actor` 为 null；`entity_id`、`changes` 和 `metadata` 为空时省略。
 
 ```json
 {
@@ -731,4 +731,4 @@ A `data` plus `pagination` envelope with an opaque cursor. `actor` is null when 
 }
 ```
 
-Secret values (API key material, webhook secrets, passwords) are never recorded in `changes` or `metadata`; the trail records only that a field changed.
+机密值，包括 API 密钥内容、Webhook 密钥和密码，永远不会写入 `changes` 或 `metadata`；活动记录只说明某个字段发生了变更。

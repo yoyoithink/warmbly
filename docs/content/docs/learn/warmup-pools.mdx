@@ -1,79 +1,79 @@
 ---
-title: Warmup pools
-description: How shared warmup pools work, why pool quality beats pool size, and what "dedicated" should mean.
+title: 预热池
+description: 了解共享预热池的运行方式、为什么质量比规模更重要，以及“独享”应当意味着什么。
 ---
 
-A warmup pool is a group of mailboxes that send warmup mail to one another. Your mailbox sends a short message to another mailbox in the pool. That mailbox opens it, sometimes replies, and the pattern reverses with mail from another pool member.
+预热池是一组互相发送预热邮件的邮箱。你的邮箱向池中的另一个邮箱发送一封简短邮件，对方打开，有时会回复；随后，另一个池成员也会向你发送邮件，形成双向往来。
 
 <ShortVersion>
 
-- A warmup pool is a group of mailboxes that send warmup mail to one another.
-- Pool quality matters more than size: vetted mailboxes across the major providers beat thousands of throwaways.
-- Free and premium pools are kept apart.
+- 预热池由互相发送预热邮件的邮箱组成。
+- 质量比规模更重要：覆盖主要服务商、经过审核的邮箱，胜过数千个一次性邮箱。
+- 免费池与高级池相互分离。
 
 </ShortVersion>
 
-## What a warmup pool is
+## 什么是预热池 [#what-a-warmup-pool-is]
 
-From a mailbox provider's point of view, the pattern looks like normal individual mailbox activity: low volume, conversational, mixed senders.
+在邮箱服务商看来，这种模式类似个人邮箱的正常活动：发送量低、有对话往来，而且发件人多样。
 
 <WarmupExchange />
 
-## Why pool quality matters more than size
+## 为什么预热池质量比规模更重要 [#why-pool-quality-matters-more-than-size]
 
-Some tools advertise "5,000+ inboxes in the pool". Sounds impressive. It almost always isn't.
+一些工具宣称“池中有 5,000 多个邮箱”，听上去很可观，但通常并不意味着效果好。
 
-A pool of 5,000 mailboxes mostly assembled from free-tier signups and throwaway providers gives you essentially zero positive signal. Modern mailbox providers either ignore signals from low-trust addresses entirely, or treat them as negative ("why is this mailbox corresponding with so many disposable inboxes?").
+如果 5,000 个邮箱主要来自免费层级注册用户和一次性邮箱服务商，那么它们几乎无法提供正向信号。现代邮箱服务商要么完全忽略低可信地址的信号，要么将其视为负面信号：“为什么这个邮箱会与这么多一次性邮箱通信？”
 
-A pool of 500 vetted, warmed, monitored mailboxes across the major receivers is dramatically more useful.
+相比之下，由 500 个经过审核、完成预热、持续监测，且覆盖主要收件服务商的邮箱构成的池，要有用得多。
 
-## What a healthy pool looks like
+## 健康的预热池是什么样 [#what-a-healthy-pool-looks-like]
 
-- **Diverse**: spans Gmail, Outlook, Yahoo, iCloud, and a representative share of self-hosted IMAP servers.
-- **Monitored**: every member has spam-score tracking; misbehaviour removes the mailbox from the pool.
-- **Conversational**: reply rate inside the pool ~30%; the pool exchanges threads, not one-off blasts.
-- **Avoidance-aware**: the same two mailboxes don't pair up over and over (recent-partner gap of 7 days or more).
-- **Token-verified**: every message carries a single-use token bound to its recipient, so warmup mail cannot be replayed or redirected, and mail arriving in a mailbox is never held against it.
+- **来源多样**：覆盖 Gmail、Outlook、Yahoo、iCloud，以及具有代表性比例的自托管 IMAP 服务器。
+- **持续监测**：跟踪每个成员的垃圾邮件评分；行为不当的邮箱会被移出池。
+- **有对话往来**：池内回复率约为 30%；交换的是连续会话，而不是一次性群发。
+- **避免反复配对**：同两个邮箱不会一再配对，最近配对伙伴的再次配对间隔应为 7 天或更长。
+- **令牌验证**：每封邮件都携带与收件人绑定、只能使用一次的令牌，防止预热邮件被重放或重定向；收到邮件本身不会被计为该邮箱的不良行为。
 
-## Free vs premium pools
+## 免费池与高级池 [#free-vs-premium-pools]
 
-Free pools are useful for testing the mechanics but include higher-risk members. Premium pools should:
+免费池适合测试运行机制，但其中包含风险较高的成员。高级池应满足以下要求：
 
-- Only include warmed mailboxes meeting reputation criteria.
-- Apply stricter quarantine thresholds than free pools.
-- Keep a separate recovery pool for senders coming back from quarantine.
-- Never silently mix free-tier mailboxes into the premium recipient set.
+- 只接纳符合信誉标准、已经预热的邮箱。
+- 采用比免费池更严格的隔离阈值。
+- 为从隔离状态恢复的发件人保留独立恢复池。
+- 绝不将免费层级的邮箱悄悄混入高级池的收件人集合。
 
-In Warmbly, free and premium pools are physically separated. Reserved sending infrastructure does not change that: it is for isolation, not a reputation shortcut.
+在 Warmbly 中，免费池和高级池物理分离。预留的发信基础设施不会改变这一点：它用于隔离，并不是提升信誉的捷径。
 
-Separation has to stay an exchange, though. A tier that only sends into the other and never receives builds nothing: reputation comes from mail arriving, being read and being answered, not from mail leaving. So the one crossing Warmbly allows is mirrored: a premium mailbox short of partners outside its own workspace borrows the best proven free mailboxes as recipients, and those same mailboxes write back to the paying mailboxes that wrote to them. Free senders leave part of every inbox's daily capacity unused, so premium mailboxes are never crowded out of it. Every draw then favours whichever inbox is furthest behind on what it sent, and caps what any inbox receives in a day, so neither tier is starved and neither is flooded.
+不过，分离的同时仍必须保持双向往来。一个层级如果只向另一层级发送、却从不接收，就无法建立信誉：信誉来自邮件被收到、被阅读和被回复，而不只是邮件被发出。因此，Warmbly 唯一允许的跨池往来是对等的：当高级邮箱在自己工作区之外缺少伙伴时，会借用表现已得到验证的优质免费邮箱作为收件人；这些免费邮箱也会向此前给它们发信的付费邮箱回信。免费发件人会为每个收件箱保留一部分每日接收容量，确保高级邮箱不会被挤出。每次选择伙伴时，系统优先选择接收量相对自身发送量落后最多的邮箱，并限制每个邮箱一天内的接收量，避免任何一层长期缺少邮件或被大量邮件淹没。
 
-When a workspace's paid subscription becomes active, Warmbly records the premium tier on every existing mailbox and moves its active warmup participants to the premium pool. Mailboxes connected later inherit the same tier. A workspace restricted or suspended for abuse keeps the paid tier on its mailboxes but cannot enter the premium participant pool until the restriction clears. Stripe webhook retries are safe, so an interrupted promotion finishes on redelivery without duplicating pool membership. Payment-recovery and cancellation events do not churn existing pool membership.
+工作区的付费订阅生效后，Warmbly 会将所有现有邮箱标记为高级层级，并将其中已启用的预热参与者移入高级池。之后连接的邮箱也继承同一层级。因滥用而受到限制或暂停的工作区，其邮箱仍保留付费层级标记，但在限制解除前不能进入高级参与者池。Stripe Webhook 可以安全重试；升级过程即使中断，也能在重新投递后继续完成，不会重复创建池成员资格。付款恢复和取消订阅事件不会使现有池成员资格反复变化。
 
 <PoolTiers />
 
-## What reserved sending means
+## 预留发信基础设施意味着什么 [#what-reserved-sending-means]
 
-Plans that include it reserve a worker for your organisation, so your mailboxes always authenticate to their providers from an address no other customer uses. It gives you:
+包含此功能的套餐会为你的组织预留一个工作节点，因此你的邮箱始终从其他客户不会使用的地址向服务商进行身份验证。它提供以下能力：
 
-- A predictable sign-in address for every one of your mailboxes.
-- Isolation from another tenant triggering a per-address authentication throttle.
-- The ability to negotiate allowlisting with specific partners.
+- 每个邮箱都使用可预期的登录地址。
+- 避免其他租户触发按地址计算的身份验证限流，连带影响你。
+- 可以与特定合作方协商，将该地址加入允许名单。
 
-It does _not_:
+它*不会*：
 
-- Change the address your recipients see. That belongs to your mailbox provider, not to Warmbly.
-- Bypass per-mailbox health rules.
-- Let you ignore complaint or bounce thresholds.
+- 改变收件人看到的地址。那个地址属于你的邮箱服务商，而不是 Warmbly。
+- 绕过单个邮箱的健康规则。
+- 允许你忽略投诉或退信阈值。
 
-## Re-entry after quarantine
+## 隔离后重新加入 [#re-entry-after-quarantine]
 
-A quarantined mailbox shouldn't automatically re-enter the pool just because time elapsed. Re-entry should require:
+被隔离的邮箱不应仅因时间到期就自动重新进入池。重新加入应满足以下条件：
 
-- Healthy SPF, DKIM, DMARC.
-- No recent complaints or hard-bounce spikes.
-- No recent tampering with received warmup mail.
-- Spam-folder placement under 10% on a probation sample.
-- Gradual ramp on re-entry, starting at 5–10/day warmup.
+- SPF、DKIM、DMARC 状态正常。
+- 近期没有投诉或硬退信激增。
+- 近期没有不当处理收到的预热邮件。
+- 观察期样本中，进入垃圾邮件文件夹的比例低于 10%。
+- 重新加入后逐步提高发送量，从每天预热 5–10 封开始。
 
-> Pool quality is shared infrastructure. A platform that lets one bad mailbox keep participating to avoid an awkward support conversation taxes every other paying customer.
+> 预热池质量属于共享基础设施的一部分。如果平台为了避免一次棘手的客服沟通，就允许不良邮箱继续参与，其他每位付费客户都会承担代价。

@@ -1,14 +1,14 @@
 ---
-title: Architecture
-description: How Warmbly's control plane and execution plane fit together, with the encryption and worker model.
+title: 架构
+description: 介绍 Warmbly 控制平面与执行平面的协作方式，以及加密模型和工作节点模型。
 ---
 
-Warmbly is split into two planes:
+Warmbly 分为两个平面：
 
-- **Control plane**: backend API, consumer, tracking, realtime, web. Runs in one region on a container host (Railway in production).
-- **Execution plane**: a fleet of worker processes, one per VPS, spread across many providers and IPs. Each VPS runs the worker as a systemd-supervised Docker container.
+- **控制平面**：后端 API、消费者、跟踪、实时服务和 Web。运行在单一区域的容器托管平台上，生产环境使用 Railway。
+- **执行平面**：分布在多个服务商和 IP 上的一组工作节点进程，每台 VPS 一个。每台 VPS 以 systemd 监管的 Docker 容器运行工作节点。
 
-The boundary exists for two reasons. First, cold-mail deliverability lives at the IP level, so workers must be spread across distinct machine-level network identities. Second, the control plane owns relational state and the worker fleet should remain disposable.
+这样划分有两个原因。首先，冷邮件的送达能力与 IP 有关，因此工作节点需要分布在不同的机器级网络身份上。其次，控制平面持有关系型状态，而工作节点集群应当可以随时替换。
 
 <Mermaid
   chart={`
@@ -31,189 +31,189 @@ flowchart LR
 `}
 />
 
-## Services
+## 服务 [#services]
 
-| Service | Language | Plane | Notes |
+| 服务 | 语言 | 平面 | 说明 |
 |---------|----------|-------|-------|
-| Backend | Go (Gin) | Control | REST API, auth, business logic, worker orchestration |
-| Consumer | Go | Control | Event bus processor → Postgres |
-| Tracking | Rust (Axum) | Control | Open/click pixels and redirects → event bus |
-| Forms | Go (Gin) + React (TanStack) | Control | Hosted form pages (`forms/` app), embeds and public submissions → backend internal API |
-| Realtime | Elixir (Phoenix) | Control | WebSocket fanout |
-| Worker | Go | Execution | One per VPS; subscribes to a per-worker event bus topic; never opens a Postgres connection |
-| Web | React (Vite) | n/a | Dashboard frontend |
-| Admin | React (Vite) | n/a | [Platform admin panel](/development/admin-panel/) |
+| 后端 | Go（Gin） | 控制 | REST API、身份验证、业务逻辑、工作节点编排 |
+| 消费者 | Go | 控制 | 处理事件总线消息并写入 Postgres |
+| 跟踪 | Rust（Axum） | 控制 | 打开/点击像素与重定向，将事件写入总线 |
+| 表单 | Go（Gin）+ React（TanStack） | 控制 | 托管表单页面（`forms/` 应用）、嵌入内容和公开提交，通过后端内部 API 处理 |
+| 实时服务 | Elixir（Phoenix） | 控制 | WebSocket 事件分发 |
+| 工作节点 | Go | 执行 | 每台 VPS 一个；订阅按工作节点划分的事件总线主题；从不连接 Postgres |
+| Web | React（Vite） | 不适用 | 控制台前端 |
+| 管理端 | React（Vite） | 不适用 | [平台管理面板](/development/admin-panel/) |
 
-## Data flow
+## 数据流 [#data-flow]
 
-The frontend talks to the backend over REST + JWT, and to the realtime service over WebSocket. Backend writes business state to Postgres. Backend, tracking, and workers publish to the event bus: NATS JetStream with JSON encoding by default, Kafka with Avro and Schema Registry as an opt-in build. The consumer reads the bus and updates Postgres (analytics, suppression, deliverability). Workers subscribe to a topic named for their worker UUID (`w.<uuid>`) and publish results to `jobs.worker-events`; see the [event system](/development/events/) for the full topic map. The one exception is the credential check run before a mailbox is saved: someone is waiting on it, and a worker reads its topic one command at a time, so the backend offers it on the worker's Redis channel `email_validation_request:<uuid>` instead and gets the answer back on Redis. A worker that is not subscribed there (an older build) still gets the check over its topic.
+前端通过 REST + JWT 与后端通信，通过 WebSocket 与实时服务通信。后端将业务状态写入 Postgres。后端、跟踪服务和工作节点向事件总线发布消息：默认使用 JSON 编码的 NATS JetStream，也可选择构建使用 Avro 和 Schema Registry 的 Kafka 版本。消费者读取总线并更新 Postgres 中的分析、禁止发送和送达能力数据。工作节点订阅以自身 UUID 命名的主题（`w.<uuid>`），并将结果发布到 `jobs.worker-events`；完整主题映射见[事件系统](/development/events/)。唯一例外是保存邮箱前的凭据检查：用户正在等待结果，而工作节点对主题中的命令逐条处理，因此后端会改为将请求发到工作节点的 Redis 渠道 `email_validation_request:<uuid>`，并通过 Redis 接收答复。未订阅该渠道的旧版工作节点，仍通过其主题接收检查请求。
 
-Realtime fanout is a separate channel: backend and consumer publish JSON events over Redis pub/sub (or Google Cloud Pub/Sub when `PUBSUB_ENABLED=true`); the Elixir realtime service subscribes and pushes to connected WebSocket clients.
+实时分发使用独立渠道：后端和消费者通过 Redis 发布/订阅发布 JSON 事件；当 `PUBSUB_ENABLED=true` 时使用 Google Cloud Pub/Sub。Elixir 实时服务订阅事件并推送给已连接的 WebSocket 客户端。
 
-Object storage: encrypted email bodies (EMSG format) live in the blob store (filesystem by default, S3-compatible opt-in).
+对象存储：加密邮件正文以 EMSG 格式保存在 Blob 存储中，默认使用文件系统，也可选择兼容 S3 的存储。
 
-## Data stores
+## 数据存储 [#data-stores]
 
-| Store | Purpose |
+| 存储 | 用途 |
 |-------|---------|
-| Postgres | Users, organizations, campaigns, mailboxes, workers, credentials, warmup state, per-organization encrypted DEKs, message-ID maps, Gmail history IDs |
-| Redis | Caching (including decrypted DEKs), rate limiting, realtime bridge, ephemeral state |
-| Blob store | Email body blobs (EMSG); filesystem or any S3-compatible bucket |
-| Master key | Root of trust for envelope encryption; local AES key or AWS KMS |
+| Postgres | 用户、组织、营销活动、邮箱、工作节点、凭据、预热状态、按组织加密的 DEK、Message-ID 映射和 Gmail 历史 ID |
+| Redis | 缓存，包括已解密的 DEK；速率限制、实时桥接和临时状态 |
+| Blob 存储 | 邮件正文 Blob（EMSG）；文件系统或任意兼容 S3 的存储桶 |
+| 主密钥 | 信封加密的信任根；使用本地 AES 密钥或 AWS KMS |
 
-## Encryption model
+## 加密模型 [#encryption-model]
 
-Warmbly uses envelope encryption end-to-end for sensitive data.
+Warmbly 对敏感数据全程使用信封加密。
 
-KMS holds the master key. Each organization gets a 32-byte data encryption key (DEK), generated by KMS and stored encrypted in the `organization_encrypted_keys` Postgres table keyed by organization ID (workers reach it over the backend's internal API rather than touching Postgres). The DEK is decrypted only at the moment of use; cached in Redis with a TTL to amortize cost.
+KMS 持有主密钥。每个组织获得一个由 KMS 生成的 32 字节数据加密密钥（DEK），加密后以组织 ID 为键保存在 Postgres 的 `organization_encrypted_keys` 表中；工作节点通过后端内部 API 访问，不直接接触 Postgres。DEK 仅在使用时解密，并带 TTL 缓存在 Redis 中，以分摊成本。
 
-Application-layer secrets are sealed with AES-256-GCM under the DEK and base64-encoded. This applies to:
+应用层秘密信息使用 DEK 通过 AES-256-GCM 密封，再进行 base64 编码。这适用于：
 
-- email account credentials (IMAP/SMTP passwords, OAuth tokens)
-- email body content stored in S3 (EMSG format)
+- 邮箱账户凭据，包括 IMAP/SMTP 密码和 OAuth 令牌。
+- 保存在 S3 中的邮件正文内容，采用 EMSG 格式。
 
-Instance-level secrets that are not owned by any organization are encrypted under a platform DEK (key ID = `uuid.Nil`): the same envelope as organization secrets, the same trust boundary, a different identity. See `internal/app/cipher/`.
+不属于任何组织的实例级秘密信息，使用平台 DEK 加密，密钥 ID 为 `uuid.Nil`：与组织秘密信息使用相同的信封和信任边界，只是身份不同。参见 `internal/app/cipher/`。
 
-Mailbox credentials are the one exception to the per-organization DEK. They are sealed with `CREDENTIALS_ENCRYPTION_KEY` (`KeyDomainInstance`) because a worker reads them without an organization context.
+邮箱凭据是按组织 DEK 规则的一个例外。它们使用 `CREDENTIALS_ENCRYPTION_KEY`（`KeyDomainInstance`）密封，因为工作节点读取它们时没有组织上下文。
 
-## Worker model
+## 工作节点模型 [#worker-model]
 
-Every Warmbly process that runs on a machine you own is a node: a `worker` sends and syncs mail, a `consumer` processes events. Both share one registry (`fleet_nodes`) and one lifecycle. `workers` is the placement extension over that registry and holds only `account_count`, `health_state` and `load_score`; `workers.id` is the node id.
+每个运行在你自有机器上的 Warmbly 进程都是一个节点：`worker` 负责发送和同步邮件，`consumer` 负责处理事件。两者共用一个注册表（`fleet_nodes`）和同一套生命周期。`workers` 是该注册表上的分配扩展，仅保存 `account_count`、`health_state` 和 `load_score`；`workers.id` 就是节点 ID。
 
-The fleet is pull-based. A node joins by running one command with the instance join token, then heartbeats forever, and nothing is ever pushed to it:
+节点集群采用拉取方式。节点通过携带实例加入令牌的一条命令加入，随后持续发送心跳；系统不会向节点主动推送部署操作：
 
-1. The operator issues a join token with `warmblyctl fleet join-token`.
-2. On the machine, `curl -fsSL https://api.example.com/join.sh | sh -s -- --url ... --token ... --role worker` enrols the node. The script is embedded in the backend and served at `GET /join.sh`, so a self-hosted fleet never depends on a vendor host and always gets a script matching its own backend.
-3. The backend returns a node id, the config rendered from its own environment, and the version to run. The script writes `/etc/warmbly/node.env`, installs a systemd service and an update timer, and starts the node container.
-4. The node subscribes to the event bus topic named for its id and heartbeats, pacing its own beat at a third of `models.NodeLivenessWindow` from the value the server returns.
+1. 运维人员通过 `warmblyctl fleet join-token` 签发加入令牌。
+2. 在机器上执行 `curl -fsSL https://api.example.com/join.sh | sh -s -- --url ... --token ... --role worker` 登记节点。脚本嵌入后端，由 `GET /join.sh` 提供，因此自托管节点集群不依赖供应商主机，并始终获得与自身后端匹配的脚本。
+3. 后端返回节点 ID、根据自身环境渲染的配置，以及应运行的版本。脚本写入 `/etc/warmbly/node.env`，安装 systemd 服务和更新定时器，然后启动节点容器。
+4. 节点订阅以自身 ID 命名的事件总线主题并发送心跳，依据服务器返回的 `models.NodeLivenessWindow` 值，以该窗口的三分之一作为心跳间隔。
 
-The heartbeat reply carries exactly one instruction: `desired_version`. The node writes it to a file and a systemd timer pulls and restarts, so the process being replaced is never the process doing the replacing. An empty `desired_version` means "no opinion", never "downgrade to nothing".
+心跳响应只携带一条指令：`desired_version`。节点将其写入文件，由 systemd 定时器拉取镜像并重启，因此被替换的进程不会负责替换自己。空的 `desired_version` 表示“没有指定意见”，绝不表示“降级为空版本”。
 
-The machine needs no inbound port, no SSH key and no cloud account. A worker does need outbound access to mail servers on `465`, `587` and `993` (and `143` where a mailbox uses STARTTLS IMAP). Many cloud providers block outbound `25` and `465` on new servers until asked; a worker that learns its `465` is blocked reports it on every heartbeat, and it shows on the worker's page in the admin panel (the **Has node error** filter finds it). There is no restart, logs, reboot or uninstall action in the dashboard, because nothing reaches into a machine. The operator surface is `warmblyctl fleet` (join-token, list, show, remove, pin, version, channel) and the admin panel's Fleet section.
+机器无需开放入站端口，也不需要 SSH 密钥或云账户。工作节点需要能够出站访问邮件服务器的 `465`、`587` 和 `993` 端口；邮箱使用 STARTTLS IMAP 时，还需要 `143`。许多云服务商会默认封锁新服务器的出站 `25` 和 `465`，需要申请开放。工作节点发现自身 `465` 被封锁后，会在每次心跳中报告，并在管理面板的工作节点页面显示，可通过**存在节点错误**筛选找到。控制台不提供重启、日志、重启主机或卸载操作，因为系统不会远程进入机器。运维操作入口是 `warmblyctl fleet`，包含 join-token、list、show、remove、pin、version 和 channel，以及管理面板的节点集群部分。
 
-### Why per-VPS instead of a Kubernetes DaemonSet
+### 为何按 VPS 部署，而非使用 Kubernetes DaemonSet [#why-per-vps-instead-of-a-kubernetes-daemonset]
 
-A k8s `DaemonSet` was the previous shape. It was removed because k8s nodes typically NAT all pods through a small set of egress IPs, and pods churn while IPs do not. What a mailbox provider remembers is the address an account signs in from, so the unit of identity has to be the IP, not the pod: a mailbox whose client address changes every deploy collects sign-in risk challenges for no reason. The worker also has no Postgres dependency, so cluster-level service discovery and RBAC buy us nothing.
+此前采用 k8s `DaemonSet`。后来移除了这种方式，因为 k8s 节点通常通过少量出口 IP 对所有 Pod 做 NAT；Pod 频繁变动，IP 却不随之变化。邮箱服务商记住的是账户登录来源地址，因此身份单位必须是 IP，而不是 Pod：如果邮箱客户端地址每次部署都变，就会无故触发登录风险挑战。工作节点也不依赖 Postgres，因此集群级服务发现和 RBAC 没有带来额外价值。
 
-### Node identity
+### 节点身份 [#node-identity]
 
-A node's id is assigned at enrolment and persisted on the machine, so re-running the join command re-joins under the same identity and the node keeps its history and its mailboxes.
+节点 ID 在登记时分配并持久化到机器上，因此重新执行加入命令会以相同身份重新加入，保留历史和邮箱。
 
-A machine with several public addresses can instead run one node per address: with `WORKER_BIND_IP` set and no `WORKER_ID`, the worker derives `UUIDv5(URL_namespace, public_ipv4)`. Same IP, same worker, with no state at the control plane needed to recover it, which lets each address remain a stable provider-facing login identity.
+拥有多个公网地址的机器，也可以为每个地址运行一个节点：设置 `WORKER_BIND_IP` 且未设置 `WORKER_ID` 时，工作节点根据 `UUIDv5(URL_namespace, public_ipv4)` 派生 ID。同一个 IP 对应同一个工作节点，恢复它无需控制平面保存额外状态，使每个地址都能成为面对服务商的稳定登录身份。
 
-## Worker placement
+## 工作节点分配 [#worker-placement]
 
-There is one kind of worker. You install it, it heartbeats, and the control plane decides what runs on it. Workers carry no tier, type, risk pool or egress category, and nothing about a mailbox has to match anything about a machine.
+工作节点只有一种。安装后发送心跳，由控制平面决定其上运行什么。工作节点没有等级、类型、风险池或出口类别，邮箱属性也无需与机器属性匹配。
 
-That follows from where the sending identity actually lives. A worker never talks to a recipient's MX. It authenticates to the customer's own mailbox provider (Gmail, Microsoft Graph, or a customer SMTP host) and that provider delivers the message from its own outbound pool. Two consequences shape the whole model:
+这是由实际发送身份所在的位置决定的。工作节点从不与收件人的 MX 直接通信；它向客户自己的邮箱服务商（Gmail、Microsoft Graph 或客户 SMTP 主机）进行身份验证，再由该服务商通过自己的出站池投递邮件。整个模型由以下两个结果决定：
 
-- **The worker's IP is invisible to recipient spam filtering.** Google strips the submitting client's IP from outgoing messages and Microsoft dropped `X-Originating-IP` years ago. So co-locating a spam-prone mailbox next to a healthy one cannot contaminate the healthy one's sending reputation, and segregating workers by customer tier buys nothing.
-- **The worker's IP is very visible to the mailbox provider.** It is what drives sign-in risk challenges, per-IP authentication throttles (`454 4.7.0`) and per-IP rate limits (`421 4.7.28`).
+- **收件人的垃圾邮件过滤器看不到工作节点 IP。** Google 会从出站邮件中移除提交客户端 IP，Microsoft 也已在多年前弃用 `X-Originating-IP`。因此，将容易产生垃圾邮件的邮箱与健康邮箱放在一起，不会污染健康邮箱的发送信誉；按客户等级隔离工作节点也没有收益。
+- **邮箱服务商能清楚看到工作节点 IP。** 该 IP 会影响登录风险挑战、按 IP 的身份验证限流（`454 4.7.0`）和速率限制（`421 4.7.28`）。
 
-So the levers invert: IP *stability* per mailbox beats IP diversity, and a migration is a cost rather than a win.
+因此，优化重点是让每个邮箱的 IP 保持*稳定*，而不是追求 IP 多样性；迁移会带来成本，不是天然收益。
 
-### Choosing a worker
+### 选择工作节点 [#choosing-a-worker]
 
-Placement scores every live worker and takes the best (`internal/app/worker/placement.go`). Hard constraints are only about whether the work can be done at all: the worker has to be heartbeating and in `healthy` or `watch`. Everything else is a preference:
+分配逻辑会为每个存活工作节点评分并选择最优者，见 `internal/app/worker/placement.go`。硬约束仅用于判断能否执行工作：工作节点必须持续发送心跳，状态为 `healthy` 或 `watch`。其余因素都是偏好：
 
-| Term | Why |
+| 因素 | 原因 |
 |---|---|
-| Capacity headroom | Fill the fleet evenly |
-| Incumbency | Staying put keeps one client IP in front of the provider. Weighted highest |
-| Region match | Sign-ins from where the provider expects them raise fewer challenges |
-| Tenant blast radius | Spread one customer across workers so a single failure does not stop their sending |
-| Provider crowding | Many accounts of one provider signing in from one address is what earns a per-IP throttle |
-| Node youth | A worker that enrolled minutes ago has proved nothing, so it is probed gently rather than handed every placement for being empty |
-| Foreign tenants | Only for organizations entitled to isolated egress |
+| 剩余容量 | 均匀使用节点集群 |
+| 保留原节点 | 留在原处可让服务商始终看到同一个客户端 IP，权重最高 |
+| 区域匹配 | 从服务商预期的位置登录，更少触发挑战 |
+| 租户故障影响范围 | 将同一客户分散到多个工作节点，避免单点故障停止其全部发送 |
+| 服务商集中度 | 同一服务商的大量账户从一个地址登录，容易触发按 IP 限流 |
+| 节点运行资历 | 刚加入几分钟的工作节点尚未证明稳定性，因此会逐步试探分配，而不是因其空闲就把所有任务交给它 |
+| 其他租户 | 仅用于享有独立出口的组织 |
 
-Capacity is a per-worker assigned-mailbox planning target because a small shared VM and a dedicated host do not have the same headroom. It defaults to a conservative `100` and can be set per machine with `WARMBLY_WORKER_CAPACITY`. Every assigned mailbox counts as one. The value guides placement; it is not a tested maximum or a mailbox-provider sending quota. Provider limits remain attached to the mailbox, tenant, or API project.
+容量是每个工作节点的已分配邮箱规划目标，因为小型共享虚拟机与专用主机的余量不同。默认采用保守的 `100`，可通过 `WARMBLY_WORKER_CAPACITY` 为每台机器设置。每个已分配邮箱都计为一个。该值指导分配，不是经过测试的最大容量，也不是邮箱服务商的发送配额。服务商限额仍绑定到邮箱、租户或 API 项目。
 
-The admin fleet view separates this target from measured CPU and RAM. A worker with 400 mailboxes at its planning target is not necessarily using all its machine resources. Linux nodes report CPU averaged between heartbeats, RAM used against a finite container limit when available (otherwise host RAM excluding reclaimable cache), and the Warmbly process's resident memory. CPU is normalized to available cores and labeled `container` when constrained by a CPU quota or CPU set, otherwise `host`. The scopes may differ when only one resource is constrained. Go runtime reserved memory is a separate allocation figure, not resident or host memory. CPU needs two samples; missing OS telemetry is unavailable, not zero. Stopped or unreachable nodes show stale resource readings. These snapshots arrive on heartbeats, not on every dashboard refresh.
+管理面板的节点集群视图将该目标与测得的 CPU、内存分开显示。一个达到 400 个邮箱规划目标的工作节点，不一定已经耗尽机器资源。Linux 节点报告两次心跳之间的平均 CPU、相对于有限容器上限的已用内存（存在该上限时；否则使用主机内存并排除可回收缓存），以及 Warmbly 进程的常驻内存。CPU 按可用核心数归一化；受 CPU 配额或 CPU 集合约束时标为 `container`，否则标为 `host`。只有一种资源受到限制时，CPU 和内存的统计范围可能不同。Go 运行时预留内存是独立的分配指标，不是常驻内存或主机内存。CPU 需要两个样本；缺失的操作系统遥测表示不可用，不是零。已停止或不可达节点显示的是过期读数。这些快照随心跳到达，不会在每次刷新控制台时更新。
 
-Mailbox share is each worker's fraction of all assigned mailboxes in the fleet. Send share is its fraction of provider send attempts in the rolling last 60 minutes. Send success means successful provider handoffs divided by attempts, not inbox placement or final delivery. No attempts means there is no success rate to calculate. Additional columns and CSV exports expose these metrics alongside bounces, complaints, authentication errors and the last heartbeat.
+邮箱占比表示每个工作节点分配的邮箱数占整个节点集群已分配邮箱的比例。发送占比表示它在最近 60 分钟滚动窗口中占服务商发送尝试的比例。发送成功率是成功交给服务商的次数除以尝试次数，不是收件箱到达率或最终投递率。没有尝试时，就没有可计算的成功率。额外列和 CSV 导出会提供这些指标，以及退信、投诉、身份验证错误和最后心跳时间。
 
-Nodes report their public IPv4 independently of the backend proxy. A public `WORKER_PUBLIC_IP` takes precedence for workers; otherwise the agent discovers IPv4 egress over HTTPS using `api.ipify.org`, bound to the worker's local outbound address when one is configured, and refreshes it every ten minutes. The backend uses only the node-reported public address, never its observed client IP, so a reverse proxy cannot replace the worker identity. If discovery has never succeeded, the address is unavailable. A later discovery failure retains the last successful result for the running process. After a restart, the address stays unavailable until discovery succeeds again, rather than trusting an old backend-observed address. Private and reserved addresses are not public identity. If mail and HTTPS use different NAT gateways or routes, set `WORKER_PUBLIC_IP` explicitly to the mail egress IPv4; HTTPS discovery cannot verify the SMTP route.
+节点独立于后端代理报告公网 IPv4。工作节点优先使用公开的 `WORKER_PUBLIC_IP`；否则，代理通过 HTTPS 访问 `api.ipify.org` 发现 IPv4 出口地址，配置了本地出站地址时会绑定该地址，每十分钟刷新一次。后端只使用节点报告的公网地址，不使用自己观察到的客户端 IP，因此反向代理不会替换工作节点身份。如果发现从未成功，地址显示为不可用。之后的发现失败会在当前进程运行期间保留最后一次成功结果。重启后，在再次发现成功之前，地址保持不可用，不会信任后端过去观察到的地址。私有和保留地址不是公网身份。如果邮件和 HTTPS 使用不同的 NAT 网关或路由，应显式将 `WORKER_PUBLIC_IP` 设为邮件出口 IPv4；HTTPS 发现无法验证 SMTP 路由。
 
-**Capacity is a target, not a ceiling.** Nothing refuses a placement for being over it. Going over costs more than any bonus a candidate can earn, so stickiness alone cannot keep a mailbox on an over-target worker. Once no worker has room, the least-overloaded one wins with region, blast radius and provider crowding all applied. A new worker keeps its full displayed target while node youth slows how quickly it fills. Recipient bounces and complaints remain mailbox and campaign signals; they do not shrink machine capacity or quarantine a worker.
+**容量是目标，不是硬上限。** 系统不会因超过目标而拒绝分配。超量代价高于候选节点可能获得的任何加分，因此仅靠保留原节点的偏好，不能让邮箱继续留在超目标节点。当所有工作节点都没有余量时，会综合区域、故障影响范围和服务商集中度，选择超负载程度最低者。新工作节点仍显示完整目标，只是节点资历因素会减慢填充速度。收件人退信和投诉仍是邮箱及营销活动信号，不会减少机器容量或隔离工作节点。
 
-### Moving a mailbox
+### 迁移邮箱 [#moving-a-mailbox]
 
-Rotation (`internal/app/worker/rotation.go`) is deliberately reluctant. Mailbox outcomes never mark a machine unhealthy. The loop responds to liveness, workload, isolated-egress drift, and measurable provider or workspace concentration:
+轮换逻辑（`internal/app/worker/rotation.go`）有意保持谨慎。邮箱结果绝不会把机器标为不健康。轮换循环响应存活状态、工作量、独立出口偏离，以及可测量的服务商或工作区集中度：
 
-| Urgency | Trigger | Residency floor | Destination bar |
+| 紧急程度 | 触发条件 | 最短驻留时间 | 目标节点要求 |
 |---|---|---|---|
-| Immediate | Worker inactive, not heartbeating, or externally marked blocked or quarantined | none | anything eligible |
-| Elevated | Worker externally marked throttled, or mailbox is on another workspace's reserved worker | 6 hours | anything eligible |
-| Opportunistic | Worker over 85% utilization, isolated-egress drift, or placement concentration | 72 hours | must score materially better |
+| 立即 | 工作节点未激活、不发送心跳，或被外部标为封禁或隔离 | 无 | 任意符合条件的节点 |
+| 较高 | 工作节点被外部标为限流，或邮箱位于其他工作区预留的节点上 | 6 小时 | 任意符合条件的节点 |
+| 机会性 | 工作节点利用率超过 85%、独立出口偏离，或分配过于集中 | 72 小时 | 评分必须明显更好 |
 
-The externally managed health labels describe machine or operator state. Mailbox delivery outcomes do not set them.
+由外部管理的健康标签描述机器或运维状态，不由邮箱投递结果设置。
 
-A worker that stops answering is a separate path (`internal/app/consumer/dead_worker.go`), and it waits before acting. The heartbeat key lives three minutes, which a version rollout can outlast while the container is replaced, so a missing key alone is not death: the worker also has to have been absent from the registry for `MailboxEvacuationGrace` (10 minutes) before its mailboxes are moved. Both signals are required, because during a cache outage every heartbeat key disappears at once while the registry stays current, and moving a mailbox is a real cost rather than a neutral rebalance: it changes the address the mailbox's provider sees and can earn a sign-in challenge.
+工作节点停止响应使用独立处理路径，见 `internal/app/consumer/dead_worker.go`，且采取措施前会等待。心跳键存活三分钟，版本发布替换容器时可能超过这一时长，因此仅心跳键缺失不代表节点死亡：只有注册表中也已缺席达到 `MailboxEvacuationGrace`（10 分钟），才会迁移邮箱。两个信号缺一不可，因为缓存故障时所有心跳键可能同时消失，而注册表仍保持最新。迁移邮箱也确有成本，并非中性的重新平衡：它会改变邮箱服务商看到的地址，可能触发登录挑战。
 
-### Isolated egress
+### 隔离的网络出口 [#isolated-egress]
 
-Plans that reserve egress bind an organization to a worker (`dedicated_worker_assignments`). It is a strong placement preference, not a pin: the worker carries no marking, so if it dies the organization's mailboxes place normally instead of stranding, and the rotation loop pulls them onto a replacement once one exists. Mailboxes belonging to other tenants drift off a reserved worker on the same loop.
+预留出口的套餐会将组织绑定到工作节点，记录在 `dedicated_worker_assignments` 中。这是一项强分配偏好，不是固定锁定：工作节点本身没有特殊标记，因此节点故障时，组织的邮箱会正常重新分配，不会被困住；替代节点可用后，轮换循环会将它们迁入。同一循环也会让其他租户的邮箱逐步离开已预留节点。
 
-## Node configuration
+## 节点配置 [#node-configuration]
 
-Nodes never carry hardcoded credentials, and there is nothing to keep in sync by hand. The join endpoint renders `/etc/warmbly/node.env` from the backend's own environment (`nodeEnvKeys` in `internal/api/handler/fleet_nodes.go`), so a node is configured with exactly the infrastructure the control plane uses: event bus, Redis, KMS, blob storage, the internal API token, and the mailbox OAuth clients.
+节点不携带硬编码凭据，也无需手动同步配置。加入端点根据后端自身环境渲染 `/etc/warmbly/node.env`，键列表为 `nodeEnvKeys`，定义在 `internal/api/handler/fleet_nodes.go` 中，因此节点使用的基础设施与控制平面完全一致：事件总线、Redis、KMS、Blob 存储、内部 API 令牌和邮箱 OAuth 客户端。
 
-`PRIMARY_DB` is deliberately excluded. A worker reaches relational data through the internal API and nothing else, and shipping a DSN here would quietly undo that boundary.
+`PRIMARY_DB` 被有意排除。工作节点只能通过内部 API 访问关系数据；如果在这里分发 DSN，就会悄悄破坏这一边界。
 
-Schema: `fleet_nodes` is the registry every role shares, and `workers` is the placement extension over it (`internal/infrastructure/db/migrations/000141_fleet_nodes.up.sql`); `000142_drop_push_provisioning.up.sql` removed the push path it replaced.
+结构定义：`fleet_nodes` 是所有角色共用的注册表，`workers` 是其分配扩展，见 `internal/infrastructure/db/migrations/000141_fleet_nodes.up.sql`；`000142_drop_push_provisioning.up.sql` 移除了被它替代的推送式配置路径。
 
-## Auto-update from GitHub releases
+## 根据 GitHub 发布版本自动更新 [#auto-update-from-github-releases]
 
-The fleet targets one release channel, held in `admin_settings` under `fleet.release`:
+节点集群以一个发布渠道为目标，保存在 `admin_settings` 的 `fleet.release` 下：
 
-- `stable`: latest non-prerelease GitHub Release
-- `dev`: latest release (including prereleases)
+- `stable`：最新的非预发布 GitHub Release。
+- `dev`：最新发布，包括预发布版本。
 
-`internal/app/releases` resolves the head of that channel and writes the tag. It updates nothing itself. The heartbeat reply carries `desired_version`; the node writes it to a file and a systemd timer (`warmbly-node-update`, installed by the join script) pulls and restarts, so the process being replaced is never the process doing the replacing.
+`internal/app/releases` 解析该渠道的最新版本并写入标签，本身不执行更新。心跳响应携带 `desired_version`，节点将其写入文件，再由加入脚本安装的 systemd 定时器 `warmbly-node-update` 拉取并重启，因此被替换的进程不会负责替换自己。
 
-An empty `desired_version` means "no opinion" and must never be read as "downgrade to nothing": a node that cannot be told what to run keeps running what it has. A per-node `pinned_version` overrides the fleet target, for canarying or holding a machine back.
+空的 `desired_version` 表示“未指定”，绝不能理解为“降级为空版本”：如果无法告诉节点应运行什么，它会继续运行现有版本。每个节点的 `pinned_version` 可以覆盖节点集群目标，用于金丝雀发布或暂缓某台机器升级。
 
-The backend is deliberately excluded from this. It is what tells everyone else their version, and a self-update that goes wrong leaves nothing to recover with.
+后端有意排除在这一机制之外。它负责告诉其他服务应使用的版本，如果自更新失败，就没有可用于恢复的控制者。
 
-On an instance that encodes the bus with Avro, the fleet also waits for the backend. A booting backend registers every schema its release publishes, and the fleet only moves to a release once the backend runs it and the Schema Registry has accepted those schemas. A refusal holds the fleet on the release it has and shows in the Fleet section, instead of reaching a worker that would then fail every event it reports.
+在使用 Avro 编码总线的实例上，节点集群还会等待后端。后端启动时会注册其版本发布的所有 Schema；只有后端已运行目标版本，且 Schema Registry 已接受这些 Schema，节点集群才会切换。注册被拒绝时，节点集群保留现有版本，并在“节点集群”部分显示问题，避免将无法上报任何事件的版本部署到工作节点。
 
-The release check runs once when the backend boots, and only with `RELEASES_ENABLED=true`: it is off by default, so a self-hosted fleet is never rolled onto a vendor image. An operator moves the fleet by hand from the admin panel's Fleet section or with `warmblyctl fleet version` and `warmblyctl fleet channel`, which set the channel or pin a tag directly. Configuration is env-driven (`RELEASES_ENABLED`, `RELEASES_GITHUB_REPO`, `RELEASES_WORKER_IMAGE_REPO`, `RELEASES_GITHUB_TOKEN`) so self-hosters can point at their own fork and registry.
+版本检查在后端启动时运行一次，且仅在 `RELEASES_ENABLED=true` 时执行。默认关闭，因此自托管节点集群不会自动切换到供应商镜像。运维人员可从管理面板的“节点集群”部分手动更新，或使用 `warmblyctl fleet version` 和 `warmblyctl fleet channel` 直接设置渠道或固定标签。配置由环境变量驱动，包括 `RELEASES_ENABLED`、`RELEASES_GITHUB_REPO`、`RELEASES_WORKER_IMAGE_REPO` 和 `RELEASES_GITHUB_TOKEN`，因此自托管用户可以指向自己的分支和镜像仓库。
 
-See `internal/app/releases/service.go`.
+参见 `internal/app/releases/service.go`。
 
-## Worker safety policy
+## 工作节点安全策略 [#worker-safety-policy]
 
-Cold-email throughput is mailbox-first, not worker-first. A worker's safe outbound volume is the sum of its assigned mailbox budgets, not a flat global cap. Defaults in `internal/config/constants.go`:
+冷邮件吞吐量以邮箱为中心，而不是以工作节点为中心。工作节点的安全出站量是其已分配邮箱预算之和，不是统一的全局上限。`internal/config/constants.go` 中的默认值如下：
 
-- default cold campaign cap per mailbox: 50/day
-- default minimum gap per mailbox: 600s
-- default warmup start per mailbox: 10/day
-- default warmup ceiling per mailbox: 40/day
-- default warmup ramp: +1/day
+- 每个邮箱的默认冷邮件营销活动上限：每天 50 封。
+- 每个邮箱的默认最短间隔：600 秒。
+- 每个邮箱的默认预热起始量：每天 10 封。
+- 每个邮箱的默认预热上限：每天 40 封。
+- 每个邮箱的默认预热增量：每天增加 1 封。
 
-Pool model: warmup traffic is segregated into `free` and `premium` pools (the `warmup_pools` tables in `internal/infrastructure/db/migrations/000001_baseline.up.sql`). Pool membership is a property of the mailbox, independent of which worker happens to be sending for it.
+预热池模型：预热流量分为 `free` 和 `premium` 两个池，相关 `warmup_pools` 表定义在 `internal/infrastructure/db/migrations/000001_baseline.up.sql` 中。预热池成员关系属于邮箱属性，与当前替它发送的工作节点无关。
 
-Warmup content generation is an offline control-plane workload. The autonomous controller runs every six hours, derives a shared-bank target from seven-day send demand, maintains a 200-thread floor, scales up to 5,000 threads, and submits at most 250 replacements per batch within a 1,000-thread daily cap. It deliberately does not split generation by customer mailbox tags, which would create unbounded queues and smaller, more repetitive content cohorts. Scheduled top-ups use `gpt-6-luna` through durable provider batch jobs rather than synchronous model calls, with a database uniqueness guard that prevents duplicate in-flight scheduled batches when several backend replicas are running. Content with at least 20 sampled sends is automatically archived when it has at least 3 spam placements and a placement rate of 15% or more. The send path atomically selects and increments a least-used active conversation through an indexed query, then falls back to the static reviewed library if no generated content is available. Model availability therefore never gates a warmup send.
+预热内容生成属于离线控制平面工作。自主控制器每六小时运行一次，根据七天发送需求计算共享内容库目标，维持至少 200 个会话，最多扩展至 5,000 个，每批最多提交 250 个替换会话，每天最多 1,000 个。它有意不按客户邮箱标签拆分生成，否则会产生无界队列，以及更小、更重复的内容群组。定时补充通过持久化服务商批处理任务使用 `gpt-6-luna`，不做同步模型调用；数据库唯一性保护会阻止多个后端副本同时产生重复的在途定时批次。当内容已有至少 20 次发送样本，其中至少 3 次进入垃圾邮件且比例达到 15% 或更高时，会自动归档。发送路径通过带索引的查询，原子地选择使用最少的活跃会话并增加其使用次数；没有生成内容可用时，回退到已审核的静态内容库。因此，模型可用性不会阻塞预热发送。
 
-## Anti-abuse layers
+## 多层反滥用机制 [#anti-abuse-layers]
 
-There is no single ML fraud engine. Layered controls instead:
+系统没有单一的机器学习反欺诈引擎，而是使用分层控制：
 
-- CAPTCHA (Cloudflare Turnstile) on auth-sensitive flows
-- Per-user, per-category API rate limiting (Redis-backed)
-- Per-WebSocket join/message/event rate limiting (realtime service)
-- Warmup-token verification: single-use, recipient-bound tokens, so warmup mail cannot be replayed or redirected
-- Tracking event deduplication (in-memory + persistent)
-- Idempotent deliverability event processing
-- Worker-side mailbox-sync fair use: the sync governor (`internal/app/worker/wmail/governor.go`) with priority, live and backfill lanes, deferral instead of dropping, and flood or chronic-overage escalation
-- Suppression lists for bounced/complained/unsubscribed recipients
-- Admin ban + manual override surface
+- 在身份验证敏感流程中使用 CAPTCHA（Cloudflare Turnstile）。
+- 基于 Redis 的按用户、按类别 API 速率限制。
+- 实时服务中按 WebSocket 的加入、消息和事件速率限制。
+- 预热令牌验证：一次性且绑定收件人，防止预热邮件被重放或重定向。
+- 跟踪事件去重，结合内存和持久化存储。
+- 幂等处理邮件送达事件。
+- 工作节点侧邮箱同步的合理使用控制：同步调节器 `internal/app/worker/wmail/governor.go` 提供优先、实时和历史回填通道，采用延期而非丢弃，并在洪泛或长期超额时升级处理。
+- 对退信、投诉和退订收件人使用禁止发送名单。
+- 管理员封禁和人工覆盖入口。
 
-See the [event system reference](/development/events/) for the Kafka events, and the codebase's `internal/app/consumer/` for the event handlers.
+Kafka 事件见[事件系统参考](/development/events/)，事件处理器见代码库中的 `internal/app/consumer/`。
 
-## Source anchors
+## 源代码位置索引 [#source-anchors]
 
-These files are the fastest way to rebuild context:
+以下文件最便于快速重建相关上下文：
 
 - `README.md`
 - `docs/content/docs/development/deployment-guide.mdx`

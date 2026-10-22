@@ -1,30 +1,30 @@
 ---
-title: Mailboxes
-description: Connect, configure, warm up, verify, and send from sender mailboxes (email accounts).
+title: "邮箱"
+description: "连接、配置、预热和验证发件邮箱（邮箱账户），并通过这些邮箱发送邮件。"
 ---
 
-Mailboxes are the sender accounts Warmbly sends campaign and warmup mail from. These endpoints live under `/emails` and let you list and inspect connected mailboxes, update their sending and warmup settings, point a custom tracking domain at a mailbox, drive the warmup lifecycle, check authentication and ban status, verify addresses before sending, and send a one-off message from a specific mailbox.
+邮箱是 Warmbly 用于发送营销活动和预热邮件的发件账户。这些端点位于 `/emails` 下，可列出和查看已连接邮箱、更新发送和预热设置、配置邮箱自定义跟踪域名、管理预热生命周期、检查域名身份验证和封禁状态、在发送前验证地址，以及从特定邮箱发送一次性邮件。
 
-Most read routes require the **Read emails** scope and write routes require the **Write emails** scope. The mailbox connection (onboarding) routes are session only because they write user-encrypted refresh tokens through the SPA popup flow, and the send route requires the **Send campaigns** scope because it transmits real mail. When an API key is scoped to specific mailboxes, every `/:id` route is additionally gated to keys allowed to act on that mailbox.
+多数读取路由需要**读取邮箱**权限范围，写入路由需要**写入邮箱**权限范围。邮箱连接和初始接入路由仅接受会话，因为它们通过 SPA 弹窗流程写入由用户密钥加密的刷新令牌。发送路由需要**发送营销活动**权限范围，因为会实际发送邮件。API 密钥仅限特定邮箱时，每条 `/:id` 路由还会检查密钥是否获准操作该邮箱。
 
-## List mailboxes
+## 列出邮箱 [#list-mailboxes]
 
 `GET /emails`
 
-Returns the organization's connected mailboxes, newest first, with cursor pagination.
+返回组织已连接的邮箱，按最新优先排序，支持游标分页。
 
-Auth: **Scope** `READ_EMAILS` · **Org permission** `view_campaigns`
+身份验证：**权限范围** `READ_EMAILS` · **组织权限** `view_campaigns`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `q` | query | string | Optional free-text search over mailbox address and name. |
-| `tag` | query | string (UUID) | Optional tag id to filter by. Must be a valid UUID. |
-| `cursor` | query | string (UUID) | Opaque cursor from a previous `pagination.next_cursor`. |
-| `limit` | query | integer | Page size. Defaults to `50`. Invalid limits return `400`. |
+| `q` | query | string | 可选。对邮箱地址和名称进行自由文本搜索。 |
+| `tag` | query | string (UUID) | 可选的标签 ID 筛选，必须为有效 UUID。 |
+| `cursor` | query | string (UUID) | 此前 `pagination.next_cursor` 中的不透明游标。 |
+| `limit` | query | integer | 每页数量，默认 `50`。无效值返回 `400`。 |
 
-### Response
+### 响应 [#response]
 
-A `data` array of mailbox objects plus a `pagination` envelope.
+邮箱对象的 `data` 数组，加上 `pagination` 封装。
 
 ```json
 {
@@ -87,23 +87,23 @@ A `data` array of mailbox objects plus a `pagination` envelope.
 }
 ```
 
-`provider` is one of `gmail`, `outlook`, or `smtp_imap`, and says how Warmbly talks to the mailbox. `mail_host` says who hosts it, whatever the transport: one of `google_workspace`, `gmail`, `microsoft365`, `outlook`, `zoho`, `yahoo`, `aol`, `icloud`, `fastmail`, `godaddy`, `namecheap`, `ionos`, `hostinger`, `ovh`, `migadu`, `purelymail`, `rackspace`, `yandex`, `gmx`, `proton`, or `other`. `auth_method` is how it signs in: `password`, `app_password`, `oauth`, or `delegated`. A Google Workspace mailbox on an app password is `provider` `smtp_imap`, `mail_host` `google_workspace`, `auth_method` `app_password`. Either may be an empty string until known; a mailbox whose host is not recorded yet is classified in the background from its domain's DNS. `avatar_url` is the mailbox's own profile photo, read when a Microsoft mailbox connects or reconnects, or through an administrator grant or from the inbox vendor it was imported from, which are re-checked weekly; it is an empty string when none can be read, which includes Google mailboxes signed in on their own and every SMTP mailbox. `status` is one of `active`, `inactive`, or `revoked`. `warmup` is the warmup anchor timestamp (null when warmup has never been enabled); a non-null `warmup_paused_at` means warmup is enabled but paused. `auth_state` is the sending domain's authentication state, one of `passing` (SPF and DMARC present), `failing` (SPF or DMARC missing), or `unknown` (not checked yet, the DNS lookup could not complete, or the domain is special-use and cannot resolve). It is refreshed by a background check. `auth_dkim` is positive-only and never gates: `true` means a DKIM key was found at a probed selector, `false` means none answered, which is unverified rather than missing because selectors are not discoverable from DNS. `auth_failing_since` is when the domain entered `failing` and is null otherwise; a domain that stays `failing` past the instance grace period stops cold sending and warmup from every mailbox on it, so this is the clock that decides. See [domain authentication](/guides/deliverability/#domain-authentication). `total` and `next_cursor` may be null when not applicable.
+`provider` 为 `gmail`、`outlook` 或 `smtp_imap`，表示 Warmbly 与邮箱通信的方式。`mail_host` 表示实际邮件托管服务商，与传输方式无关，取值为 `google_workspace`、`gmail`、`microsoft365`、`outlook`、`zoho`、`yahoo`、`aol`、`icloud`、`fastmail`、`godaddy`、`namecheap`、`ionos`、`hostinger`、`ovh`、`migadu`、`purelymail`、`rackspace`、`yandex`、`gmx`、`proton` 或 `other`。`auth_method` 表示登录方式：`password`、`app_password`、`oauth` 或 `delegated`。通过应用密码连接的 Google Workspace 邮箱，其 `provider` 为 `smtp_imap`，`mail_host` 为 `google_workspace`，`auth_method` 为 `app_password`。相关信息尚未知时，字段可能为空字符串；尚未记录托管服务商的邮箱会在后台根据域名 DNS 分类。`avatar_url` 是邮箱自身头像，在 Microsoft 邮箱连接或重新连接时读取，也可通过管理员授权或导入邮箱的供应商获取，后两种来源每周重新检查。无法读取时为空字符串，包括单独登录的 Google 邮箱及所有 SMTP 邮箱。`status` 为 `active`、`inactive` 或 `revoked`。`warmup` 是预热起算时间戳，从未启用预热时为 null；`warmup_paused_at` 非 null 表示预热已启用但暂停。`auth_state` 为发件域名身份验证状态，取值为 `passing`（存在 SPF 和 DMARC）、`failing`（缺少 SPF 或 DMARC）或 `unknown`（尚未检查、DNS 查询未能完成，或域名为无法解析的特殊用途域名），由后台检查刷新。`auth_dkim` 仅能提供肯定证据，且永不作为发送准入条件：`true` 表示在探测的选择器上找到了 DKIM 密钥，`false` 表示均未响应，这属于尚未验证，而非缺少记录，因为无法通过 DNS 枚举选择器。`auth_failing_since` 是域名进入 `failing` 的时间，其他情况为 null；如果域名保持 `failing` 超过实例宽限期，该域名下所有邮箱的冷邮件发送和预热都会停止，因此此时间决定何时生效。参阅[域名身份验证](/guides/deliverability/#domain-authentication)。`total` 和 `next_cursor` 在不适用时可能为 null。
 
-## Get a mailbox
+## 获取邮箱 [#get-a-mailbox]
 
 `GET /emails/:id`
 
-Returns a single mailbox by id.
+按 ID 返回单个邮箱。
 
-Auth: **Scope** `READ_EMAILS` · **Org permission** `view_campaigns`
+身份验证：**权限范围** `READ_EMAILS` · **组织权限** `view_campaigns`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox (email account) id. |
+| `id` | path | string (UUID) | 邮箱，即邮箱账户的 ID。 |
 
-### Response
+### 响应 [#response-1]
 
-A bare mailbox object, same shape as one element of the list `data` array.
+直接返回邮箱对象，结构与列表 `data` 数组中的单个元素相同。
 
 ```json
 {
@@ -128,46 +128,46 @@ A bare mailbox object, same shape as one element of the list `data` array.
 }
 ```
 
-## Update a mailbox
+## 更新邮箱 [#update-a-mailbox]
 
 `PATCH /emails/:id`
 
-Updates mailbox settings: display name, signature, status, sending caps, reply-to, warmup configuration, and tags. All fields are optional; only present fields are applied.
+更新邮箱设置，包括显示名称、签名、状态、发送上限、回复地址、预热配置和标签。所有字段均可选，只应用实际提供的字段。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Request body
+### 请求体 [#request-body]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `name` | string | no | Display name on outgoing mail. |
-| `signature_plain` | string | no | Plain-text signature. |
-| `signature_html` | string | no | HTML signature. |
-| `signature_sync` | boolean | no | Append the signature to outgoing mail. Unrelated to where the signature came from. |
-| `signature_code` | boolean | no | Treat the HTML signature as raw code. |
-| `send_as_email` | string | no | A verified provider alias this mailbox sends from. Must be one the provider reported as verified (see [Get the sending identity](#get-the-sending-identity)) or the mailbox's own address; anything else returns `mailbox_send_as_unknown`. Send an empty string to go back to the mailbox address. Gmail only. |
-| `status` | string | no | `active`, `inactive`, or `revoked`. |
-| `campaign_limit` | integer | no | Cold-email safety ceiling across all campaigns, `0` to `5000`, default `50`. Separate from the configurable variable sending-plan target, enabled for newly connected mailboxes with a starting range of `28` to `32` per local working day. The lower limit wins; existing mailbox profiles are unchanged. |
-| `min_wait_time` | integer | no | Minimum seconds between sends. |
-| `reply_to` | string | no | Reply-to address. |
-| `timezone` | string | no | The mailbox's own IANA zone, such as `America/Denver`. Its warmup hours, sending behaviour and business-hours window are evaluated in this zone. Send an empty string to clear it: the mailbox then reads its hours in the workspace timezone (UTC when none is set) and, on campaigns, only the campaign's own window applies. |
-| `warmup` | boolean | no | Enable or disable warmup. |
-| `warmup_base` | integer | no | Warmup starting volume per day. |
-| `warmup_max` | integer | no | Warmup daily ceiling. |
-| `warmup_increase` | integer | no | Per-day warmup ramp increment. |
-| `warmup_reply_rate` | integer | no | Percentage of warmup threads to reply to. |
-| `warmup_tag` | string | no | Tag applied to warmup threads. |
-| `warmup_start_time` | string | no | Daily warmup window start, `HH:MM`. |
-| `warmup_end_time` | string | no | Daily warmup window end, `HH:MM`. |
-| `warmup_days` | integer | no | Weekdays warmup mail goes out, as a bitmask: 1 Monday, 2 Tuesday, 4 Wednesday, 8 Thursday, 16 Friday, 32 Saturday, 64 Sunday. 31 is Monday to Friday; 0 means every day. For a mailbox Warmbly Cloud warms, this and the other ramp and window fields are sent to Warmbly Cloud; see [warmup settings](/guides/warmbly-cloud/#warmup-settings). |
-| `warmup_placement` | string | no | Where warmup mail is filed in the mailbox itself: `folder` (default), `inbox`, or `archive`. See [Warmup](/guides/warmup/#in-your-mail-client). |
-| `warmup_folder` | string | no | Folder (Gmail label) warmup mail is filed into when `warmup_placement` is `folder`. Empty string means the instance default, `Warmbly`. No folder separators or control characters; 64 characters max. |
-| `warmup_retention_days` | integer | no | How many days warmup mail stays in this mailbox before Warmbly deletes it, wherever `warmup_placement` keeps it: `3` to `3650`, or `0` to follow the instance setting (30 days unless the operator changed it). |
-| `tags` | string[] | no | Tag ids assigned to the mailbox. |
+| `name` | string | 否 | 发出邮件使用的显示名称。 |
+| `signature_plain` | string | 否 | 纯文本签名。 |
+| `signature_html` | string | 否 | HTML 签名。 |
+| `signature_sync` | boolean | 否 | 在发出邮件中追加签名，与签名来源无关。 |
+| `signature_code` | boolean | 否 | 将 HTML 签名视为原始代码。 |
+| `send_as_email` | string | 否 | 邮箱使用的、已由服务商验证的发件别名。必须是服务商报告已验证的别名，参阅[获取发件身份](#get-the-sending-identity)，或邮箱自身地址；其他值返回 `mailbox_send_as_unknown`。发送空字符串可恢复使用邮箱地址。仅支持 Gmail。 |
+| `status` | string | 否 | `active`、`inactive` 或 `revoked`。 |
+| `campaign_limit` | integer | 否 | 跨所有营销活动的冷邮件安全上限，范围 `0` 至 `5000`，默认 `50`。它独立于可配置的可变发送计划目标；新连接邮箱默认启用后者，起始范围为每个当地工作日 `28` 至 `32` 封。两者取较低限制，现有邮箱配置不变。 |
+| `min_wait_time` | integer | 否 | 两次发送之间的最短秒数。 |
+| `reply_to` | string | 否 | 回复地址。 |
+| `timezone` | string | 否 | 邮箱自身的 IANA 时区，例如 `America/Denver`。预热时段、发送行为和工作时间窗口均按此时区计算。发送空字符串可清除：之后邮箱时段按工作区时区解释，未设置则为 UTC；对于营销活动，则只应用活动自身的时间窗口。 |
+| `warmup` | boolean | 否 | 启用或停用预热。 |
+| `warmup_base` | integer | 否 | 预热起始每日发送量。 |
+| `warmup_max` | integer | 否 | 预热每日上限。 |
+| `warmup_increase` | integer | 否 | 预热每日发送量递增幅度。 |
+| `warmup_reply_rate` | integer | 否 | 需要回复的预热会话百分比。 |
+| `warmup_tag` | string | 否 | 应用到预热会话的标签。 |
+| `warmup_start_time` | string | 否 | 每日预热窗口开始时间，`HH:MM`。 |
+| `warmup_end_time` | string | 否 | 每日预热窗口结束时间，`HH:MM`。 |
+| `warmup_days` | integer | 否 | 发送预热邮件的星期，以位掩码表示：1 为周一，2 为周二，4 为周三，8 为周四，16 为周五，32 为周六，64 为周日。31 表示周一至周五；0 表示每天。由 Warmbly Cloud 预热的邮箱，会将此字段及其他发送量递增和时段字段发送到 Warmbly Cloud，参阅[预热设置](/guides/warmbly-cloud/#warmup-settings)。 |
+| `warmup_placement` | string | 否 | 预热邮件在邮箱本身中的存放位置：`folder`（默认）、`inbox` 或 `archive`。参阅[邮箱预热](/guides/warmup/#in-your-mail-client)。 |
+| `warmup_folder` | string | 否 | `warmup_placement` 为 `folder` 时，用于存放预热邮件的文件夹，Gmail 中对应标签。空字符串使用实例默认值 `Warmbly`。不得包含文件夹分隔符或控制字符，最长 64 个字符。 |
+| `warmup_retention_days` | integer | 否 | 无论 `warmup_placement` 将邮件保存在何处，Warmbly 删除前在此邮箱保留预热邮件的天数：范围 `3` 至 `3650`，或使用 `0` 遵循实例设置，除非运维人员修改，否则为 30 天。 |
+| `tags` | string[] | 否 | 分配给邮箱的标签 ID。 |
 
 ```json
 {
@@ -181,23 +181,23 @@ Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
 }
 ```
 
-### Response
+### 响应 [#response-2]
 
-The updated mailbox object (same shape as Get a mailbox).
+更新后的邮箱对象，结构与“获取邮箱”相同。
 
-## Get the sending identity
+## 获取发件身份 [#get-the-sending-identity]
 
 `GET /emails/:id/identity`
 
-Reports which addresses the mailbox's provider will let it send as, which one it currently uses, and where its stored signature came from. Stored state only: the provider is not contacted, so this is cheap to call.
+报告服务商允许该邮箱使用的发件地址、当前所用地址，以及已存签名的来源。仅读取存储状态，不访问服务商，因此调用成本很低。
 
-Auth: **Scope** `READ_EMAILS` · **Org permission** `view_campaigns`
+身份验证：**权限范围** `READ_EMAILS` · **组织权限** `view_campaigns`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Response
+### 响应 [#response-3]
 
 ```json
 {
@@ -215,57 +215,57 @@ Auth: **Scope** `READ_EMAILS` · **Org permission** `view_campaigns`
 }
 ```
 
-`supported` is `false` for Outlook and SMTP/IMAP mailboxes, which publish no send-as list; `identities` is then empty and the refresh below returns `mailbox_send_as_unsupported`. `send_as_email` is empty when the mailbox sends as its own address, which is the default. `verified` is `false` for an alias the provider has not finished verifying: it is listed, but setting `send_as_email` to it is refused. `signature_source` is `provider` when the stored signature was imported and `manual` once it is edited in Warmbly.
+Outlook 和 SMTP/IMAP 邮箱不提供发件身份列表，其 `supported` 为 `false`，此时 `identities` 为空，下方刷新接口返回 `mailbox_send_as_unsupported`。邮箱使用自身地址发送时，`send_as_email` 为空，这是默认行为。服务商尚未完成验证的别名，其 `verified` 为 `false`：仍会列出，但将 `send_as_email` 设为该别名会被拒绝。存储签名从服务商导入时，`signature_source` 为 `provider`；在 Warmbly 中编辑后变为 `manual`。
 
-## Refresh the sending identity
+## 刷新发件身份 [#refresh-the-sending-identity]
 
 `POST /emails/:id/identity/refresh`
 
-Re-reads the send-as addresses from the provider and stores them, optionally importing the provider's signature at the same time. This is the only call that contacts the provider, and it does so through the worker running the mailbox rather than from the API itself, so the provider keeps seeing this mailbox from the one address it always has.
+从服务商重新读取发件身份地址并保存，可选择同时导入服务商签名。这是唯一会访问服务商的调用，并通过运行该邮箱的工作节点执行，而不是由 API 直接请求，因此服务商看到的该邮箱来源地址始终一致。
 
-A send-as choice the provider no longer verifies is cleared by the same call, so a removed alias stops being used instead of failing every send.
+同一调用还会清除服务商不再验证的已选发件别名，使移除的别名停止使用，而不是导致每次发送失败。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Request body
+### 请求体 [#request-body-1]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `import_signature` | boolean | no | Also replace the mailbox's stored signature with the one configured at the provider, for whichever identity the mailbox sends as. Defaults to `false`. An empty signature at the provider changes nothing. |
+| `import_signature` | boolean | 否 | 同时将邮箱已存签名替换为服务商为当前发件身份配置的签名。默认 `false`。服务商签名为空时不作修改。 |
 
 ```json
 { "import_signature": true }
 ```
 
-The body may be omitted entirely, which refreshes the addresses only.
+可以完全省略请求体，此时只刷新地址。
 
-Takes no `Idempotency-Key`: the call reads the provider's current state and stores exactly that, so repeating it converges on the same result.
+不接受 `Idempotency-Key`：调用读取并原样保存服务商当前状态，因此重复执行会收敛到相同结果。
 
-### Response
+### 响应 [#response-4]
 
-The refreshed sending identity, same shape as Get the sending identity.
+刷新后的发件身份，结构与“获取发件身份”相同。
 
-Gmail only. Every other provider returns `400` with `mailbox_send_as_unsupported`, and a signature past the stored maximum returns `400` with `mailbox_signature_too_large` without storing anything.
+仅支持 Gmail。其他服务商返回 `400` 和 `mailbox_send_as_unsupported`；签名超过存储上限时，返回 `400` 和 `mailbox_signature_too_large`，不保存任何内容。
 
-A mailbox that is not currently running on a worker returns `503` with `mailbox_identity_unavailable`: there is no machine to make the call, nothing was changed, and the next attempt is the fix. Mailboxes are placed within moments of connecting, so this is a mid-migration or just-restarted condition rather than a lasting one.
+邮箱当前未在任何工作节点运行时，返回 `503` 和 `mailbox_identity_unavailable`：没有可执行调用的机器，不会改变任何内容，之后重试即可。邮箱通常在连接后很快就会分配到节点，因此这一般发生于迁移期间或刚重启后，不是长期状态。
 
-## Get the tracking domain
+## 获取跟踪域名 [#get-the-tracking-domain]
 
 `GET /emails/:id/track`
 
-Returns the mailbox's stored tracking-domain state plus the `CNAME` value this install expects. Read-only: it does no DNS work, so it is safe to call on every render. Use Verify the tracking domain to re-resolve.
+返回邮箱保存的跟踪域名状态，以及本实例预期的 `CNAME` 值。此操作只读，不进行 DNS 查询，因此可在每次渲染时安全调用。需要重新解析时，使用“验证跟踪域名”。
 
-Auth: **Scope** `READ_EMAILS` · **Org permission** `view_campaigns`
+身份验证：**权限范围** `READ_EMAILS` · **组织权限** `view_campaigns`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Response
+### 响应 [#response-5]
 
 ```json
 {
@@ -279,24 +279,24 @@ Auth: **Scope** `READ_EMAILS` · **Org permission** `view_campaigns`
 }
 ```
 
-## Update the tracking domain
+## 更新跟踪域名 [#update-the-tracking-domain]
 
 `PATCH /emails/:id/track`
 
-Sets or clears the custom open/click tracking domain for a mailbox, then resolves it once and records the verdict. The record has to point at this install's tracking host, which is returned as `cname_target` (it is the deployment's `TRACKING_DOMAIN`, not a fixed value). DNS can lag a freshly added record, so a miss is reported as unverified with a reason, not an error. Send an empty domain to clear the custom domain and fall back to the shared host.
+设置或清除邮箱的自定义打开及点击跟踪域名，然后解析一次并记录结果。DNS 记录必须指向本实例的跟踪主机，返回字段为 `cname_target`，即部署的 `TRACKING_DOMAIN`，不是固定值。新添加的记录可能尚未传播，因此未匹配时会报告未验证及原因，而非错误。发送空域名可清除自定义域名，回退到共享主机。
 
-The value is normalized before it is stored: a scheme, path, trailing dot or stray case is stripped, so `https://T.Acme.com/` is stored as `t.acme.com`. Anything that is still not a bare hostname (a raw IP, a host with a port, `localhost`, a single label) is rejected with `400`.
+保存前会规范化该值，去除协议、路径、末尾点并统一大小写，因此 `https://T.Acme.com/` 会保存为 `t.acme.com`。仍不是纯主机名的值，包括原始 IP、带端口的主机、`localhost` 或单标签名称，均返回 `400` 并被拒绝。
 
-Only a verified domain is used at send time. While it is unverified, opens and clicks go through the shared tracking host, so sending is never blocked by a pending record.
+发送时只使用已验证域名。尚未验证时，打开和点击通过共享跟踪主机处理，因此待生效记录不会阻止发送。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
-| `domain` | query | string | The custom tracking subdomain (for example `t.acme.com`). Empty clears it. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
+| `domain` | query | string | 自定义跟踪子域名，例如 `t.acme.com`。留空可清除。 |
 
-### Response
+### 响应 [#response-6]
 
 ```json
 {
@@ -311,53 +311,53 @@ Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
 }
 ```
 
-`tracking_domain_verified_at` is null until the record resolves to the tracking host.
+记录尚未解析到跟踪主机时，`tracking_domain_verified_at` 为 null。
 
-| Field | Description |
+| 字段 | 说明 |
 |-------|-------------|
-| `cname_target` | The value to put in the `CNAME`. Empty when the deployment has no tracking host, in which case nothing can verify. |
-| `status` | `verified`, `unset`, `no_target`, `not_found`, `wrong_target`, `lookup_error`, or `pending` for stored state that has not been re-resolved. |
-| `message` | One sentence explaining `status`, safe to show to an end user. |
-| `observed` | What DNS returned, when it differs from the target. |
-| `tracking_host_unresolvable` | True when the record is correct but this install's own tracking host has no DNS record, so nothing will be recorded. An operator problem, not a caller one. |
+| `cname_target` | 应填入 `CNAME` 的值。部署没有跟踪主机时为空，此时无法完成验证。 |
+| `status` | `verified`、`unset`、`no_target`、`not_found`、`wrong_target`、`lookup_error`，或表示存储状态尚未重新解析的 `pending`。 |
+| `message` | 用一句话说明 `status`，可安全展示给最终用户。 |
+| `observed` | DNS 返回值与目标不同时，报告实际返回内容。 |
+| `tracking_host_unresolvable` | 记录正确，但本实例自身的跟踪主机没有 DNS 记录时为 true，因此不会记录任何跟踪数据。这是运维问题，不是调用者问题。 |
 
-A domain whose provider flattens `CNAME` records verifies on matching addresses instead, and `status` is still `verified`.
+若域名服务商对 `CNAME` 记录进行扁平化，则改为匹配地址验证，`status` 仍为 `verified`。
 
-## Verify the tracking domain
+## 验证跟踪域名 [#verify-the-tracking-domain]
 
 `POST /emails/:id/track/verify`
 
-Re-resolves the mailbox's saved tracking domain and records the verdict, without changing the domain itself. This is how a record that has finished propagating starts being used, rather than waiting to be saved again.
+重新解析邮箱已保存的跟踪域名并记录结果，不修改域名本身。这样已完成传播的记录即可开始使用，无需再次保存。
 
-The backend also re-resolves every custom tracking domain hourly (each one at most daily), so this endpoint is the impatient path rather than the only one. A transient resolver failure never revokes a verified domain.
+后端还会每小时执行自定义跟踪域名重新解析任务，每个域名每天最多检查一次，因此此端点用于立即触发检查，并非唯一方式。临时解析失败不会撤销已验证域名。
 
-Write-scoped on purpose: recording the verdict is what routes real links through the custom host.
+有意要求写入权限范围：记录验证结果会使真实链接开始通过自定义主机路由。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Response
+### 响应 [#response-7]
 
-Same shape as Update the tracking domain.
+结构与“更新跟踪域名”相同。
 
-## Start warmup
+## 启动邮箱预热 [#start-warmup]
 
 `POST /emails/:id/warmup/start`
 
-Enables warmup for a mailbox. When resuming from a paused state it preserves ramp progress and seeds the warmup task chain immediately rather than waiting for the next reconciler pass. A [placement seed inbox](/api/reference/placement/#mark-a-seed-inbox) never warms up, so starting or resuming warmup on one answers `409` with `mailbox_is_seed`.
+为邮箱启用预热。从暂停恢复时会保留发送量递增进度，并立即初始化预热任务链，无需等待下一轮协调检查。[投递位置测试种子收件箱](/api/reference/placement/#mark-a-seed-inbox)永远不会预热，因此启动或恢复其预热会返回 `409` 和 `mailbox_is_seed`。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Response
+### 响应 [#response-8]
 
-The updated mailbox object, reflecting the new warmup state.
+更新后的邮箱对象，反映新的预热状态。
 
 ```json
 {
@@ -369,21 +369,21 @@ The updated mailbox object, reflecting the new warmup state.
 }
 ```
 
-## Pause warmup
+## 暂停邮箱预热 [#pause-warmup]
 
 `POST /emails/:id/warmup/pause`
 
-Pauses warmup without losing ramp progress. A later start continues from the same daily volume.
+暂停预热而不丢失发送量递增进度。之后启动时，从相同的每日发送量继续。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Response
+### 响应 [#response-9]
 
-The updated mailbox object. A paused mailbox has a non-null `warmup_paused_at`.
+更新后的邮箱对象。暂停邮箱的 `warmup_paused_at` 非 null。
 
 ```json
 {
@@ -393,37 +393,37 @@ The updated mailbox object. A paused mailbox has a non-null `warmup_paused_at`.
 }
 ```
 
-## Resume warmup
+## 恢复邮箱预热 [#resume-warmup]
 
 `POST /emails/:id/warmup/resume`
 
-Resumes a paused warmup, shifting the ramp anchor forward so progress continues where it left off, and re-seeds the warmup task chain immediately.
+恢复暂停的预热，将递增起算时间向后移动，使进度从暂停处继续，并立即重新初始化预热任务链。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Response
+### 响应 [#response-10]
 
-The updated mailbox object, with `warmup_paused_at` cleared.
+更新后的邮箱对象，其中 `warmup_paused_at` 已清除。
 
-## Stop warmup
+## 停止邮箱预热 [#stop-warmup]
 
 `POST /emails/:id/warmup/stop`
 
-Disables warmup entirely and clears ramp progress. Distinct from pause: a later start begins a fresh ramp.
+完全停用预热，并清除发送量递增进度。与暂停不同，之后启动会重新开始递增计划。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Response
+### 响应 [#response-11]
 
-The updated mailbox object, with warmup disabled.
+更新后的邮箱对象，预热已停用。
 
 ```json
 {
@@ -433,21 +433,21 @@ The updated mailbox object, with warmup disabled.
 }
 ```
 
-## Hold a mailbox
+## 暂停邮箱发送 [#hold-a-mailbox]
 
 `POST /emails/:id/hold`
 
-Takes the mailbox out of campaign sending until it is released. Warmup keeps running. This is the owner's decision: the automatic rest and resume logic never touches a held mailbox. Bodyless and idempotent, so it takes no `Idempotency-Key`; holding an already held mailbox returns its current state.
+暂停邮箱参与营销活动发送，直到解除限制，预热仍继续运行。这是所有者主动决定的限制，自动休息和恢复逻辑不会操作被暂停的邮箱。无请求体，且具有幂等性，因此不接受 `Idempotency-Key`；对已暂停邮箱再次暂停，会返回当前状态。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Response
+### 响应 [#response-12]
 
-The mailbox's cold-rotation state.
+邮箱的冷邮件轮换状态。
 
 ```json
 {
@@ -457,21 +457,21 @@ The mailbox's cold-rotation state.
 }
 ```
 
-## Release a mailbox
+## 解除邮箱暂停限制 [#release-a-mailbox]
 
 `POST /emails/:id/release`
 
-Puts a held or resting mailbox back into automatic management. It lands in `active`, or straight in `resting` when warmup is running and still reports the mailbox as quarantined or blocked, so a release never sends cold mail from a mailbox the pool has taken out. A `watch` or `throttled` mailbox lands in `active` and sends at its dampened volume. A resting mailbox with no warmup running has no signal to wait for and lands in `active`. Bodyless and idempotent; releasing a mailbox that is already active returns its current state.
+将手动暂停或休息中的邮箱重新交给自动管理。通常转为 `active`；如果预热正在运行，且仍报告邮箱被隔离或封禁，则直接转为 `resting`，因此解除限制不会让预热池已移除的邮箱发送冷邮件。`watch` 或 `throttled` 邮箱转为 `active`，并按降低后的发送量发送。没有运行预热的休息中邮箱，无需等待健康信号，会转为 `active`。无请求体，且具有幂等性；对已启用邮箱解除限制，会返回当前状态。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Response
+### 响应 [#response-13]
 
-The mailbox's cold-rotation state.
+邮箱的冷邮件轮换状态。
 
 ```json
 {
@@ -481,21 +481,21 @@ The mailbox's cold-rotation state.
 }
 ```
 
-## Check domain authentication
+## 检查域名身份验证 [#check-domain-authentication]
 
 `GET /emails/:id/auth-check`
 
-Validates SPF, DKIM, and DMARC for the mailbox's sending domain on demand. Authentication alignment is a hard bulk-sender requirement and a common silent deliverability failure, so this confirms the domain is configured correctly without leaving the dashboard.
+按需验证邮箱发件域名的 SPF、DKIM 和 DMARC。身份验证对齐是批量发件的硬性要求，也常是邮件送达问题的隐蔽原因；此接口让你无需离开控制台即可确认域名配置是否正确。
 
-Read-only: it reports what DNS says right now and leaves the mailbox's stored `auth_state` alone.
+只读：报告当前 DNS 结果，不改变邮箱已保存的 `auth_state`。
 
-Auth: **Scope** `READ_EMAILS` · **Org permission** `view_campaigns`
+身份验证：**权限范围** `READ_EMAILS` · **组织权限** `view_campaigns`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. The domain is derived from the mailbox address. |
+| `id` | path | string (UUID) | 邮箱 ID。域名从邮箱地址中提取。 |
 
-### Response
+### 响应 [#response-14]
 
 ```json
 {
@@ -516,53 +516,53 @@ Auth: **Scope** `READ_EMAILS` · **Org permission** `view_campaigns`
 }
 ```
 
-`spf_record`, `dkim_selectors`, `dmarc_policy`, and `dmarc_domain` are omitted when the corresponding record is not found.
+对应记录未找到时，会省略 `spf_record`、`dkim_selectors`、`dmarc_policy` 和 `dmarc_domain`。
 
-`dkim_status` is `found` or `undetermined`, and it is the field to read for DKIM. `dkim_found` is positive-only: a DKIM key sits at a selector its owner chose and DNS cannot be asked to list the selectors under a domain, so `false` means no key answered at the selectors probed, which is not evidence the domain has none. Do not present it as a missing record. The check derives candidate selectors from the domain's own SPF and MX records, which name the provider handling its mail, on top of a default set; a provider that mints a random per-account selector stays `undetermined` however well the domain is configured. DKIM never affects `auth_state`.
+`dkim_status` 为 `found` 或 `undetermined`，应通过此字段判断 DKIM。`dkim_found` 仅能提供肯定证据：DKIM 密钥位于域名所有者选定的选择器中，DNS 无法列出域名下的所有选择器，因此 `false` 只表示探测过的选择器没有密钥响应，不能证明域名没有 DKIM。不要将其展示为缺少记录。检查除使用默认选择器集合外，还会根据域名自身 SPF 和 MX 记录推导候选选择器，这些记录会标明邮件处理服务商；如果服务商为每个账户生成随机选择器，无论域名配置多么正确，结果都可能保持为 `undetermined`。DKIM 永远不会影响 `auth_state`。
 
-`dmarc_inherited` is `true` when the sending domain has no DMARC record of its own and is covered by its organizational domain's policy, which is how a dedicated sending subdomain normally works; `dmarc_domain` then names the domain the record was read from, and `dmarc_policy` reports its `sp=` value when it publishes one. SPF never inherits, so it must be published on the exact sending domain.
+发件域名没有自己的 DMARC 记录，但被其组织域名的策略覆盖时，`dmarc_inherited` 为 `true`，专用发件子域通常采用此方式。此时 `dmarc_domain` 标明实际读取记录的域名；记录发布了 `sp=` 时，`dmarc_policy` 报告该值。SPF 不会继承，必须在精确的发件域名上发布。
 
-A record the instance's resolver does not return is confirmed with the domain's own authoritative nameservers before `spf_found` or `dmarc_found` reads `false`, so a stale cached miss or a resolver that drops `TXT` answers does not report a configured domain as missing.
+对于实例解析器未返回的记录，会先向域名自身的权威名称服务器确认，然后才可能将 `spf_found` 或 `dmarc_found` 设为 `false`，避免过期的负缓存，或丢弃 `TXT` 响应的解析器，将已配置域名误报为缺少记录。
 
-`lookup_error` is `true` when DNS could not answer, from the instance's resolver or the domain's nameservers, and `reserved` is `true` for a special-use domain (`.test`, `.invalid`, `.localhost`, `.example`, `.local`) that cannot resolve by definition. Either one means the domain is unevaluatable, so it is recorded as `unknown` rather than `failing`.
+实例解析器或域名名称服务器无法给出 DNS 回答时，`lookup_error` 为 `true`；对于按定义无法解析的特殊用途域名（`.test`、`.invalid`、`.localhost`、`.example`、`.local`），`reserved` 为 `true`。任一情况都表示域名无法评估，因此记录为 `unknown`，而非 `failing`。
 
-## Record a domain authentication check
+## 记录域名身份验证检查 [#record-a-domain-authentication-check]
 
 `POST /emails/:id/auth-check`
 
-Runs the same check and **records** the verdict against every active mailbox on that sending domain, because authentication is a property of the domain rather than of one mailbox.
+运行相同检查，并为该发件域名上的所有有效邮箱**记录**结果，因为身份验证属于域名属性，而不是单个邮箱属性。
 
-This is how a mailbox blocked by the send gate is unblocked: fix the DNS records at your registrar, call this, and cold sending and warmup resume on the next scheduled send instead of waiting for the daily background check.
+这也是解除邮箱发送限制的方式：在域名注册商处修复 DNS 记录，调用此接口，冷邮件发送和预热便可在下一次计划发送时恢复，无需等待每日后台检查。
 
-Recording the verdict is what lifts the gate, so this needs the write scope even though it reads nothing but public DNS.
+记录结果会解除发送限制，因此即使只读取公开 DNS，也需要写入权限范围。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. The domain is derived from the mailbox address. |
+| `id` | path | string (UUID) | 邮箱 ID。域名从邮箱地址中提取。 |
 
-No request body. No `Idempotency-Key` is needed: the result is derived entirely from public DNS with no caller input, so repeating the call converges on the same stored state.
+无请求体。无需 `Idempotency-Key`：结果完全根据公开 DNS 推导，没有调用者输入，因此重复调用会收敛到相同存储状态。
 
-### Response
+### 响应 [#response-15]
 
-Identical to `GET /emails/:id/auth-check`.
+与 `GET /emails/:id/auth-check` 相同。
 
-## Verify an email address
+## 验证邮箱地址 [#verify-an-email-address]
 
 `POST /emails/verify`
 
-Verifies a single email address on demand (syntax, then MX, then an SMTP RCPT probe, then catch-all detection). This is pre-send verification: confirm an address is deliverable before a worker ever sends to it, instead of learning from a hard bounce. The probe runs from the backend (a non-sending IP), never from worker IPs.
+按需验证单个邮件地址，依次检查语法、MX、SMTP RCPT 探测和全收地址检测。这是发送前验证，在工作节点实际发送前确认地址可投递，而不是通过硬退信才得知问题。探测从后端的非发件 IP 执行，绝不使用工作节点 IP。
 
-Auth: **Scope** `READ_EMAILS` · **Org permission** `view_campaigns`
+身份验证：**权限范围** `READ_EMAILS` · **组织权限** `view_campaigns`
 
-The address may be supplied in the JSON body or as the `email` query param; the body takes precedence.
+地址可放在 JSON 请求体或 `email` 查询参数中，请求体优先。
 
-### Request body
+### 请求体 [#request-body-2]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `email` | string | no | The address to verify. Required if the `email` query param is not set. |
+| `email` | string | 否 | 要验证的地址。未设置 `email` 查询参数时必填。 |
 
 ```json
 {
@@ -570,7 +570,7 @@ The address may be supplied in the JSON body or as the `email` query param; the 
 }
 ```
 
-### Response
+### 响应 [#response-16]
 
 ```json
 {
@@ -583,21 +583,21 @@ The address may be supplied in the JSON body or as the `email` query param; the 
 }
 ```
 
-`status` is one of `valid`, `risky`, `invalid`, or `unknown`. A missing or empty address returns a `400` error envelope.
+`status` 为 `valid`、`risky`、`invalid` 或 `unknown`。地址缺失或为空时，返回 `400` 错误封装。
 
-## Get warmup ban status
+## 获取预热封禁状态 [#get-warmup-ban-status]
 
 `GET /emails/:id/warmup/ban-status`
 
-Returns whether a mailbox of the caller's workspace is blocked from the shared warmup pool, why, and whether it can be appealed. Powers the dashboard ban banner. A mailbox outside the workspace answers `404`.
+返回调用者工作区的邮箱是否被共享预热池封禁、原因及能否申诉，用于控制台封禁横幅。邮箱不属于工作区时返回 `404`。
 
-Auth: **Scope** `READ_EMAILS` · **Org permission** `view_campaigns`
+身份验证：**权限范围** `READ_EMAILS` · **组织权限** `view_campaigns`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Response
+### 响应 [#response-17]
 
 ```json
 {
@@ -612,25 +612,25 @@ Auth: **Scope** `READ_EMAILS` · **Org permission** `view_campaigns`
 }
 ```
 
-`reason`, `blocked_at`, and `blocked_until` are omitted when the mailbox is not blocked. `health_state` reflects the mailbox's rolling warmup health (for example `healthy`, `watch`, `throttled`, `quarantined`, or `blocked`).
+邮箱未被封禁时，省略 `reason`、`blocked_at` 和 `blocked_until`。`health_state` 反映邮箱滚动预热健康状态，例如 `healthy`、`watch`、`throttled`、`quarantined` 或 `blocked`。
 
-## Submit a warmup appeal
+## 提交预热封禁申诉 [#submit-a-warmup-appeal]
 
 `POST /emails/:id/warmup/appeal`
 
-Appeals a warmup ban on a mailbox of the caller's workspace, with a reason. Any member with `manage_emails` can appeal, not only the member who connected the mailbox. A mailbox outside the workspace answers `404`.
+为调用者工作区的邮箱提交预热封禁申诉，并附上原因。任何具有 `manage_emails` 的成员都可申诉，不限于连接该邮箱的成员。邮箱不属于工作区时返回 `404`。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Request body
+### 请求体 [#request-body-3]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `reason` | string | no | The explanation for the appeal. |
+| `reason` | string | 否 | 申诉说明。 |
 
 ```json
 {
@@ -638,7 +638,7 @@ Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
 }
 ```
 
-### Response
+### 响应 [#response-18]
 
 ```json
 {
@@ -646,55 +646,55 @@ Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
 }
 ```
 
-## Delete a mailbox
+## 删除邮箱 [#delete-a-mailbox]
 
 `DELETE /emails/:id`
 
-Disconnects and deletes a mailbox. It is removed from all warmup pools and an account-disconnected event fans out.
+断开并删除邮箱。邮箱会从所有预热池移除，并广播账户断开连接事件。
 
-Nothing is removed unless the two steps that cannot be repaired afterwards succeed first: the machine syncing the mailbox is told to drop it, and the mailbox's [Warmbly Cloud](/guides/warmbly-cloud/) link is released, which takes an enrolled mailbox's stored credentials out of the pool and returns a cloud-managed mirror to the cloud workspace. A failure at either point puts the mailbox back as it was and is safe to retry. If the record itself then fails to delete, the mailbox remains but its link is already released, so its warmup moves back to this instance until the delete is retried.
+只有两个事后无法补救的步骤先成功，才会移除记录：通知同步该邮箱的机器释放邮箱，以及解除邮箱的 [Warmbly Cloud](/guides/warmbly-cloud/) 关联。后者会将已加入预热池邮箱的存储凭据从池中移除，并将云端管理的镜像归还云端工作区。任一步失败都会将邮箱恢复原状，可安全重试。如果随后记录本身删除失败，邮箱仍保留，但关联已解除，因此预热会回到本实例，直到重试删除。
 
-Auth: **Scope** `WRITE_EMAILS` · **Org permission** `manage_emails`
+身份验证：**权限范围** `WRITE_EMAILS` · **组织权限** `manage_emails`
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The mailbox id. |
+| `id` | path | string (UUID) | 邮箱 ID。 |
 
-### Response
+### 响应 [#response-19]
 
-`204 No Content` with an empty body.
+`204 No Content`，响应体为空。
 
-| Status | `code` | Meaning |
+| 状态 | `code` | 含义 |
 |--------|--------|---------|
-| `409` | `mailbox_cloud_unenroll_failed` | The mailbox's Warmbly Cloud link could not be released. See [error codes](/api/error-codes/#409-conflict) |
-| `503` | `mailbox_worker_unreachable` | The machine syncing the mailbox could not be told to drop it. See [error codes](/api/error-codes/#mailbox_worker_unreachable) |
+| `409` | `mailbox_cloud_unenroll_failed` | 无法解除邮箱的 Warmbly Cloud 关联。参阅[错误码](/api/error-codes/#409-conflict) |
+| `503` | `mailbox_worker_unreachable` | 无法通知同步邮箱的机器释放该邮箱。参阅[错误码](/api/error-codes/#mailbox_worker_unreachable) |
 
-## Send from a mailbox
+## 通过邮箱发送邮件 [#send-from-a-mailbox]
 
 `POST /emails/:id/send`
 
-Sends a one-off email from a specific mailbox. The send is scheduled and dispatched through the mailbox's assigned worker. Choose how it is scheduled with `send_mode`.
+从指定邮箱发送一次性邮件。发送通过邮箱分配的工作节点调度和执行。使用 `send_mode` 选择调度方式。
 
-Auth: **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`. Requires an active organization.
+身份验证：**权限范围** `SEND_CAMPAIGNS` · **组织权限** `send_campaigns`。要求组织处于有效状态。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | string (UUID) | The sending mailbox id. |
+| `id` | path | string (UUID) | 发件邮箱 ID。 |
 
-### Request body
+### 请求体 [#request-body-4]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `to` | string[] | yes | Recipient addresses. |
-| `cc` | string[] | no | CC addresses. |
-| `bcc` | string[] | no | BCC addresses. |
-| `subject` | string | yes | Email subject. |
-| `body_html` | string | no | HTML body. |
-| `body_plain` | string | no | Plain-text body. |
-| `in_reply_to` | string[] | no | Message ids this email replies to. |
-| `thread_id` | string | no | Thread id to attach the message to. |
-| `send_mode` | string | no | `instant` (default), `smart` (next per-mailbox scheduler gap), or `scheduled` (use `scheduled_at`). |
-| `scheduled_at` | string (RFC 3339) | no | Required when `send_mode` is `scheduled`. Must be in the future. |
+| `to` | string[] | 是 | 收件地址。 |
+| `cc` | string[] | 否 | 抄送地址。 |
+| `bcc` | string[] | 否 | 密送地址。 |
+| `subject` | string | 是 | 邮件主题。 |
+| `body_html` | string | 否 | HTML 正文。 |
+| `body_plain` | string | 否 | 纯文本正文。 |
+| `in_reply_to` | string[] | 否 | 此邮件所回复的邮件 ID。 |
+| `thread_id` | string | 否 | 此邮件要归入的会话 ID。 |
+| `send_mode` | string | 否 | `instant`（默认）、`smart`（邮箱调度器的下一个发送空档），或 `scheduled`（使用 `scheduled_at`）。 |
+| `scheduled_at` | string (RFC 3339) | 否 | `send_mode` 为 `scheduled` 时必填，且必须是未来时间。 |
 
 ```json
 {
@@ -706,7 +706,7 @@ Auth: **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`. Require
 }
 ```
 
-### Response
+### 响应 [#response-20]
 
 ```json
 {
@@ -716,25 +716,25 @@ Auth: **Scope** `SEND_CAMPAIGNS` · **Org permission** `send_campaigns`. Require
 }
 ```
 
-`task_id` identifies the queued send task. `scheduled_at` is the resolved dispatch time (immediate for `instant`, the next gap for `smart`, or the requested time for `scheduled`).
+`task_id` 标识已入队的发送任务。`scheduled_at` 是解析后的发送时间：`instant` 为立即，`smart` 为下一个空档，`scheduled` 为请求的时间。
 
-A recipient on the workspace [suppression list](/guides/unsubscribe/#the-suppression-list), directly or through its domain, answers `400` with `code: "recipient_suppressed"` and a `message` naming the address. Nothing is queued.
+收件人直接或因所属域名命中工作区[禁止发送名单](/guides/unsubscribe/#the-suppression-list)时，返回 `400`，包含 `code: "recipient_suppressed"` 和指明该地址的 `message`，不会将任何内容加入发送队列。
 
-## Connect a mailbox (onboarding)
+## 连接邮箱（初始设置） [#connect-a-mailbox-onboarding]
 
-The three onboarding routes connect a new mailbox, and a fourth moves an existing one to an app password. They are **session only (not available to API keys)** because they write user-encrypted provider refresh tokens through the SPA popup flow.
+三个初始接入路由用于连接新邮箱，第四个将现有邮箱迁移到应用密码方式。它们**仅限会话，API 密钥不可用**，因为通过 SPA 弹窗流程写入由用户密钥加密的服务商刷新令牌。
 
-### Start OAuth
+### 开始 OAuth 授权 [#start-oauth]
 
 `POST /emails/onboarding/oauth/start`
 
-Begins an OAuth round trip for a Gmail or Outlook mailbox and returns the provider authorization URL plus an opaque `state` to round-trip back.
+为 Gmail 或 Outlook 邮箱启动 OAuth 往返流程，返回服务商授权 URL，以及需在回调中传回的不透明 `state`。
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `provider` | string | yes | `gmail` or `outlook`. `gmail` is refused with `403` `mailbox_gmail_oauth_disabled` unless `GET /auth/config` reports `gmail_oauth_connect: true`; new Gmail mailboxes go through [Connect SMTP/IMAP](#connect-smtpimap) with an app password instead. Re-authorizing an existing Gmail mailbox is not gated. |
-| `login_hint` | string | no | The address to pre-select on the provider's sign-in screen. |
-| `return` | string | no | `web` when a browser dashboard starts the round trip. A sign-in window that has no opener then returns to the dashboard's `/oauth-return` page instead of the `warmbly://` scheme. Omit it from a native app. |
+| `provider` | string | 是 | `gmail` 或 `outlook`。除非 `GET /auth/config` 报告 `gmail_oauth_connect: true`，否则 `gmail` 会返回 `403` `mailbox_gmail_oauth_disabled` 并被拒绝；新 Gmail 邮箱改为使用应用密码通过[连接 SMTP/IMAP](#connect-smtpimap)接入。重新授权现有 Gmail 邮箱不受此限制。 |
+| `login_hint` | string | 否 | 在服务商登录页面预先选中的地址。 |
+| `return` | string | 否 | 浏览器控制台发起往返流程时使用 `web`。登录窗口没有 opener 时，会返回控制台 `/oauth-return` 页面，而非 `warmbly://` 协议地址。原生应用应省略。 |
 
 ```json
 {
@@ -742,7 +742,7 @@ Begins an OAuth round trip for a Gmail or Outlook mailbox and returns the provid
 }
 ```
 
-Response:
+响应：
 
 ```json
 {
@@ -751,20 +751,20 @@ Response:
 }
 ```
 
-For `outlook` the response also carries `admin_consent_url`: Microsoft's admin consent page for the same delegated permissions, tenant-wide. Pass it to the organization's administrator when Microsoft answers the sign-in with **Need admin approval**; once they approve, every mailbox in the organization can sign in. It returns to the API's callback page, which shows the outcome and hands nothing back to an opener.
+对于 `outlook`，响应还包含 `admin_consent_url`，即针对同一组委派权限、在整个租户范围生效的 Microsoft 管理员同意页面。Microsoft 登录返回 **Need admin approval（需要管理员批准）** 时，应将该地址交给组织管理员；批准后，组织中的所有邮箱都可登录。页面会返回 API 回调页，展示结果，不向 opener 返回任何内容。
 
-After the user approves, the provider redirects to the API's callback page, which hands `code` and `state` back to the client: a web opener receives them via `postMessage`. When there is no opener, a round trip started with `return: "web"` goes to the dashboard's `/oauth-return` page, which passes them to the waiting dashboard tab (this happens when a browser blocked the sign-in window and the user allowed it afterwards). Any other round trip without an opener (a native in-app browser session) redirects to `warmbly://email-oauth?provider=...&code=...&state=...&error=...`. Either way, the client then calls Finish OAuth.
+用户批准后，服务商重定向到 API 回调页面，将 `code` 和 `state` 交回客户端：网页 opener 通过 `postMessage` 接收。没有 opener 时，以 `return: "web"` 发起的往返流程会前往控制台 `/oauth-return` 页面，由其将结果传给等待中的控制台标签页；这会发生在浏览器先阻止登录弹窗、用户随后允许的情况下。其他没有 opener 的流程，例如原生应用内浏览器会话，会重定向到 `warmbly://email-oauth?provider=...&code=...&state=...&error=...`。无论哪种情况，客户端随后都调用“完成 OAuth”。
 
-### Finish OAuth
+### 完成 OAuth 授权 [#finish-oauth]
 
 `POST /emails/onboarding/oauth/finish`
 
-Completes the OAuth round trip with the authorization code and state from the provider, then creates the mailbox.
+使用服务商返回的授权码和状态完成 OAuth 往返流程，然后创建邮箱。
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `code` | string | yes | Authorization code from the provider. |
-| `state` | string | yes | The `state` returned from start. |
+| `code` | string | 是 | 服务商返回的授权码。 |
+| `state` | string | 是 | 启动时返回的 `state`。 |
 
 ```json
 {
@@ -773,24 +773,24 @@ Completes the OAuth round trip with the authorization code and state from the pr
 }
 ```
 
-Response: `201 Created` with the new mailbox object (same shape as Get a mailbox).
+响应：`201 Created`，包含新邮箱对象，结构与“获取邮箱”相同。
 
-### Connect SMTP/IMAP
+### 连接 SMTP/IMAP [#connect-smtpimap]
 
 `POST /emails/onboarding/smtp-imap`
 
-Connects an SMTP/IMAP mailbox in a single call.
+通过一次调用连接 SMTP/IMAP 邮箱。
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `email` | string | yes | The mailbox address. |
-| `name` | string | no | Display name. |
-| `smtp` | object | yes | SMTP credentials: `username`, `password`, `host`, `port`, `security`. |
-| `imap` | object | yes | IMAP credentials: `username`, `password`, `host`, `port`, `security`. |
+| `email` | string | 是 | 邮箱地址。 |
+| `name` | string | 否 | 显示名称。 |
+| `smtp` | object | 是 | SMTP 凭据：`username`、`password`、`host`、`port`、`security`。 |
+| `imap` | object | 是 | IMAP 凭据：`username`、`password`、`host`、`port`、`security`。 |
 
-`security` is `tls` (implicit TLS, encrypted from the first byte), `starttls` (plaintext greeting upgraded in-band) or `none` (no encryption). It is optional: omit it and the port decides, which is `tls` for SMTP 465 and IMAP 993, and `starttls` for SMTP 587 and IMAP 143. `none` is never inferred from a port, only obeyed when you ask for it. Set the mode explicitly for anything non-standard, such as a submission relay on 2525. Any port from 1 to 65535 is accepted.
+`security` 为 `tls`（隐式 TLS，从第一个字节开始加密）、`starttls`（明文问候后在连接内升级加密）或 `none`（不加密）。此字段可选，省略时根据端口判断：SMTP 465 和 IMAP 993 使用 `tls`，SMTP 587 和 IMAP 143 使用 `starttls`。绝不会根据端口推断 `none`，只有明确请求时才采用。使用非标准配置时，例如 2525 端口的邮件提交中继，应明确设置模式。接受 1 至 65535 的任意端口。
 
-`none` is accepted only for a mail server on the same machine as the worker, which means a self-hosted instance and a `host` of `localhost`, an address in `127.0.0.0/8`, or `::1`. It exists for local relays such as Proton Bridge, which serve plain IMAP and SMTP on the loopback interface; see [local mail relays](/guides/mailboxes/#local-mail-relays-proton-bridge). A hostname that merely resolves to a loopback address is refused, the request is rejected with `400` on the hosted product, and the worker checks the peer again at dial time. Everywhere else TLS is not optional.
+只有邮件服务器与工作节点位于同一机器时才接受 `none`，即自托管实例，且 `host` 为 `localhost`、`127.0.0.0/8` 范围内的地址，或 `::1`。此模式用于 Proton Bridge 等本地中继，它们在回环接口提供明文 IMAP 和 SMTP；参阅[本地邮件中继](/guides/mailboxes/#local-mail-relays-proton-bridge)。仅仅解析到回环地址的主机名会被拒绝；托管产品会以 `400` 拒绝请求，工作节点也会在建立连接时再次检查对端。其他情况下 TLS 均为必需。
 
 ```json
 {
@@ -813,17 +813,17 @@ Connects an SMTP/IMAP mailbox in a single call.
 }
 ```
 
-Response: `201 Created` with the new mailbox object.
+响应：`201 Created`，包含新邮箱对象。
 
-### Switch to an app password
+### 切换到应用专用密码 [#switch-to-an-app-password]
 
 `POST /emails/onboarding/app-password/:id`
 
-Moves a mailbox connected with per-mailbox Google sign-in, which is [being retired](/guides/mailboxes/#moving-off-per-mailbox-google-sign-in), onto Gmail's IMAP and SMTP with a Google app password. Session only, and needs the `manage_emails` organization permission.
+将通过逐邮箱 Google 登录连接、且该方式[正在停用](/guides/mailboxes/#moving-off-per-mailbox-google-sign-in)的邮箱，迁移到使用 Google 应用密码的 Gmail IMAP 和 SMTP。仅限会话，需要 `manage_emails` 组织权限。
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `app_password` | string | yes | A 16-letter app password from [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords). Spaces are ignored. |
+| `app_password` | string | 是 | 从 [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) 获取的 16 个字母应用密码。忽略空格。 |
 
 ```json
 {
@@ -831,19 +831,19 @@ Moves a mailbox connected with per-mailbox Google sign-in, which is [being retir
 }
 ```
 
-The password is checked against `imap.gmail.com` and `smtp.gmail.com` before anything is stored, and refused with the same codes as [Connect SMTP/IMAP](#connect-smtpimap) (such as `mailbox_auth_refused`); a refusal changes nothing. On success the mailbox becomes `smtp_imap` with `auth_method` `app_password` in place: its id, imported mail, campaigns, warmup and settings stay, and sync continues with new mail.
+保存任何内容前，会向 `imap.gmail.com` 和 `smtp.gmail.com` 验证密码；拒绝时使用与[连接 SMTP/IMAP](#connect-smtpimap)相同的错误码，例如 `mailbox_auth_refused`，不修改任何内容。成功后，邮箱原地变为 `smtp_imap`，`auth_method` 为 `app_password`：ID、已导入邮件、营销活动、预热和设置均保留，同步继续获取新邮件。
 
-Response: `200 OK` with the mailbox object. `409` `mailbox_not_google_signin` when the mailbox is not on per-mailbox Google sign-in (including one already switched, so a repeat changes nothing), and `400` `app_password_invalid` when the value is not 16 letters.
+响应：`200 OK`，包含邮箱对象。邮箱未使用逐邮箱 Google 登录时，包括已经迁移的邮箱，返回 `409` `mailbox_not_google_signin`，因此重复调用不会改变任何内容。值不是 16 个字母时，返回 `400` `app_password_invalid`。
 
-## Connect many mailboxes
+## 连接多个邮箱 [#connect-many-mailboxes]
 
-Four more route families connect and set up mailboxes in bulk. Like onboarding they are **session only (not available to API keys)**, because they carry passwords or reach a whole domain's mail, and each needs the `manage_emails` organization permission:
+另有四组路由用于批量连接和配置邮箱。与初始接入一样，它们**仅限会话，API 密钥不可用**，因为会携带密码或访问整个域名的邮件；每组都需要 `manage_emails` 组织权限：
 
-| Routes | What they do |
+| 路由 | 用途 |
 |--------|--------------|
-| `/emails/imports` | [Import mailboxes](/guides/mailbox-import/) from a file or a pasted list, in the background |
-| `/emails/vendors` | Connect an [inbox vendor](/guides/mailbox-import/#import-from-an-inbox-vendor) account and import its mailboxes |
-| `/emails/grants` | Connect a whole [Google Workspace domain](/guides/mailbox-import/#connect-a-whole-google-workspace-domain) or [Microsoft 365 organization](/guides/mailbox-import/#connect-a-whole-microsoft-365-organization) through an administrator's grant, and move mailboxes on per-mailbox sign-in onto one (`GET /emails/grants/migration` lists those still on Google sign-in). Recording, using and removing a grant also need a [recent confirmation](/api/endpoints/#actions-that-need-a-recent-confirmation) |
-| `/emails/domains` | Set a tracking host and a root redirect per [sending domain](/guides/sending-domains/), directly or through the inbox vendor that holds the domain |
+| `/emails/imports` | 从文件或粘贴列表在后台[导入邮箱](/guides/mailbox-import/) |
+| `/emails/vendors` | 连接[邮箱供应商](/guides/mailbox-import/#import-from-an-inbox-vendor)账户并导入其邮箱 |
+| `/emails/grants` | 通过管理员授权连接整个 [Google Workspace 域名](/guides/mailbox-import/#connect-a-whole-google-workspace-domain) 或 [Microsoft 365 组织](/guides/mailbox-import/#connect-a-whole-microsoft-365-organization)，并将使用逐邮箱登录的邮箱迁移到该授权；`GET /emails/grants/migration` 列出仍使用 Google 登录的邮箱。记录、使用和移除授权还需要[近期身份确认](/api/endpoints/#actions-that-need-a-recent-confirmation) |
+| `/emails/domains` | 为每个[发件域名](/guides/sending-domains/)设置跟踪主机和根域重定向，可直接设置，也可通过持有域名的邮箱供应商设置 |
 
-Every route, with its body and retry behavior, is listed under [JWT only](/api/endpoints/#jwt-only).
+所有路由及其请求体和重试行为均列于[仅支持 JWT](/api/endpoints/#jwt-only)。

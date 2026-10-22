@@ -1,344 +1,344 @@
 ---
-title: Warmbly Cloud for self-hosted instances
-description: "Warm the mailboxes on your own Warmbly instance in the hosted warmup pool, while campaigns, contacts and inbox stay on your server."
+title: "自托管实例使用 Warmbly Cloud"
+description: "让自有 Warmbly 实例中的邮箱在托管预热池内预热，营销活动、联系人和收件箱仍保留在自己的服务器上。"
 ---
 
-Linking a self-hosted instance to Warmbly Cloud lets its mailboxes warm in the hosted pool, instead of only against the few other mailboxes on your server. Campaigns, contacts, the unibox, tracking and every stored message stay on your server. The cloud does hold the credential of each SMTP/IMAP mailbox you enroll, the sign-in of any Google or Microsoft mailbox connected through it, and any redirect you choose to serve from it.
+将自托管实例关联到 Warmbly Cloud 后，邮箱可在托管预热池中预热，无须只与服务器上的少量邮箱互动。营销活动、联系人、统一收件箱、跟踪和所有已存邮件仍留在你的服务器。Cloud 会持有你加入预热的各 SMTP／IMAP 邮箱凭据、经其连接的 Google 或 Microsoft 邮箱登录授权，以及你选择由它提供服务的重定向。
 
-## Link a workspace
+## 关联工作区 [#link-a-workspace]
 
 <Steps>
 
 <Step>
 
-On your instance, open **Settings > Warmbly Cloud**, select the local workspace, and press **Connect to Warmbly Cloud**.
+在自己的实例上打开 **设置 > Warmbly Cloud**，选择本地工作区，然后点击**连接 Warmbly Cloud**。
 
 </Step>
 
 <Step>
 
-Press **Open Warmbly Cloud**, sign in with your Warmbly account, enter the eight character code and pick the workspace to link to.
+点击**打开 Warmbly Cloud**，登录 Warmbly 账户，输入八字符代码，并选择要关联的工作区。
 
 </Step>
 
 <Step>
 
-Back on your instance, switch on the mailboxes you want warmed.
+返回自己的实例，开启需要预热的邮箱。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- A free Warmbly Cloud workspace warms up to 10 mailboxes at no cost. The Warmup plan ($15 a month or $144 a year) moves them to the premium pool with no mailbox cap.
-- Connecting needs an instance administrator signed in with two-factor authentication.
-- A code expires after 15 minutes if nobody approves it.
-- The cloud reaches your mail server over the internet, so SMTP and IMAP both need TLS or STARTTLS.
-- A mailbox the cloud quarantines or blocks is skipped by your campaigns until the hold ends.
+- 免费 Warmbly Cloud 工作区可免费预热最多 10 个邮箱。预热套餐每月 15 美元或每年 144 美元，可将邮箱加入高级预热池，且不限制邮箱数量。
+- 连接操作需要通过双因素身份验证登录的实例管理员。
+- 代码无人批准时，15 分钟后过期。
+- Cloud 通过互联网连接你的邮件服务器，因此 SMTP 和 IMAP 都需要 TLS 或 STARTTLS。
+- Cloud 隔离或封禁的邮箱会被营销活动跳过，直到限制结束。
 
 <Fold>
 
-## What linking gives you
+## 关联后可获得的功能 [#what-linking-gives-you]
 
-A self-hosted Warmbly instance warms mailboxes only against the other mailboxes on that same instance, which for most installs is a handful. Linking the instance to Warmbly Cloud lets those mailboxes warm in the hosted pool instead: thousands of real, monitored mailboxes exchanging natural-looking mail, with replies and inbox engagement handled for you.
+自托管 Warmbly 实例原本只在同一实例的邮箱之间预热，多数安装只有少量邮箱。关联 Warmbly Cloud 后，这些邮箱可改用托管预热池：数千个真实且持续监测的邮箱交换自然邮件，并自动处理回复和收件箱互动。
 
-Only warmup moves to the cloud. Campaigns, contacts, the unibox, tracking and every stored message stay on your server exactly as before. Linked instances also get Google and Microsoft sign-in through Warmbly's own OAuth apps, so there is no client to register: see [Google and Microsoft mailboxes](#google-and-microsoft-mailboxes-sign-in-through-warmbly-cloud). They can also have Cloud serve a sending domain's [root redirect](#root-redirects-served-by-warmbly-cloud), so the domain answers visitors without any proxy setup on your server.
+只有预热迁到 Cloud。营销活动、联系人、统一收件箱、跟踪和每封已存邮件都与之前一样留在你的服务器。已关联实例还可通过 Warmbly 自有 OAuth 应用登录 Google 和 Microsoft，无须自行注册客户端，详见[Google 和 Microsoft 邮箱](#google-and-microsoft-mailboxes-sign-in-through-warmbly-cloud)。也可让 Cloud 提供发信域名的[根域名重定向](#root-redirects-served-by-warmbly-cloud)，让域名响应访客访问，无须在服务器配置代理。
 
-<Callout type="info" title="Pricing">
-  A free Warmbly Cloud workspace holds up to 10 mailboxes, connected directly or through a linked instance, and warms them at no cost. The Warmup plan, $15 a month per workspace or $144 a year, moves the workspace's mailboxes to the premium pool for better deliverability, with reputation protection and no mailbox cap. Nothing else about self-hosting changes.
+<Callout type="info" title="定价">
+  免费 Warmbly Cloud 工作区最多容纳 10 个直接连接或通过关联实例连接的邮箱，并免费预热。预热套餐按工作区每月 15 美元或每年 144 美元，将邮箱加入高级池，提供更好的送达能力、信誉保护且不限制邮箱数量。自托管的其他行为不变。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## How it works
+## 工作原理 [#how-it-works]
 
-New connections link one local workspace to one Warmbly Cloud workspace. A Cloud workspace can have only one active self-hosted connection, including any older instance-wide link. New connections for different local workspaces need different Cloud workspaces, each with its own plan. Existing server-wide connections keep serving their local workspaces without reconnecting or buying another plan. Self-hosted workspace creation itself is unlimited; hosted creation limits and request-rate protection are unchanged. When you enroll a mailbox, the instance sends that mailbox's SMTP/IMAP credential to the cloud, sealed in transit and at rest with the same envelope encryption the hosted product uses for every customer mailbox. From then on:
+新连接将一个本地工作区关联到一个 Warmbly Cloud 工作区。每个 Cloud 工作区只能有一个活跃自托管连接，旧版实例级关联也计入。不同本地工作区的新连接需要不同 Cloud 工作区，各自使用独立套餐。已有服务器级连接继续服务原本的本地工作区，无须重连或另购套餐。自托管工作区创建本身不限量；托管工作区创建限制和请求限流保护不变。加入邮箱时，实例将该邮箱的 SMTP／IMAP 凭据发送到 Cloud，传输和静态存储均采用与托管产品所有客户邮箱相同的信封加密。此后：
 
-- Warmbly Cloud sends the mailbox's warmup mail, replies to partners, and rescues, opens and stars the warmup mail it receives, on Warmbly's own workers
-- the mailbox's warmup ramp, hours and days belong to Warmbly Cloud from then on, starting from the ones it had on your instance, and its timezone stays your instance's (see [warmup settings](#warmup-settings)). Cloud does not automatically enable its weekday sending-behavior profile for these warmup-only mailboxes. A Cloud profile you explicitly configure still takes precedence while enabled.
-- the cloud reads only verified warmup mail from the mailbox. Everything else that arrives is dropped unread; no history is imported and nothing is stored
-- your instance stops its own warmup for that mailbox and takes it out of the local warmup pool, so no mailbox on your server writes to it any more, and keeps sending campaigns from it as usual
-- your instance recognises both received warmup and the mailbox's own Sent copies and leaves them out of your unibox, asking the cloud to vouch for anything it cannot identify on its own
+- Warmbly Cloud 使用自己的工作节点发送该邮箱的预热邮件、回复伙伴，并对收到的预热邮件执行移出垃圾邮件、打开和加星操作
+- 邮箱的预热递增计划、时段和日期改由 Warmbly Cloud 管理，初始采用实例上的设置，时区仍由你的实例决定，详见[预热设置](#warmup-settings)。Cloud 不会为这些仅预热邮箱自动启用工作日发送行为配置；但你在 Cloud 明确设置并启用的配置仍优先
+- Cloud 只读取邮箱中经过验证的预热邮件。其他来信未经阅读即丢弃，不导入历史，也不保存任何内容
+- 实例停止该邮箱的本地预热，并将其移出本地预热池，因此服务器上的其他邮箱不再向其发送预热邮件；营销活动继续照常使用它发送
+- 实例会识别收到的预热邮件及邮箱自身的已发送副本，将其排除在统一收件箱外；无法自行识别时，请 Cloud 验证
 
-Verification accepts a cloud token only for the mailbox that sent or received that warmup message. It also recognises recorded message identifiers when a provider strips the header, including older messages and mail the cloud has already processed. If the cloud cannot answer, inbox ingestion retries verification before publishing the message. This can delay ordinary inbox arrivals for enrolled mailboxes during a cloud outage. Existing Unibox entries are checked automatically in background batches, and confirmed warmup is removed locally without deleting provider mail. When the cloud cannot answer for one mailbox, the rest of that mailbox's entries wait while every other mailbox's entries keep being checked. Once the current check has been through every mailbox, the waiting one is retried from where it stopped: straight away if it got through some entries before failing, otherwise 15 minutes later and then at doubling intervals until the next daily check. An entry that runs out of time in two background batches in a row holds its mailbox the same way.
+只有实际发送或接收该预热邮件的邮箱，才能使用对应 Cloud 令牌通过验证。服务商移除标头时，系统也可识别已记录的邮件标识符，包括旧邮件和 Cloud 已处理的邮件。Cloud 无法回答时，收件箱接收流程会在发布邮件前重试验证，因此 Cloud 故障期间，已加入邮箱的普通来信也可能延迟。已有统一收件箱条目会在后台批次自动检查，确认的预热邮件只从本地移除，不删除服务商邮件。某邮箱无法从 Cloud 获得回答时，该邮箱其余条目等待，其他邮箱继续检查。本轮检查遍历全部邮箱后，从该邮箱停止处重试：失败前已处理部分条目则立即重试，否则等待 15 分钟，再按倍增间隔重试，直到下次每日检查。连续两个后台批次都超时的条目，也会以同样方式暂缓其邮箱。
 
-Arrivals awaiting verification are stored in your instance's database and retried automatically, including after a consumer restart. Once verification succeeds, ordinary messages enter Unibox and warmup messages are discarded from the pending queue. Pending verification belongs to the instance and is [not included in a workspace export](/guides/workspace-export-import/).
-- health, daily volume and 7 day totals show up in your instance's settings as the cloud reports them, and the health also gates the mailbox's campaigns here (see [safety and enforcement](#safety-and-enforcement))
+等待验证的到达事件保存在实例数据库中，并自动重试，消费者重启后也会继续。验证成功后，普通邮件进入统一收件箱，预热邮件从待处理队列丢弃。待验证状态属于实例，[不包含在工作区导出中](/guides/workspace-export-import/)。
+- 实例设置中显示 Cloud 报告的健康状态、每日发送量和 7 天总数；健康状态也会限制该邮箱在本地营销活动中的发送，详见[安全与规则执行](#safety-and-enforcement)
 
-On upgrade, Cloud disables untouched, inherited default sending profiles on existing instance-enrolled warmup-only mailboxes. Customer-edited profiles, Cloud-managed mailboxes and directly connected Cloud mailboxes keep their settings. Already queued tasks are not pulled forward or replayed; subsequent scheduling uses the corrected calendar, and dispatch still checks current sending rules.
+升级时，Cloud 会禁用已有实例接入、仅用于预热邮箱上未经修改的继承默认发送配置。客户修改过的配置、Cloud 托管邮箱及直接连接 Cloud 的邮箱保持原设置。已排队任务不会提前执行或重放；后续调度使用修正后的日历，实际分发仍检查当前发送规则。
 
-Unenrolling an SMTP/IMAP mailbox, disconnecting the instance, or deleting the mailbox altogether deletes its credential on the cloud immediately. Deleting an enrolled mailbox revokes its enrollment before the record goes, so the pool cannot be left holding a password for a mailbox your instance no longer has; if the cloud cannot be reached at that moment the delete is refused, the mailbox is put back as it was, and retrying it once the cloud is reachable completes it. A mailbox that was signed in through Warmbly Cloud stays in the cloud workspace when you remove it from the instance; disconnecting the instance removes its mirrors of such mailboxes, since they cannot send without the link.
-
-</Fold>
-
-<Fold>
-
-## Warmup analytics on your instance
-
-Enrolled mailboxes show Cloud's daily sends, replies, received warmup mail and target volumes in **Mailboxes > Analytics**. Their warmup placement reports include daily inbox, tabs, spam and rescued counts, provider and host breakdowns, and the trailing inbox rate. Workspace reports combine Cloud-enrolled mailboxes with mailboxes warming locally. Earlier local warmup history stays visible too.
-
-Reports are fetched from Cloud when you open or refresh them, using the existing instance link. They are not copied into your instance's warmup tables and do not wait for the five-minute standing poll. Only enrolled mailboxes belonging to the selected local workspace are requested. A Cloud failure shows a load error and a retry action, not an empty chart.
-
-Existing enrollments work without reconnecting or re-enrolling. Deploy the reporting support on Cloud before upgrading self-hosted instances. Against an older Cloud deployment without these endpoints, Analytics and placement reports that include an enrolled mailbox show a load error until Cloud is upgraded. The **Warmbly Cloud** card's existing summary counts and standing synchronization use separate endpoints and continue working. No database migration or history backfill is needed.
-
-Once a mailbox is unenrolled, the instance no longer requests its Cloud history. SMTP/IMAP unenrollment deletes the Cloud mailbox and its warmup history; a Cloud-managed mailbox's history stays in its Cloud workspace. The instance's earlier local history is unchanged.
+移除 SMTP／IMAP 邮箱的预热加入状态、断开实例或彻底删除邮箱，都会立即删除 Cloud 中的凭据。删除已加入邮箱时，先撤销加入再删除本地记录，防止预热池继续持有实例已无邮箱的密码。如果此时 Cloud 不可达，删除会被拒绝，邮箱恢复原状，待 Cloud 可达后重试即可完成。通过 Warmbly Cloud 登录的邮箱从实例移除后仍留在 Cloud 工作区；断开实例会移除这些邮箱的本地镜像，因为没有关联就无法发送。
 
 </Fold>
 
 <Fold>
 
-## Linking a workspace
+## 实例中的预热数据分析 [#warmup-analytics-on-your-instance]
 
-The link is offered on a self-hosted instance as the last step of onboarding when you first sign in, as a banner on **Mailboxes** until you connect or dismiss it, under **Settings > Warmbly Cloud** at any time, and on **Sending domains** when a [root redirect](#root-redirects-served-by-warmbly-cloud) could be served from Cloud. Whichever you use, the steps are the same:
+已加入邮箱会在 **邮箱 > 分析** 中显示 Cloud 的每日发送、回复、收到的预热邮件及目标量。预热投递位置报告包含每日收件箱、分类标签页、垃圾邮件和移出垃圾邮件数量，按服务商及主机细分，以及最近一段时间的收件箱到达率。工作区报告合并 Cloud 预热邮箱和本地预热邮箱，较早的本地预热历史也继续可见。
 
-1. Select the local workspace you want to connect, then press **Connect to Warmbly Cloud**. The instance shows an eight character code.
-2. Press **Open Warmbly Cloud**, or go to `app.warmbly.com/connect`, sign in with your Warmbly account (create one if you do not have it, it is free), enter the code and pick the workspace to link to. The workspace needs the manage settings permission.
-3. Your instance notices the approval within a few seconds and moves on to mailbox selection. Switch on the mailboxes you want warmed.
+打开或刷新报告时，系统通过现有实例关联实时从 Cloud 获取。报告不复制到实例预热表，也不等待五分钟健康状态轮询。只请求所选本地工作区的已加入邮箱。Cloud 失败时显示加载错误和重试操作，而非空图表。
 
-The whole flow takes about a minute. A code expires after 15 minutes if nobody approves it; start again from the instance.
+已有加入关系无须重新连接或重新加入即可工作。请先在 Cloud 部署报告支持，再升级自托管实例。若 Cloud 版本较旧且没有这些端点，包含已加入邮箱的分析和投递位置报告会显示加载错误，直到 Cloud 升级。**Warmbly Cloud**卡片现有汇总计数和健康状态同步使用独立端点，继续工作。无须数据库迁移或历史回填。
 
-The link belongs to the selected local workspace. Connecting and disconnecting it, and bringing in mailboxes from its Cloud workspace, still requires an instance administrator because credentials leave the server: it needs a platform admin account with the manage settings admin permission (the [first owner](/development/first-run/) has it) signed in with two-factor authentication. Once a workspace is linked, its members with the manage mailboxes permission can use that workspace's connection: enrolling, pausing and resuming, and connecting Google and Microsoft mailboxes through Warmbly Cloud. The onboarding step that links the instance is shown only to an administrator who can complete it.
-
-### Existing instance-wide connections
-
-Upgrading does not revoke an existing connection or move its mailboxes. The migration records which connection enrolled each mailbox, and existing warmup, brokered access tokens, warmup verification, analytics, standing synchronization, redirects and placement results keep using that original connection. Old placement results and Cloud-served redirects are backfilled to that connection too.
-
-Existing connections work normally after upgrading: you can enroll more mailboxes, connect Cloud mailboxes, sign in with Google or Microsoft, create Cloud-served redirects, and start placement tests within the connected Cloud workspace's plan. **Settings > Warmbly Cloud** shows the normal connection, plan and mailbox controls, with no separate migration step. You do not need to disconnect or buy another plan to keep using your existing connection.
-
-The one-active-connection limit applies when creating an additional connection, not when using an existing one. A local workspace with an existing connection does not offer another connection setup. A Cloud workspace that already has a connection cannot approve another, including when that connection is shared across a self-hosted server's local workspaces. Existing connections and their mailboxes remain in place. New connection requests are scoped to an unconnected local workspace and require an unused Cloud workspace.
-
-Disconnect is still deliberate and potentially disruptive. Disconnecting a shared server connection affects **all** local workspaces using it; the confirmation states that scope. Disconnecting a workspace's own connection affects only its mailboxes and redirects. Other connections are unaffected. Removing an SMTP/IMAP enrollment deletes its Cloud mailbox and history; enrolling it again starts a new Cloud enrollment. Cloud-managed mailboxes remain on Cloud, but disconnecting removes their local mirrors. None of this is required by an upgrade.
-
-Deploy the Cloud backend and migration **before** publishing the self-hosted upgrade. Old self-hosted clients can keep using existing connections, including adding mailboxes, but cannot establish new instance-wide connections. New self-hosted clients refuse to connect to older Cloud versions that do not advertise workspace-scoped support. No new environment variable or data backfill is required for restoring use of existing connections.
+邮箱移出预热后，实例不再请求其 Cloud 历史。SMTP／IMAP 移出会删除 Cloud 邮箱及其预热历史；Cloud 托管邮箱的历史仍保留在 Cloud 工作区。实例上较早的本地历史不变。
 
 </Fold>
 
 <Fold>
 
-## Google and Microsoft mailboxes: sign in through Warmbly Cloud
+## 关联工作区 [#linking-a-workspace]
 
-On a linked instance, signing in one mailbox under **Add account > Google** or **Add account > Microsoft** no longer needs an OAuth client of your own. The sign-in window opens on a Warmbly Cloud page first. It names the address of the instance asking and the Cloud workspace the mailbox will join; press **Continue** and Warmbly's verified Google or Microsoft app takes over. If you did not start the sign-in yourself, close that page: the mailbox would join the workspace it names. When you approve:
+自托管实例会在首次登录引导的最后一步提供关联，在**邮箱**显示横幅直至连接或关闭提示，也可随时从 **设置 > Warmbly Cloud** 进入；当[根域名重定向](#root-redirects-served-by-warmbly-cloud)可由 Cloud 提供服务时，**发信域名**页面也提供入口。无论使用哪个入口，步骤都相同：
 
-- the mailbox is created in your Warmbly Cloud workspace, where its sign-in lives, and starts warming in the pool right away
-- your instance gets a mirror of the mailbox with no credential on it. Campaigns, replies and the unibox work from your server as before; to send and sync, the instance asks the cloud for a short-lived access token (about an hour, cached) using its link token
-- the refresh grant never leaves the cloud. Removing the mailbox from either side, unlinking the instance, or the cloud blocking the mailbox stops the instance sending from it within the hour
+1. 选择要连接的本地工作区，再点击**连接 Warmbly Cloud**。实例会显示八字符代码。
+2. 点击**打开 Warmbly Cloud**，或访问 `app.warmbly.com/connect`，登录 Warmbly 账户；没有账户可免费创建。输入代码并选择要关联的工作区，需要拥有该工作区的管理设置权限。
+3. 实例会在几秒内发现批准并进入邮箱选择。开启希望预热的邮箱。
 
-The sign-in only completes in the browser that pressed **Continue**, and Cloud only ever sends it back to the address the instance registered when it was linked (its `APP_URL`). An instance linked before it had an address set cannot use this until you set `APP_URL`, disconnect it and link it again. The exchange with Google or Microsoft is protected with PKCE, so an authorization code is useless to anyone but Cloud.
+整个流程约一分钟。无人批准时，代码 15 分钟后过期，需从实例重新开始。
 
-These mailboxes show the blue **Cloud** badge with "Signed in through Warmbly Cloud". The `BOX_GOOGLE_*` and `BOX_OUTLOOK_*` variables are still honoured when set, but an instance without them can now connect Google and Microsoft mailboxes as long as it is linked.
+关联属于所选本地工作区。连接、断开，以及从其 Cloud 工作区引入邮箱仍需要实例管理员，因为凭据会离开服务器：需要具有“管理设置”这一管理员权限的平台管理员账户（[首位所有者](/development/first-run/)具备），并通过双因素身份验证登录。工作区关联后，具有管理邮箱权限的成员可使用该工作区连接，包括加入预热、暂停和恢复，以及通过 Warmbly Cloud 连接 Google、Microsoft 邮箱。引导中的实例关联步骤仅对能完成操作的管理员显示。
 
-### Mailboxes connected on the cloud
+### 现有的实例级连接 [#existing-instance-wide-connections]
 
-A Google or Microsoft mailbox you connect directly on app.warmbly.com shows up in your instance's **Add account** dialog under **In your Warmbly Cloud workspace**. Press **Connect** to add it to the instance the same way: the cloud keeps the sign-in, the instance sends with brokered tokens. A mailbox can be linked to one instance at a time.
+升级不会撤销已有连接或迁移其邮箱。迁移会记录每个邮箱由哪个连接加入；已有预热、代理访问令牌、预热验证、分析、健康状态同步、重定向和投递位置结果继续使用原连接。旧投递位置结果及由 Cloud 提供服务的重定向也会回填到该连接。
 
-### Which existing mailboxes can be enrolled
+已有连接升级后正常工作：可继续加入更多邮箱、连接 Cloud 邮箱、使用 Google 或 Microsoft 登录、创建 Cloud 重定向，并在已关联 Cloud 工作区的套餐范围内启动投递位置测试。**设置 > Warmbly Cloud**显示普通连接、套餐和邮箱控件，无须单独迁移。继续使用已有连接不需要断开或购买其他套餐。
 
-Mailboxes connected with **SMTP/IMAP** (including Google Workspace and Microsoft 365 through an app password) can be enrolled as they are: the instance sends the credential to the cloud and keeps its own copy. Changing the mailbox's SMTP/IMAP settings on your instance later hands the new credential to the cloud as well.
+单个活跃连接限制只适用于创建额外连接，不影响使用已有连接。已有连接的本地工作区不再提供新连接设置。Cloud 工作区已有连接时无法批准另一个，包括该连接由自托管服务器的多个本地工作区共享的情况。已有连接及邮箱保持原位。新连接请求必须属于尚未连接的本地工作区，并使用尚未关联的 Cloud 工作区。
 
-The cloud connects to your mail server over the internet, so both SMTP and IMAP need TLS or STARTTLS. A mailbox set to security `none`, which only works for a mail server on your instance's own machine, is refused at enrollment with `pool_link_cleartext_mailbox`.
+断开连接仍是明确且可能中断服务的操作。断开共享服务器连接会影响使用它的**所有**本地工作区，确认框会说明范围。断开某工作区自己的连接只影响其邮箱和重定向，其他连接不受影响。移除 SMTP／IMAP 加入关系会删除 Cloud 邮箱及历史；重新加入会创建新的 Cloud 加入关系。Cloud 托管邮箱仍留在 Cloud，但断开会移除本地镜像。升级本身不要求任何这些操作。
 
-A Google or Microsoft mailbox that was signed in with your instance's own OAuth app cannot be enrolled, because that grant can only be refreshed by the app that issued it. Remove it and add it again through Warmbly Cloud to warm it there.
+请在发布自托管升级**之前**部署 Cloud 后端和数据库迁移。旧自托管客户端可继续使用已有连接，包括添加邮箱，但无法建立新的实例级连接。新自托管客户端会拒绝连接未声明工作区范围支持的旧 Cloud 版本。恢复使用已有连接无须新增环境变量或数据回填。
 
 </Fold>
 
 <Fold>
 
-## What your instance shows
+## Google 和 Microsoft 邮箱：通过 Warmbly Cloud 登录 [#google-and-microsoft-mailboxes-sign-in-through-warmbly-cloud]
 
-Once linked, the **Mailboxes** page marks every enrolled mailbox with a blue **Cloud** badge on its address and its avatar and a "Warmed by Warmbly Cloud" line under it (amber while paused), shows the cloud's daily count in the warmup column with the same warming animation local warmup uses, and offers **Warm in Warmbly Cloud**, pause, resume and remove in each row's warmup menu. The mailbox drawer's Warmup tab shows the same block with the cloud's numbers in place of the local controls. This is shown to members with the manage mailboxes permission.
+已关联实例在 **添加账户 > Google** 或 **添加账户 > Microsoft** 下登录单个邮箱时，不再需要自有 OAuth 客户端。登录窗口先打开 Warmbly Cloud 页面，显示请求实例地址及邮箱将加入的 Cloud 工作区；点击**继续**后，由 Warmbly 已验证的 Google 或 Microsoft 应用接管。如果不是你主动发起，请关闭页面，因为邮箱会加入页面指定的工作区。批准后：
 
-**Settings > Warmbly Cloud** lists every active mailbox with a switch for whether it is in the pool. For enrolled mailboxes it shows the cloud's view:
+- 邮箱在 Warmbly Cloud 工作区创建，登录授权保存在 Cloud，并立即开始在预热池预热
+- 实例获得不含凭据的邮箱镜像。营销活动、回复和统一收件箱仍从你的服务器运行；发送和同步时，实例使用关联令牌向 Cloud 请求短期访问令牌（约一小时有效，并缓存）
+- 刷新授权绝不离开 Cloud。从任一侧移除邮箱、解除实例关联或 Cloud 封禁邮箱，都会在一小时内阻止实例继续从该邮箱发送
 
-| Column | Meaning |
+登录只能在点击**继续**的浏览器中完成，Cloud 只会返回实例关联时注册的地址，即 `APP_URL`。如果关联时实例尚未设置地址，必须设置 `APP_URL`，断开并重新关联后才能使用。与 Google 或 Microsoft 的交换受 PKCE 保护，因此除 Cloud 外，任何人拿到授权码都无法使用。
+
+这些邮箱显示蓝色 **Cloud** 徽标及“通过 Warmbly Cloud 登录”。已设置的 `BOX_GOOGLE_*` 和 `BOX_OUTLOOK_*` 仍会生效，但未设置它们的实例，只要完成关联，也可连接 Google 和 Microsoft 邮箱。
+
+### 在云端连接的邮箱 [#mailboxes-connected-on-the-cloud]
+
+直接在 app.warmbly.com 连接的 Google 或 Microsoft 邮箱，会出现在实例**添加账户**对话框的**你的 Warmbly Cloud 工作区中**下。点击**连接**即可用相同方式加入实例：Cloud 保留登录授权，实例使用代理令牌发送。每个邮箱同一时间只能关联一个实例。
+
+### 哪些现有邮箱可以加入 [#which-existing-mailboxes-can-be-enrolled]
+
+通过 **SMTP/IMAP** 连接的邮箱，包括使用应用密码连接的 Google Workspace 和 Microsoft 365，可直接加入：实例将凭据发送给 Cloud，同时保留自己的副本。之后在实例上修改 SMTP／IMAP 设置，也会将新凭据交给 Cloud。
+
+Cloud 通过互联网连接邮件服务器，因此 SMTP 和 IMAP 都需要 TLS 或 STARTTLS。安全模式为 `none` 的邮箱只适合与实例同机的邮件服务器，加入时会被拒绝并返回 `pool_link_cleartext_mailbox`。
+
+通过实例自有 OAuth 应用登录的 Google 或 Microsoft 邮箱无法直接加入，因为授权只能由签发它的应用刷新。请移除后经 Warmbly Cloud 重新添加，才能在那里预热。
+
+</Fold>
+
+<Fold>
+
+## 实例中显示的内容 [#what-your-instance-shows]
+
+关联后，**邮箱**页面在已加入邮箱的地址和头像上标注蓝色 **Cloud** 徽标，并在下方显示“由 Warmbly Cloud 预热”，暂停时为琥珀色。预热列显示 Cloud 当日数量，使用与本地预热相同的动画；每行预热菜单提供**在 Warmbly Cloud 中预热**、暂停、恢复和移除。邮箱抽屉的预热选项卡也显示相同信息块，以 Cloud 数字替代本地控件。具有管理邮箱权限的成员可见。
+
+**设置 > Warmbly Cloud**列出全部活跃邮箱，并提供是否加入预热池的开关。已加入邮箱显示 Cloud 的状态：
+
+| 列 | 含义 |
 |--------|---------|
-| Health | The pool's reputation state for the mailbox: healthy, watch, throttled, quarantined or blocked. The same bands the hosted product uses, see [warmup](/guides/warmup/#pool-safety) |
-| Today | Warmup mail sent today against today's ramp target |
-| 7 days | Total sent, and how many landed in spam at partners |
+| 健康状态 | 预热池中的邮箱信誉状态：健康、观察、限流、隔离或封禁。采用与托管产品相同的等级，详见[预热](/guides/warmup/#pool-safety) |
+| 今天 | 今日已发送预热邮件数与今日递增目标 |
+| 7 天 | 发送总数，以及落入伙伴垃圾邮件的数量 |
 
-Pause and resume per mailbox from the same row. Once a mailbox is enrolled, its warmup settings belong to Warmbly Cloud; see [warmup settings](#warmup-settings).
+在同一行可逐邮箱暂停和恢复。加入后，预热设置由 Warmbly Cloud 管理，详见[预热设置](#warmup-settings)。
 
-### Warmup settings
+### 预热设置 [#warmup-settings]
 
-Warmbly Cloud owns an enrolled mailbox's starting volume, daily increase, maximum, reply rate, sending window and sending days. Your instance keeps a copy of them on the mailbox, so the Warmup tab, the API and campaign estimates show what Warmbly Cloud actually runs.
+Warmbly Cloud 管理已加入邮箱的起始发送量、每日增量、上限、回复率、发送时段和日期。实例在邮箱上保留副本，使预热选项卡、API 和营销活动估算显示 Cloud 实际使用的值。
 
-- The first enrollment proposes the settings the mailbox has on your instance. Enrolling it again, or refreshing its credential after a password change, never sends them again, so neither can undo a change made in Warmbly Cloud.
-- Changing a setting on the Warmup tab, or through `PATCH /emails/:id`, sends it to Warmbly Cloud first. You can change the starting volume and other ramp settings while warmup is active without removing or enrolling the mailbox again. It is saved only once Warmbly Cloud has applied it, and the mailbox then shows the values Warmbly Cloud reports. If Warmbly Cloud cannot be reached, nothing changes. If it answers but does not apply a value, the rest of your change is not saved, the error names what was not applied, and the mailbox shows the values Warmbly Cloud reported.
-- The copy is refreshed whenever the Cloud mailbox list loads, after every change, and every 15 minutes in the background, so a change made in Warmbly Cloud shows up here within 15 minutes. The Warmup tab shows when it was last refreshed.
-- The timezone stays your instance's, because campaigns use it too. It travels with every change, and the background refresh sends it again whenever Warmbly Cloud's differs.
-- Warmbly Cloud does not take 0 from an instance for the starting volume, maximum, daily increase or reply rate, so on an enrolled mailbox those fields start at 1. Sending every day is sent as all seven days.
-- The content segment, warmup placement, folder and retention on your instance do not apply while Warmbly Cloud warms the mailbox, and the Warmup tab hides them.
-- Participation and the shared daily and recipient limits are changed with the mailbox's Warmbly Cloud controls. Starting, pausing and resuming warmup are sent to Warmbly Cloud; to stop warmup, remove the mailbox from Warmbly Cloud.
+- 首次加入会提交实例上已有的邮箱设置。重新加入或修改密码后刷新凭据时，绝不会再次发送这些设置，因此不会撤销在 Warmbly Cloud 中做出的修改。
+- 在预热选项卡或通过 `PATCH /emails/:id` 修改设置时，先发送给 Warmbly Cloud。只有 Cloud 应用后才保存，邮箱随后显示 Cloud 返回的值。Cloud 不可达时不做更改；如果有响应但未应用某个值，其余修改也不保存，错误会指出未应用项，邮箱显示 Cloud 报告的值。
+- 加载 Cloud 邮箱列表、每次修改后，以及后台每 15 分钟都会刷新副本，因此 Cloud 上的修改会在 15 分钟内显示在此处。预热选项卡显示最近刷新时间。
+- 时区仍由实例决定，因为营销活动也使用它。每次修改都会携带时区，后台刷新发现 Cloud 时区不同时也会重新发送。
+- Warmbly Cloud 不接受实例提交的起始发送量、上限、每日增量或回复率为 0，因此已加入邮箱这些字段最小为 1。每天发送会明确传为一周七天。
+- Cloud 预热期间，实例上的内容分组、预热投递位置、文件夹和保留期限设置不适用，预热选项卡会隐藏它们。
+- 参与状态、共享每日限额和收件人限制需通过邮箱的 Warmbly Cloud 控件修改。启动、暂停和恢复预热会发送到 Cloud；要停止预热，请将邮箱从 Warmbly Cloud 移除。
 
-The background refresh runs in the consumer, so upgrade the backend and consumer together.
+后台刷新运行在消费者中，因此请同时升级后端和消费者。
 
-Removing one Cloud-managed mailbox, through its Cloud warmup controls or **Disconnect mailbox**, stops both warmup sending and receiving on Cloud before releasing its link. Cloud keeps the mailbox, sign-in and history; the instance removes its mirror. If the stop fails, removal fails and keeps the link for retry. If releasing the link fails after the stop, warmup remains stopped while you retry. This also applies to existing managed enrollments and older self-hosted clients once Cloud is updated, without disconnecting or re-enrolling other mailboxes. No blanket change is made to disconnected or idle instances, whose Cloud mailboxes may still be intentionally in use. On an older Cloud, removal may only release the mirror; stop participation directly on Cloud until it is updated.
+通过 Cloud 预热控件或**断开邮箱**移除单个 Cloud 托管邮箱时，会先停止 Cloud 上的预热发送和接收，再解除关联。Cloud 保留邮箱、登录授权和历史，实例移除镜像。停止失败时，移除也失败并保留关联以供重试；停止后解除关联失败时，重试期间预热保持停止。Cloud 更新后，此行为也适用于已有托管加入关系和旧自托管客户端，无须断开或重新加入其他邮箱。不会统一修改已断开或空闲实例，因为其 Cloud 邮箱可能仍被有意使用。旧版 Cloud 上的移除可能只解除镜像，因此更新前请直接在 Cloud 停止参与。
 
-Deleting a mailbox directly on Cloud also removes its instance association. Connecting the same address again creates a different Cloud record; it does not restore the old link. If an existing SMTP/IMAP mailbox is warming on Cloud but missing from its instance's linked list, contact support with the local mailbox ID and connection ID. Do not delete or re-enroll it to repair the association, and do not send passwords or connection tokens. Support can use the verified IDs to restore only the association, preserving the current Cloud mailbox, credentials, history and participation.
+直接在 Cloud 删除邮箱也会移除实例关联。再次连接相同地址会创建新的 Cloud 记录，不恢复旧关联。如果已有 SMTP／IMAP 邮箱正在 Cloud 预热，却不在实例关联列表中，请携带本地邮箱 ID 和连接 ID 联系支持。不要为修复关联而删除或重新加入，也不要发送密码或连接令牌。支持人员可使用已验证 ID 只恢复关联，保留当前 Cloud 邮箱、凭据、历史和参与状态。
 
-Disconnecting an entire instance is not an individual mailbox stop. Cloud-managed mailboxes retain their existing warmup settings and can continue independently on Cloud. SMTP/IMAP enrollments still delete their Cloud credential and history on removal. Pausing warmup only stops sending; use **Stop all diagnostic participation** to stop receiving too. Sends already accepted by a provider cannot be recalled.
+断开整个实例并不等于停止单个邮箱。Cloud 托管邮箱保留原预热设置，可以在 Cloud 独立继续。SMTP／IMAP 加入关系被移除时，仍会删除 Cloud 凭据和历史。暂停预热只停止发送；如需同时停止接收，请使用**停止全部诊断参与**。服务商已接受的发送无法撤回。
 
-### When the count stays at zero
+### 发送计数一直为零时 [#when-the-count-stays-at-zero]
 
-Warmbly Cloud sends the warmup mail itself, connecting to your mail server's SMTP from its own network rather than from your instance. A server that accepts only your instance's address, an SMTP host that resolves to a private or internal address, or a port your host blocks from outside will refuse it while your own sending keeps working. When that happens the warmup column turns red with a warning icon, and the mailbox's Warmup tab shows the server's own answer (for example a refused connection or a rejected login) until a send goes through again. Fix the SMTP host, port or allowlist on your mail server; nothing needs re-enrolling.
+Warmbly Cloud 自行发送预热邮件，从自己的网络而非你的实例连接邮件服务器 SMTP。如果服务器只接受实例地址、SMTP 主机解析为私有或内部地址，或主机阻止外部访问该端口，Cloud 会被拒绝，而你自身发送可能仍正常。此时预热列变红并显示警告图标，邮箱预热选项卡显示服务器原始答复，如连接遭拒或登录被拒，直到再次成功发送。请修正邮件服务器的 SMTP 主机、端口或允许列表，无须重新加入。
 
-The count can also hold below the target when the pool has fewer partners free for the mailbox today than the ramp asks for, since a mailbox never writes to the same partner twice in a day. The Warmup tab says so with how many partners are available, and the cloud checks again every few hours.
+如果当天可用伙伴少于递增计划所需，数量也可能低于目标，因为邮箱每天不会向同一伙伴发送两次。预热选项卡会说明并显示可用伙伴数，Cloud 每隔数小时重新检查。
 
 </Fold>
 
 <Fold>
 
-## Free and Premium
+## 免费层级与付费层级 [#free-and-premium]
 
-| Tier | Mailboxes | Partners |
+| 级别 | 邮箱 | 互动伙伴 |
 |------|-----------|----------|
-| Free | Up to 10 per linked workspace | The pool's free tier, plus the paid mailboxes that wrote to it in the last 14 days, which a proven free mailbox writes back to |
-| Premium (the Warmup plan, $15 a month or $144 a year) | Unlimited | The premium tier first; when a mailbox has too few partners in other workspaces (fewer than 25, or its warmup ceiling if higher), that many of the best proven free mailboxes fill in, and those mailboxes write back |
+| 免费 | 每个关联工作区最多 10 个 | 预热池免费层，以及最近 14 天曾向它发送的付费邮箱；已通过验证的免费邮箱可向这些付费邮箱回信 |
+| 高级（预热套餐，每月 15 美元或每年 144 美元） | 不限量 | 优先使用高级层；如果其他工作区的伙伴不足（少于 25，或邮箱预热上限高于 25 时少于该上限），则补充相应数量、表现最好的已验证免费邮箱，这些邮箱也会回信 |
 
-Premium workspaces are always served first. Borrowed partners are limited to mailboxes that have been healthy pool members for at least three days in a workspace in good standing, and only those may write back, so nothing unproven and nothing unsolicited ever reaches a paying mailbox. Every draw favours the inbox that has received the least for what it sent, so a paying mailbox in a thin tier is written to first rather than last. See [pools](/guides/warmup/#pools) for the full rule.
+高级工作区始终优先服务。借用的伙伴仅限于已在状态良好的工作区中健康参与预热池至少三天的邮箱，也只有它们能回信，因此未经验证或未经请求的邮件不会到达付费邮箱。每次匹配优先选择相对于发送量而言收到邮件最少的邮箱，使伙伴较少的付费邮箱优先而非最后收到邮件。完整规则见[预热池](/guides/warmup/#pools)。
 
-Your instance shows which tier it is on in two places: the plan badge in the header reads **Cloud · Free** or **Cloud · Premium** once the link is live, and **Settings > Warmbly Cloud** has a **Plan** section with the allowance and what Premium adds: better deliverability, reputation protection, priority matching and no mailbox cap. Its **Premium** button opens Warmbly Cloud's billing page, asks whether you want to be billed monthly or yearly, and sends you to checkout for the workspace the instance is linked to; the instance itself bills nothing. On Premium the same section links to that billing page to manage or cancel. The **Mailboxes** page nudges once, only when every free pool mailbox is in use and the instance has more to warm.
+实例在两处显示级别：关联生效后，页眉套餐徽标显示 **Cloud · 免费** 或 **Cloud · 高级**；**设置 > Warmbly Cloud**中的**套餐**部分显示额度及高级版新增权益，包括更好的送达能力、信誉保护、优先匹配和不限邮箱数量。**高级**按钮打开 Warmbly Cloud 账单页面，询问按月或按年计费，并为实例关联的工作区进入结账；实例自身不收费。高级版在同一部分提供账单页面链接以管理或取消。只有免费池邮箱额度全部使用、而实例还有邮箱需要预热时，**邮箱**页面才提醒一次。
 
-The Warmup plan is the same plan a hosted workspace buys when it only warms and does not send, so it is not tied to self-hosting: a workspace on it can hold mailboxes connected on the cloud, through linked instances, or both, and the workspace's regular hosted plan, if it has one, also counts as Premium, so a workspace on Starter or above needs nothing extra. It is not listed next to Starter, Grow and Business because it is not an alternative to them; the button on your instance and the mailboxes page on the cloud are the ways in. See [billing](/guides/billing/#the-warmup-plan).
+预热套餐与托管工作区仅预热、不发送营销邮件时购买的套餐相同，并不专属于自托管。该套餐工作区可同时包含直接在 Cloud 连接和通过实例连接的邮箱。已有常规托管套餐也算高级版，因此 Starter 或更高套餐无须额外购买。它不与 Starter、Grow、Business 并列，因为并非它们的替代；入口位于实例按钮和 Cloud 邮箱页面。参见[计费](/guides/billing/#the-warmup-plan)。
 
 </Fold>
 
 <Fold>
 
-## Safety and enforcement
+## 安全与限制执行 [#safety-and-enforcement]
 
-Enrolled mailboxes are ordinary members of the hosted pool and are held to the same rules: verification tokens on every warmup message, complaint and bounce tracking with automatic quarantine or blocking when a mailbox starts hurting partners, and spam placement that slows a mailbox down. A mailbox that gets quarantined on the cloud stops being offered to partners and re-enters on the same probation terms as any hosted mailbox.
+加入的邮箱是托管预热池的普通成员，遵循相同规则：每封预热邮件带验证令牌，跟踪投诉和退信，邮箱开始伤害伙伴时自动隔离或封禁，进入垃圾邮件会降低发送速度。Cloud 隔离的邮箱不再提供给伙伴，恢复时遵循与其他托管邮箱相同的观察期条件。
 
-Your instance holds the mailbox to the cloud's verdict as well, exactly as it would one from its own pool. It reads every enrolled mailbox's standing from the cloud every five minutes, on enrolling, pausing or resuming, and when loading the mailbox list in **Settings > Warmbly Cloud**. A recognized status from that list refreshes the local observation instead of being replaced by an older cached status. From then on:
+实例也会执行 Cloud 判定，与本地预热池判定一样。它每五分钟、加入、暂停或恢复时，以及加载 **设置 > Warmbly Cloud** 邮箱列表时，读取每个已加入邮箱的健康状态。列表中识别出的状态会刷新本地观察，不会被较旧缓存替换。此后：
 
-| Cloud standing | On your instance |
+| Cloud 健康状态 | 你的实例上的行为 |
 |----------------|------------------|
-| `watch` | Campaigns send from the mailbox at reduced volume |
-| `throttled` | Campaigns send from it at half volume until it recovers |
-| `quarantined` or `blocked` | Campaigns skip it until the hold ends |
+| `watch` | 营销活动降低该邮箱的发送量 |
+| `throttled` | 营销活动以一半发送量使用该邮箱，直到恢复 |
+| `quarantined` 或 `blocked` | 营销活动跳过该邮箱，直到限制结束 |
 
-The same standing feeds the mailbox's health on the **Mailboxes** page, the **Warmup reputation** block in its drawer (marked **Warmbly Cloud**, with the reason and the end of any hold), a campaign's sending limits, the [Advisor](/guides/advisor/) and the dashboard's health summary. A change reaches your instance within five minutes and fires the same `warmup.health_changed`, `warmup.quarantined` and `warmup.blocked` [webhooks](/guides/webhooks/) a local transition does.
+相同状态会影响**邮箱**页面的邮箱健康、抽屉中的**预热信誉**区块（标记为 **Warmbly Cloud**，显示原因及限制结束时间）、营销活动发送限制、[优化顾问（Advisor）](/guides/advisor/)和控制台健康汇总。变更五分钟内到达实例，并触发与本地状态转换相同的 `warmup.health_changed`、`warmup.quarantined` 和 `warmup.blocked` [Webhook](/guides/webhooks/)。
 
-Cloud standing is observed evidence, not a permanent permission. Healthy, watch and throttled observations have a 15-minute freshness limit. Missing, unrecognized or stale observations stop new control-plane admission with `cloud_evidence_unavailable` until a recognized cloud observation arrives. This availability hold does not claim the provider blocked the mailbox. Existing enrollments start with unknown freshness after upgrading, then the next successful standing sync establishes it.
+Cloud 健康状态是观察证据，不是永久许可。健康、观察和限流状态的观察有效期为 15 分钟。缺失、无法识别或过期的观察会以 `cloud_evidence_unavailable` 阻止控制平面接收新任务，直到获得可识别 Cloud 观察。这种可用性暂停不代表服务商封禁邮箱。升级后已有加入关系先处于新鲜度未知状态，下次成功同步健康状态后才建立有效时间。
 
-An unavailable status holds only two things: campaign sends from the mailbox, and the access tokens your instance draws for a mailbox signed in through Warmbly Cloud. Both wait for a current status. Nothing else reads it as a verdict. The mailbox is not [rested](/guides/mailboxes/#resting-a-tired-mailbox), putting it back into campaigns is not refused, its health score is not lowered, and it counts as a warning rather than an error on the **Mailboxes** page and in the health summary. A rest that is already running stays in place and counts only time with a current status toward its three days. The mailbox drawer shows it as **Status unavailable**, **Settings > Warmbly Cloud** as **Unavailable**, and a campaign's sending plan as **Waiting for Warmbly Cloud status**. A real quarantine or block, whether the cloud reported it or the local reputation ledger still holds it, applies in full while the status is unavailable.
+状态不可用只暂停两件事：该邮箱的营销活动发送，以及实例为经 Warmbly Cloud 登录的邮箱获取访问令牌。两者都等待当前状态，其他功能不将它当作负面判定。邮箱不会因此[进入休息期](/guides/mailboxes/#resting-a-tired-mailbox)，重新加入营销活动不会被拒绝，健康分数不降低，在**邮箱**页面和健康汇总中计为警告而非错误。已有休息期保持，并且只有具有当前状态的时间才计入三天期限。邮箱抽屉显示**状态不可用**，**设置 > Warmbly Cloud**显示**不可用**，营销活动发送计划显示**等待 Warmbly Cloud 状态**。Cloud 已报告或本地信誉台账仍保留的真实隔离、封禁，在状态不可用期间仍完整执行。
 
-The Advisor reports an unavailable Cloud status separately from a real pool quarantine or block. A mailbox may still be warming on Cloud while its self-hosted instance lacks a current status. Open **Settings > Warmbly Cloud** and refresh the mailbox list. If the status remains unavailable, check Cloud connectivity and the consumer's `cloud_standing_sync` job, and keep the backend and consumer on the same release. Do not disconnect or re-enroll the mailbox to refresh its status. The **Warming** count indicates warmup is enabled, not that a provider has confirmed a send; the warmup count and send warnings show progress and failures.
+优化顾问会区分 Cloud 状态不可用与真实预热池隔离、封禁。自托管实例没有当前状态时，邮箱仍可能在 Cloud 预热。请打开 **设置 > Warmbly Cloud** 刷新邮箱列表；仍不可用时，检查 Cloud 连通性和消费者的 `cloud_standing_sync` 作业，并保持后端与消费者版本一致。不要通过断开或重新加入来刷新状态。**正在预热**计数表示已启用预热，不代表服务商已确认发送；实际进度和失败应查看预热数量及发送警告。
 
-An active quarantine or block remains in force even when the cloud cannot be reached. A bounded hold still ends on its own date; an unbounded block needs review. Removing a mailbox from the cloud does not lift an active hold. Restrictive cloud evidence is retained by workspace and address in the local reputation ledger, so leaving or changing pools, reconnecting, or [exporting and importing the workspace](/guides/workspace-export-import/) does not reset it. The cloud link itself is instance-local and does not travel with the archive. Fresh positive observations from a new link do not erase an unexpired restriction from the previous link. Appeals go through the mailbox on Warmbly Cloud, where the verdict was reached.
+即使 Cloud 不可达，活跃隔离或封禁仍生效。有明确结束时间的限制会按期结束，无期限封禁需要审核。从 Cloud 移除邮箱不会解除活跃限制。限制性 Cloud 证据按工作区和地址保留在本地信誉台账，因此退出或更换预热池、重新连接或[导出并导入工作区](/guides/workspace-export-import/)都不会重置。Cloud 关联本身属于实例，不随归档迁移。新关联的正面观察不会清除旧关联尚未到期的限制。申诉应通过作出判定的 Warmbly Cloud 邮箱进行。
 
-Local and cloud warmup use the same active-mailbox, participant-role, workspace-standing and health checks. A recipient-only participant cannot originate diagnostic messages. Restricted or suspended workspaces cannot contribute candidates, and paying for Premium does not waive these rules. Spam placement slows participation; it is not by itself a reason to quarantine a mailbox.
+本地和 Cloud 预热使用相同的活跃邮箱、参与角色、工作区状态和健康检查。仅接收参与者不能发起诊断邮件。受限或已停用工作区不能提供候选邮箱，购买高级版也不能豁免。落入垃圾邮件会降低参与速度，本身不是隔离邮箱的理由。
 
-These checks apply before new commands are admitted. Updating the control plane cannot revoke a command an older worker has already accepted; cached provider credentials and already-running work keep their existing expiry and execution behavior.
+这些检查在接受新命令前执行。更新控制平面无法撤销旧工作节点已接受的命令；缓存服务商凭据和正在运行的工作保持原到期时间及执行行为。
 
-For mailboxes signed in through Warmbly Cloud the enforcement reaches sending too. Every access token the instance draws is checked on the cloud: a mailbox the cloud has **blocked**, one that is no longer active there, one that was removed from the workspace, or an instance whose link was revoked gets no token, and the instance stops sending and syncing from that mailbox as soon as its cached token expires.
-
-</Fold>
-
-<Fold>
-
-## Placement tests on Warmbly Cloud's seed panel
-
-A self-hosted instance's own seed panel holds whatever its administrator added, often nothing. A linked instance can borrow Warmbly Cloud's instead: pick **Warmbly Cloud** as the panel when you start an [inbox placement test](/guides/placement-tests/), or for a campaign's placement monitor.
-
-The split is the same as for warmup, only narrower:
-
-- **Your instance renders and sends every copy.** The cloud stores no template and never gets the mailbox's credentials; its seed inboxes receive the rendered copies like any recipient. A campaign step renders for a placeholder contact here, not the campaign's first lead, so no lead's details reach the cloud's seed inboxes unless you pick a contact for the test. Copies go out from your mailbox through your own workers, paced and charged to the mailbox's daily limit exactly like a test on any other panel.
-- **The cloud only hands out seed addresses and reports where each copy landed.** It picks seeds for the test (never one on your sender's domain), your instance tells it the Message-ID of each copy it sent, and the cloud answers with the folder each seed found it in. Seed addresses are shown masked, as on any shared panel.
-- **Tests use the linked cloud workspace's free tests**, the same monthly number a hosted workspace on the same plan gets, and a tracking comparison counts as two. Paying for more in credits is only offered on the hosted product's own panel, so past the free tests a test here waits for the next month. Tests on your instance's own panel and on your own seed inboxes are never counted.
-- **You can narrow a test to some providers**, as on any shared panel; the cloud then picks its seeds from those providers alone.
-
-The panel is offered only while the instance is linked. Without a link a test on it is refused with `placement_panel_unavailable`.
+对于通过 Warmbly Cloud 登录的邮箱，规则也会落实到发送。实例获取的每个访问令牌都在 Cloud 检查：被 Cloud **封禁**、已不活跃、已从工作区移除的邮箱，或关联已撤销的实例，都不会获得令牌。缓存令牌到期后，实例立即停止该邮箱的发送和同步。
 
 </Fold>
 
 <Fold>
 
-## Root redirects served by Warmbly Cloud
+## 使用 Warmbly Cloud 种子邮箱组进行投递位置测试 [#placement-tests-on-warmbly-clouds-seed-panel]
 
-A [root redirect](/guides/sending-domains/#root-redirects) sends visitors to a sending domain on to your website. Served from your own instance, the domain has to reach Warmbly through whatever proxy sits in front of it, which on a server behind Traefik, nginx or a hosting panel means routing each domain by hand. A linked instance can pick **Warmbly Cloud** under the redirect's **Served from** instead: Cloud answers for the domain from its own tracking service and issues its certificate, and all you add is DNS.
+自托管实例自身的种子面板只包含管理员添加的邮箱，往往为空。关联后可借用 Warmbly Cloud 的面板：启动[收件箱投递位置测试](/guides/placement-tests/)或为营销活动配置投递位置监测时，选择 **Warmbly Cloud** 面板。
 
-- Cloud proves the domain on its own terms: it lists its own ownership value for the `_warmbly` `TXT` record and its own addresses for the root, and serves nothing until it sees both.
-- Only the domain, the website and the `www` setting go to Cloud. Visitors to the domain reach Cloud, not your server; nothing about your mailboxes, contacts or mail is involved.
-- Cloud serves up to 200 redirects for one linked instance.
-- Unlinking stops redirects using that connection, not redirects using another workspace's connection or a retained legacy link. Each one says so on your instance and can be moved back to it.
+两侧分工与预热相似，但 Cloud 承担的范围更小：
 
-See [serve it from Warmbly Cloud](/guides/sending-domains/#serve-it-from-warmbly-cloud) for how it looks on the sending domains page.
+- **你的实例渲染并发送每份副本。** Cloud 不保存模板，也不会获得该邮箱凭据；其种子邮箱像普通收件人一样收到渲染后的副本。营销活动步骤在此使用占位联系人渲染，而非活动首位潜在客户，因此除非主动为测试选择联系人，否则潜在客户详情不会到达 Cloud 种子邮箱。副本由你的工作节点从你的邮箱发出，节奏和每日额度计量与其他面板测试完全相同。
+- **Cloud 只提供种子地址并报告各副本落入的文件夹。** Cloud 为测试选择种子，绝不选取与发件人同域名的邮箱；实例告知各已发送副本的 Message-ID，Cloud 返回各个种子找到邮件的文件夹。种子地址与其他共享面板一样，经过遮蔽显示。
+- **测试消耗已关联 Cloud 工作区的免费测试次数**，每月次数与同套餐托管工作区相同，跟踪对比计为两次。使用积分付费增加测试仅在托管产品自身面板提供，因此此处用完免费次数后需等到下月。实例自身面板和自有种子邮箱测试从不计入。
+- **可将测试限定为部分服务商**，与其他共享面板一样；Cloud 随后只从这些服务商选择种子。
 
-</Fold>
-
-<Fold>
-
-## Unlinking
-
-On your instance, **Settings > Warmbly Cloud > Disconnect** removes only the selected workspace link's enrollments and lets eligible local warmup take over after confirmed cleanup. Other workspace links and retained legacy links are unaffected. Instance-originated SMTP mailboxes and their credentials are deleted on the cloud. An OAuth mailbox belongs to the cloud workspace: unlinking removes that connection's access, not the workspace's mailbox or provider grant. Its native cloud warmup configuration also remains: pause or delete it separately on Warmbly Cloud if you want that participation or its stored credentials removed. Root redirects using the disconnected link stop at the same time. Removing a legacy instance-wide link remains a separate administrator action. On Warmbly Cloud, **Settings > Linked instances** lists the connections linked to a workspace and can unlink any of them from the other side.
-
-SMTP enrollment, mailbox removal and instance disconnect first record a durable local intent. While enrollment or removal is pending, the mailbox is not admitted to local warmup. The regular standing sync retries pending work after an outage or restart, using the same mailbox identity rather than creating another. Remote removal must be acknowledged, or confirmed already absent, before local enrollment is dropped. A failed local cleanup stays pending and is retried.
-
-Each mailbox's pending work is retried independently. A failed enrollment or removal does not stop the other mailboxes' retries or Cloud status refreshes. The failed mailbox stays pending and unavailable, and the sync still reports the error. When the address is already connected in the linked Cloud workspace, for example because you used hosted Warmbly before self-hosting, Cloud attaches that copy instead of creating a second one, as long as it is an active SMTP/IMAP mailbox, your server presents exactly the SMTP and IMAP host, port, username and password Cloud holds for it, no active Cloud campaign sends from it and no other server has enrolled it. From then on it is your server's mailbox: its warmup settings follow your server, and removing it from your server removes it from Cloud. Any other existing copy answers `pool_link_mailbox_conflict`. Contact support with the connection ID and local mailbox IDs to check the association, without sending credentials or deleting or re-enrolling the mailbox. Cloud never attaches an existing mailbox by address alone.
-
-Removal is an explicit opt-out. A late enrollment acknowledgment cannot reverse a pending removal. After removal finishes, a new explicit enrollment can create a fresh intent, but it does not reset reputation holds. Disconnect remains pending until remote revocation and local cleanup succeed, and no new enrollment is accepted during it.
+面板仅在实例已关联时提供。没有关联时，该面板上的测试会被拒绝并返回 `placement_panel_unavailable`。
 
 </Fold>
 
 <Fold>
 
-## Managed sign-in recovery and consent
+## 由 Warmbly Cloud 提供根域名重定向 [#root-redirects-served-by-warmbly-cloud]
 
-New Gmail/Outlook sign-ins and adoption of an existing cloud mailbox use managed consent protocol 1. Both sides record a stable operation before acting. The instance records the workspace and initiating user, rechecks their current mailbox-management permission, and binds completion to that workspace, user, linked cloud instance, provider and mailbox identity. Organization owners are allowed; another member needs an accepted membership with `manage_emails`. Restricted or suspended workspaces cannot complete a managed operation.
+[根域名重定向](/guides/sending-domains/#root-redirects)将访问发信域名的访客转到你的网站。由自身实例提供时，域名必须经过实例前方代理到达 Warmbly；在 Traefik、nginx 或托管面板后方，通常需要手动为每个域名配置路由。已关联实例可在重定向的**服务来源**中选择 **Warmbly Cloud**：Cloud 使用自己的跟踪服务响应域名并签发证书，你只需添加 DNS。
 
-Consent records survive backend restarts. Replaying a confirmed completion returns its existing mailbox rather than creating another. A lost cloud reply or failed local mirror write can be recovered by the regular standing sync. The original planned local mailbox ID and remote operation ID are reused. Adoption retries likewise reuse their original identity. Completion timestamps prove only that the recorded consent operation completed, not that authentication or inbox placement passed.
+- Cloud 独立验证域名：提供自己的 `_warmbly` `TXT` 所有权记录值及根域名地址，两者均验证后才提供服务。
+- 只有域名、目标网站和 `www` 设置发送给 Cloud。访问域名的访客到达 Cloud，而非你的服务器；不涉及邮箱、联系人或邮件内容。
+- Cloud 为每个关联实例最多提供 200 个重定向。
+- 解除关联会停止使用该连接的重定向，不影响其他工作区连接或保留的旧版关联。实例上会逐项说明，也可将其改回由实例提供。
 
-A browser sign-in has a ten-minute consent window, and the browser that chose to continue must complete the callback. A repeated callback cannot exchange the same code again. If the provider exchange may have happened but there is no committed mailbox at its planned ID, the result is unknown. Warmbly does not retry the authorization code or report success. Remove the pending connection and start a new explicit sign-in. If the planned mailbox was committed, completion can recover without exchanging again while consent is still valid. Loss of Redis before provider exchange can require opening the consent flow again; durable consent is not a replacement for the provider's short-lived browser/PKCE state.
+发信域名页面中的具体操作见[由 Warmbly Cloud 提供服务](/guides/sending-domains/#serve-it-from-warmbly-cloud)。
 
-Opt-out, instance revocation and expiry are restrictive. Pending local removal is recorded before calling the cloud. A remote deletion reserves a tombstone even if a delayed start has not arrived yet. Late callbacks and adoption replays cannot revive that operation. A genuinely new sign-in or enrollment needs a new explicit operation and does not erase reputation holds. A pending initial warmup activation is also durable: completion retries it after a restart, but a confirmed completion replay does not undo an explicit pause.
+</Fold>
 
-Current local consent, enrollment, workspace standing and cloud observation freshness are checked before using even a cached brokered token. The cloud rechecks current instance and operation authority before minting another token. Previously issued provider tokens and commands already accepted by an older worker are not retroactively canceled by these checks.
+<Fold>
 
-### Version compatibility and rollout
+## 解除关联 [#unlinking]
 
-The cloud advertises `managed_consent_protocol: 1` in its authenticated instance information response. New clients require that capability and use separate correlated endpoints; they do not silently send fields an old cloud could ignore. Correlated browser states also use a different prefix, so an old callback handler cannot exchange them as legacy one-shot operations.
+在实例上使用 **设置 > Warmbly Cloud > 断开连接**，只移除所选工作区关联的加入关系，确认清理后由符合条件的本地预热接管。其他工作区关联和保留的旧版关联不受影响。源自实例的 SMTP 邮箱及凭据会从 Cloud 删除。OAuth 邮箱属于 Cloud 工作区，解除关联只移除该连接的访问权限，不删除工作区邮箱或服务商授权。其原生 Cloud 预热配置也保留；若希望停止参与或移除已存凭据，请另行在 Warmbly Cloud 暂停或删除。使用该关联的根域名重定向同时停止。移除旧版实例级关联仍是独立管理员操作。在 Warmbly Cloud，**设置 > 已关联实例**列出工作区关联，可从另一侧解除任意连接。
 
-Upgrade and settle all cloud control-plane replicas first, then upgrade linked instances. No new configuration is required. An old cloud cannot provide the stronger managed-sign-in guarantee, and a new client refuses a new managed operation against it. Existing SMTP enrollment and existing mailbox IDs remain valid. Old one-shot endpoints remain available to old clients, with their original weaker recovery behavior. An old browser session whose local authority was never stored durably cannot be reconstructed after upgrading/restarting; start a new explicit sign-in instead. Mixed replicas can reject the new endpoints or browser state, so do not treat a partial rollout as completed recovery.
+SMTP 加入、邮箱移除和实例断开会先记录持久化本地意图。加入或移除待完成时，邮箱不能参与本地预热。常规健康状态同步会在故障或重启后使用同一邮箱身份重试，而非另建邮箱。只有远程移除获得确认，或确认已不存在，才删除本地加入关系。本地清理失败会保持待处理并重试。
 
-The additive cloud routes below are beneath `/v1/pool-link`, use the linked instance's bearer token, and require `protocol: 1`. These are instance-scoped routes, not organization API-key routes. Existing routes without `-correlated` remain available.
+各邮箱的待处理工作独立重试。一个邮箱加入或移除失败，不会阻止其他邮箱重试或刷新 Cloud 状态；失败邮箱继续待处理且不可用，同步仍报告错误。如果地址已连接到所关联 Cloud 工作区，例如此前使用过托管 Warmbly，Cloud 可关联已有副本而不另建：前提是它为活跃 SMTP／IMAP 邮箱，服务器提交的 SMTP 和 IMAP 主机、端口、用户名、密码与 Cloud 保存值完全一致，没有活跃 Cloud 营销活动使用它发送，且未被其他服务器加入。此后它属于你的服务器邮箱：预热设置跟随服务器，从服务器移除也会从 Cloud 移除。其他已有副本均返回 `pool_link_mailbox_conflict`。请携带连接 ID 和本地邮箱 ID 联系支持核对关联，不要发送凭据，也不要删除或重新加入邮箱。Cloud 绝不会仅凭地址关联已有邮箱。
 
-| Method and route | Purpose |
+移除是明确退出。延迟到达的加入确认不能逆转待完成移除。移除完成后，新的明确加入可创建新意图，但不会重置信誉限制。断开在远程撤销和本地清理成功前保持待完成，期间不接受新加入。
+
+</Fold>
+
+<Fold>
+
+## 托管登录恢复与授权同意 [#managed-sign-in-recovery-and-consent]
+
+新的 Gmail／Outlook 登录和接入已有 Cloud 邮箱使用托管同意协议 1。双方在执行前记录稳定操作。实例记录工作区及发起用户，重新检查其当前管理邮箱权限，并将完成操作绑定到该工作区、用户、关联 Cloud 实例、服务商和邮箱身份。组织所有者可执行；其他成员需要已接受的成员关系及 `manage_emails` 权限。受限或已停用工作区不能完成托管操作。
+
+同意记录在后端重启后仍保留。重放已确认完成结果会返回已有邮箱，不会另建。Cloud 回复丢失或本地镜像写入失败，可通过常规健康状态同步恢复，复用原计划本地邮箱 ID 和远程操作 ID。接入重试同样复用原身份。完成时间戳只证明记录的同意操作完成，不证明身份验证或收件箱投递位置通过。
+
+浏览器登录的同意窗口为十分钟，必须由选择继续的浏览器完成回调。重复回调不能再次交换同一授权码。如果服务商交换可能已发生，但计划 ID 下没有已提交邮箱，结果属于未知。Warmbly 不会重试授权码或报告成功。请移除待完成连接并明确重新登录。如果计划邮箱已提交，可在同意仍有效时恢复完成状态，无须再次交换。服务商交换前 Redis 丢失，可能需要重新打开同意流程；持久化同意不能替代服务商的短期浏览器或 PKCE 状态。
+
+退出、实例撤销和到期均属于限制性状态。调用 Cloud 前会先记录待完成本地移除。远程删除会预留删除墓碑，即使延迟的启动请求尚未到达。晚到回调和接入重放不能恢复该操作。真正的新登录或加入必须创建新的明确操作，也不会清除信誉限制。待完成的初始预热激活同样持久化，重启后完成流程会重试，但重放已确认完成结果不会撤销明确暂停。
+
+即使使用缓存的代理令牌，也会先检查当前本地同意、加入关系、工作区状态和 Cloud 观察新鲜度。Cloud 在签发新令牌前再次检查实例及操作的当前权限。这些检查不会追溯撤销已签发服务商令牌，或旧工作节点已接受的命令。
+
+### 版本兼容性与升级实施 [#version-compatibility-and-rollout]
+
+Cloud 在已认证实例信息响应中声明 `managed_consent_protocol: 1`。新客户端要求此能力，并使用独立且带关联信息的端点，不会悄然向旧 Cloud 发送可能被忽略的字段。关联浏览器状态也使用不同前缀，防止旧回调处理器按旧式一次性操作交换它们。
+
+先升级并稳定全部 Cloud 控制平面副本，再升级关联实例。无须新增配置。旧 Cloud 无法提供更强的托管登录保证，新客户端会拒绝向其发起新的托管操作。已有 SMTP 加入关系和邮箱 ID 仍有效。旧式一次性端点继续向旧客户端开放，保留原先较弱的恢复行为。旧浏览器会话若从未持久化本地授权，升级或重启后无法重建，应明确重新登录。混合版本副本可能拒绝新端点或浏览器状态，因此不能将部分上线视为已完成恢复。
+
+以下新增 Cloud 路由位于 `/v1/pool-link` 下，使用关联实例的 Bearer 令牌，并要求 `protocol: 1`。这些是实例范围路由，不是组织 API 密钥路由。不带 `-correlated` 的已有路由继续可用。
+
+| 方法与路由 | 用途 |
 | --- | --- |
-| `POST /instance/oauth/start-correlated` | Reserve the supplied session hash and stable remote operation ID, then open browser consent |
-| `POST /instance/oauth/finish-correlated` | Read/reconcile completion by remote operation ID without consuming its durable result |
-| `POST /instance/mailboxes/adopt-correlated` | Idempotently adopt a specified OAuth mailbox at a stable remote operation ID |
+| `POST /instance/oauth/start-correlated` | 预留提供的会话哈希和稳定远程操作 ID，然后打开浏览器同意流程 |
+| `POST /instance/oauth/finish-correlated` | 根据远程操作 ID 读取或协调完成状态，不消耗其持久化结果 |
+| `POST /instance/mailboxes/adopt-correlated` | 使用稳定远程操作 ID，幂等接入指定 OAuth 邮箱 |
 
-`cloud_link_managed_protocol` means the cloud does not advertise the required recovery capability. `pool_link_oauth_unknown` means no provider-exchange result has been confirmed; it is not permission to resend the code. Existing `cloud_link_oauth_session` / `pool_link_oauth_session` errors cover missing, expired, revoked or mismatched consent. Permission or persistence failures do not report a successful connection.
+`cloud_link_managed_protocol` 表示 Cloud 未声明所需恢复能力。`pool_link_oauth_unknown` 表示尚未确认服务商交换结果，不代表可以重新发送授权码。已有 `cloud_link_oauth_session`／`pool_link_oauth_session` 错误涵盖同意缺失、到期、撤销或不匹配。权限或持久化失败不会报告连接成功。
 
-### Data, secrets and moving a workspace
+### 数据、密钥与工作区迁移 [#data-secrets-and-moving-a-workspace]
 
-PostgreSQL retains managed consent history and revocation tombstones until the owning organization is deleted. There is no automatic history purge or configurable retention duration in this release. Records contain organization/user references, instance/operation/account IDs, provider, operation kind, state and timestamps; local records retain a SHA-256 session hash, not the raw browser handle. These durable operation tables contain no email bodies, authorization codes, PKCE verifiers, access tokens or refresh tokens.
+PostgreSQL 保留托管同意历史和撤销墓碑，直到所属组织删除。此版本没有自动历史清理或可配置保留期限。记录包含组织和用户引用、实例／操作／账户 ID、服务商、操作类型、状态及时间戳；本地记录保存 SHA-256 会话哈希，而非原始浏览器句柄。这些持久化操作表不含邮件正文、授权码、PKCE 验证器、访问令牌或刷新令牌。
 
-The schema downgrade refuses to discard any managed consent history, including completed, expired, imported and revoked records. An older release cannot represent these restrictions. Ordinary disconnect deliberately does not erase them, so it does not make such a downgrade safe.
+数据库结构降级会拒绝丢弃任何托管同意历史，包括已完成、到期、导入和撤销的记录。旧版本无法表示这些限制。普通断开有意不删除它们，因此断开并不能让此类降级变得安全。
 
-Redis still holds the short-lived browser session, PKCE verifier, browser binding and consent result, with a ten-minute TTL. The cloud's ordinary encrypted mailbox credential store holds provider credentials under its existing retention rules. The instance only caches brokered access tokens in memory for at most ten minutes; an already-issued worker token can remain valid until its provider expiry.
+Redis 仍保存短期浏览器会话、PKCE 验证器、浏览器绑定和同意结果，TTL 为十分钟。Cloud 的常规加密邮箱凭据存储按现有保留规则保存服务商凭据。实例仅在内存中缓存代理访问令牌，最长十分钟；已签发给工作节点的令牌可能持续有效至服务商规定的到期时间。
 
-Consent restrictions/history travel in a [workspace export](/guides/workspace-export-import/). Import resets source instance IDs, remote IDs, session hashes, planned account handles and queued activation handles; live cloud account references on the local consent record are reset too. This prevents an imported pending operation from resuming against the source instance, while retaining its restrictive state. Workspace links and legacy instance-wide links do not travel: reconnect and explicitly authorize any new managed operation after moving. Imported history is not a fresh consent or a positive provider verdict.
+同意限制和历史随[工作区导出](/guides/workspace-export-import/)迁移。导入会重置源实例 ID、远程 ID、会话哈希、计划账户句柄和排队激活句柄，本地同意记录中的有效 Cloud 账户引用也会重置。这样既保留限制状态，又防止导入的待完成操作继续作用于源实例。工作区关联和旧版实例级关联不迁移；迁移后需重新连接，并明确授权新的托管操作。导入历史不构成新的同意，也不构成正面服务商判定。
 
 </Fold>
 
 <Fold>
 
-## Self-hosting notes
+## 自托管注意事项 [#self-hosting-notes]
 
-- Traffic is outbound only: the instance calls `WARMBLY_CLOUD_URL` (default `https://api.warmbly.com`) over HTTPS, on port 443 or 8443, and only to a public address. Plain HTTP to `localhost` is accepted only when `APP_ENV` is `dev`. Nothing needs to reach the instance from the internet
-- The instance token is stored sealed with `CREDENTIALS_ENCRYPTION_KEY`. Rotating that key invalidates the stored token; reconnect afterwards
-- Brokered access tokens reach the worker through the backend's internal API (`/api/v1/internal/cloud-link/token/:id`), so workers keep needing only `ENCRYPTED_KEYS_BACKEND_URL` and `ENCRYPTED_KEYS_WORKER_TOKEN`. A worker that cannot reach the backend keeps sending from such mailboxes until its cached token expires, about an hour
-- Connections and enrollments are bound to this installation's encryption key, even when workspace-scoped, so they are not part of a [workspace export](/guides/workspace-export-import/). Reconnect after moving a workspace to a new instance
-- `INSTANCE_NAME` sets the name shown on the approval page; the hostname is used when unset. The name follows the workspace [naming rules](/api/error-codes/#name-refusals), so one that reads as a web address (a hostname, for example) shows as "Self-hosted instance"
+- 流量仅出站：实例通过 HTTPS 在 443 或 8443 端口调用 `WARMBLY_CLOUD_URL`（默认 `https://api.warmbly.com`），且只访问公网地址。只有 `APP_ENV` 为 `dev` 时，才接受到 `localhost` 的普通 HTTP。无须让互联网访问实例
+- 实例令牌使用 `CREDENTIALS_ENCRYPTION_KEY` 加密存储。轮换该密钥会使已存令牌失效，之后需要重新连接
+- 代理访问令牌通过后端内部 API（`/api/v1/internal/cloud-link/token/:id`）到达工作节点，因此节点仍只需要 `ENCRYPTED_KEYS_BACKEND_URL` 和 `ENCRYPTED_KEYS_WORKER_TOKEN`。无法访问后端的节点仍可从此类邮箱发送，直到缓存令牌约一小时后到期
+- 即使限定到工作区，连接和加入关系仍绑定当前安装的加密密钥，因此不包含在[工作区导出](/guides/workspace-export-import/)中。工作区迁往新实例后需重新连接
+- `INSTANCE_NAME` 设置批准页面显示的名称，未设置时使用主机名。名称遵循工作区[命名规则](/api/error-codes/#name-refusals)，因此看起来像网址的名称，例如主机名，会显示为“自托管实例”
 
 </Fold>
 
-## Related guides
+## 相关指南 [#related-guides]
 
-- [Warmup](/guides/warmup/)
-- [Mailboxes](/guides/mailboxes/)
-- [Configuration reference](/development/configuration/)
+- [邮箱预热](/guides/warmup/)
+- [邮箱](/guides/mailboxes/)
+- [配置参考](/development/configuration/)

@@ -1,70 +1,56 @@
 ---
-title: Local development
-description: Run the full stack locally with Docker, hot reload, seeding, and native services.
+title: 本地开发
+description: 在本地运行完整服务栈，使用 Docker、热重载、示例数据和原生服务。
 ---
 
-The whole stack runs locally via a single `docker-compose.yml` at the repo root. Profiles let you opt into heavier setups for simulation testing.
+整个服务栈可通过仓库根目录的一份 `docker-compose.yml` 在本地运行。需要模拟测试时，可以通过配置组启用较重的组件组合。
 
-## Prerequisites
+## 前置条件 [#prerequisites]
 
-- Docker (20.10+) and Docker Compose v2
-- Git
-- Go 1.25+
-- Node 22+ and pnpm (for web)
+- Docker 20.10+ 和 Docker Compose v2。
+- Git。
+- Go 1.25+。
+- Node 22+ 和 pnpm，用于 Web 前端。
 
-Optional, only for the two auxiliary services when run natively:
+仅在原生运行以下两个辅助服务时，才需要可选工具：
 
-- Rust (for tracking)
-- Elixir 1.18+ (for realtime)
+- Rust，用于跟踪服务。
+- Elixir 1.18+，用于实时服务。
 
-## One command
+## 一条命令启动 [#one-command]
 
 ```bash
 make dev
 ```
 
-This is the whole setup for a fresh clone. It brings up the no-cloud Docker infra
-(postgres, redis, nats, mailpit), waits until
-everything is actually ready, applies migrations, loads the seed fixtures,
-installs web dependencies on first run, starts the realtime and tracking
-services as containers, and then runs the backend, consumer, worker, dashboard,
-and admin panel together in your terminal.
+对新克隆的仓库，这一条命令即可完成全部设置。它启动不依赖云服务的 Docker 基础设施，包括 postgres、redis、nats 和 mailpit，等待全部真正就绪，应用迁移，加载示例数据，首次运行时安装 Web 依赖，以容器启动实时和跟踪服务，然后在终端中一起运行后端、消费者、工作节点、控制台和管理面板。
 
-Open `http://localhost:5173` and log in with `dev@warmbly.com` / `password123`.
+打开 `http://localhost:5173`，使用 `dev@warmbly.com` / `password123` 登录。
 
-<Callout type="warn" title="make dev shares its database with make up">
-Both pin the same compose project (`-p warmbly`), the same `warmbly_postgres_data` volume and the same `warmbly_dev` database, and `make dev` seeds nine fixture accounts by default, including `admin@warmbly.local` with every platform admin permission and a published password.
+<Callout type="warn" title="make dev 与 make up 共用数据库">
+两者固定使用相同的 Compose 项目 `-p warmbly`、相同的 `warmbly_postgres_data` 卷和 `warmbly_dev` 数据库。`make dev` 默认填充九个示例账户，其中 `admin@warmbly.local` 拥有全部平台管理权限，并使用公开密码。
 
-Those accounts are your instance's accounts. Seeding therefore spends the first-run exemption permanently: a later `make up` finds a claimed instance, issues no setup link, and the sign-up form refuses you with `403 This server is invite only`. Recover with `warmblyctl user create --email you@example.com --admin`, or start over with `make reset`, which destroys the volumes holding the encryption keys.
+这些账户就是实例中的真实账户，因此填充数据会永久消耗首次运行的豁免机会：之后执行 `make up` 会发现实例已被认领，不再签发设置链接，注册表单也会返回 `403 This server is invite only`。可以通过 `warmblyctl user create --email you@example.com --admin` 恢复访问，或用 `make reset` 从头开始；后者会销毁保存加密密钥的卷。
 
-Use `make dev SEED=false` on a database you intend to self-host from. Full detail in [first run](/development/first-run/#if-the-instance-already-has-accounts).
+对于准备继续用于自托管的数据库，请使用 `make dev SEED=false`。完整说明见[首次运行](/development/first-run/#if-the-instance-already-has-accounts)。
 </Callout>
 
-The native dev stack keeps the emailed login code on (`AUTH_LOGIN_CODE=always`)
-so the flow stays exercised, and local mail goes to Mailpit rather than a real
-inbox. Open `http://localhost:18025`, read the newest "Your Login Code"
-message, and paste the code into the dashboard.
+原生开发服务栈保持邮件登录验证码开启，即 `AUTH_LOGIN_CODE=always`，以持续覆盖该流程；本地邮件进入 Mailpit，不进入真实收件箱。打开 `http://localhost:18025`，查看最新的“Your Login Code（你的登录验证码）”邮件，再将验证码粘贴到控制台。
 
-A self-hosted install behaves differently: there the code is off by default, so
-signing in never depends on mail. See [accounts and access](/development/accounts-and-access/#login-codes).
+自托管安装不同：默认关闭验证码，因此登录不依赖邮件。参见[账户与访问权限](/development/accounts-and-access/#login-codes)。
 
-Ctrl-C stops the app services; the Docker infra stays up, so the next `make dev`
-skips straight to starting the app. The Go services run natively with `go run`,
-so a code change plus Ctrl-C and re-run recompiles in a second or two. Variants:
+Ctrl-C 停止应用服务，但 Docker 基础设施继续运行，因此下次 `make dev` 会直接启动应用。Go 服务通过 `go run` 原生运行；修改代码后按 Ctrl-C 并重新运行，一两秒即可重新编译。其他用法：
 
 ```bash
 make dev SEED=false           # skip fixture seeding
 make dev AI_PROVIDER=ollama   # with the AI assistant on (see the AI provider section)
 ```
 
-Tracking (`:3000`) and realtime (`:4000`) run as containers under `make dev`, so
-pixels, click redirects, and live dashboard updates work without the Rust or
-Elixir toolchains. The native `make tracking` / `make realtime` targets are for
-iterating on those services themselves.
+跟踪服务 `:3000` 和实时服务 `:4000` 在 `make dev` 下以容器运行，因此无需安装 Rust 或 Elixir 工具链，也能使用像素、点击重定向和控制台实时更新。原生的 `make tracking` / `make realtime` 目标用于直接迭代这两个服务自身。
 
-## Make targets
+## Make 目标 [#make-targets]
 
-Day-one:
+初次使用：
 
 ```bash
 make dev        # one command: infra + migrations + seed + backend/forms/consumer/worker + realtime + tracking + dashboard + admin
@@ -77,12 +63,9 @@ make sandbox    # fully working demo environment (see /development/sandbox/)
 make reset      # nuke everything including volumes, start over
 ```
 
-The split lets multiple git worktrees share the stateful stuff. `make infra`
-is a "start once and forget"; every worktree uses the same project name
-(`-p warmbly`), so a second worktree's `make app` recreates the language
-containers in place against its source without touching infra.
+这种拆分让多个 Git 工作树可以共享有状态组件。`make infra` 只需启动一次；每个工作树使用相同项目名 `-p warmbly`，因此第二个工作树的 `make app` 会基于其源码原地重建语言运行容器，不影响基础设施。
 
-Iterating on code:
+代码迭代：
 
 ```bash
 # Hot reload is on by default under `make app`:
@@ -100,11 +83,9 @@ make logs backend                  # one service
 make logs backend consumer         # multiple
 ```
 
-If you're on the prod-image flow (`make up`) instead of `make app`,
-binaries are baked into the image and you need `make restart <svc>` /
-`make restart-go` / `make restart-all` to pick up code changes.
+如果使用生产镜像流程 `make up`，而不是 `make app`，二进制已打包进镜像，需要通过 `make restart <svc>`、`make restart-go` 或 `make restart-all` 应用代码变化。
 
-All targets shell out to `docker compose -p warmbly`. If you don't have Make, the equivalents are:
+所有目标最终都调用 `docker compose -p warmbly`。未安装 Make 时，等效命令如下：
 
 ```bash
 docker compose -p warmbly up -d postgres redis nats mailpit          # infra
@@ -115,108 +96,106 @@ docker compose -p warmbly --profile seed run --rm --build seed       # seed
 docker compose -p warmbly --profile seed --profile sandbox down -v   # reset
 ```
 
-## What's running
+## 正在运行的组件 [#whats-running]
 
-The no-cloud stack has no AWS, GCP, Stripe, or Kafka. After `make infra && make app`:
+不依赖云服务的服务栈没有 AWS、GCP、Stripe 或 Kafka。执行 `make infra && make app` 后会运行：
 
-- **postgres**, **redis**: relational store and cache / realtime bridge
-- **nats**: event bus (JetStream), a single small binary in place of Kafka + Zookeeper + Schema Registry
-- **mailpit**: SMTP catcher with a web UI
-- **dovecot**: real IMAP server hosting sandbox mailbox inboxes (`sandbox` profile, started by `make sandbox`)
-- **backend**, **consumer**, **tracking**, **realtime**, **web**, **admin**: app services
-- **worker**: one send/sync worker (scale with `docker compose up --scale worker=N`, or add machines via the SSH enrollment flow)
+- **postgres**、**redis**：关系存储，以及缓存/实时桥接。
+- **nats**：JetStream 事件总线，用一个小型二进制替代 Kafka、Zookeeper 和 Schema Registry。
+- **mailpit**：带 Web 界面的 SMTP 邮件捕获器。
+- **dovecot**：承载沙盒邮箱收件箱的真实 IMAP 服务器，属于 `sandbox` 配置组，由 `make sandbox` 启动。
+- **backend**、**consumer**、**tracking**、**realtime**、**web**、**admin**：应用服务。
+- **worker**：一个发送/同步工作节点；可用 `docker compose up --scale worker=N` 扩容，或通过 SSH 登记流程添加机器。
 
-Encryption, blob storage, and delayed tasks all run on local providers (`KMS_PROVIDER=local`, `BLOB_PROVIDER=filesystem`, `TASKS_PROVIDER=local`), so nothing external is needed. See the [self-hosting guide](/development/deployment-guide/) for the provider switches.
+加密、Blob 存储和延迟任务均使用本地提供程序，即 `KMS_PROVIDER=local`、`BLOB_PROVIDER=filesystem` 和 `TASKS_PROVIDER=local`，不需要外部服务。各提供程序开关见[自托管指南](/development/deployment-guide/)。
 
-## Service URLs
+## 服务 URL [#service-urls]
 
-Mostly standard ports. A few are offset because their defaults conflict too often: Postgres `15432`, Redis `16379`, NATS monitoring `8222`, Mailpit UI `18025` and SMTP `11025`. Everything else uses its natural port. Override locally in a `docker-compose.override.yml` if you still hit a conflict.
+大多使用标准端口。部分默认端口容易冲突，因此做了偏移：Postgres 为 `15432`，Redis 为 `16379`，NATS 监控为 `8222`，Mailpit 界面为 `18025`、SMTP 为 `11025`。其余使用通常端口。如果仍有冲突，可在本地 `docker-compose.override.yml` 中覆盖。
 
-| Service | URL |
+| 服务 | URL |
 |---------|-----|
-| Backend API | `http://localhost:8080` |
-| Tracking | `http://localhost:3000` |
-| Realtime | `http://localhost:4000` |
-| Web (Vite dev) | `http://localhost:5173` |
-| Admin (Vite dev) | `http://localhost:5174` |
+| 后端 API | `http://localhost:8080` |
+| 跟踪 | `http://localhost:3000` |
+| 实时服务 | `http://localhost:4000` |
+| Web（Vite 开发） | `http://localhost:5173` |
+| 管理端（Vite 开发） | `http://localhost:5174` |
 | Mailpit | `http://localhost:18025` |
 | Dovecot IMAP / IMAPS | `localhost:10143` / `localhost:10993` |
-| NATS | `localhost:4222` (monitoring `http://localhost:8222`) |
+| NATS | `localhost:4222`，监控为 `http://localhost:8222` |
 | Postgres | `localhost:15432` |
 | Redis | `localhost:16379` |
 
-## Database setup
+## 数据库设置 [#database-setup]
 
-The backend runs migrations automatically on boot (`internal/infrastructure/db/migrate.go`), so there's no separate migrate step. Migrations live in `internal/infrastructure/db/migrations/`.
+后端在启动时自动运行迁移，逻辑见 `internal/infrastructure/db/migrate.go`，因此无需独立迁移步骤。迁移文件位于 `internal/infrastructure/db/migrations/`。
 
-### Adding a migration
+### 添加数据库迁移 [#adding-a-migration]
 
-Each migration is a pair of files named `<version>_<name>.up.sql` and `<version>_<name>.down.sql`, where the version is six digits and the name is snake_case. Versions are contiguous, so a new migration takes the next number after the highest one on `main`.
+每个迁移是一对文件，分别命名为 `<version>_<name>.up.sql` 和 `<version>_<name>.down.sql`；版本为六位数字，名称采用 snake_case。版本连续，因此新迁移使用 `main` 上最高版本之后的下一个编号。
 
-Pick that number against `main`, not against your branch. Two branches opened around the same time will otherwise both claim the same next version, and while each one migrates cleanly on its own, the collision on `main` makes golang-migrate refuse to build its source driver. The backend then exits at boot and restart-loops, taking every service that waits on it with it.
+应根据 `main` 选择编号，不要只看自己的分支。否则，同时创建的两个分支可能占用同一个下一版本；它们各自都能干净迁移，但合到 `main` 后，编号冲突会让 golang-migrate 拒绝构建 source driver。后端随后在启动时退出并陷入重启循环，所有等待它的服务也会受影响。
 
-Before pushing, run:
+推送前运行：
 
 ```bash
 make check-migrations
 ```
 
-It reports duplicate versions, gaps, an `.up.sql` with no `.down.sql`, and filenames golang-migrate cannot parse. `make lint` runs it too, and the Migrations job in CI runs it on every pull request that touches the directory.
+它会报告重复版本、编号空缺、缺少对应文件的 `.up.sql`，即没有相应 `.down.sql`，以及 golang-migrate 无法解析的文件名。`make lint` 也会运行它；CI 中的 Migrations 作业会在每个修改此目录的拉取请求上执行。
 
-If a duplicate does reach `main`, renumber the migration that has **not** been released yet. Deployments in the wild have already recorded the other one in `schema_migrations`, and renumbering that one makes them try to apply it a second time.
+如果重复编号确实进入 `main`，应重新编号**尚未发布**的那个迁移。线上部署已经在 `schema_migrations` 中记录了另一个，给已发布迁移重新编号会使它们再次尝试应用。
 
-## Seeding fixtures
+## 载入测试数据 [#seeding-fixtures]
 
-`make seed` runs the seeder one-shot. It's idempotent, safe to re-run after schema changes.
+`make seed` 单次运行数据填充器。它是幂等的，Schema 变化后可安全重跑。
 
-Baseline (always loads):
+始终加载的基础数据：
 
-| Field | Value |
+| 字段 | 值 |
 |-------|-------|
-| Email | `dev@warmbly.com` |
-| Password | `password123` |
+| 邮箱 | `dev@warmbly.com` |
+| 密码 | `password123` |
 
-The dev user's org always loads as a mid-flight workspace, not an empty shell:
+开发用户的组织始终以一个运行中的工作区呈现，而不是空壳：
 
-- 4 warmed mailboxes on the shared worker, all in the premium warmup pool
-- Folders, tags, and labels with real bindings (mailbox tags, campaign folders, labels on contacts and inbox threads)
-- ~30 contacts with titles and companies, a few unsubscribed or suppressed
-- An active 3-step campaign with 24 leads spread across the funnel (sent, opened, replied, bounced, queued), plus a draft campaign
-- 14 days of stats history (campaign sends, warmup volume, per-mailbox counts), always including sends today
-- A unified inbox with reply chains, an objection, an out-of-office, a bounce, and a warmup-style exchange
-- A CRM pipeline with deals, tasks, and notes, reply templates, notifications, and an AI credit balance with transaction history
+- 共享工作节点上有 4 个已预热邮箱，均加入付费预热池。
+- 文件夹、标签和分类标记具有真实关联，包括邮箱标签、营销活动文件夹、联系人和收件箱会话标签。
+- 约 30 个带职务和公司的联系人，部分已退订或被禁止发送。
+- 一个活跃的三步骤营销活动，24 个潜在客户分布在已发送、已打开、已回复、已退信和排队等阶段，另有一个草稿活动。
+- 14 天统计历史，包括营销活动发送、预热量和逐邮箱计数，始终包含今天的发送。
+- 统一收件箱中有回复链、异议、休假自动回复、退信和预热风格的往来。
+- CRM 销售管道中有交易、任务和备注，另有回复模板、通知，以及带交易历史的 AI 积分余额。
 
-All dates are computed relative to the current time, so the workspace looks active no matter when you seed.
+所有日期都相对当前时间计算，因此无论何时填充，工作区看起来都在活跃运行。
 
-When `SEED_RICH=true` (set in `docker-compose.yml`, and by `make seed`), also loads:
+启用 `SEED_RICH=true` 时，它在 `docker-compose.yml` 和 `make seed` 中均已设置，还会加载：
 
-- 3 orgs (Acme free, Beta pro, Gamma enterprise) each with their own owner user (password `password123`)
-- 3 workers matching the `docker-compose.yml` hostnames (shared / premium / dedicated)
-- 6 email accounts spread across workers, joined to the right warmup pools
-- A Beta campaign with a 2-step sequence
-- 10 contacts, 2 of them unsubscribed (exercises suppression behaviour)
+- 3 个组织：Acme 免费版、Beta 专业版和 Gamma 企业版，各有自己的所有者用户，密码为 `password123`。
+- 3 个与 `docker-compose.yml` 主机名匹配的工作节点，分别为共享、付费和专用。
+- 6 个分布在各节点上的邮箱账户，加入正确的预热池。
+- 一个包含两步骤邮件序列的 Beta 营销活动。
+- 10 个联系人，其中 2 个已退订，用于覆盖禁止发送行为。
 
-## Encryption and storage
+## 加密与存储 [#encryption-and-storage]
 
-The local stack needs no AWS. Envelope encryption uses a local AES master key (`KMS_PROVIDER=local`, `KMS_LOCAL_MASTER_KEY`, a fixed dev value in the Makefile), and blobs (avatars, logos) go to a directory (`BLOB_PROVIDER=filesystem`, `BLOB_FS_ROOT`). Flip `KMS_PROVIDER=aws` / `BLOB_PROVIDER=s3` to use AWS KMS and any S3-compatible store instead. See the [self-hosting guide](/development/deployment-guide/) for every provider switch.
+本地服务栈不需要 AWS。信封加密使用本地 AES 主密钥，即 `KMS_PROVIDER=local` 和 `KMS_LOCAL_MASTER_KEY`，Makefile 中提供固定开发值；Blob，例如头像和标志，保存到目录中，由 `BLOB_PROVIDER=filesystem` 和 `BLOB_FS_ROOT` 控制。切换到 `KMS_PROVIDER=aws` / `BLOB_PROVIDER=s3`，即可改用 AWS KMS 和任意兼容 S3 的存储。所有提供程序开关见[自托管指南](/development/deployment-guide/)。
 
-## Connecting psql / Redis CLI
+## 连接 psql / Redis CLI [#connecting-psql--redis-cli]
 
 ```bash
 docker compose exec postgres psql -U warmbly -d warmbly_dev
 docker compose exec redis redis-cli
 ```
 
-External clients can use:
+外部客户端可以使用：
 
-- Postgres: `localhost:15432` user `warmbly` password `warmbly` db `warmbly_dev`
-- Redis: `localhost:16379`
+- Postgres：`localhost:15432`，用户 `warmbly`，密码 `warmbly`，数据库 `warmbly_dev`。
+- Redis：`localhost:16379`。
 
-## Running services natively
+## 以原生进程运行服务 [#running-services-natively]
 
-`make dev` already runs the Go services and the dashboard natively against the
-Docker infra. When you want them in separate terminals instead of one, each has
-its own target with the full dev environment pre-wired (no manual env exports):
+`make dev` 已经让 Go 服务和控制台对接 Docker 基础设施原生运行。如果希望分别放在不同终端，每个服务都有独立目标，已预先配置完整开发环境，无需手动导出环境变量：
 
 ```bash
 make infra            # once: the backing services in Docker
@@ -231,26 +210,20 @@ make admin            # admin app on :5174
 make site             # marketing site on :4321
 ```
 
-Each target sets the same env you would otherwise export by hand (see the
-[configuration reference](/development/configuration/) for what each variable
-does, and `deploy/config/env.example` for the bare-binary template). Saving a Go file and
-re-running the target recompiles in a second or two against the warm build
-cache.
+每个目标都会设置原本需要手动导出的相同环境。各变量用途见[配置参考](/development/configuration/)，裸二进制模板见 `deploy/config/env.example`。保存 Go 文件并重新运行目标后，利用已有构建缓存，一两秒即可重新编译。
 
-### Tracking (Rust) and realtime (Elixir)
+### 跟踪服务（Rust）与实时服务（Elixir） [#tracking-rust-and-realtime-elixir]
 
-`make dev` runs both as containers; `make run` does not include them. The native
-targets need their own toolchains (cargo, elixir + mix) and are for working on
-those services directly:
+`make dev` 以容器运行这两个服务，`make run` 不包含它们。原生目标需要各自的工具链，即 cargo、elixir 和 mix，用于直接开发这些服务：
 
 ```bash
 make tracking   # tracking pixel + click redirect service on :3000
 make realtime   # Phoenix websocket fanout on :4000
 ```
 
-## AI provider
+## AI 服务提供方 [#ai-provider]
 
-The AI features (the dashboard assistant, reply drafts, contact research, and automation AI nodes) are off by default in local dev, so the assistant returns a clean `503` until you pick a provider. Pass `AI_PROVIDER` to the dev targets; the preset fills in the base URL, so you supply just a key and (optionally) a model.
+本地开发默认关闭 AI 功能，包括控制台助手、回复草稿、联系人研究和自动化 AI 节点，因此选择服务商之前，助手会明确返回 `503`。向开发目标传入 `AI_PROVIDER`，预设会补齐基础 URL，你只需提供密钥和可选模型。
 
 ```bash
 # free local model, no key: install Ollama, pull a tool-capable model, run
@@ -266,46 +239,46 @@ make backend AI_PROVIDER=groq   AI_KEY=gsk_... AI_MODEL=openai/gpt-oss-20b
 make backend AI_PROVIDER=openai AI_KEY=sk-...
 ```
 
-`AI_PROVIDER=ollama` needs no key and marks the model free (`AI_FREE`), so AI credits are not charged and the assistant shows a "free model" notice. Local and free-tier models are less capable, but tool calls and the full agent loop work; use `llama3.1` (8B) or `qwen2.5`, not a 1B to 3B model. Leave `AI_PROVIDER` unset to keep AI off. See the [self-hosting guide](/development/deployment-guide/) for the full provider list.
+`AI_PROVIDER=ollama` 无需密钥，并将模型标为免费，即 `AI_FREE`，因此不收取 AI 积分，助手显示“免费模型”提示。本地和免费等级模型能力较弱，但工具调用和完整智能体循环仍可工作；应使用 `llama3.1`（8B）或 `qwen2.5`，不要用 1B 至 3B 模型。保持 `AI_PROVIDER` 未设置即可继续关闭 AI。完整服务商列表见[自托管指南](/development/deployment-guide/)。
 
-## Mailpit
+## Mailpit [#mailpit]
 
-All outbound mail is captured by Mailpit. The dev targets set `MAIL_TRANSPORT=smtp` with `SMTP_SECURITY=none`, because a sink offers no STARTTLS and the platform transport refuses to send credentials over an unencrypted connection. Mailpit accepts SMTP AUTH with any credentials, so worker sends from sandbox mailboxes are captured too.
+所有出站邮件都会被 Mailpit 捕获。开发目标设置 `MAIL_TRANSPORT=smtp` 和 `SMTP_SECURITY=none`，因为邮件接收器不提供 STARTTLS，而平台传输会拒绝通过未加密连接发送凭据。Mailpit 接受任意凭据的 SMTP AUTH，因此沙盒邮箱的工作节点发送也会被捕获。
 
-Mailpit sits in the `sandbox` compose profile, so the self-host `make up` never starts it. `make dev`, `make infra` and `make sandbox` name it explicitly, which starts it regardless of the profile.
+Mailpit 属于 `sandbox` Compose 配置组，因此自托管 `make up` 不会启动它。`make dev`、`make infra` 和 `make sandbox` 显式指定它，因此不受配置组是否启用影响。
 
-- Web UI: `http://localhost:18025`
-- SMTP from inside docker: `mailpit:1025`
-- SMTP from host: `localhost:11025`
+- Web 界面：`http://localhost:18025`。
+- Docker 内 SMTP：`mailpit:1025`。
+- 主机侧 SMTP：`localhost:11025`。
 
-Note: Mailpit speaks SMTP only, not IMAP. The worker's IMAP sync path is exercised through the Dovecot service instead; see the [sandbox](/development/sandbox/) for the full live-mail environment.
+注意，Mailpit 只支持 SMTP，不支持 IMAP。工作节点的 IMAP 同步路径通过 Dovecot 服务测试；完整实时邮件环境见[沙盒](/development/sandbox/)。
 
-## Email templates
+## 邮件模板 [#email-templates]
 
-Email templates live in `internal/notify/templates/`. Render tests:
+邮件模板位于 `internal/notify/templates/`。渲染测试：
 
 ```bash
 go test ./internal/notify/templates/ -v
 ```
 
-To preview templates in a browser, dump them to disk:
+要在浏览器中预览模板，可将它们输出到磁盘：
 
 ```bash
 go test ./internal/notify/templates/ -run TestPreview -v
 # Files land in the test temp dir, path printed in output
 ```
 
-Or just trigger the auth flow in the running app and watch the email arrive in Mailpit.
+也可以直接在运行中的应用触发身份验证流程，然后在 Mailpit 查看收到的邮件。
 
-## Common tasks
+## 常见任务 [#common-tasks]
 
-### Rebuild one service
+### 重新构建单个服务 [#rebuild-one-service]
 
 ```bash
 make restart backend
 ```
 
-### Reset Postgres only
+### 仅重置 Postgres [#reset-postgres-only]
 
 ```bash
 docker compose stop postgres
@@ -313,34 +286,34 @@ docker volume rm warmbly_postgres_data
 docker compose up -d postgres
 ```
 
-### Inspect the event bus (NATS)
+### 检查事件总线（NATS） [#inspect-the-event-bus-nats]
 
-NATS runs with JetStream and an HTTP monitoring endpoint:
+NATS 启用 JetStream，并提供 HTTP 监控端点：
 
 ```bash
 curl http://localhost:8222/jsz | jq   # JetStream streams + message counts
 curl http://localhost:8222/varz | jq  # server info and connections
 ```
 
-To tail subjects live, use the NATS CLI (`nats` from nats-io) against `nats://localhost:4222`, for example `nats sub 'warmbly.>'`. On the optional Kafka overlay, the event bus is Kafka instead; see the [self-hosting guide](/development/deployment-guide/).
+要实时查看主题，可使用 nats-io 的 NATS CLI `nats`，连接 `nats://localhost:4222`，例如执行 `nats sub 'warmbly.>'`。使用可选 Kafka 覆盖配置时，事件总线改为 Kafka；参见[自托管指南](/development/deployment-guide/)。
 
-## Troubleshooting
+## 故障排查 [#troubleshooting]
 
-**Port already in use.** Use `lsof -i :5432` (or whichever) to find what's holding it. The compose ports are offset on purpose; if you have a local Postgres on 5432 it shouldn't clash.
+**端口已被占用。** 使用 `lsof -i :5432` 或对应端口，查找占用进程。Compose 端口有意做了偏移，因此本地 Postgres 使用 5432 时通常不会冲突。
 
-**Backend can't reach the event bus.** NATS starts in a second or two and healthchecks gate the dependent services, so `docker compose up` should handle ordering. If you brought services up out of order, `docker compose restart backend consumer`.
+**后端无法访问事件总线。** NATS 一两秒即可启动，健康检查会控制依赖服务的启动，因此 `docker compose up` 应能处理顺序。如果手动启动时顺序不对，可运行 `docker compose restart backend consumer`。
 
-**Scheduled sends never fire.** Delayed sends run through the in-process Postgres task poller (`TASKS_PROVIDER=local`), so the backend must be running. Check the backend log; the task reconcilers cancel and re-enqueue anything missed within a few minutes.
+**计划发送始终不触发。** 延迟发送通过进程内 Postgres 任务轮询器运行，即 `TASKS_PROVIDER=local`，因此后端必须运行。检查后端日志；任务协调器会在几分钟内取消并重新入队遗漏任务。
 
-## Testing the Warmbly Cloud link
+## 测试 Warmbly Cloud 连接 [#testing-the-warmbly-cloud-link]
 
-`make poollink-dev` boots two instances side by side so you can walk the self-hoster's path end to end: a prod-like cloud (`DEPLOYMENT_MODE=cloud`, Stripe billing gates on with placeholder keys, email verification through Mailpit, the Sunrise Labs sandbox org seeded into the warmup pool) on `:18301` / `:18401`, and a brand-new self-hosted instance with no accounts on `:18302` / `:18402`, with `WARMBLY_CLOUD_URL` pointing at the cloud. Both use the `make infra` containers with their own databases, so `make dev` keeps working next to them.
+`make poollink-dev` 会并排启动两个实例，让你端到端体验自托管用户流程：一个接近生产的 Cloud，使用 `DEPLOYMENT_MODE=cloud`，启用带占位密钥的 Stripe 计费限制，通过 Mailpit 验证邮箱，并将 Sunrise Labs 沙盒组织填充到预热池，运行在 `:18301` / `:18401`；另一个是没有任何账户的全新自托管实例，运行在 `:18302` / `:18402`，其 `WARMBLY_CLOUD_URL` 指向前者。两者使用 `make infra` 容器，但各有自己的数据库，因此旁边的 `make dev` 仍可工作。
 
-The script prints a claim link for the self-hosted instance (`scripts/dev-poollink.sh setup-link` prints a fresh one). Connect a mailbox there with SMTP `localhost:11025` (Mailpit, no auth) and IMAP `localhost:10993` (Dovecot accepts any user with password `sandbox`), then follow Settings > Warmbly Cloud: the claimed account is the instance administrator, and linking needs it signed in with two-factor authentication, so turn on 2FA under Settings > Security and sign in again first. Register on the cloud dashboard, approve the code at `/connect`, and enroll the mailbox. The cloud workspace starts on a free trial, so the 10-mailbox allowance and the upgrade card behave like production; checkout itself needs real Stripe keys (`STRIPE_SECRET_KEY` and friends are read from the environment if set). `make poollink-dev-down` stops everything, `make poollink-dev-reset` also drops the databases. Product behavior is described in the [Warmbly Cloud guide](/guides/warmbly-cloud/).
+脚本会打印自托管实例的认领链接，`scripts/dev-poollink.sh setup-link` 可重新打印新的链接。在该实例连接邮箱：SMTP 使用 `localhost:11025`，即无身份验证的 Mailpit；IMAP 使用 `localhost:10993`，Dovecot 接受任意用户和密码 `sandbox`。然后进入“设置 > Warmbly Cloud”：认领账户就是实例管理员，链接要求使用双因素身份验证登录，因此应先在“设置 > 安全”启用 2FA 并重新登录。在 Cloud 控制台注册，在 `/connect` 批准代码，再登记邮箱。Cloud 工作区从免费试用开始，因此 10 邮箱额度和升级卡片与生产行为一致；真正结账需要真实 Stripe 密钥，设置后会从环境读取 `STRIPE_SECRET_KEY` 等值。`make poollink-dev-down` 停止全部服务，`make poollink-dev-reset` 还会删除数据库。产品行为见 [Warmbly Cloud 指南](/guides/warmbly-cloud/)。
 
-## Next steps
+## 后续步骤 [#next-steps]
 
-- [Sandbox](/development/sandbox/): a fully working demo environment on this stack
-- [Architecture](/development/architecture/): control vs execution plane, encryption model
-- [Self-hosting](/development/deployment-guide/): running in production
-- [Event system](/development/events/): event bus and topic reference
+- [沙盒](/development/sandbox/)：在此服务栈上运行功能完整的演示环境。
+- [架构](/development/architecture/)：控制平面与执行平面、加密模型。
+- [自托管](/development/deployment-guide/)：在生产中运行。
+- [事件系统](/development/events/)：事件总线和主题参考。

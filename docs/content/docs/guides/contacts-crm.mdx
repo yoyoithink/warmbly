@@ -1,403 +1,403 @@
 ---
-title: "Contacts & CRM"
-description: "Import contacts, custom fields, labels, deals, and pipelines."
+title: "联系人与 CRM"
+description: "联系人导入、自定义字段、标签、商机与销售管道。"
 ---
 
-Contacts are the people you reach out to. The CRM tracks what happens after they reply.
+联系人是你要触达的人。CRM 用于跟踪他们回复之后的进展。
 
-![The contacts list with company, subscription status and campaign membership](/guides/contacts.webp)
+![联系人列表：公司、订阅状态和所属营销活动](/guides/contacts.webp)
 
-## Import contacts
+## 导入联系人 [#import-contacts]
 
 <Steps>
 
 <Step>
 
-Start a file import from **Contacts**: a CSV, TSV or XLSX file of up to 50 MB and 50,000 rows.
+从**联系人**发起文件导入，支持 CSV、TSV 或 XLSX，最大 50 MB、50,000 行。
 
 </Step>
 
 <Step>
 
-**Upload** the file. Nothing is written to your contacts yet.
+**上传**文件。此时尚未写入联系人。
 
 </Step>
 
 <Step>
 
-**Map columns**, with at least one column mapped to **Email**.
+**映射列**，至少将一列映射到**电子邮件**。
 
 </Step>
 
 <Step>
 
-On **Review**, check the counts and choose **Leave as is** or **Update details** for contacts you already have.
+在**审阅**中检查数量，为已存在的联系人选择**保持原样**或**更新详情**。
 
 </Step>
 
 <Step>
 
-**Import**. It runs on the server, so you can close the window while it finishes.
+点击**导入**。任务在服务器运行，因此可以关闭窗口，等待其完成。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Duplicates match on lowercased email across the workspace, so one address is one contact.
-- A blank cell never erases a value you already have, so re-importing a partial export is safe.
-- Custom fields feed personalization, such as `{{.industry}}` in an email.
-- Unsubscribed contacts are skipped by every campaign automatically.
-- **Save as segment** turns the filters on the list into a reusable [segment](/guides/segments/).
+- 重复项在整个工作区内按转为小写的邮箱地址匹配，因此一个地址对应一个联系人。
+- 空单元格不会清除已有值，因此重新导入不完整的导出文件也安全。
+- 自定义字段可用于个性化，例如邮件中的 `{{.industry}}`。
+- 所有营销活动都会自动跳过已退订联系人。
+- **保存为分群**将列表筛选转换为可重复使用的[分群](/guides/segments/)。
 
 <Fold>
 
-## How the list remembers your view
+## 列表如何记住你的视图 [#how-the-list-remembers-your-view]
 
-Browsing filters, searches and view choices are [remembered in your browser tab](/guides/browsing/) across refreshes and navigation, separately for each user and workspace.
+浏览时使用的筛选、搜索和视图选项会[保存在浏览器标签页中](/guides/browsing/)，刷新页面或切换页面后仍然保留，并按用户和工作区分别保存。
 
-Contacts are the people you reach out to; the CRM tracks what happens after they reply.
+联系人是你要触达的人，CRM 跟踪他们回复之后的进展。
 
 </Fold>
 
 <Fold>
 
-## Importing
+## 导入 [#importing]
 
-Two routes share the same column-mapping screen: a file upload and an on-demand Google Sheets sync.
+文件上传和按需 Google Sheets 同步共用同一列映射界面。
 
-**From a file** (CSV, TSV, or XLSX, up to 50 MB and 50,000 rows; a CSV may use commas or semicolons, read off the header line), the wizard runs **Upload**, **Map columns**, **Review**, **Import**. Start it from Contacts, or from a campaign's Leads tab to attach the imports to that campaign automatically, or from a [segment](/guides/segments/)'s member list to pin every row into that segment. The wizard names the target it inherited in its header and on the Review step, and the result confirms it.
+**从文件导入**支持 CSV、TSV 或 XLSX，最大 50 MB、50,000 行；CSV 可使用逗号或分号，系统从表头行判断。向导依次经过**上传**、**映射列**、**审阅**和**导入**。可以从联系人页面开始；也可以从营销活动的潜在客户标签页开始，自动将导入内容加入该活动；或从[分群](/guides/segments/)成员列表开始，将每行联系人固定加入该分群。向导会在标题和审阅步骤显示继承的目标，结果页也会确认。
 
-1. **Upload.** The file goes up once and is read on the server, which measures every column over the whole file. Nothing is written to your contacts yet. **Download a sample file** gives you a CSV with every standard column if you are starting from scratch.
-2. **Map columns.** Each column shows how full it is across the file, a few of its values, and where it will go. **Find a column** and **Unmapped only** help with wide CRM exports, **First row is header** moves the first row between the headers and the data, and **Preview contacts** shows the first rows as the contacts they will become, with any row missing a usable address marked.
-3. **Review.** The whole file is checked before anything is written, and the result is one line: how many new contacts will be added, how many are already in your workspace, how many repeated rows are merged, and how many rows can't be imported (open it to see which and why). When some contacts already exist, choose **Leave as is** or **Update details** for them. **Add them to** puts everything from the file into segments, labels, and campaigns; the segment picker creates a segment on the spot, and offers one named after the file, so an import becomes an audience in one step. **More options** holds whether new contacts are subscribed. An import that would be refused as a whole, because it would put the workspace over its plan's contact limit or create more than 100 labels, says so here instead of after the upload, and the import button says exactly what will happen (`Import 1,102 new · update 118`).
-4. **Import.** The import runs on the server in chunks, with live progress, its rate, and the time left. You can close the window: it keeps running, survives a refresh, and everyone in the workspace sees it finish. While it runs, an **Importing** chip on the Contacts toolbar shows how far it is and reopens it; **Stop** ends it early and keeps the rows already imported. The result reports imported, updated, skipped, and failed counts, lists the failed rows with their reasons, and **Download to fix** gives you every failed row as uploaded, under the file's own headers, with the reason in the last column, ready to correct and import again.
+1. **上传。** 文件只上传一次，由服务器读取并分析整个文件的每一列。此时尚未写入联系人。如果从头准备数据，可用**下载示例文件**获取包含所有标准列的 CSV。
+2. **映射列。** 每列显示整个文件中的填充率、若干示例值及目标字段。**查找列**和**仅未映射**便于处理很宽的 CRM 导出。**首行为表头**可在表头与数据之间切换第一行的用途。**预览联系人**展示前几行将成为怎样的联系人，并标出缺少可用地址的行。
+3. **审阅。** 写入之前检查整个文件，用一行汇总将新增多少联系人、多少已存在于工作区、合并多少重复行，以及多少行无法导入；展开可查看具体行和原因。存在已有联系人时，为它们选择**保持原样**或**更新详情**。**将其加入**可为文件中的所有联系人选择分群、标签和营销活动；分群选择器支持即时创建，还会建议以文件名命名，使导入一步成为受众。**更多选项**控制新联系人是否订阅。如果整个导入会因超过套餐联系人限额或创建超过 100 个标签而被拒绝，这里会提前说明，不会等到写入后才报错；导入按钮也会明确说明实际操作，例如 `Import 1,102 new · update 118`。
+4. **导入。** 服务器分批执行，显示实时进度、速度和剩余时间。关闭窗口或刷新页面都不会中断，工作区内所有人都能看到完成状态。运行时，联系人工具栏上的**正在导入**标签显示进度，并可重新打开任务；**停止**会提前结束，保留已导入行。结果报告新增、更新、跳过和失败数量，并列出失败行及原因。**下载以修复**提供全部失败行，保留上传时的数据和原文件表头，在最后一列附上原因，方便修正后重新导入。
 
-A file whose headers match one you imported before maps itself the way you confirmed last time, marked **Mapping remembered**. The Upload step lists the workspace's recent imports, finished or still running, and opening one shows its progress or result.
+如果文件表头与曾导入的文件一致，会自动沿用上次确认的映射，并标记**已记住映射**。上传步骤列出工作区最近的导入，无论已完成还是运行中；打开可查看进度或结果。
 
-You must map at least one column to **Email**.
+至少必须将一列映射到**电子邮件**。
 
-| Field | Notes |
+| 字段 | 说明 |
 | --- | --- |
-| Email | Required, and used to dedupe |
-| First name, Last name, Company, Phone | Standard identity fields |
-| Subscribed | `yes`, `true`, `1`, `subscribed` and their opposites (`no`, `false`, `0`, `unsubscribed`). Applies to new contacts and to existing ones you update; a value the importer cannot read fails only that row |
-| Labels | Label names, separated by commas or semicolons. Names you do not have yet are created, up to 100 new names per import |
-| Custom field | Anything else: one of your existing custom fields, or a new one you name |
+| 电子邮件 | 必填，用于去重 |
+| 名字、姓氏、公司、电话 | 标准身份字段 |
+| 已订阅 | 接受 `yes`、`true`、`1`、`subscribed` 及其相反值 `no`、`false`、`0`、`unsubscribed`。适用于新联系人和选择更新的已有联系人；无法识别的值只会使对应行失败 |
+| 标签 | 以逗号或分号分隔的标签名称。不存在的名称会创建，每次导入最多新增 100 个 |
+| 自定义字段 | 其他任意信息，可选已有自定义字段，或命名一个新字段 |
 
-### Mapping into your custom fields
+### 映射到自定义字段 [#mapping-into-your-custom-fields]
 
-The mapping menu lists the custom fields your workspace already has under **Your custom fields**, most used first, with a search box at the top. Type to filter; type a name nobody has yet and the menu offers to create it. Choosing an existing field writes the column into it, so the values line up with the contacts you already have and every template, filter and segment that reads the field picks them up.
+映射菜单在**你的自定义字段**下列出工作区已有字段，使用最多的优先，顶部带搜索框。输入可筛选；输入尚不存在的名称，菜单会提供创建选项。选择已有字段会将该列写入其中，与已有联系人保持一致，读取该字段的所有模板、筛选和分群都能直接使用。
 
-A column whose header names an existing field is mapped to it before you open the menu. The match ignores case, spaces, underscores, dashes and dots, so a `company url` column lands on your `company_url` field in its stored spelling instead of starting a second field. Only one column is matched to each field, and standard fields (Email, Company, and so on) are matched first.
+如果列标题对应已有字段，打开菜单前就会自动映射。匹配忽略大小写、空格、下划线、连字符和点，因此 `company url` 列会落到已有 `company_url` 字段，沿用其存储拼写，不会另建第二个字段。自动匹配时，每个字段只对应一列，且电子邮件、公司等标准字段优先。
 
-When the instance has TypeSafe configured, the columns no header matched are also placed by what their header means: `Job Title` onto your `Title` field, `Firmenname` onto Company, `Sector` onto `Industry`. Only a confident answer is applied, each field still goes to one column, and those rows are marked **Matched by meaning. Check it.** until you change them. It picks names, Company, Phone and your custom fields only: Subscribed and Labels change who gets mail and which labels exist, so they are never guessed. What is sent is the column headers, the kind of value each column holds and your field names, never a cell, and nothing at all unless the first row is clearly headers (no address, date or number in it, and a named Email column); see [data control](/development/data-control/#typesafe-judgments). A column of addresses under any header, or none, is mapped to Email either way.
+实例配置 TypeSafe 后，未通过表头匹配的列还会按含义映射，例如 `Job Title` 映射到已有 `Title` 字段、`Firmenname` 映射到公司、`Sector` 映射到 `Industry`。只应用有把握的答案，每个字段仍只对应一列；这些行会标记**按含义匹配，请检查**，直到你修改。它只选择姓名、公司、电话和自定义字段；订阅和标签会改变谁收到邮件、存在什么标签，因此绝不猜测。发送给服务的只有列标题、每列值的类型及字段名称，不包含任何单元格。只有第一行明显是表头时才会发送：其中没有地址、日期或数字，且有命名的 Email 列。参见[数据控制](/development/data-control/#typesafe-judgments)。无论表头叫什么或是否有表头，只要整列是地址，都会映射到电子邮件。
 
-Each custom mapping says what it will do: **Fills your existing field**, **Creates a new field**, or, when the name you typed differs from an existing field only in case or separators, **You already have `Industry`**, with **Use it** to switch to that field. **Keep N more as custom fields** uses the same matching, so the columns it claims land on your existing fields where it can.
+每个自定义映射都会说明结果：**填充现有字段**、**创建新字段**；如果输入名称与已有字段只在大小写或分隔符上不同，则显示**你已有 `Industry`**，并提供**使用它**切换。**将另外 N 列保留为自定义字段**也采用相同匹配规则，能复用已有字段就复用。
 
-Two columns may fill the same field, which is how a `Phone` and a `Mobile` column become one number. Each row names the other column, and where both have a value the one further right is kept; a blank cell never overwrites the other column's value.
+手动可以让两列填充同一字段，例如把 `Phone` 和 `Mobile` 合并为一个号码。每行会指出另一列；两列都有值时，使用更靠右的值。空单元格不会覆盖另一列的值。
 
-<Callout type="info" title="Duplicates match on lowercased email, across the workspace">
-`Dana@Acme.com` and `dana@acme.com` are the same contact, and a contact belongs to the workspace, so an address a teammate already added counts as one you have. Choose **Leave as is** (their details stay untouched) or **Update details** (empty details are filled in from the file). The API also accepts `create_duplicate`, which updates too, since one address is one contact per workspace.
+<Callout type="info" title="在整个工作区内按转为小写的邮箱地址匹配重复联系人">
+`Dana@Acme.com` 和 `dana@acme.com` 是同一联系人。联系人属于工作区，因此队友已添加的地址也算已有。可以选择**保持原样**，不动详情；或**更新详情**，用文件补齐空白详情。API 也接受 `create_duplicate`，但它同样执行更新，因为每个工作区中一个地址只对应一个联系人。
 
-Skipping still adds the contact to the campaigns, segments, and labels the import targets: it leaves their fields alone, it does not leave them out of the list. If the same address appears twice in one file it becomes one contact, and the extra rows count as skipped with the line they repeat.
+跳过字段更新，仍会将联系人加入导入目标中的营销活动、分群和标签；它只是保留字段，不是把联系人排除在名单外。同一地址在一个文件中出现两次时，只生成一个联系人，多余行计为跳过，并指出重复了哪一行。
 </Callout>
 
-An address you already hold as a contact in another workspace you belong to cannot be added to this one, and that row fails with a reason saying so; the other workspace's contact is never changed by an import here.
+如果某个地址已经是你所属另一个工作区中的联系人，就不能添加到当前工作区；该行会失败并说明原因。这里的导入绝不会修改另一个工作区的联系人。
 
-One row Warmbly cannot save (a custom field value too large to store, say) fails on its own; the rows imported alongside it are unaffected.
+某一行无法保存，例如自定义字段值过大，只会使该行失败；同时导入的其他行不受影响。
 
-Rows with a missing or invalid email are reported with a line number and reason rather than imported. Addresses are stored lowercased and stripped of any name around them, so a cell reading `Dana Reyes <dana@acme.com>` imports as `dana@acme.com` and both spellings of one address land on one contact. A blank cell never erases a value you already have, so re-importing a partial export enriches contacts instead of wiping them.
+缺少或无效电子邮件地址的行会报告行号和原因，不会导入。地址以小写存储，并去除外层显示姓名，因此 `Dana Reyes <dana@acme.com>` 会导入为 `dana@acme.com`，同一地址的两种写法落到同一联系人。空单元格不会清除已有值，因此重新导入不完整的导出文件会补全联系人，而非擦除信息。
 
-Problems with the mapping itself, an unnamed custom field or a name Warmbly cannot use, are reported once before anything is written, so a single typo can never fail every row.
+映射本身的问题，例如未命名自定义字段或不可用名称，会在任何写入之前统一报告，避免一个拼写错误导致所有行失败。
 
-On the **Review** step, **Campaigns** enrols everyone in the file as leads of the campaigns you pick (started from a campaign's Leads tab, that campaign is shown as the fixed target), and **Segments** pins them into the [segments](/guides/segments/) you pick as manual includes, so they stay members whatever the segment's conditions say. A segment created from the picker has no conditions, so it holds exactly the contacts pinned into it. Started from a segment, that segment is always applied and shown as a fixed row; the picker below it adds more.
+在**审阅**步骤，**营销活动**将文件中的所有人作为潜在客户加入所选活动；如果从活动的潜在客户标签页开始，该活动显示为固定目标。**分群**以手动包含方式将其固定加入所选[分群](/guides/segments/)，不受分群条件影响。通过选择器创建的分群没有条件，因此只包含被固定加入的联系人。从分群开始导入时，该分群始终应用并显示为固定行，下方选择器可添加更多。
 
-**From Google Sheets**, a sheet is a reusable **sync source** rather than a one-time upload. Connect it once (Warmbly reads only the tab you choose and never writes back), paste the spreadsheet ID from the URL between `/d/` and `/edit`, pick the tab, map columns, then set duplicate handling, a label, and optionally a campaign to enroll into, labels to apply and segments to pin into. **Nothing syncs automatically**: press **Sync now**, or save and sync immediately.
+**从 Google Sheets 导入**时，表格是可重复使用的**同步来源**，而非一次性上传。连接一次后，Warmbly 只读取你选择的工作表，绝不回写。粘贴 URL 中 `/d/` 与 `/edit` 之间的电子表格 ID，选择工作表并映射列，再设置重复处理、来源名称，以及可选的加入活动、应用标签和固定加入分群。**不会自动同步**：必须点击**立即同步**，或保存后立即同步。
 
-If **Connect with Google** reports that OAuth credentials are not configured, the instance operator must complete the [Google Sheets app setup](/development/configuration/#google-sheets-app). Connecting a Gmail mailbox or signing into Warmbly with Google does not configure this client. On Warmbly Cloud, contact support; on a self-hosted instance, configure the backend credentials and restart it.
+如果**通过 Google 连接**提示未配置 OAuth 凭据，实例运维人员需要完成 [Google Sheets 应用设置](/development/configuration/#google-sheets-app)。连接 Gmail 邮箱或通过 Google 登录 Warmbly，并不会配置这个客户端。Warmbly Cloud 用户应联系支持；自托管实例则需配置后端凭据并重启。
 
-Segment targets apply on every run, so a sheet you keep adding rows to keeps feeding the same audience. Opening **Sync sources** from a segment's member list lists only the sources feeding it and pre-targets a new one to it. A segment deleted later is dropped from the run rather than stopping it.
+分群目标在每次运行都应用，因此持续新增行的表格会持续补充同一受众。从分群成员列表打开**同步来源**时，只列出向该分群提供数据的来源，新建来源也会预设该分群为目标。之后删除的分群会从运行中移除，不会阻止整个同步。
 
-Saved sources live in your Sync sources list to re-run, edit, or remove. Each sync dedupes on lowercased email using your chosen duplicate handling, so re-syncing a sheet with new rows is safe.
+保存的来源位于同步来源列表，可重新运行、编辑或移除。每次同步都按转为小写的邮箱地址和所选重复处理方式去重，因此为新增行重新同步同一表格是安全的。
 
-### What the review tells you about the list
+### 导入审查提供的名单信息 [#what-the-review-tells-you-about-the-list]
 
-The Review step and the result also report what the addresses themselves look like: how many were malformed, how many are on known throwaway domains, and how many are shared inboxes like `info@`. When a quarter or more of the file is malformed or throwaway, both say so.
+审阅步骤和结果也会报告地址本身的特征：多少格式错误、多少位于已知一次性域名、多少是 `info@` 这样的共享邮箱。当文件至少四分之一地址格式错误或属于一次性邮箱时，两处都会说明。
 
-- **Shared inboxes are counted but not held against the list.** Mailing `info@` is a choice, and plenty of legitimate B2B lists are mostly role addresses.
-- **The import still happens.** These are your records, so nothing is refused here. A list bad enough to matter is stopped when you try to launch a campaign with it, which is where the damage would actually occur. See [the launch check](/guides/campaigns/).
-- **Lists under 20 rows are not judged**, since a share of a handful of rows means nothing.
+- **共享邮箱会统计，但不会降低名单质量判断。** 向 `info@` 发信是一种选择，许多合法 B2B 名单本来就以岗位地址为主。
+- **导入仍会执行。** 这些是你的记录，因此这里不会据此拒绝。名单质量差到需要拦截时，会在你尝试用它启动营销活动、实际可能造成损害的阶段阻止。参见[启动检查](/guides/campaigns/)。
+- **少于 20 行的名单不评判**，因为几行数据的占比没有参考意义。
 
-This is not address verification. It reads the addresses; verification asks the receiving server whether they exist, and runs separately in the background, within a minute of the import. A file that already carries verification results from another service (a `status` or `ZeroBounce Status` column, say) is recognised during mapping and offered as **Verification status**; those verdicts are kept and the background check skips them. See [address verification](/guides/deliverability/#address-verification).
+这不是地址验证。它只是分析地址；验证则会询问接收服务器地址是否存在，在导入后一分钟内另行后台运行。如果文件已经携带其他服务的验证结果，例如 `status` 或 `ZeroBounce Status` 列，映射时会识别并提供**验证状态**选项。已有判定会保留，后台检查跳过它们。参见[地址验证](/guides/deliverability/#address-verification)。
 
 </Fold>
 
 <Fold>
 
-## Custom fields
+## 自定义字段 [#custom-fields]
 
-For anything beyond identity: industry, plan tier, account owner. Create them by mapping a column to a new custom field during import, or on a contact's Details tab. A later import can map into the same field by picking it from the mapping menu (see [Mapping into your custom fields](#mapping-into-your-custom-fields)).
+自定义字段用于身份信息以外的内容，例如行业、套餐档位、客户负责人。可以在导入时将列映射为新自定义字段，也可以在联系人详情标签页创建。以后导入时，从映射菜单选择同一字段即可继续写入，参见[映射到自定义字段](#mapping-into-your-custom-fields)。
 
-### Filling them in by hand
+### 手动填写字段 [#filling-them-in-by-hand]
 
-**New contact** (**Add lead** on a campaign's Leads tab) and a contact's **Details** tab list your workspace's custom fields as a form: each field is its own input with its name beside it, most used first, so filling one in means typing only the value. The first six are shown and **Show N more** opens the rest; with more than twelve, a filter box finds one by name. Fields the contact already has are always shown. Clearing a field's value removes it from the contact when you save.
+**新建联系人**，在营销活动潜在客户标签页中称为**添加潜在客户**，以及联系人的**详情**标签页，会将工作区自定义字段显示为表单：每个字段有独立输入框和名称，使用最多的优先，只需填写值。默认显示前六个，**显示另外 N 个**展开其余；超过十二个时，提供按名称查找的筛选框。联系人已有的字段始终显示。清空字段值后保存，会将该字段从联系人移除。
 
-**New field** adds a field nobody has used yet. As you type its name, your existing fields are suggested, and picking one moves what you typed into that field. A name that matches an existing field, or differs from one only in case or separators, says so with **Use it** to switch to that field. A name Warmbly cannot use, a value with no name, or the same field filled in twice is flagged before anything is saved. A field whose name was stored before the naming rules above existed is shown on the contacts that have it, but locked: it cannot be changed or removed from the form.
+**新建字段**添加尚无人使用的字段。输入名称时，会建议已有字段；选择已有项，会将刚输入的值移到该字段。名称与已有字段相同，或只在大小写和分隔符上不同，会提示并提供**使用它**切换。不可用名称、有值无名称，或同一字段重复填写，都会在保存之前标记。若字段名在上述命名规则推出之前就已存储，会继续在已有联系人的表单上显示，但锁定，不能从表单修改或移除。
 
-They feed personalization, which is the main reason to get imports right.
+自定义字段用于个性化，这也是正确映射导入数据的主要原因。
 
-Field names may use letters, numbers, underscores, spaces, and dashes: `industry`, `account_owner`, `Company Mobile`, `first-name`. Other characters (`/`, `#`, `(`, `)`) are rejected because there would be no way to merge that field into an email. When you map a column to a custom field the wizard fills the name in from the column header and flags it inline if it cannot be used.
+字段名可以包含字母、数字、下划线、空格和连字符，例如 `industry`、`account_owner`、`Company Mobile`、`first-name`。其他字符，例如 `/`、`#`、`(`、`)`，会被拒绝，因为无法将这样的字段合并到邮件中。将列映射为自定义字段时，向导会从列标题填入名称，不可用则就地提示。
 
-<Callout type="info" title="Field names with spaces work too">
-Simple names (letters, numbers, underscores) use a dot: `{{.industry}}`, `{{.account_owner}}`. Names with spaces or dashes work the same way, written exactly as named:
+<Callout type="info" title="字段名也可以包含空格">
+简单名称，即字母、数字和下划线，使用点号引用：`{{.industry}}`、`{{.account_owner}}`。含空格或连字符的名称也可以，按实际名称原样书写：
 
 ```
 Your role as {{.job title}} at {{.Company}} caught my eye.
 ```
 
-Both forms work everywhere, including inside `{{if}}` conditions and helper functions.
+两种形式在所有位置都适用，包括 `{{if}}` 条件和辅助函数。
 </Callout>
 
-See [Personalization & expressions](/guides/expressions/) for the full templating language.
+完整模板语言参见[个性化与表达式](/guides/expressions/)。
 
 </Fold>
 
 <Fold>
 
-## Filtering the list
+## 筛选列表 [#filtering-the-list]
 
-A filter bar sits above the contact list. **Label**, **Segment**, **Status** and **Campaign** are always there; open one, tick values, and the list updates immediately with the matching count next to the bar. **Add filter** adds a custom-field condition (field, contains/is/starts with/ends with, value), a date-added or last-updated range, a number-of-campaigns range, the address verification verdict, the [email provider](#email-provider) and, on a campaign's Leads tab, lead status and engagement. Each active filter is a pill you can reopen to change or remove with its cross; **Clear** drops them all, and **Save as segment** turns the current set into a [segment](/guides/segments/). Free-text search, sort and the column chooser stay in the toolbar.
+联系人列表上方是筛选栏。**标签**、**分群**、**状态**和**营销活动**始终可见；打开并勾选值后，列表立即更新，旁边显示匹配数量。**添加筛选**可添加自定义字段条件，包括字段、包含/等于/开头为/结尾为和值；也可添加创建或更新日期范围、营销活动数量范围、地址验证判定、[邮箱服务商](#email-provider)，以及营销活动潜在客户标签页中的潜在客户状态和互动条件。每项启用的筛选以标签显示，可重新打开修改，或点击叉号移除；**清除**移除全部；**保存为分群**将当前条件转为[分群](/guides/segments/)。自由文本搜索、排序和列选择器仍在工具栏中。
 
-Free-text search matches first name, last name, email, company and phone. Every word you type has to match one of those, so `Test Demo` finds the contact whose first name is Test and last name is Demo, and `Demo Acme` finds everyone named Demo at Acme. Words can be in any order, and only the first six count.
-
-</Fold>
-
-<Fold>
-
-## Choosing columns
-
-**Columns** in the toolbar opens the column chooser. A column of optional details (Phone, Company, a custom field) that nobody in the list you are looking at has filled in steps aside rather than showing a column of dashes, and comes back as soon as one contact has a value; the chooser marks it **empty here**. Tick a column to show it, untick it to hide it, and drag the grip beside a shown column to change the order. Name is always the first column. Under **Custom fields** every custom field in the workspace is offered as a column, so a list imported from Apollo or Clay can show the fields you triage on (industry, title, employee count) without opening each contact.
-
-The layout is yours: it is saved to your account for this workspace, so it follows you to another browser, and a teammate looking at the same list keeps their own columns. The campaign Leads tab has its own layout, separate from the contacts page. **Reset to default** at the bottom of the chooser puts the standard columns back.
+自由文本搜索匹配名字、姓氏、电子邮件、公司和电话。输入的每个词都必须在其中一个字段匹配，因此 `Test Demo` 可找到名字 Test、姓氏 Demo 的联系人，`Demo Acme` 可找到 Acme 公司所有名为 Demo 的人。词语顺序任意，只使用前六个词。
 
 </Fold>
 
 <Fold>
 
-## Sorting
+## 选择显示列 [#choosing-columns]
 
-Click a column header to sort by it, and click it again to flip the direction. Text columns (name, company, phone, custom fields) start ascending; dates and counts start with the newest or largest first. The **Sort** menu in the toolbar reaches the same orderings, including columns that are hidden or that a phone screen has no room for, email provider, and every custom field in the workspace.
+工具栏中的**列**打开列选择器。电话、公司或自定义字段等可选详情列，如果当前列表没有任何联系人填写，会暂时让位，不显示整列短横线；一旦某个联系人有值就重新出现，选择器会标记**此处为空**。勾选显示，取消勾选隐藏；拖动已显示列旁的手柄可调整顺序。姓名始终是第一列。**自定义字段**下提供工作区所有自定义字段作为列，因此 Apollo 或 Clay 导入的列表，可以直接展示用于筛选优先级的行业、职位、员工人数，无需逐个打开联系人。
 
-A sort on a custom field orders the values as text. Contacts that do not have the field, or have it blank, are grouped at the end when ascending and at the start when descending. The sort is saved with your layout, so the list opens the way you left it.
-
-</Fold>
-
-<Fold>
-
-## Email provider
-
-Each contact's avatar carries a small badge with the logo of whoever hosts their inbox: Google Workspace, Gmail, Microsoft 365, Outlook.com, Yahoo Mail, iCloud Mail, Zoho Mail and the other hosts Warmbly recognises. Hover it for the provider's name. It works for company domains too: `dana@acme.com` reads as Google Workspace when Acme's mail is hosted by Google. Warmbly reads it from the domain's mail records in the background, usually within a minute of a contact being added, and fills the list in live. No badge means the check has not reached the contact yet, or the domain has no mail server Warmbly recognises.
-
-A contact on a company domain shows that company's logo in place of their initials, and the **Company** column shows it beside the company name; when no company is on file, the column shows the domain their address is on. Personal inboxes (Gmail, Outlook.com, Yahoo and the like) keep their initials. Logos are on for Warmbly Cloud and off on a self-hosted instance unless its operator turns them on, because the browser fetches each one from DuckDuckGo; see [data control](/development/data-control/#outbound-calls).
-
-It shows on the contacts page and on a campaign's Leads tab alike. You can sort by it from **Sort**, filter with **Add filter** > **Email provider** (including **Unknown or not checked yet**), select every match and act on them in bulk (add them to a campaign, label them, export them), or save the filter as a segment. Campaign [ESP matching](/guides/campaigns/) uses the same data to pair each lead with a same-provider mailbox.
+布局属于你自己：它保存在该工作区的个人账户设置中，会跟随你到其他浏览器；队友查看同一列表时保留自己的列。营销活动潜在客户标签页拥有独立布局，与联系人页面分开。选择器底部的**恢复默认**可还原标准列。
 
 </Fold>
 
 <Fold>
 
-## Selecting rows
+## 排序 [#sorting]
 
-Tick a row's checkbox to select it, or the one in the table header to select every row loaded so far. Contact lists load in pages as you scroll, so the header checkbox on its own only ever covers what is on screen.
+点击列标题按该列排序，再次点击切换方向。文本列，包括姓名、公司、电话和自定义字段，默认升序；日期和数量默认最新或最大优先。工具栏的**排序**菜单提供相同排序方式，还包括隐藏列、手机屏幕放不下的列、邮箱服务商，以及工作区所有自定义字段。
 
-When more contacts match than are loaded, a bar appears under the header: **Select all N matching**. Clicking it hands the whole filtered set to the next action, however many pages that is, and the selection bar counts the full number rather than the loaded rows. Unticking a row afterwards takes just that contact out and the count follows. **Clear selection** in the bar, or the header checkbox, drops back to nothing.
-
-The set is the one the list is showing: search, filters, the subscription facet, and the campaign or segment the list is scoped to all narrow it. Changing any of them clears the selection, because it would no longer mean what it did when you made it. A selection past `250,000` contacts is refused rather than half-applied; add a filter and work through it in parts.
-
-Every bulk action reads the selection: **Edit**, **Segment**, **Remove from segment**, **Remove from campaign**, **Research**, **Verify**, **Mark deliverable** and **Delete**. **Push to CRM** and **Research** are the exceptions: a push calls the CRM once per contact while you wait, and each research run spends AI credits, so both stay capped at `500` at a time. A workspace in [HubSpot mode](/guides/hubspot/) or [Pipedrive mode](/guides/pipedrive/) does not need **Push to CRM** for that CRM: a contact is created there the first time Warmbly emails it.
-
-**Select all matching** is in the **From contacts** picker too, on a campaign's Leads tab and a segment page, so a whole search can be added as leads or members in one step.
+自定义字段按文本值排序。没有该字段或值为空的联系人，升序时集中在末尾，降序时在开头。排序随布局保存，下次打开仍保持离开时的方式。
 
 </Fold>
 
 <Fold>
 
-## Editing one contact
+## 邮箱服务商 [#email-provider]
 
-Clicking a row opens the contact's panel. Its **Details** tab edits the fields the contact is made of: name, email address, company, phone, subscription, campaigns, labels and custom fields. Nothing is sent until **Save**, **Discard** puts the panel back to the stored values, and closing it with unsaved edits asks first.
+每位联系人的头像上有一个小徽章，显示收件箱托管服务商徽标，例如 Google Workspace、Gmail、Microsoft 365、Outlook.com、Yahoo Mail、iCloud Mail、Zoho Mail 及其他 Warmbly 能识别的主机。悬停可查看名称。公司域名也支持：如果 Acme 邮件由 Google 托管，`dana@acme.com` 会显示为 Google Workspace。Warmbly 在后台读取域名邮件记录，通常在联系人添加后一分钟内完成，并实时更新列表。没有徽章表示尚未检查，或域名没有可识别的邮件服务器。
 
-The email address can be changed here, which is the right move when someone's address was mistyped on import or they moved to a new domain. It is stored lowercased and stripped of any display name, and it has to be free: an address another contact already holds is refused, because merging two people's campaign history is not something the edit could undo. A new address also clears the contact's [verification](/guides/deliverability/#address-verification) verdict and everything the platform had observed about the old mailbox, so the background check starts the new address from scratch on its next pass, and the recipient provider Warmbly matches senders against is worked out again from the new domain. Emails already sent went to the old address and stay in the timeline as they happened.
+公司域名的联系人会以公司徽标替代姓名缩写，**公司**列也会在公司名旁显示徽标；没有公司资料时，显示邮箱所属域名。Gmail、Outlook.com、Yahoo 等个人邮箱保留姓名缩写。Warmbly Cloud 默认开启徽标，自托管实例默认关闭，除非运维人员开启，因为浏览器会从 DuckDuckGo 获取各徽标；参见[数据控制](/development/data-control/#outbound-calls)。
 
-</Fold>
-
-<Fold>
-
-## Editing many contacts at once
-
-Tick rows in any contact list, a segment's members or a campaign's leads, and the selection bar's **Edit** opens a bulk panel. It can add or remove campaigns, add or remove labels, force a subscription state, and queue custom-field operations (add, edit, delete, rename) that run on every selected contact (the key box suggests your existing fields as you type), including a **Select all matching** selection that reaches past the loaded pages.
-
-Nothing is applied while you build it up. The header names the list the selection came from, and a **Will apply** strip above the buttons lists every queued change as a chip you can take back one at a time before pressing Apply. A field operation missing its key, or its value where one is needed, is marked and skipped rather than sent half-finished.
+联系人页面和营销活动潜在客户标签页都会显示服务商。可以从**排序**按服务商排序，使用**添加筛选** > **邮箱服务商**筛选，包括**未知或尚未检查**，然后全选匹配项进行批量操作，例如加入活动、添加标签或导出，也可保存为分群。营销活动的 [ESP 匹配](/guides/campaigns/)使用同一数据，将潜在客户配对到相同服务商的发件邮箱。
 
 </Fold>
 
 <Fold>
 
-## Labels
+## 选择数据行 [#selecting-rows]
 
-Colored labels that group and filter contacts (`Warm lead`, `Conference 2026`, `Enterprise`). The same list labels [inbox conversations](/guides/unibox/#labels) and is what [forms](/guides/forms/) file their submissions under. The same picker appears in bulk edit, a contact's Details tab, the new-contact dialog, the filters, and the import and sync wizards.
+勾选某行可选中它，勾选表头可选择目前已加载的所有行。联系人列表随滚动分页加载，因此表头复选框单独使用时只覆盖已加载到界面的内容。
 
-It supports type-ahead search, and typing an unmatched name offers **Create** to add and select it in one step. Each label keeps its color everywhere its chip appears.
+匹配联系人数多于已加载数量时，表头下方出现**选择全部 N 个匹配项**。点击后，下一次操作使用整个筛选集合，无论涉及多少页；选择栏显示总数，而非已加载行数。之后取消勾选某行，只排除该联系人，计数同步变化。点击选择栏的**清除选择**或表头复选框，恢复无选择状态。
 
-Labels belong to the workspace, not to whoever made them: every teammate sees the same list and can label contacts with it. **Contacts > Labels** lists every label with a live contact count. From there you can create one, rename it, change its color, delete it (contacts are kept; the label is removed from them and from inbox threads), or click a row to open the contact list filtered to it.
+选中集合就是列表当前展示的范围：搜索、筛选、订阅分类，以及列表所限定的营销活动或分群都会缩小范围。改变其中任一项会清除选择，因为它不再代表最初选择的集合。超过 `250,000` 位联系人的选择会被拒绝，不会只应用一半；请添加筛选，分批处理。
 
-Labels also drive automation: a sequence can run **Add label** or **Remove label** as a contact moves through a flow, so a label can be applied automatically on a positive reply. **Add to segment** and **Remove from segment** do the same for [segments](/guides/segments/).
+所有批量操作都使用该选择，包括**编辑**、**分群**、**从分群移除**、**从营销活动移除**、**研究**、**验证**、**标记为可投递**和**删除**。**推送到 CRM**和**研究**有额外限制：推送会逐联系人调用 CRM 并等待，研究则每次消耗 AI 积分，因此两者每次仍最多 `500` 人。使用 [HubSpot 模式](/guides/hubspot/)或 [Pipedrive 模式](/guides/pipedrive/)的工作区，无需对相应 CRM 使用**推送到 CRM**：Warmbly 首次向联系人发信时，就会在那里创建记录。
 
-To turn labels and activity into a reusable audience, build a [segment](/guides/segments/): a saved set of conditions over contacts (labels, fields, campaign activity, engagement) that you can browse and add to a campaign in one step.
+营销活动潜在客户标签页和分群页面的**从联系人选择**选择器，也支持**选择全部匹配项**，因此整个搜索结果可以一步加入潜在客户或成员。
 
 </Fold>
 
 <Fold>
 
-## Where a contact came from
+## 编辑单个联系人 [#editing-one-contact]
 
-Every contact records its first-touch source: how it entered the workspace, with a detail you would recognise, and when it was first seen. It is shown on the contact's **Overview** tab and as the first event of its activity timeline, and it never changes afterwards, however the contact is edited or re-imported.
+点击一行打开联系人面板。**详情**标签页可编辑姓名、电子邮件地址、公司、电话、订阅、营销活动、标签和自定义字段。在点击**保存**之前，不会提交任何修改；**放弃**将面板恢复为已存储值；存在未保存修改时，关闭前会确认。
 
-| Source | Set when | Detail |
+可在这里修改邮箱地址，适用于导入时拼错地址或联系人迁往新域名。新地址会转为小写并移除显示姓名，而且必须未被占用；其他联系人已有的地址会被拒绝，因为合并两人的活动历史无法通过普通编辑撤销。新地址还会清除该联系人的[验证](/guides/deliverability/#address-verification)判定和平台对旧邮箱的全部观察，使后台检查在下一轮从头验证新地址；用于发件邮箱匹配的收件服务商也会根据新域名重新识别。已经发送的邮件仍对应旧地址，时间线按实际历史保留。
+
+</Fold>
+
+<Fold>
+
+## 批量编辑联系人 [#editing-many-contacts-at-once]
+
+在任意联系人列表、分群成员或营销活动潜在客户中勾选行，再点击选择栏的**编辑**，打开批量面板。可添加或移除营销活动、添加或移除标签、强制设置订阅状态，以及排队执行自定义字段操作，包括添加、编辑、删除和重命名。操作应用于每位所选联系人，输入字段键时会建议已有字段，也支持覆盖未加载页面的**选择全部匹配项**。
+
+配置过程中不会应用任何修改。标题会说明选择来自哪个列表；按钮上方的**将应用**区域以标签列出全部待执行修改，可以逐项撤回，再点击应用。缺少字段键，或需要值却未填写的字段操作，会标记并跳过，不会以半成品提交。
+
+</Fold>
+
+<Fold>
+
+## 标签 [#labels]
+
+彩色标签用于分组和筛选联系人，例如 `Warm lead`、`Conference 2026`、`Enterprise`。同一套标签也用于[收件箱会话](/guides/unibox/#labels)，以及[表单](/guides/forms/)提交的归类。批量编辑、联系人详情、新建联系人对话框、筛选，以及导入和同步向导都使用同一个选择器。
+
+选择器支持边输入边搜索。输入未匹配名称时，会提供**创建**，一步添加并选中。标签在所有显示位置都保留自己的颜色。
+
+标签属于工作区，而非创建者；所有队友看到同一列表，并可用其标记联系人。**联系人 > 标签**列出每个标签及实时联系人数。可以在这里创建、重命名、改色、删除，或点击一行打开按该标签筛选的联系人列表。删除标签会保留联系人，只从联系人和收件箱会话上移除标签。
+
+标签也驱动自动化：序列可在联系人推进时执行**添加标签**或**移除标签**，例如收到积极回复后自动加标签。**加入分群**和**从分群移除**对[分群](/guides/segments/)提供相同能力。
+
+要将标签和活动转为可复用受众，可构建[分群](/guides/segments/)：保存一组基于联系人标签、字段、营销活动和互动的条件，然后一步浏览或加入营销活动。
+
+</Fold>
+
+<Fold>
+
+## 联系人来源 [#where-a-contact-came-from]
+
+每位联系人都记录首次接触来源：如何进入工作区、可识别的详情，以及首次出现时间。来源显示在**概览**标签页，并作为活动时间线的第一项事件。之后无论怎样编辑或重新导入，都不会改变。
+
+| 来源 | 设置时机 | 详情 |
 | --- | --- | --- |
-| Manual | Added with **Add contact** on the Contacts page | |
-| Campaign | Added with **Add lead** on a campaign's Leads tab | The campaign |
-| Import | Created by the file import wizard | The file name |
-| Sheet sync | Created by a Google Sheets sync source | The sheet |
-| API | Created through the API with an API key | The key's name |
-| Form | Submitted a hosted [form](/guides/forms/) | The form |
-| Automation | Written by an automation's **Create or update contact** action | The automation |
-| Remie | Created by Remie on your behalf | |
-| Unknown | Created before Warmbly recorded sources | |
+| 手动 | 在联系人页面通过**添加联系人**创建 | |
+| 营销活动 | 在活动潜在客户标签页通过**添加潜在客户**创建 | 营销活动 |
+| 导入 | 由文件导入向导创建 | 文件名 |
+| 表格同步 | 由 Google Sheets 同步来源创建 | 表格 |
+| API | 使用 API 密钥通过 API 创建 | 密钥名称 |
+| 表单 | 提交托管[表单](/guides/forms/) | 表单 |
+| 自动化流程 | 由自动化流程的**创建或更新联系人**操作写入 | 自动化流程 |
+| Remie | 由 Remie 代表你创建 | |
+| 未知 | 创建于 Warmbly 开始记录来源之前 | |
 
-Only new contacts get a source. An import or API call that matches an existing contact updates its fields and leaves the original source in place, so an address that arrived by hand and later turned up in a file still reads as manual.
+只有新联系人获得来源。导入或 API 调用匹配到已有联系人时，只更新字段，保留原来源，因此最初手动添加、后来出现在文件中的地址，仍显示为手动。
 
-A new contact is also an event. `contact.created` goes to your [webhooks](/guides/webhooks/) and can start an [automation](/guides/automations/#triggers) with the contact's fields and source, except for bulk arrivals, which stay silent: file imports, sheet syncs, and a single API request adding more than 100 contacts.
-
-</Fold>
-
-<Fold>
-
-## Activity timeline
-
-The **Activity** tab of a contact is one workspace-wide feed, newest first, of everything Warmbly knows about them. Every member with permission to view contacts sees the same timeline, regardless of who created the contact or its campaigns. It includes every campaign email sent, opened, clicked, replied to or bounced (with the campaign, step, subject and sending mailbox), replies with their classified intent, deliverability and suppression events, notes, meetings, and the contact's lifecycle: when it was created and how, and each time it joined or left a campaign or gained or lost a label.
-
-Opens appear once per event, not once per email: a second open from another device is its own row. Opens show the device and mail client they were read on, such as **iPhone · Apple Mail app** or **Gmail · device hidden**, and clicks the device and browser the link opened in, with the city and country when known (see [How an open was read](/guides/analytics/#how-an-open-was-read)); expanded, the operating system, browser and full location, and why a device is hidden when a mail provider's image proxy fetched the email. The Overview tab sums this up under **How they read**: each client and device the contact's opens came from, with the count and the latest. A click names the link: the row reads **Clicked Pricing** and, expanded, shows the link's text, its full URL, the UTM source, medium, campaign and content it carried, and the browser. Every link in an email is tracked on its own, so two links clicked are two rows. Opens and clicks that came from a machine rather than the person (a mail privacy proxy, a security gateway that follows every link at delivery) carry an **auto** badge, and the expanded row says which rule caught them; see [Link tracking and UTM parameters](/guides/campaigns/#link-tracking-and-utm-parameters).
-
-Filter chips narrow the feed (**Emails**, **Replies**, **Deliv.**, **Notes**, **Meetings**, **Campaigns**, **Lifecycle**), the search box matches subjects, campaigns, steps, mailboxes, labels, reasons and, for clicks, the link's text, URL and UTM values, and the date picker bounds it. Each row stays to one line until you click it; expanded, it shows every detail the event carries. The feed updates live as teammates and the schedulers write to it.
-
-At the top of the tab sits the campaign panel: for each campaign the contact is in, its flow with this contact's progress, the lead status, and what the scheduler will do next. See [Campaigns](/guides/campaigns/) for how the next action is worked out and what its states mean.
-
-A campaign with no flow steps yet still appears here with **0/0 steps** and **Not started**. Its progress strip stays hidden until steps are added, and the rest of the contact's activity remains available.
+新联系人也是一个事件。`contact.created` 会发送到你的 [Webhook](/guides/webhooks/)，也可用联系人字段和来源启动[自动化流程](/guides/automations/#triggers)。批量到达除外，它们保持静默：文件导入、表格同步，以及单次 API 请求添加超过 100 位联系人。
 
 </Fold>
 
 <Fold>
 
-## Deals and pipelines
+## 活动时间线 [#activity-timeline]
 
-A **pipeline** is a named, ordered sequence of **stages** a deal advances through. On the Pipelines page you create pipelines (new ones start with `Open`, `Qualified`, `Won`), then add, rename, recolor, and delete stages, each showing its deal count. Stage order is the left-to-right column order on the board.
+联系人的**活动**标签页是工作区共享、按最新优先排列的动态，汇集 Warmbly 了解的所有相关情况。每位有权查看联系人的成员都看到同一时间线，不受联系人或活动创建者影响。它包含每次活动邮件发送、打开、点击、回复和退信，并注明活动、步骤、主题和发件邮箱；还包括带分类意图的回复、送达能力和禁止发送事件、备注、会议，以及联系人生命周期：何时如何创建，每次加入或离开活动、添加或移除标签。
 
-![Deals across every pipeline, with open and won value at the top](/guides/deals.webp)
+打开按事件逐次出现，而非每封邮件仅一条：另一设备上的第二次打开是独立行。打开显示阅读设备和邮件客户端，例如 **iPhone · Apple Mail 应用**或 **Gmail · 设备隐藏**；点击显示打开链接的设备和浏览器，已知时还显示城市与国家，参见[邮件通过何种方式打开](/guides/analytics/#how-an-open-was-read)。展开后可看操作系统、浏览器、完整位置，以及服务商图片代理抓取邮件时为何隐藏设备。概览标签页在**阅读方式**下汇总各客户端和设备的打开次数与最近时间。点击会指出链接：例如该行显示**点击了价格链接**；展开后展示链接文字、完整 URL、携带的 UTM 来源/媒介/活动/内容及浏览器。邮件中的每个链接独立跟踪，因此点击两个链接产生两行。机器而非人工产生的打开和点击，例如邮件隐私代理或投递时遍历全部链接的安全网关，带有**自动**标记；展开后会说明命中的规则。参见[链接跟踪与 UTM 参数](/guides/campaigns/#link-tracking-and-utm-parameters)。
 
-| View | Behavior |
+筛选标签可缩小动态范围，包括**邮件**、**回复**、**送达**、**备注**、**会议**、**营销活动**和**生命周期**。搜索框匹配主题、活动、步骤、邮箱、标签和原因；对于点击，还匹配链接文字、URL 和 UTM 值。日期选择器限定时间。每行默认只占一行，点击展开后显示事件全部详情。队友和调度器写入时，动态实时更新。
+
+标签页顶部是营销活动面板：针对联系人参与的每个活动，展示带有该联系人进度的流程、潜在客户状态，以及调度器下一步会做什么。下一步如何计算及状态含义，参见[营销活动](/guides/campaigns/)。
+
+尚未添加流程步骤的活动也会显示，标记 **0/0 步骤**和**尚未开始**。添加步骤之前，进度条隐藏，联系人其他活动仍可查看。
+
+</Fold>
+
+<Fold>
+
+## 商机与销售管道 [#deals-and-pipelines]
+
+**销售管道**是一组有名称、有顺序的**阶段**，商机沿这些阶段推进。在管道页面可创建管道，新管道预设 `Open`、`Qualified`、`Won`，然后添加、重命名、改色和删除阶段；每阶段显示商机数量。阶段顺序就是看板从左到右的列顺序。
+
+![所有销售管道的商机，顶部显示进行中和已赢单金额](/guides/deals.webp)
+
+| 视图 | 行为 |
 |------|----------|
-| **Table** (default) | Every deal across all pipelines, server-paginated. Totals like open count and pipeline value are real sums over the whole result, not just loaded rows |
-| **Board** | Single-pipeline kanban, one column per stage, drag cards to move stages. Each column paginates itself, and header counts come from the server summary |
+| **表格**（默认） | 展示全部管道的商机，由服务器分页。进行中数量和管道金额等汇总是整个结果集的真实总和，不只统计已加载行 |
+| **看板** | 单管道看板，每阶段一列，拖动卡片移动阶段。每列独立分页，表头数量来自服务器汇总 |
 
-A deal has a name, stage, value and currency (default `USD`), expected close date, and a status of `open`, `won`, or `lost`. The linked contact is shown read-only.
+商机具有名称、阶段、金额和币种，默认 `USD`，以及预计成交日期和 `open`、`won` 或 `lost` 状态。关联联系人只读显示。
 
-Campaigns can create and advance deals automatically with **Create deal** and **Move deal stage** actions, so the CRM stays current without manual entry.
+营销活动可通过**创建商机**和**移动商机阶段**自动创建并推进商机，使 CRM 无需手动录入也能保持最新。
 
-### When HubSpot is your CRM
+### 将 HubSpot 用作 CRM 时 [#when-hubspot-is-your-crm]
 
-In [HubSpot mode](/guides/hubspot/) the deals, pipelines, tasks and notes on these pages are HubSpot's records:
+在 [HubSpot 模式](/guides/hubspot/)下，这些页面中的商机、管道、任务和备注都是 HubSpot 记录：
 
-- every change you make is written to HubSpot first, and a change HubSpot refuses is not saved, with HubSpot's reason shown
-- pipelines, stages and task types are managed in HubSpot, so editing them here is refused; changes made in HubSpot arrive within minutes
-- deals in pipelines that exist only in Warmbly are hidden from the deal table and board until you copy them into HubSpot or switch back
-- task types are HubSpot's four (To-do, Call, Email, LinkedIn), and won or lost moves a deal to the matching closed stage
-- records written by automations and reply follow-ups reach HubSpot through its sync queue
+- 每次修改先写入 HubSpot；HubSpot 拒绝时不保存，并显示其原因
+- 管道、阶段和任务类型在 HubSpot 管理，因此这里拒绝编辑；HubSpot 中的变更几分钟内到达
+- 仅存在于 Warmbly 的管道中的商机会从表格和看板隐藏，直到复制到 HubSpot 或切回原模式
+- 任务类型使用 HubSpot 的四种：待办、电话、电子邮件、LinkedIn；标记赢单或输单会将商机移入对应的已关闭阶段
+- 自动化流程和回复跟进写入的记录，通过同步队列到达 HubSpot
 
-Each mirrored record links to its HubSpot page.
+每条镜像记录都链接到自己的 HubSpot 页面。
 
-### When Pipedrive is your CRM
+### 将 Pipedrive 用作 CRM 时 [#when-pipedrive-is-your-crm]
 
-[Pipedrive mode](/guides/pipedrive/) works the same way on Pipedrive's records, with Pipedrive's model:
+[Pipedrive 模式](/guides/pipedrive/)以相同方式使用 Pipedrive 记录，并遵循其数据模型：
 
-- tasks are Pipedrive activities, and task types are your company's activity types
-- won and lost are the deal's status, so marking a deal won keeps its stage
-- the contact panel shows the person's owner, label and organization, and a label you choose can stop a campaign
+- 任务对应 Pipedrive 活动，任务类型使用公司自己的活动类型
+- 赢单和输单是商机状态，因此标记赢单会保留原阶段
+- 联系人面板显示人员负责人、标签和组织，指定标签可以停止营销活动
 
-Each mirrored record links to its Pipedrive page.
+每条镜像记录都链接到自己的 Pipedrive 页面。
 
 </Fold>
 
 <Fold>
 
-## Tasks
+## 任务 [#tasks]
 
-**CRM > Tasks** is the follow-up list for the whole workspace: everything anyone has to do about a contact or a deal, in one place. A task carries a title, a description, a type (`Call`, `Email`, `Meeting` by default, and any type you add), a due date, a priority of `low`, `medium`, `high` or `urgent`, a status of `pending`, `in progress`, `completed` or `cancelled`, and an assignee who can be a person, a team, or nobody.
+**CRM > 任务**是整个工作区的跟进清单，将每个人需要为联系人或商机做的事集中在一处。任务包含标题、说明、类型，默认 `Call`、`Email`、`Meeting`，也支持自定义类型；还包含截止日期、`low`、`medium`、`high` 或 `urgent` 优先级，`pending`、`in progress`、`completed` 或 `cancelled` 状态，以及个人、团队或无人负责的分配对象。
 
-Two views share one list. **Table** is the flat list with a column per field; **By due date** groups it into Overdue, Today, Tomorrow, This week, Later and No due date. Both filter, sort and page on the server, so the Overdue, High priority, Pending, Active and Completed totals across the top count the whole matching set rather than the rows loaded so far. The status tabs, the search box, the assignee, team and type facets and the filter popover all narrow the same set.
+两种视图共用同一列表。**表格**是每字段一列的平铺列表；**按截止日期**分为逾期、今天、明天、本周、以后和无截止日期。两者都由服务器筛选、排序和分页，因此顶部的逾期、高优先级、待处理、进行中和已完成总数，覆盖整个匹配集合，而非已加载行。状态标签、搜索框、负责人/团队/类型分类和筛选弹层，都缩小同一集合。
 
-Clicking a row opens it for editing. Each row carries two controls before its title: the checkbox at the far left selects it for a bulk action, and the square next to the title marks it done on its own.
+点击行可编辑。每行标题前有两个控件：最左侧复选框用于选择批量操作，标题旁的方框则单独将任务标记完成。
 
-### Selecting many tasks
+### 批量选择任务 [#selecting-many-tasks]
 
-Tick a row to select it, the checkbox in the table header to select every row loaded so far, or a group's header in the by-due-date view to select that group. When more tasks match than are loaded, a bar appears offering **Select all N matching**, which hands the whole filtered set to the next action however many pages that is. Unticking a row afterwards takes just that task out and the count follows.
+勾选行选择任务；勾选表头选择目前已加载的全部行；在按截止日期视图中，也可勾选组标题选择整组。匹配任务多于已加载数量时，会出现**选择全部 N 个匹配项**，让下一项操作使用整个筛选集合，无论涉及多少页。之后取消勾选某行，只排除该任务，并更新计数。
 
-The selection means the filter it was made under, so changing any filter clears it. A selection past `50,000` tasks is refused rather than half applied; add a filter and work through it in parts.
+选择代表建立时的筛选范围，因此修改任何筛选都会清除选择。超过 `50,000` 个任务的选择会被拒绝，不会只执行一部分；请增加筛选并分批处理。
 
-With rows selected, a bar appears at the bottom: **Mark done**, **Status** (any of the four), **Priority** (any of the four), and **Delete**, which confirms first and names the count. This is how you clear a backlog of tasks nobody needs without opening each one. To clear the follow-ups a workspace collected before it narrowed the setting below, search for `out_of_office`, tick the header checkbox, take **Select all N matching** and delete them in one step.
+选中行后，底部出现操作栏：**标记完成**、**状态**（四种任一）、**优先级**（四种任一）和**删除**；删除会先确认并显示数量。这样可清理无人需要的积压任务，无需逐个打开。如果要清理工作区在收紧下述设置之前积累的跟进任务，可搜索 `out_of_office`，勾选表头，再选择**全部 N 个匹配项**并一次删除。
 
-### Follow-up tasks from replies
+### 从回复生成跟进任务 [#follow-up-tasks-from-replies]
 
-Warmbly can open a task by itself when a reply lands, so a prospect who answers ends up on this list rather than only in the inbox. The task is assigned to the owner of the mailbox that received the reply, due in 24 hours, and titled with the intent and the sender: **Follow up: positive reply from dana@acme.com**.
+回复到达时，Warmbly 可自动创建任务，让有回应的潜客进入跟进清单，而不只留在收件箱。任务分配给接收回复的邮箱所有者，24 小时后到期，标题包含意图和发件人，例如**跟进：来自 dana@acme.com 的积极回复**。
 
-Which replies get one is up to you, in **Settings > Sending > Reply follow-ups**. Every reply is classified first, and the classifier can tell a person from a machine: an out-of-office notice, a helpdesk autoresponder, a bounce and a delivery report are recognized from the message headers, not only from the words in the body, so an auto-responder that never mentions a vacation is still caught.
+哪些回复创建任务，由你在**设置 > 发送 > 回复跟进**中决定。每条回复先分类，分类器能够区分人和机器：休假通知、服务台自动回复、退信和投递报告通过邮件头识别，不只依靠正文，因此从未提到休假的自动回复也能识别。
 
-| Intent | Opens a task by default |
+| 意图 | 默认是否创建任务 |
 | --- | --- |
-| Positive: interested, wants a call | Yes |
-| Question: asked something | Yes |
-| Neutral: a human reply we could not bucket | Yes |
-| Negative: not interested | Yes |
-| Automated: out of office, autoresponders, bounces | No |
+| 积极：感兴趣、想通话 | 是 |
+| 问题：提出问题 | 是 |
+| 中性：无法归入其他类别的人工回复 | 是 |
+| 消极：不感兴趣 | 是 |
+| 自动：休假、自动回复、退信 | 否 |
 
-Only mail that arrives after the sender became a contact opens a task. Importing a list or creating contacts through the API does not turn their older messages already in your mailboxes into replies; a reply in one of your campaign threads always counts.
+只有发件人成为联系人之后到达的邮件才创建任务。导入名单或通过 API 创建联系人，不会把邮箱里已有的旧邮件变成回复；对营销活动会话的回复始终算数。
 
-Before this rule, older mail could open tasks and record reply intents when its sender was imported. Warmbly checks those once per consumer start, but withdraws an effect only when its saved identifiers link it to the exact message and, for a follow-up, the exact task. Older records without those links are left alone, even if their sender, subject or timing matches. A linked task is cancelled only if it is still pending and nobody has edited it. Every cancellation is recorded in the audit log. A task someone already started, edited or completed is left as it is. Temporary cleanup errors are retried before the check advances.
+这项规则推出之前，导入发件人可能使旧邮件创建任务并记录回复意图。Warmbly 在每次消费者启动时检查一次，但只有保存的标识符能关联到确切邮件，并且跟进还能关联到确切任务时，才撤回相应影响。没有这些关联的旧记录保持不动，即使发件人、主题或时间相似也不处理。关联任务只有仍待处理且无人编辑时才取消，每次取消写入审计日志。已经开始、编辑或完成的任务保持原样。临时清理错误会在检查继续推进前重试。
 
-Automated replies are off deliberately. A vacation notice is not follow-up work, and a week of sending makes enough of them to bury the real replies. Tick **Automated** if you do want one per machine reply, or untick the human ones you do not need. Unticking everything is the same as turning the switch off.
+自动回复刻意默认关闭。休假通知不是需要跟进的工作，一周发送产生的通知就足以淹没真实回复。如果确实希望每条机器回复都创建任务，可勾选**自动**；也可取消不需要的人工类别。取消全部等同于关闭总开关。
 
-The classification does more than decide the task: an automated reply never counts as a reply for **stop on reply** or for a **replied** branch in a sequence, and its notification goes to the **Out-of-office detected** preference rather than **New reply**, so muting one does not mute the other.
+分类不仅决定是否创建任务：自动回复绝不计为**收到回复后停止**或序列**已回复**分支的人工回复；其通知使用**检测到休假**偏好，而非**新回复**，因此静音其中一类不会静音另一类。
 
 </Fold>
 
 <Fold>
 
-## Suppression
+## 禁止发送 [#suppression]
 
-A suppressed contact receives no further mail. Unsubscribed contacts are skipped by every campaign automatically; toggle subscription on the Details tab, and filter the list by Subscribed or Unsubscribed.
+被禁止发送的联系人不会再收到邮件。所有营销活动都会自动跳过已退订联系人；可以在详情标签页切换订阅状态，并按已订阅或已退订筛选列表。
 
-Suppression also happens automatically when a recipient unsubscribes or replies asking to stop, on a hard bounce or spam complaint, and when a sequence runs an **Unsubscribe** action. The **Suppression list** tab holds every entry, takes addresses and whole domains by hand, and lets you lift an entry; a suppressed contact's Overview tab shows why and offers the same.
+收件人退订或回复要求停止、硬退信、垃圾邮件投诉，以及序列执行**退订**操作时，也会自动禁止发送。**禁止发送名单**标签页列出全部条目，支持手动添加地址或整个域名，以及解除条目；被禁止发送联系人的概览也会显示原因并提供同样操作。
 
-This is the safe default response to a bad signal: stop sending rather than keep collecting bounces and complaints. See [unsubscribe and suppression](/guides/unsubscribe/) for the full picture and [Deliverability](/guides/deliverability/) for the signals behind it.
+这是收到负面信号后的稳妥默认处理：停止发送，避免继续累积退信和投诉。完整说明参见[退订与禁止发送](/guides/unsubscribe/)，相关信号参见[邮件送达能力](/guides/deliverability/)。
 
 </Fold>
 
-## Where to go next
+## 后续操作 [#where-to-go-next]
 
 <Cards>
-  <Card title="Segments" href="/guides/segments/" />
-  <Card title="Personalization & expressions" href="/guides/expressions/" />
-  <Card title="Deliverability" href="/guides/deliverability/" />
-  <Card title="Automations" href="/guides/automations/" />
+  <Card title="联系人分群" href="/guides/segments/" />
+  <Card title="个性化与表达式" href="/guides/expressions/" />
+  <Card title="邮件送达能力" href="/guides/deliverability/" />
+  <Card title="自动化流程" href="/guides/automations/" />
 </Cards>

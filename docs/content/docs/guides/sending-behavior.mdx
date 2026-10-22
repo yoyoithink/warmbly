@@ -1,176 +1,176 @@
 ---
-title: "Sending behavior"
-description: "Give each mailbox a human workday: randomized hours, volume, lunch break, and spacing, in its own timezone."
+title: 发送行为
+description: 为每个邮箱设置符合真人习惯的工作日：按其所在时区，随机生成工作时段、发送量、午休和发送间隔。
 ---
 
-Sending behavior gives each mailbox a human workday, so its sending does not look automated. You set ranges instead of fixed values, and each day the mailbox rolls its own start, finish, lunch break, daily target and hourly ceiling, in its own timezone.
+发送行为为每个邮箱安排类似真人的工作日，避免发送模式显得机械。你设置的是范围而不是固定值，邮箱每天会按自身时区，分别随机生成开始时间、结束时间、午休、每日目标和每小时上限。
 
-## Set up a mailbox's workday
+## 设置邮箱的工作时段 [#set-up-a-mailboxs-workday]
 
 <Steps>
 
 <Step>
 
-Open **Mailboxes** and pick a mailbox.
+打开**邮箱**，选择一个邮箱。
 
 </Step>
 
 <Step>
 
-Open the **Sending** tab and turn on **Variable sending plan**.
+打开**发送**标签页，启用**可变发送计划**。
 
 </Step>
 
 <Step>
 
-Keep the default ranges, or adjust them.
+保留默认范围，或按需调整。
 
 </Step>
 
 <Step>
 
-Check today's rolled workday at the top of the tab to see when the mailbox will send.
+查看标签页顶部今天随机生成的工作日安排，了解该邮箱何时发信。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- New Cloud mailboxes start with it on and a daily target of `28` to `32` cold emails, about `30`. Warmup-only mailboxes enrolled from a self-hosted instance start with it off, so their instance's warmup schedule applies.
-- It can only lower volume or delay a send. It never raises a mailbox above its own daily cap.
-- Times are local to the mailbox's timezone, or the workspace timezone when it has none.
-- Editing the ranges does not change today. The new ranges apply from the next roll.
-- Warmup keeps the same working days and hours, but does not count against the cold limits.
-- Warmup waits for the workday too, so a mailbox connected after its hours end sends its first warmup email at the start of the next working day. The mailbox list shows when the next one is queued.
-- Switching to Fixed schedule, back again, or changing the working days moves the mailbox's queued warmup send, and the next send of every active campaign it backs, straight away onto whichever schedule now applies.
+- 新增的 Cloud 邮箱默认启用，每天冷邮件目标为 `28` 到 `32` 封，约 `30` 封。从自托管实例加入、仅用于预热的邮箱默认关闭，因此采用所属实例的预热时间表。
+- 它只能降低发送量或延迟发送，绝不会使邮箱超过自己的每日上限。
+- 时间按邮箱所在时区解释；邮箱未设置时区时，使用工作区时区。
+- 修改范围不会改变今天的安排，新范围从下一次随机生成计划时生效。
+- 预热沿用相同的工作日和时段，但不计入冷邮件限额。
+- 预热也会等待工作时段。因此，工作时段结束后才连接的邮箱，要到下一个工作日开始时才发送第一封预热邮件。邮箱列表会显示下一封何时排队发送。
+- 切换到固定时间表、切回可变计划，或修改工作日，会立即按照当前生效的时间表，调整该邮箱排队中的预热发送，以及由它支持的每个活跃营销活动的下一次发送。
 
 <Fold>
 
-## Why sending gets a workday
+## 为什么要为发送设置工作时段 [#why-sending-gets-a-workday]
 
-Automated sending looks automated. A mailbox that sends exactly 40 emails every day, starts at 09:00:00, and spaces every send exactly 600 seconds apart is describing itself as a machine in its own headers.
+机械的发送方式会暴露自动化特征。一个邮箱每天恰好发送 40 封、在 09:00:00 开始，并严格每隔 600 秒发送一次，相当于在邮件头中宣告自己是机器。
 
-Sending behavior fixes that. You give a mailbox ranges instead of fixed values, and it rolls one workday out of those ranges each day: a start time, a finish time, a lunch break, a daily target, an hourly ceiling. It then keeps to that day.
+发送行为用于解决这一点。你为邮箱设置范围，而非固定值；邮箱每天从范围内生成一份工作日安排，包括开始时间、结束时间、午休、每日目标和每小时上限，然后当天始终遵循这一安排。
 
-Everything here is per mailbox and lives in its own timezone, so a London mailbox and a Denver mailbox on the same campaign each keep their own office hours.
+这里所有设置都按邮箱独立生效，使用邮箱自身时区。因此，同一营销活动中的伦敦邮箱与丹佛邮箱，各自遵守当地办公时间。
 
 </Fold>
 
 <Fold>
 
-## Turn it on
+## 开启功能 [#turn-it-on]
 
-**Mailboxes** > pick a mailbox > **Sending** > **Variable sending plan**.
+**邮箱** > 选择一个邮箱 > **发送** > **可变发送计划**。
 
-Newly connected mailboxes start with this enabled and a configurable daily target range of `28` to `32`, about `30` per local working day. Existing mailboxes keep their saved profile, including fixed schedules, and existing daily plans are not changed by an upgrade. You can disable the plan to use the mailbox's fixed cap and minimum gap instead.
+新连接的邮箱默认启用，按本地工作日设置可调整的每日目标范围 `28` 到 `32` 封，约 `30` 封。已有邮箱保留保存的配置，包括固定时间表；升级不会改变已经生成的每日计划。关闭该计划后，改用邮箱固定的发送上限和最小间隔。
 
-While it is off, the rest of the tab is greyed out and read-only, because none of it applies. Turn the switch on to edit the ranges.
+关闭时，标签页其他部分会变灰并只读，因为这些设置此时不生效。打开开关后即可编辑范围。
 
 </Fold>
 
 <Fold>
 
-## What gets randomized
+## 随机化的设置项 [#what-gets-randomized]
 
-| Setting | Default range | What it controls |
+| 设置 | 默认范围 | 控制内容 |
 |---------|---------------|------------------|
-| Working days | Mon-Fri | Days this mailbox sends anything at all, cold and warmup alike |
-| Workday start | `09:03` to `09:27` | The mailbox opens at a different minute each day |
-| Workday finish | `17:18` to `17:56` | Nothing is scheduled after the day's rolled finish |
-| Lunch break | starts `12:00`-`13:30`, lasts `30`-`60` min | A quiet gap in the middle of the day |
-| Cold emails per day | `28` to `32` | The day's cold-send target, about `30` |
-| Cold emails per hour | `5` to `9` | Stops the whole day landing in one burst |
-| Delay between emails | `90` to `420` seconds | Drawn fresh for every send |
+| 工作日 | 周一至周五 | 邮箱允许发送任何邮件的日期，冷邮件和预热均适用 |
+| 工作日开始时间 | `09:03` 到 `09:27` | 每天在不同分钟开始发信 |
+| 工作日结束时间 | `17:18` 到 `17:56` | 当天随机生成的结束时间之后不再安排发送 |
+| 午休 | 在 `12:00`–`13:30` 之间开始，持续 `30`–`60` 分钟 | 工作日中间的暂停时段 |
+| 每天冷邮件数 | `28` 到 `32` | 当天冷邮件目标，约 `30` 封 |
+| 每小时冷邮件数 | `5` 到 `9` | 避免全天发送量集中在一次突发发送中完成 |
+| 邮件间隔 | `90` 到 `420` 秒 | 每次发送重新随机生成 |
 
-Every time is local to the mailbox's timezone: its own, set on the **Settings** tab of its drawer or under **Settings > Profile > Timezones**, or the workspace timezone (same page) when it has none.
+所有时间均采用邮箱时区：可以在邮箱抽屉的**设置**标签页，或**设置 > 个人资料 > 时区**中设置；邮箱未设置时区时，使用同一页面配置的工作区时区。
 
-A new mailbox has no timezone of its own, and that is a valid state rather than a gap: its workday and warmup hours are read in the workspace timezone (UTC when that is not set either), and on campaigns only the campaign's own sending window applies. Set one when the mailbox belongs to somebody in a particular place, and both calendars then have to agree before a send goes out.
-
-</Fold>
-
-<Fold>
-
-## The daily plan
-
-The roll happens once per mailbox per local day, and the result is stored. That matters: the scheduler recomputes a mailbox's next slot many times a day, and a fresh random workday on every calculation would mean the mailbox never actually keeps to one.
-
-The **Sending** tab shows today's rolled workday at the top: the hours, the break, the spacing band, the hourly ceiling, and how much of the day's target is already spent. That is the answer to "why is nothing sending right now".
-
-Emails reserved for dispatch count once against the day's target; a cancelled reservation gives its capacity back. A campaign wakes itself up far more often than it sends, and most of those wake-ups find nothing to do: every mailbox is mid-gap, the workday has not opened yet, or no contact is due. Those are not sends. They do not show up in the count, they do not spend the plan, and neither does the run the campaign has queued next.
-
-Editing the ranges does not change today. Today keeps the workday it already started, and the new ranges take effect on the next roll.
+新邮箱默认没有独立时区，这是有效状态，并非缺失配置：工作日和预热时段按工作区时区解释（工作区也未设置时使用 UTC），而在营销活动中只应用营销活动自身的发送时间窗口。如果邮箱属于某个特定地区的人，可以为它设置时区；此后发送必须同时符合两套时间安排。
 
 </Fold>
 
 <Fold>
 
-## How it interacts with your other limits
+## 每日计划 [#the-daily-plan]
 
-Sending behavior can only ever **lower** volume or **delay** a send. It can never raise a mailbox above its own daily cap or bring a send forward.
+每个邮箱在每个本地日期只随机生成一次计划，并保存结果。这一点很重要：调度器一天中会多次重新计算邮箱的下一个可发送时段，如果每次计算都重新随机生成工作日，邮箱就无法真正遵循任何一份稳定安排。
 
-- The day's rolled target is applied as a minimum against the mailbox's daily cap and the campaign's daily limit. If the mailbox and campaign are capped at `50` and the day rolls `31`, the day is at most `31`. Setting a ceiling of `30` clips any higher roll to `30`; raise the ceiling if you want the whole configured range available. More capacity does not guarantee more sends: leads, windows, warmup graduation and other safety controls still apply.
-- The delay range replaces the mailbox's fixed minimum gap while behavior is on.
-- A campaign's own sending windows still apply. A send has to satisfy both calendars: the campaign's window in the campaign timezone, and the mailbox's workday in the mailbox timezone.
-- Warmup follows the same working days, hours, and break, so warmup mail is not arriving at 03:00 from a mailbox whose campaign mail keeps office hours. Warmup is **not** charged against the cold daily or hourly ceilings; it has its own ramp.
-- Smart send for your own replies follows the workday but is never charged against the cold budgets.
+**发送**标签页顶部显示今天生成的安排：工作时段、午休、间隔范围、每小时上限，以及每日目标已使用多少。这能回答“为什么现在没有发送”。
 
-<Callout type="warn" title="The hourly ceiling is doing real work">
-Without it, a mailbox with a 40/day target and a 90-second floor could empty its whole day before 11am and then sit silent. That is a more obvious pattern than sending too much.
+为派发而预留的邮件会计入当天目标一次；预留取消后，对应发送容量会返还。营销活动被唤醒检查的次数远多于实际发送次数，而且多数检查都无事可做：所有邮箱仍处于间隔期、工作日尚未开始，或没有到期联系人。这些都不算发送，不显示在计数中，不消耗每日计划额度，营销活动已经排队的下一次运行也不算。
+
+修改范围不会改变今天。当天继续使用已经开始执行的工作日安排，新范围从下一次生成计划时生效。
+
+</Fold>
+
+<Fold>
+
+## 与其他限制的关系 [#how-it-interacts-with-your-other-limits]
+
+发送行为只能**降低**发送量或**延迟**发送，绝不会使邮箱超过自己的每日上限，也不会将发送提前。
+
+- 当天生成的目标会与邮箱每日上限、营销活动每日上限取最小值。如果邮箱和营销活动的上限均为 `50`，当天随机得到 `31`，当天最多发送 `31`。若上限设为 `30`，所有更高的随机目标都会被截到 `30`；希望完整使用配置范围时，需要提高上限。发送容量增加并不保证实际发送更多：潜在客户数量、发送窗口、预热达标状态和其他安全控制仍然生效。
+- 启用发送行为时，延迟范围取代邮箱固定的最小发送间隔。
+- 营销活动自身的发送窗口仍然适用。发送必须同时符合营销活动时区中的活动窗口，以及邮箱时区中的工作日安排。
+- 预热使用相同的工作日、时段和午休，避免营销活动只在办公时间发送、预热却在 03:00 发出的情况。预热**不计入**冷邮件的每日或每小时上限，它有独立的递增计划。
+- 你自行回复邮件时使用的智能发送遵循工作日安排，但绝不计入冷邮件额度。
+
+<Callout type="warn" title="每小时上限有实际作用">
+没有这一限制时，每日目标为 40 封、最小间隔为 90 秒的邮箱，可能在上午 11 点前就发完全天邮件，然后一直静默。这种模式比发送量过高还更明显。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Choosing ranges
+## 选择数值范围 [#choosing-ranges]
 
-The defaults describe an ordinary weekday sender and are a good starting point for most mailboxes. If you change them:
+默认值模拟普通工作日发件人的行为，适合作为多数邮箱的起点。调整时请注意：
 
-- Keep the daily range inside the safe cold band. `30-50/day` is normal for a warmed mailbox; a mailbox connected in the last month should stay nearer `10-20/day`.
-- Keep the delay range wide. A narrow range is only slightly less of a pattern than a fixed value.
-- Leave the lunch break on. It is one of the cheapest signals of a real person's inbox.
-- Do not set the workday to cover the whole clock. A mailbox that sends at every hour of the day is not describing an office.
+- 每日范围应处于安全的冷邮件发送区间。已预热邮箱通常为 `30-50/day`；最近一个月才连接的邮箱，应更接近 `10-20/day`。
+- 延迟范围应保持足够宽。过窄的范围只是比固定值稍不规律一点。
+- 保留午休，这是模拟真人邮箱行为成本较低的方式之一。
+- 不要将工作日设置为全天覆盖。任何时刻都在发送的邮箱不像正常办公邮箱。
 
-The break has to fit inside the shortest workday the ranges can produce, and the latest possible start has to come before the earliest possible finish. The editor blocks a save that would break either rule.
+午休必须能够容纳在这些范围可能生成的最短工作日内，最晚开始时间也必须早于最早结束时间。违反任一规则时，编辑器会阻止保存。
 
 </Fold>
 
 <Fold>
 
-## Sending in the recipient's timezone
+## 按收件人时区发送 [#sending-in-the-recipients-timezone]
 
-Sending behavior places a send inside the **mailbox's** day. Send-time optimization places it inside the **recipient's** day: hold each campaign email until the clock where the recipient reads mail reaches an hour you chose.
+发送行为把发送安排在**发件邮箱**的工作日内；发送时间优化则把它安排在**收件人**的一天中：每封营销活动邮件会等待，直到收件人阅读邮件所在地区的时钟达到你选择的时段。
 
-**Settings** > **Sending** > **Send-time optimization**. It is off by default, so nothing about your current sending changes until you turn it on.
+**设置** > **发送** > **发送时间优化**。该功能默认关闭，启用前不会改变当前发送方式。
 
-| Setting | What it does |
+| 设置 | 作用 |
 |---------|--------------|
-| Use the recipient's local hours | The switch for the whole feature |
-| Read each contact's timezone | Uses the contact's `timezone` field first, then the country its email domain points at |
-| Fallback timezone | Used when a contact's timezone cannot be worked out |
-| Skip weekends | Pushes a Saturday or Sunday send to the next weekday |
-| Delivery hours | The local hours a send is allowed to land in |
+| 使用收件人当地时间 | 整项功能的开关 |
+| 读取每位联系人的时区 | 先使用联系人的 `timezone` 字段，再使用邮箱域名指向的国家 |
+| 回退时区 | 无法确定联系人时区时使用 |
+| 跳过周末 | 将周六或周日的发送推迟到下一个工作日 |
+| 投递时段 | 允许发送落入的当地时间范围 |
 
-Warmbly works out the recipient's timezone in this order:
+Warmbly 按以下顺序确定收件人时区：
 
-1. The contact's `timezone` custom field, when it holds a valid IANA name such as `America/Denver`.
-2. The country implied by the email domain's country-code suffix: `acme.de` is read as Berlin, `acme.co.uk` as London. Generic domains like `.com` and `.io` carry no location, so they fall through.
-3. The fallback timezone you set.
+1. 联系人的 `timezone` 自定义字段，前提是其值为有效 IANA 名称，例如 `America/Denver`。
+2. 邮箱域名国家代码后缀暗示的国家：`acme.de` 按柏林解释，`acme.co.uk` 按伦敦解释。`.com` 和 `.io` 等通用域名不提供位置，因此继续使用下一项。
+3. 你设置的回退时区。
 
-<Callout type="info" title="It only ever delays a send">
-Send-time optimization can move a send later, never earlier. Every other constraint still binds: the campaign's own sending window, the mailbox's workday and daily cap, the minimum gap between sends. If the recipient's hours and the mailbox's hours never overlap, the send goes out at the next moment both calendars allow rather than not at all. It will also never push a send past the campaign's end date.
+<Callout type="info" title="只会推迟发送">
+发送时间优化只能将发送推后，不能提前。所有其他约束仍然适用：营销活动自身的发送窗口、邮箱的工作日与每日上限，以及两次发送的最小间隔。如果收件人与邮箱的允许时段从不重合，邮件会在两套时间安排下一次共同允许的时刻发出，而不是永远不发。它也不会将发送推迟到营销活动结束日期之后。
 </Callout>
 
-Because it delays sends, a campaign with tight delivery hours and a small mailbox pool sends fewer emails per day than one without. Widen the hours if throughput matters more than placement.
+由于它会推迟发送，投递时段较窄、邮箱池较小的营销活动，每天发送量会比未启用时更少。如果吞吐量比投递时机更重要，可以放宽时段。
 
 </Fold>
 
 <Fold>
 
-## API
+## API [#api]
 
-The profile and today's plan are both readable and writable through the API. See [Endpoints](/api/endpoints/) for the scopes.
+配置与今天的计划都可以通过 API 读取和写入。权限范围见[端点](/api/endpoints/)。
 
 ```http
 GET  /v1/emails/{id}/behavior
@@ -178,6 +178,6 @@ PUT  /v1/emails/{id}/behavior
 GET  /v1/emails/{id}/behavior/plan
 ```
 
-`PUT` is a partial update: send only the fields you want to change. It is naturally idempotent, so retries are safe without an `Idempotency-Key`.
+`PUT` 是部分更新，只提交需要修改的字段。它天然幂等，因此无需 `Idempotency-Key` 即可安全重试。
 
 </Fold>

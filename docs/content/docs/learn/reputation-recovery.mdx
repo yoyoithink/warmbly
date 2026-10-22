@@ -1,79 +1,79 @@
 ---
-title: Reputation recovery
-description: A step-by-step plan to bring a quarantined or low-placement mailbox back to healthy without making things worse.
+title: 发件信誉恢复
+description: 按步骤让被隔离或收件箱到达率较低的邮箱恢复健康，避免进一步恶化。
 ---
 
 <ShortVersion>
 
-- Pause campaigns from the mailbox, but keep warmup running.
-- Fix authentication before anything else.
-- Ramp back up over about six weeks, safest recipients first.
-- If placement is still below 80% after 8 weeks, retire the mailbox or move to a new sub-domain.
+- 暂停该邮箱的营销活动，但继续运行预热。
+- 优先修复身份验证问题。
+- 用约六周时间逐步恢复发送量，先联系风险最低的收件人。
+- 如果 8 周后收件箱到达率仍低于 80%，应停用该邮箱或改用新的子域名。
 
 </ShortVersion>
 
-## Triage first
+## 先判断是否值得恢复 [#triage-first]
 
-Before you start a recovery plan, decide whether the mailbox is worth recovering at all. Three questions:
+开始恢复计划前，先决定这个邮箱是否值得挽救。需要考虑三个问题：
 
-1. Is the mailbox tied to a person whose name needs to be on the email? If not, retire it and warm a new one.
-2. Has the domain been blocklisted at major receivers? Check tools like MXToolbox blacklist lookup, Talos, and Spamhaus. If yes, the recovery work is at the domain level too.
-3. Is the placement issue from this mailbox alone, or is it a domain-wide problem? Check [placement](/learn/inbox-placement/) on other mailboxes on the same domain.
+1. 该邮箱是否绑定了某位必须以本人姓名出现在邮件中的人员？如果不是，可以停用它并预热一个新邮箱。
+2. 域名是否被主要收件服务商列入封禁名单？使用 MXToolbox 黑名单查询、Talos、Spamhaus 等工具检查。如果是，也需要在域名层面进行恢复。
+3. 投递位置问题只发生在这个邮箱，还是整个域名都有问题？检查同域名其他邮箱的[收件箱到达率](/learn/inbox-placement/)。
 
-## Stop the bleeding
+## 先阻止情况继续恶化 [#stop-the-bleeding]
 
-- Pause every [campaign](/guides/campaigns/) sending from the affected mailbox immediately.
-- Remove the mailbox from active sender pools in your campaigns.
-- If the mailbox is in the [warmup pool](/learn/warmup-pools/), keep warmup running. Warmbly slows a mailbox landing in spam down on its own and keeps it warming, because warming is how placement recovers.
-- Do not "send a few test emails to gauge". Every additional send while reputation is poor is another data point in the wrong column.
+- 立即暂停所有通过受影响邮箱发送的[营销活动](/guides/campaigns/)。
+- 将该邮箱从营销活动正在使用的发件邮箱池中移除。
+- 如果邮箱在[预热池](/learn/warmup-pools/)中，继续运行预热。对于邮件落入垃圾邮件的邮箱，Warmbly 会自动降低发送速度并保持预热，因为预热正是改善投递位置的手段。
+- 不要“发几封测试邮件看看”。信誉较差时，每多发一封邮件，都可能再增加一条负面记录。
 
-## Audit the basics
+## 检查基础配置 [#audit-the-basics]
 
-1. **SPF:** single record? Under 10 DNS lookups? Includes every service that sends as you?
-2. **DKIM:** selector resolves? Key length ≥ 1024? Rotated within the last year?
-3. **DMARC:** exists? Aligned? Reporting address receives mail? Policy appropriate for your maturity?
-4. **PTR:** sending IP has a reverse DNS record that resolves back?
-5. **Mailbox content:** review the last 90 days of sent mail for any HTML-heavy, image-only, or link-bait messages.
+1. **SPF：** 是否只有一条记录？DNS 查询次数是否少于 10 次？是否包含所有代表你发信的服务？
+2. **DKIM：** 选择器是否能解析？密钥长度是否 ≥ 1024？过去一年内是否轮换过密钥？
+3. **DMARC：** 记录是否存在？是否对齐？报告邮箱能否接收邮件？策略是否符合当前配置的成熟程度？
+4. **PTR：** 发信 IP 是否具有能够反向解析的 DNS 记录？
+5. **邮箱内容：** 检查过去 90 天的已发送邮件，查找是否存在大量 HTML、纯图片或诱导点击的内容。
 
-Fix anything that's broken before you start the volume work. Recovery on a misconfigured domain is futile. See [SPF, DKIM and DMARC](/learn/spf-dkim-dmarc/) for the details.
+开始调整发送量前，先修复所有基础问题。在域名配置错误的情况下尝试恢复是徒劳的。详细信息见 [SPF、DKIM 和 DMARC](/learn/spf-dkim-dmarc/)。
 
-## The recovery ramp
+## 恢复期间的发送量递增计划 [#the-recovery-ramp]
 
-Treat the mailbox like a brand-new one. The ramp:
+将该邮箱当作全新邮箱处理，按以下计划递增：
 
 <RecoveryRamp />
 
-- **Days 1–7:** warmup only, capped at 5/day. No cold sends.
-- **Days 8–14:** warmup at 10/day. Still no cold sends.
-- **Days 15–28:** warmup at 15–25/day, ramp +1/day. Begin a very small "soft" cold sequence to highly engaged, low-risk recipients (warm replies are fine).
-- **Days 29–42:** warmup at 30–40/day. Cold sequences capped at half the normal mailbox budget.
-- **Day 43+:** evaluate. If placement is above 90% on a 20-message probe sample and complaint rate is below 0.03%, return the mailbox to the normal cold cap.
+- **第 1–7 天：** 仅预热，每天最多 5 封，不发送冷邮件。
+- **第 8–14 天：** 每天预热 10 封，仍不发送冷邮件。
+- **第 15–28 天：** 每天预热 15–25 封，每天增加 1 封。向互动活跃、风险低的收件人启动极小规模、较温和的冷邮件序列（与已有互动对象继续回复没有问题）。
+- **第 29–42 天：** 每天预热 30–40 封。冷邮件序列的发送量限制为正常邮箱额度的一半。
+- **第 43 天起：** 评估结果。如果 20 封探测邮件样本的收件箱到达率超过 90%，且投诉率低于 0.03%，即可恢复该邮箱的正常冷邮件发送上限。
 
-## Send to your safest recipients first
+## 优先联系风险最低的收件人 [#send-to-your-safest-recipients-first]
 
-The first cold sends after recovery should go to:
+恢复后的首批冷邮件应发给：
 
-- Recipients who replied positively in the past 6 months.
-- Contacts at organisations you have customer relationships with.
-- Subscribers (newsletter, podcast, blog): addresses you've already had positive engagement from.
+- 过去 6 个月内曾积极回复的收件人。
+- 已与你建立客户关系的组织中的联系人。
+- 订阅者（电子通讯、播客或博客），即此前已产生正向互动的邮箱地址。
 
-Reply-rich first sends rebuild engagement signal fast. Cold sends to brand-new contact lists during recovery are the easiest way to undo the work.
+首批邮件如果能得到较多回复，就能快速重建互动信号。恢复期间向全新的联系人名单发送冷邮件，最容易让此前的努力付诸东流。
 
-## Content rules during recovery
+## 恢复期间的内容规则 [#content-rules-during-recovery]
 
-- Plain text only.
-- No tracking pixels.
-- One link maximum, and only if necessary.
-- Subject under 60 characters, no all-caps, no emojis.
-- Different subject and opening line per recipient (not "Hi `{{first_name}}`, just wanted to follow up" 1,000 times).
-- Personal signature with full name and a phone number you can be reached at.
+- 仅使用纯文本。
+- 不添加跟踪像素。
+- 最多一个链接，且仅在必要时添加。
+- 主题少于 60 个字符，不全用大写，不使用表情符号。
+- 为每位收件人调整主题和开场句，不要将“你好，`{{first_name}}`，想跟进一下”重复发送 1,000 次。
+- 使用个人签名，包含全名和能联系到你的电话号码。
 
-## When to give up and switch
+## 什么时候应放弃并更换 [#when-to-give-up-and-switch]
 
-If after 8 weeks of disciplined recovery the mailbox still hovers below 80% placement, the address has likely picked up reputation damage that won't reverse. Options:
+如果严格执行恢复计划 8 周后，该邮箱的收件箱到达率仍徘徊在 80% 以下，这个地址可能已经遭受难以逆转的信誉损害。可以选择：
 
-- Retire the mailbox and create a new one on the same domain, then re-warm it from scratch.
-- Move cold sending to a new sub-domain (e.g. `outreach2.acme.com`) and start with fresh SPF/DKIM/DMARC.
-- If the whole domain is the problem, register a new sending sub-domain and warm it for 6 weeks before reusing.
+- 停用该邮箱，在同一域名下创建新邮箱，并从头预热。
+- 将冷邮件发送迁移到新的子域名（例如 `outreach2.acme.com`），重新配置 SPF/DKIM/DMARC。
+- 如果问题涉及整个域名，就注册新的发信子域名，先预热 6 周再投入使用。
 
-> Reputation recovery is mostly patience. The temptation is always to "test with a few sends". Resist it. A recovery plan that runs for 6 weeks of warmup-only beats one that gets impatient at week three and crashes back into quarantine.
+> 信誉恢复主要依靠耐心。你总会想“发几封试试”，但应克制这种冲动。坚持 6 周只做预热的恢复计划，胜过第三周就失去耐心、最终再次进入隔离的计划。

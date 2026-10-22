@@ -1,154 +1,154 @@
 ---
-title: "Personalization & Expressions"
-description: "Merge fields, conditionals, fallbacks, functions, spintax, and automation expressions: the templating language shared by campaign emails and automations."
+title: 个性化与表达式
+description: 合并字段、条件判断、回退值、函数、Spintax 随机文案与自动化表达式：营销活动邮件和自动化流程共用的模板语言。
 ---
 
-Personalization lets you write one email that comes out tailored for every contact, using merge fields like `{{.FirstName}}`. The same language also powers automation conditions and action text, and needs no programming knowledge.
+个性化功能让你只写一封邮件，就能通过 `{{.FirstName}}` 等合并字段，为每位联系人生成贴合其情况的内容。同一种语言也用于自动化条件和操作文本，无需编程知识。
 
-## Personalize an email
+## 个性化编写邮件 [#personalize-an-email]
 
 <Steps>
 
 <Step>
 
-In a campaign step's subject or body, type a merge field such as `{{.FirstName}}`.
+在营销活动步骤的主题或正文中，输入 `{{.FirstName}}` 等合并字段。
 
 </Step>
 
 <Step>
 
-Give fields that may be empty a fallback: `{{.FirstName | default "there"}}`.
+为可能为空的字段设置回退值：`{{.FirstName | default "there"}}`。
 
 </Step>
 
 <Step>
 
-Open the Preview to check it renders as expected, with no leftover `{{...}}` tokens.
+打开预览，检查渲染结果是否符合预期，且没有残留的 `{{...}}` 标记。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Field names are case-sensitive: `{{.FirstName}}` works, `{{.firstname}}` does not.
-- Unknown variables render empty rather than erroring.
-- Every `{{if}}` must close with `{{end}}`. A broken one blocks launching the campaign.
-- Spintax such as `{Hi|Hey|Hello}` varies wording in campaign subjects and bodies only.
-- Automations use the trigger's lowercase keys, such as `{{.contact_email}}`, still with the leading dot.
+- 字段名区分大小写：`{{.FirstName}}` 有效，`{{.firstname}}` 无效。
+- 未知变量会渲染为空，而不是报错。
+- 每个 `{{if}}` 都必须用 `{{end}}` 闭合；格式错误会阻止营销活动启动。
+- `{Hi|Hey|Hello}` 这样的 Spintax 仅在营销活动的主题和正文中用于变化措辞。
+- 自动化流程使用触发器的小写键，例如 `{{.contact_email}}`，仍必须保留前导点号。
 
 <Fold>
 
-## What personalization is for
+## 个性化的用途 [#what-personalization-is-for]
 
-Write one email and have it come out personalized for every contact, using merge fields like `{{.FirstName}}` plus helpers for fallbacks, conditions, and math. No programming knowledge needed; match the patterns below.
+使用 `{{.FirstName}}` 等合并字段，配合回退值、条件和数学辅助函数，就能让同一封邮件为每位联系人分别生成个性化内容。无需编程知识，按下面的模式书写即可。
 
 </Fold>
 
 <Fold>
 
-## Quick reference
+## 快速参考 [#quick-reference]
 
-| You want to | Write |
+| 目的 | 写法 |
 | --- | --- |
-| Insert a first name | `{{.FirstName}}` |
-| Insert the sending mailbox's name | `{{.Sender.Name}}` |
-| Insert the actual From address | `{{.Sender.Email}}` |
-| Back up an empty field | `{{.FirstName \| default "there"}}` |
-| Branch on a condition | `{{if eq .Company "Acme"}}...{{else}}...{{end}}` |
-| Randomize wording (campaigns only) | `{a\|b\|c}` |
-| Filter an automation by a number | `gtf .confidence 0.8` |
+| 插入名字 | `{{.FirstName}}` |
+| 插入发件邮箱的名称 | `{{.Sender.Name}}` |
+| 插入实际 From 发件地址 | `{{.Sender.Email}}` |
+| 为字段空值提供替代内容 | `{{.FirstName \| default "there"}}` |
+| 根据条件分支 | `{{if eq .Company "Acme"}}...{{else}}...{{end}}` |
+| 随机变化措辞（仅营销活动） | `{a\|b\|c}` |
+| 按数字筛选自动化流程 | `gtf .confidence 0.8` |
 
 </Fold>
 
 <Fold>
 
-## Variables
+## 变量 [#variables]
 
-### Contact fields (campaigns)
+### 联系人字段（营销活动） [#contact-fields-campaigns]
 
-Exact names, **capitalized**, with a leading dot: `{{.FirstName}}`, `{{.LastName}}`, `{{.Email}}`, `{{.Company}}`, `{{.Phone}}`.
+名称必须准确、**大小写正确**，并带前导点号：`{{.FirstName}}`、`{{.LastName}}`、`{{.Email}}`、`{{.Company}}`、`{{.Phone}}`。
 
 ```
 Hi {{.FirstName}}, I noticed {{.Company}} is hiring and wanted to reach out.
 ```
 
-<Callout type="warn" title="Field names are case-sensitive">
-`{{.FirstName}}` works. `{{.firstname}}`, `{{.firstName}}`, and `{{.FIRSTNAME}}` do not, and leave an empty value or a leftover token in your email.
+<Callout type="warn" title="字段名区分大小写">
+`{{.FirstName}}` 有效。`{{.firstname}}`、`{{.firstName}}` 和 `{{.FIRSTNAME}}` 无效，可能使邮件中对应位置为空，或留下未替换的标记。
 </Callout>
 
-**Custom fields** work the same way with a dot: `{{.industry}}`, `{{.account_owner}}`. Names containing spaces or dashes also work as written (`{{if .job title}}...{{end}}`) and resolve everywhere, including inside conditions and helpers, because Warmbly rewrites them to an `index` lookup for you.
+**自定义字段**也使用点号，例如 `{{.industry}}`、`{{.account_owner}}`。名称包含空格或连字符的字段也可按原样书写（`{{if .job title}}...{{end}}`），并能在条件和辅助函数等所有位置解析，因为 Warmbly 会自动将其改写为 `index` 查找。
 
-### Sender fields (emails)
+### 发件人字段（邮件） [#sender-fields-emails]
 
-`Sender` is a structured mailbox object. Use Go template field access, such as `{{.Sender.Name}}`, in the subject, HTML body or plain-text body:
+`Sender` 是结构化邮箱对象。可以在主题、HTML 正文或纯文本正文中，使用 `{{.Sender.Name}}` 等 Go 模板字段访问方式：
 
 ```
 Hi {{.FirstName}}, I'm {{.Sender.Name}} from our team.
 You can reach me at {{.Sender.Email}}.
 ```
 
-Values come from the **mailbox actually sending that message**, including campaign sender rotation and A/B variants. Campaign test emails, placement tests and server previews use their selected mailbox. The campaign preview's **From** line uses the same identity. A local sample preview uses example data, not a live mailbox.
+这些值来自**实际发送该邮件的邮箱**，包括营销活动的发件邮箱轮换和 A/B 版本。营销活动测试邮件、投递位置测试和服务器预览使用各自选中的邮箱；营销活动预览的 **From** 行也使用相同身份。本地示例预览使用示例数据，不读取真实邮箱。
 
-`{{.Sender.Email}}` is the recipient-visible From address, including a configured send-as alias. `{{.Sender.MailboxEmail}}` is the underlying connected mailbox address. `{{.Sender.ReplyTo}}` is the explicit Reply-To header; it is empty when replies simply go to the sender.
+`{{.Sender.Email}}` 是收件人看到的 From 地址，包括已配置的发件别名。`{{.Sender.MailboxEmail}}` 是底层实际连接的邮箱地址。`{{.Sender.ReplyTo}}` 是明确设置的 Reply-To 邮件头；回复直接发回发件人时，该值为空。
 
-Every field is case-sensitive. Prefix each name below with `.Sender.`, for example `{{.Sender.Provider}}`:
+每个字段都区分大小写。使用下表名称时，前面加 `.Sender.`，例如 `{{.Sender.Provider}}`：
 
-| Details | Fields |
+| 信息类别 | 字段 |
 | --- | --- |
-| Identity | `Name`, `Email`, `MailboxEmail`, `SendAsEmail`, `ReplyTo`, `AvatarURL` |
-| Signature | `SignaturePlain`, `SignatureHTML`, `SignatureSync`, `SignatureCode` |
-| Connection | `Provider`, `Status`, `MailHost`, `AuthMethod`, `Vendor` |
-| Sending settings | `Timezone`, `CampaignLimit`, `MinWaitTime`, `SaveToSent`, `RelayFolderMoves`, `Tags` |
-| Tracking | `TrackingDomain`, `TrackingDomainVerified`, `TrackingDomainVerifiedAt`, `TrackDirectMail` |
-| Domain authentication | `AuthState`, `AuthSPF`, `AuthDKIM`, `AuthDMARC`, `AuthDMARCPolicy`, `AuthReason`, `AuthCheckedAt`, `AuthFailingSince` |
-| Warmup | `Warmup`, `WarmupPausedAt`, `WarmupBase`, `WarmupMax`, `WarmupIncrease`, `WarmupReplyRate`, `WarmupTag`, `WarmupPoolType`, `WarmupStartTime`, `WarmupEndTime`, `WarmupDays`, `WarmupPlacement`, `WarmupFolder`, `WarmupRetentionDays` |
-| Lifecycle | `LastSyncedAt`, `CreatedAt`, `UpdatedAt` |
+| 身份 | `Name`, `Email`, `MailboxEmail`, `SendAsEmail`, `ReplyTo`, `AvatarURL` |
+| 签名 | `SignaturePlain`, `SignatureHTML`, `SignatureSync`, `SignatureCode` |
+| 连接 | `Provider`, `Status`, `MailHost`, `AuthMethod`, `Vendor` |
+| 发送设置 | `Timezone`, `CampaignLimit`, `MinWaitTime`, `SaveToSent`, `RelayFolderMoves`, `Tags` |
+| 跟踪 | `TrackingDomain`, `TrackingDomainVerified`, `TrackingDomainVerifiedAt`, `TrackDirectMail` |
+| 域名身份验证 | `AuthState`, `AuthSPF`, `AuthDKIM`, `AuthDMARC`, `AuthDMARCPolicy`, `AuthReason`, `AuthCheckedAt`, `AuthFailingSince` |
+| 预热 | `Warmup`, `WarmupPausedAt`, `WarmupBase`, `WarmupMax`, `WarmupIncrease`, `WarmupReplyRate`, `WarmupTag`, `WarmupPoolType`, `WarmupStartTime`, `WarmupEndTime`, `WarmupDays`, `WarmupPlacement`, `WarmupFolder`, `WarmupRetentionDays` |
+| 生命周期 | `LastSyncedAt`, `CreatedAt`, `UpdatedAt` |
 
-Limits, gaps, volumes, reply rate, days and retention are numbers. `MinWaitTime` is in seconds, `WarmupDays` is the configured sending-days bitmask, and `WarmupRetentionDays` is in days (zero uses the instance default). Flags such as `SignatureSync`, `SaveToSent` and `AuthSPF` are booleans, so use `{{if .Sender.SignatureSync}}...{{end}}`. `AuthDKIM` false means unverified, not that a DKIM record is missing. `Timezone` falls back to the workspace timezone; an empty timezone means UTC. Warmup/tracking settings are the stored mailbox settings, not inferred campaign overrides.
+上限、间隔、数量、回复率、天数和保留时间均为数字。`MinWaitTime` 的单位为秒，`WarmupDays` 是已配置发送日的位掩码，`WarmupRetentionDays` 的单位为天（零表示采用实例默认值）。`SignatureSync`、`SaveToSent` 和 `AuthSPF` 等标志为布尔值，因此可使用 `{{if .Sender.SignatureSync}}...{{end}}`。`AuthDKIM` 为 false 表示尚未验证，并不代表缺少 DKIM 记录。`Timezone` 会回退到工作区时区；时区为空则表示 UTC。预热和跟踪设置取自已保存的邮箱设置，而不是推断出的营销活动覆盖值。
 
-Timestamps, including `Warmup` (when warmup was enabled), render as UTC RFC 3339 strings such as `2026-10-05T15:00:00Z`, or empty when unset. `Tags` is a list and supports native iteration:
+时间戳（包括表示启用预热时间的 `Warmup`）会渲染为 UTC RFC 3339 字符串，例如 `2026-10-05T15:00:00Z`；未设置时为空。`Tags` 是列表，支持原生迭代：
 
 ```
 {{range .Sender.Tags}}{{.}} {{end}}
 {{.Sender.Name | default "our team"}}
 ```
 
-Without a selected mailbox, sender strings are empty, flags are false, numbers are zero and tags are empty. These fields are available in campaign and placement email rendering, not automation trigger data, deal names or inbox reply-template rendering. Unknown sender fields remain unresolved so previews can flag them. `Sender` is reserved and cannot be replaced by a contact custom field.
+未选择邮箱时，发件人字符串为空，标志为 false，数字为零，标签列表为空。这些字段可用于营销活动邮件和投递位置测试邮件的渲染，但不适用于自动化触发数据、商机名称或收件箱回复模板。未知发件人字段会保留为未解析状态，便于预览标记问题。`Sender` 是保留名称，不能被联系人自定义字段替代。
 
-<Callout title="Safe mailbox details only">
-Credentials, OAuth tokens, passwords, internal IDs, worker routing and sync cursors are never exposed. The object has no mailbox methods. If you insert `SignatureHTML` or `SignaturePlain` yourself, disable automatic signatures for that mailbox to avoid a duplicate sign-off.
+<Callout title="仅提供可安全使用的邮箱信息">
+不会暴露凭据、OAuth 令牌、密码、内部 ID、工作节点路由或同步游标。该对象不提供邮箱方法。如果你手动插入 `SignatureHTML` 或 `SignaturePlain`，应关闭该邮箱的自动签名，避免重复落款。
 </Callout>
 
-### Trigger variables (automations)
+### 触发器变量（自动化流程） [#trigger-variables-automations]
 
-Automations carry the trigger's data rather than a contact's saved fields, keyed in lowercase and referenced with the required leading dot:
+自动化流程携带触发器的数据，而不是联系人已保存的字段。键名使用小写，引用时必须加前导点号：
 
 ```
 New reply from {{.contact_email}} on campaign {{.campaign_id}} ({{.intent}})
 ```
 
-| Trigger | Variables |
+| 触发器 | 变量 |
 | --- | --- |
-| Reply received | `contact_email`, `contact_id`, `campaign_id`, `intent`, `confidence`, `subject`, `snippet`, and with [inbox tagging](/guides/inbox-tagging/) on: `ai_labels`, `ai_intent`, `ai_intent_confidence`, `ai_kind`, `ai_relevance`, `ai_needs_review` |
-| Contact created | `contact_email`, `contact_id`, `first_name`, `last_name`, `company`, `phone`, `subscribed`, `source`, `source_detail`, `custom_fields` (a map: `{{.custom_fields.industry}}`), `campaign_ids`, `category_ids` |
-| Form submitted | `contact_email`, `contact_id`, `first_name`, `last_name`, `company`, `phone`, `form_id`, `form_name`, `submission_id`, `source_url`, `campaign_id`, `data` (every answer by its key: `{{.data.team_size}}`) |
-| Meeting booked / rescheduled | `invitee_name`, `invitee_email`, `event_name`, `scheduled_for`, `join_url`, `source`, `contact_id` |
-| Meeting canceled | Same, without `join_url` |
-| Email bounced, Deliverability complaint | `contact_email`, `campaign_id`, `contact_id`, `event_type`, `provider`, `reason` |
-| Unsubscribed | `contact_email`, `contact_id`, `campaign_id`, `source` |
-| Warmup health changed | `email`, `new_state`, `previous_state`, `reason` |
-| Campaign action | `contact_email`, `contact_id`, `campaign_id`, `campaign_name`, `first_name`, `last_name`, `company`, `phone` |
+| 收到回复 | `contact_email`, `contact_id`, `campaign_id`, `intent`, `confidence`, `subject`, `snippet`；启用[收件箱标签](/guides/inbox-tagging/)时还包括：`ai_labels`, `ai_intent`, `ai_intent_confidence`, `ai_kind`, `ai_relevance`, `ai_needs_review` |
+| 创建联系人 | `contact_email`, `contact_id`, `first_name`, `last_name`, `company`, `phone`, `subscribed`, `source`, `source_detail`, `custom_fields`（映射，例如 `{{.custom_fields.industry}}`）, `campaign_ids`, `category_ids` |
+| 提交表单 | `contact_email`, `contact_id`, `first_name`, `last_name`, `company`, `phone`, `form_id`, `form_name`, `submission_id`, `source_url`, `campaign_id`, `data`（按键提供每项回答，例如 `{{.data.team_size}}`） |
+| 会议已预约 / 已改期 | `invitee_name`, `invitee_email`, `event_name`, `scheduled_for`, `join_url`, `source`, `contact_id` |
+| 会议已取消 | 同上，但不含 `join_url` |
+| 邮件退信、垃圾邮件投诉 | `contact_email`, `campaign_id`, `contact_id`, `event_type`, `provider`, `reason` |
+| 已退订 | `contact_email`, `contact_id`, `campaign_id`, `source` |
+| 预热健康状态变化 | `email`, `new_state`, `previous_state`, `reason` |
+| 营销活动操作 | `contact_email`, `contact_id`, `campaign_id`, `campaign_name`, `first_name`, `last_name`, `company`, `phone` |
 
-Action text is a **full template, not token substitution**: conditionals, pipelines, helpers, `{{range}}`, and nested fields (`{{.lead.company}}`) all work, and values keep their type. Because numbers stay numbers, `{{if gt .confidence 0.8}}` works directly in a message body. A malformed template never blocks the action; it falls back to plain `{{.key}}` substitution. Unknown keys render empty. `{{range}}` loops over a field of the data (`{{range .lead.tags}}`), never a number or a function's result, and nests at most two deep; `{{template}}` and `{{block}}` are not supported, and output is capped at 1 MB. A template past any of these limits falls back the same way.
+操作文本支持**完整模板，而不只是标记替换**：条件判断、管道、辅助函数、`{{range}}` 和嵌套字段（`{{.lead.company}}`）都可使用，并且值保留原类型。数字仍是数字，因此可以在消息正文中直接使用 `{{if gt .confidence 0.8}}`。模板格式错误不会阻塞操作，系统会回退为简单的 `{{.key}}` 替换。未知键渲染为空。`{{range}}` 只能遍历数据字段（`{{range .lead.tags}}`），不能遍历数字或函数结果，最多嵌套两层；不支持 `{{template}}` 和 `{{block}}`，输出上限为 1 MB。超过任何限制时，都会以相同方式回退。
 
 </Fold>
 
 <Fold>
 
-## Fallbacks
+## 回退值 [#fallbacks]
 
-Put the field first, then a pipe, then `default` and your backup in quotes:
+先写字段，再写管道符，然后加 `default` 和用引号包裹的回退值：
 
 ```
 Hi {{.FirstName | default "there"}},
@@ -159,43 +159,43 @@ Hope things are going well at {{.Company | default "your company"}}.
 
 <Fold>
 
-## Conditionals
+## 条件判断 [#conditionals]
 
-`{{if}}` includes text only when something is true, `{{else}}` handles the other case, and every `{{if}}` must close with `{{end}}`.
+`{{if}}` 仅在条件为真时包含对应文本，`{{else}}` 处理另一种情况，每个 `{{if}}` 都必须以 `{{end}}` 闭合。
 
 ```
 {{if .Company}}I see you're at {{.Company}}.{{end}}
 {{if eq .Company "Acme"}}Great to connect with the Acme team.{{else}}Great to connect.{{end}}
 ```
 
-`eq` is equals and `ne` is not-equals. Quote your text values.
+`eq` 表示相等，`ne` 表示不相等。文本值需加引号。
 
 </Fold>
 
 <Fold>
 
-## Functions
+## 函数 [#functions]
 
-The same helpers work in campaign emails, automation conditions, and action text.
+同一组辅助函数可以用于营销活动邮件、自动化条件和操作文本。
 
-| Math | Meaning | String | What it does |
+| 数学函数 | 含义 | 字符串函数 | 作用 |
 | --- | --- | --- | --- |
-| `add` `sub` `mul` `div` `mod` | Arithmetic | `lower` `upper` `title` | Change case |
-| `num a` | Force a value to a number | `trim` | Remove surrounding spaces |
-| | | `contains` | Contains, case-insensitive |
-| | | `hasPrefix` `hasSuffix` | Starts or ends with, case-sensitive |
-| | | `has list item` | The list holds that whole item, case-insensitive |
-| | | `join list sep` | The list as one line of text |
+| `add` `sub` `mul` `div` `mod` | 算术运算 | `lower` `upper` `title` | 转换大小写 |
+| `num a` | 强制将值转换为数字 | `trim` | 移除两侧空格 |
+| | | `contains` | 判断包含，不区分大小写 |
+| | | `hasPrefix` `hasSuffix` | 判断开头或结尾，区分大小写 |
+| | | `has list item` | 判断列表是否包含完整项，不区分大小写 |
+| | | `join list sep` | 将列表连接为一行文本 |
 
-Division or modulo by zero returns 0 rather than erroring, so these never break an email.
+除数或取模的模数为零时返回 0，不会报错，因此这些情况不会破坏邮件。
 
-### Comparing numbers
+### 比较数值 [#comparing-numbers]
 
-- **Native**: `gt`, `lt`, `ge`, `le`, `eq`, `ne` compare as-is, and work when the value is already a number (typical of automation data like `confidence`).
-- **Coercing**: `gtf`, `ltf`, `gef`, `lef` read both sides as numbers first. Use these when a value might be text (typical of contact custom fields).
+- **原生比较**：`gt`、`lt`、`ge`、`le`、`eq`、`ne` 按原类型比较；值本身已是数字时可直接使用，例如自动化数据中的 `confidence`。
+- **转换后比较**：`gtf`、`ltf`、`gef`、`lef` 会先将两侧视为数字。值可能是文本时，应使用这些函数，例如联系人自定义字段。
 
-<Callout title="Rule of thumb">
-Comparing automation numbers? Native `gt` / `ge` works. Comparing a custom field or anything that might be text? Use the `f` versions so `"42"` reads as 42. When in doubt, the `f` versions are safe.
+<Callout title="选择原则">
+比较自动化中的数字时，原生 `gt` / `ge` 即可。比较自定义字段或任何可能是文本的值时，使用带 `f` 的版本，让 `"42"` 按 42 处理。不确定时，选择带 `f` 的版本更稳妥。
 </Callout>
 
 ```
@@ -207,27 +207,27 @@ Comparing automation numbers? Native `gt` / `ge` works. Comparing a custom field
 
 <Fold>
 
-## Spintax
+## Spintax 随机文案语法 [#spintax]
 
-Alternatives in single braces separated by pipes, so a batch of sends does not look identical:
+将选项放在单层花括号中，用竖线分隔，避免一批邮件看起来完全相同：
 
 ```
 {Hi|Hey|Hello} {{.FirstName}}, {hope you're well|hope things are good}.
 ```
 
-<Callout type="warn" title="Spintax rules">
-Campaign subject and body only; it does not run in automations. Use **single** braces, not the double braces of merge fields. Only groups containing a pipe count, so a brace run without one (CSS or JSON in an HTML email) is left exactly as written.
+<Callout type="warn" title="Spintax 规则">
+仅用于营销活动主题和正文，不在自动化流程中运行。使用**单层**花括号，不是合并字段的双层花括号。只有包含竖线的分组才会被处理，因此不含竖线的花括号内容（例如 HTML 邮件中的 CSS 或 JSON）保持原样。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Advanced automation expressions
+## 高级自动化表达式 [#advanced-automation-expressions]
 
-For anything the visual picker cannot express. An expression passes when it renders to something truthy; it is **false** when empty, `false`, `0`, `no`, `off`, or `<no value>`, and a broken expression is false rather than silently passing.
+用于可视化选择器无法表达的情况。表达式渲染结果为真值时通过；为空、`false`、`0`、`no`、`off` 或 `<no value>` 时为**假**。格式错误的表达式也判为假，不会悄悄放行。
 
-Write it bare (recommended) or as a full template when you need `{{else}}`:
+可以直接书写表达式（推荐），也可以在需要 `{{else}}` 时使用完整模板：
 
 ```
 gt .confidence 0.8
@@ -241,41 +241,41 @@ not (eq .intent "negative")
 hasSuffix .contact_email "@acme.com"
 ```
 
-`and`, `or`, and `not` take whole tests as inputs, so wrap each in parentheses when mixing groups.
+`and`、`or` 和 `not` 接受完整判断作为输入，因此组合多组条件时，应为每个判断加括号。
 
 </Fold>
 
 <Fold>
 
-## Where each thing applies
+## 各项功能的适用范围 [#where-each-thing-applies]
 
-| Surface | Variables | Conditionals / functions | `default` | Spintax |
+| 使用位置 | 变量 | 条件判断 / 函数 | `default` | Spintax |
 | --- | --- | --- | --- | --- |
-| Campaign subject & body | Contact fields | Yes | Yes | Yes |
-| Automation condition | Trigger keys | Yes | Yes | No |
-| Automation action text | Trigger keys, with the dot | Yes | Yes | No |
+| 营销活动主题与正文 | 联系人字段 | 支持 | 支持 | 支持 |
+| 自动化条件 | 触发器键 | 支持 | 支持 | 不支持 |
+| 自动化操作文本 | 触发器键，带点号 | 支持 | 支持 | 不支持 |
 
 </Fold>
 
 <Fold>
 
-## Gotchas
+## 易错事项 [#gotchas]
 
-- Standard fields are case-sensitive: `{{.FirstName}}`, not `{{.firstname}}`.
-- `{a|b}` is spintax (campaigns only); `{{...}}` is a variable, condition, or function.
-- Always close `{{if}}` with `{{end}}`, and quote text values.
-- If a comparison on a custom field behaves oddly, switch `gt`/`lt` to `gtf`/`ltf`, or wrap the value in `num`.
-- Unknown variables render empty rather than erroring. A leftover `{{...}}` usually means a typo or wrong capitalization.
-- In action text keep the leading dot. It is standard Go `text/template`, so a bare `{{contact_email}}` is invalid.
+- 标准字段区分大小写，应写 `{{.FirstName}}`，而不是 `{{.firstname}}`。
+- `{a|b}` 是 Spintax（仅限营销活动）；`{{...}}` 则是变量、条件或函数。
+- 每个 `{{if}}` 都必须用 `{{end}}` 闭合，并为文本值加引号。
+- 自定义字段比较结果异常时，将 `gt`/`lt` 换成 `gtf`/`ltf`，或用 `num` 包裹值。
+- 未知变量渲染为空而不是报错。残留的 `{{...}}` 通常表示拼写或大小写有误。
+- 操作文本中必须保留前导点号。它采用标准 Go `text/template`，因此不带点号的 `{{contact_email}}` 无效。
 
 </Fold>
 
 <Fold>
 
-## Preview and validation
+## 预览与验证 [#preview-and-validation]
 
-**Campaigns**: the composer's live Preview renders against a sample contact exactly as the real send does (variables, conditionals, functions, then spintax). It flags errors like a broken `{{if}}`, which block launching, and unresolved tokens left after rendering.
+**营销活动**：编辑器中的实时预览会针对示例联系人渲染，与实际发送相同，依次处理变量、条件、函数，再处理 Spintax。它会标记格式错误的 `{{if}}`（这会阻止启动）以及渲染后仍未解析的标记。
 
-**Automations**: an advanced expression is validated on save, so a condition that does not parse cannot be saved. The **Reference** button lists every variable and function inline.
+**自动化流程**：保存时会验证高级表达式，无法解析的条件不能保存。**参考**按钮会在当前界面列出所有变量和函数。
 
 </Fold>

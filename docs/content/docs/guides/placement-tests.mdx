@@ -1,399 +1,399 @@
 ---
-title: "Inbox placement tests"
-description: "Send a campaign step or a template from one of your mailboxes, or from a whole fleet at once, to seed inboxes at the major providers, and see where each copy landed."
+title: "收件箱投递位置测试"
+description: "从单个邮箱或整个邮箱集群，将营销活动中的某个邮件步骤或模板发送到主流服务商的种子测试邮箱，查看每封副本的投递位置。"
 ---
 
-A placement test sends a copy of your email from one of your real mailboxes to seed inboxes at different providers. It then shows where each copy landed: the primary inbox, a Gmail tab, spam, or nowhere at all.
+投递位置测试会从你的真实邮箱发送邮件副本到不同服务商的种子收件箱，然后显示每份副本最终进入了哪里：主收件箱、Gmail 标签页、垃圾邮件文件夹，或始终未收到。
 
-## Run a placement test
+## 运行投递位置测试 [#run-a-placement-test]
 
 <Steps>
 
 <Step>
 
-Open **Placement tests** in the dashboard and start a new test.
+打开控制台中的**投递位置测试**，新建测试。
 
 </Step>
 
 <Step>
 
-Choose a sending mailbox (connected, active, and not a seed inbox) and a seed panel.
+选择发件邮箱和种子面板。发件邮箱必须已连接、处于启用状态，且不能是种子收件箱。
 
 </Step>
 
 <Step>
 
-Pick a campaign step to test, or write a subject and body for an ad-hoc template.
+选择要测试的营销活动步骤，或填写主题和正文，使用临时模板。
 
 </Step>
 
 <Step>
 
-Choose a pace: **Spaced** (the default, around 20 minutes for 20 seeds) or **Quick** (under 3 minutes).
+选择发送节奏：**间隔发送**为默认方式，20 个种子约需 20 分钟；**快速发送**不到 3 分钟。
 
 </Step>
 
 <Step>
 
-Watch the results appear on the test as each seed syncs its copy.
+各个种子收件箱同步到邮件副本后，测试页面会陆续显示结果。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Every copy is a real send, charged to the sending mailbox's daily campaign limit.
-- A copy not seen within 120 minutes of being sent is marked never arrived.
-- On the hosted product, a paid plan gets `40` free tests a month on the shared panel by default, then `25` credits per test. A trial gets `3`.
-- Tests on your own seed inboxes are never counted and never cost credits.
-- One test is noise. Look for a pattern across several tests and providers.
+- 每份副本都是真实发送，会计入发件邮箱的每日营销活动发送限额。
+- 发送后 120 分钟内仍未发现的副本，会标记为始终未到达。
+- 托管产品的付费套餐默认每月可在共享面板免费测试 `40` 次，此后每次 `25` 积分。试用期有 `3` 次。
+- 使用自己的种子收件箱测试，既不计入测试额度，也不消耗积分。
+- 一次测试可能只是偶然波动。应观察多个测试和服务商之间反复出现的模式。
 
 <Fold>
 
-## What a placement test is and who can run one
+## 投递位置测试的用途与使用权限 [#what-a-placement-test-is-and-who-can-run-one]
 
-Browsing filters, searches and view choices are [remembered in your browser tab](/guides/browsing/) across refreshes and navigation, separately for each user and workspace.
+浏览时使用的筛选、搜索和视图选项会[保存在浏览器标签页中](/guides/browsing/)，刷新页面或切换页面后仍然保留，并按用户和工作区分别保存。
 
-A placement test answers one question before your prospects do: when this mailbox sends this email, where does it land? Warmbly sends a copy from a real mailbox of yours to a panel of seed inboxes spread across providers, then reads each seed's mail to see whether the copy reached the primary inbox, a Gmail tab, spam, or nowhere at all.
+投递位置测试帮助你在潜在客户收到邮件之前回答一个问题：这个邮箱发送这封邮件时，会落到哪里？Warmbly 从你的真实邮箱向覆盖不同服务商的一组种子收件箱发送副本，再读取各个种子邮箱，查看副本进入了主收件箱、Gmail 标签页、垃圾邮件文件夹，还是始终未收到。
 
-Tests live under **Placement tests** in the dashboard. Reading results needs the **View analytics** permission, and starting or cancelling a test needs **Send campaigns**, because a test sends real mail from a real mailbox.
+测试位于控制台的**投递位置测试**中。查看结果需要**查看分析数据**权限；启动或取消测试需要**发送营销活动**权限，因为测试会从真实邮箱发送真实邮件。
 
 </Fold>
 
 <Fold>
 
-## What a test measures
+## 测试衡量的内容 [#what-a-test-measures]
 
-Every copy gets one of these verdicts:
+每份副本会得到以下一种判定：
 
-| Verdict | Meaning |
+| 判定 | 含义 |
 |---------|---------|
-| Inbox | The primary inbox |
-| Promotions | Gmail's Promotions tab, which is where cold mail goes to be ignored |
-| Other tab | Another Gmail tab: Updates, Social or Forums |
-| Spam | The spam or junk folder |
-| Never arrived | The copy left your mailbox but was not seen in the seed within 120 minutes of being sent |
-| Failed | The copy never left your mailbox, for example because its worker was offline |
-| Cancelled | The test was cancelled before this copy was sent |
+| 收件箱 | 主收件箱 |
+| 推广 | Gmail 的“推广”标签页，冷邮件在这里容易被忽略 |
+| 其他标签页 | Gmail 的其他标签页：动态、社交或论坛 |
+| 垃圾邮件 | 垃圾邮件文件夹 |
+| 始终未到达 | 副本已离开发件邮箱，但发送后 120 分钟内未在种子邮箱中发现 |
+| 失败 | 副本从未离开发件邮箱，例如工作节点离线 |
+| 已取消 | 该副本发送之前，测试已取消 |
 
-The rates are shares of the copies that were **delivered**, meaning every copy that left the sender and got a verdict: inbox, both kinds of tab, spam and never arrived. Failed and cancelled copies are not in the denominator, because they say nothing about the receiving side. The inbox rate counts the primary inbox only, so a copy in Promotions counts against it.
+各项比率以**已投出**且获得判定的副本为分母，包括收件箱、两类标签页、垃圾邮件和始终未到达。失败和已取消的副本不计入分母，因为它们无法说明接收端的情况。收件箱到达率只计算主收件箱，因此进入“推广”的副本会拉低这一比率。
 
-Results are broken down by provider family: Gmail, Google Workspace, Outlook.com, Microsoft 365, Yahoo Mail, iCloud, Zoho and the rest. Gmail and Google Workspace are kept apart, as are Outlook.com and Microsoft 365, because the consumer and business services filter differently and an email can do well at one and badly at the other.
+结果按服务商类别拆分：Gmail、Google Workspace、Outlook.com、Microsoft 365、Yahoo Mail、iCloud、Zoho 等。Gmail 与 Google Workspace 分开，Outlook.com 与 Microsoft 365 也分开，因为个人版和企业版服务使用不同过滤机制，同一封邮件在其中一方表现良好，在另一方可能很差。
 
 </Fold>
 
 <Fold>
 
-## How a test runs
+## 测试的运行方式 [#how-a-test-runs]
 
-### The copy is the one your campaign sends
+### 测试副本与营销活动实际发送的邮件一致 [#the-copy-is-the-one-your-campaign-sends]
 
-Each copy is rendered the way a campaign send is, in the same order: merge fields and spintax for a sample lead, AI blocks for that lead, form links, the mailbox's signature, the opt-out line, the `List-Unsubscribe` header, attachments, and the open pixel and wrapped links when tracking is on. What a test leaves out is what only a real conversation has: threading into an earlier message, the A/B variant choice, and the campaign's CC and BCC.
+每份副本按营销活动发送时的方式和顺序渲染：为示例潜在客户处理合并字段和随机文本语法，再处理该客户的 AI 内容块、表单链接、邮箱签名、退订行、`List-Unsubscribe` 请求头、附件，以及开启跟踪时的打开像素和改写链接。测试省略的只有真实对话才涉及的内容：接入之前邮件的会话、A/B 变体选择，以及营销活动的抄送和密送。
 
-When you test a campaign step, the copy renders for the campaign's first lead unless you pick another contact (on the Warmbly Cloud panel it renders for a placeholder instead, so a lead's details leave your instance only when you pick one, and AI blocks are left out), and the step is copied when the test starts, so an edit halfway through does not change what the later seeds receive. A follow-up step that threads under an earlier one has no subject of its own, so the test uses the subject of the step it threads under, without the `Re:`. A template you write by hand renders the way a new campaign would, with the workspace's default opt-out line and the unsubscribe header on.
+测试营销活动步骤时，默认按活动中的第一位潜在客户渲染，除非另选联系人。使用 Warmbly Cloud 面板时，默认改用占位联系人，只有你主动选择联系人时，其详情才会离开当前实例，同时会省略 AI 内容块。步骤会在测试开始时复制，因此中途编辑不会改变后续种子收到的内容。跟进步骤如果接在前一个步骤的会话下，就没有独立主题；测试会使用所接续步骤的主题，不添加 `Re:`。手动填写的模板按新营销活动的方式渲染，默认启用工作区退订行和退订请求头。
 
-Nothing is added to the message for the test's sake: no marker in the subject, no special header, no hidden text. Each copy is found again by its Message-ID, so what the seed's filter judges is exactly what a prospect would receive.
+测试不会为了识别邮件而添加任何内容：没有主题标记、特殊请求头或隐藏文字。每份副本通过 Message-ID 找回，因此种子邮箱过滤器判断的内容，正是潜在客户实际会收到的内容。
 
-The test also runs the same [content check](/guides/campaigns/#content-checks) the campaign editor uses and shows its score and issues next to the results.
+测试还会运行与活动编辑器相同的[内容检查](/guides/campaigns/#content-checks)，并在结果旁显示评分和问题。
 
-### Sent one at a time from the real mailbox
+### 从真实邮箱逐封发送 [#sent-one-at-a-time-from-the-real-mailbox]
 
-Copies go out one by one, each as its own send from the mailbox you chose, through the worker that mailbox normally sends from, and alternate between providers so no single provider sees a burst. How far apart they go is the test's pace:
+副本逐封发送，每封都是从所选邮箱发出的独立邮件，经过该邮箱通常使用的工作节点，并在服务商之间交替发送，避免某一个服务商收到突发流量。副本间隔由测试节奏决定：
 
-| Pace | Gap between copies | A 20-seed test sends in |
+| 节奏 | 副本之间的间隔 | 20 个种子的发送时间 |
 |------|--------------------|-------------------------|
-| **Spaced** (default) | About 60 seconds, the way a campaign sends | Around 20 minutes |
-| **Quick** | About 8 seconds | Under 3 minutes |
+| **间隔发送**（默认） | 约 60 秒，与营销活动发送方式相同 | 约 20 分钟 |
+| **快速发送** | 约 8 秒 | 不到 3 分钟 |
 
-Both vary each gap by up to a third either way, and the operator can change the spaced gap; a quick test uses the smaller of the two. Quick is for when you want an answer now, for example after fixing a DNS record. Results appear as each seed syncs the copy, usually within minutes of it being sent. Scheduled tests from a [monitor](#campaign-placement-monitors) always run spaced.
+两种模式都会使每次间隔上下浮动最多三分之一。运维人员可以调整间隔发送的基础间隔；快速测试使用两种间隔中较小的一个。快速方式适用于需要立即得到答案的场景，例如修复 DNS 记录之后。每个种子同步到副本后就会显示结果，通常在发送后数分钟内。[监控器](#campaign-placement-monitors)安排的定期测试始终使用间隔发送。
 
-The sending mailbox's own copy of each probe is kept out of your unibox.
+发件邮箱自身保存的每份探测邮件副本不会进入你的统一收件箱。
 
-### Found in the seed's mail
+### 在种子邮箱中查找测试邮件 [#found-in-the-seeds-mail]
 
-Seed inboxes are ordinary connected mailboxes that Warmbly syncs. As a seed's mail comes in, each copy is matched by its Message-ID and the folder and Gmail labels it arrived with become its verdict. Results appear on the test live, one copy at a time, for everyone looking at it.
+种子收件箱是由 Warmbly 同步的普通已连接邮箱。邮件进入种子邮箱时，系统通过 Message-ID 匹配副本，再根据它到达时所在的文件夹和 Gmail 标签给出判定。查看测试的所有人都会实时看到逐份出现的结果。
 
-A copy not seen within 120 minutes of being sent is marked **never arrived**. Copies on Warmbly Cloud's panel get half an hour more, because their verdict travels back from the cloud. A test finishes when every copy has a verdict. A test in which no copy was delivered at all ends as **failed**, with the reason.
+发送后 120 分钟内未发现的副本会标记为**始终未到达**。Warmbly Cloud 面板的副本额外等待半小时，因为结果还需要从云端返回。所有副本都有判定后，测试结束。如果没有任何副本成功发出，测试以**失败**结束，并显示原因。
 
 </Fold>
 
 <Fold>
 
-## Seed panels
+## 种子邮箱组 [#seed-panels]
 
-A test runs against one panel of seed inboxes:
+每次测试使用一个种子收件箱面板：
 
-| Panel | Whose seeds | Available |
+| 面板 | 种子归属 | 可用条件 |
 |-------|-------------|-----------|
-| **Shared panel** | The panel the instance operator runs for every workspace (`instance` in the API). On the hosted product this is Warmbly's own | Whenever the operator has put seed inboxes on it. On a self-hosted instance, an administrator adds them from the admin panel |
-| **Your seed inboxes** | Mailboxes of your own workspace that you marked as seeds (`workspace` in the API) | Once you mark at least one |
-| **Warmbly Cloud panel** | Warmbly Cloud's panel (`cloud` in the API) | Only on a self-hosted instance [linked to Warmbly Cloud](/guides/warmbly-cloud/#placement-tests-on-warmbly-clouds-seed-panel) |
+| **共享面板** | 实例运维人员为所有工作区提供的面板，API 中为 `instance`。在托管产品中，这是 Warmbly 自有面板 | 运维人员已添加种子收件箱时可用。自托管实例由管理员从管理面板添加 |
+| **你的种子收件箱** | 在自己工作区中标记为种子的邮箱，API 中为 `workspace` | 至少标记一个后可用 |
+| **Warmbly Cloud 面板** | Warmbly Cloud 的面板，API 中为 `cloud` | 仅在[已关联 Warmbly Cloud](/guides/warmbly-cloud/#placement-tests-on-warmbly-clouds-seed-panel)的自托管实例中可用 |
 
-The page shows each panel's seed count and its mix of providers, and says why a panel is unavailable when it is.
+页面会显示每个面板的种子数量和服务商组成；面板不可用时，也会说明原因。
 
-Addresses on the instance and Warmbly Cloud panels are shown masked (`a***@gmail.com`), so a shared panel cannot be listed and added to a sender's allowlist. Your own seed inboxes are shown in full.
+实例面板和 Warmbly Cloud 面板的地址会遮蔽显示，例如 `a***@gmail.com`，防止共享面板的地址被枚举并加入发件人的允许名单。你自己的种子收件箱显示完整地址。
 
-Each test uses up to 20 seeds by default (the operator can change this). They are picked round-robin across provider families, so even a small test covers every provider the panel has. Two kinds of seed are always skipped:
+每次测试默认最多使用 20 个种子，运维人员可以调整。种子按服务商类别轮询选择，因此即使测试规模较小，也会覆盖面板中各类服务商。以下两类种子始终跳过：
 
-- **Seeds on the sender's own domain.** Mail between two mailboxes in the same tenant skips most of the filtering a test is there to observe, so a seed at `acme.com` never receives a test sent from `sales@acme.com`.
-- **The sending mailbox itself.**
+- **与发件人同域名的种子。** 同一租户内两个邮箱之间的邮件，会绕过测试原本希望观察的大部分过滤。因此，位于 `acme.com` 的种子不会收到由 `sales@acme.com` 发起的测试。
+- **发件邮箱本身。**
 
-If nothing is left after that, the test is refused with `placement_no_seeds` and nothing is sent.
+排除后如果没有剩余种子，测试会以 `placement_no_seeds` 被拒绝，不发送任何邮件。
 
-### Testing only some providers
+### 仅测试部分服务商 [#testing-only-some-providers]
 
-On the shared and Warmbly Cloud panels, the **Providers** chips under the panel narrow a test to the providers you pick, for example only Outlook.com and Microsoft 365 when that is where replies dried up. The test then picks its seeds from those providers alone, still round-robin and still without showing their addresses. Leave **All** selected to cover every provider the panel has.
+在共享面板和 Warmbly Cloud 面板上，面板下方的**服务商**标签可将测试范围缩小到所选服务商。例如回复在 Outlook.com 和 Microsoft 365 上突然减少时，可以只测试这两类。测试随后仅从这些服务商选择种子，仍然轮询分配，也不显示其地址。保留**全部**选择即可覆盖面板中的所有服务商。
 
-### Choosing which of your seeds get a copy
+### 选择接收测试副本的自有种子邮箱 [#choosing-which-of-your-seeds-get-a-copy]
 
-On **Your seed inboxes**, you can pick the seeds a test goes to instead of letting Warmbly spread it across providers, for example only the Gmail and Outlook.com seeds you are about to open and check by hand. The chooser under the panel lists your seed inboxes with their provider, and a chip per provider selects all of that provider's seeds at once. Choose none and the test picks as usual.
+在**你的种子收件箱**面板中，可以自行选择测试发送到哪些种子，而不由 Warmbly 自动按服务商分散。例如只选择准备手动打开检查的 Gmail 和 Outlook.com 种子。面板下方的选择器列出种子收件箱及其服务商，每个服务商标签可一次选中该服务商的全部种子。不选择任何种子时，按通常方式自动选择。
 
-Every seed you choose gets a copy: the usual seeds-per-test cap does not apply to seeds you picked by hand. When the sending mailbox has too little of its daily limit left for all of them, the test is refused with the numbers rather than quietly skipping some. Seeds on the sender's domain are greyed out and skipped, and a seed that is not connected cannot be chosen. Choosing individual seeds is only possible on your own panel, because addresses on the shared and Warmbly Cloud panels are masked; there you pick providers instead.
-
-</Fold>
-
-<Fold>
-
-## Your own seed inboxes
-
-Any mailbox connected to your workspace can become a seed inbox. Mark mailboxes on the **Seed inboxes** tab of the placement tests page; it needs the **Manage mailboxes** permission, and a workspace can have up to 50.
-
-A good seed inbox is one that behaves like a stranger's inbox:
-
-- **A separate address on a different domain from your senders.** Seeds on a sender's domain are skipped, as described above.
-- **Personal accounts at the big providers.** A Gmail, an Outlook.com and a Yahoo account cover most consumer filtering. Add a Google Workspace or Microsoft 365 mailbox on another domain you own to see the business side.
-- **Left alone.** Do not add your senders to its contacts, mark their mail as not spam, or change its filtering. Every one of those teaches the provider that your mail is wanted, which is exactly what a prospect's inbox has not learned.
-
-Marking a mailbox as a seed changes how Warmbly treats it:
-
-- **It never warms up.** Its warmup is turned off when you mark it, and starting warmup on it is refused (`mailbox_is_seed`) until you unmark it. A seed that exchanged mail with the warmup pool would stop being a stranger to every sender in it.
-- **It never sends campaign mail.** It is left out of every campaign's sending mailboxes, and it cannot send a placement test itself.
-- **It syncs for tests.** It gets a large daily sync allowance, so copies arriving from many tests are never deferred past the 120 minute window, and it imports no history. The copies it receives are stored like any other mail it syncs.
-
-A mailbox on the instance panel cannot also be one of your seeds, and a mailbox cannot be marked while a test is still sending from it. Unmarking a seed makes it an ordinary mailbox again; its warmup stays off until you start it.
+你选中的每个种子都会收到副本：常规的每次测试种子数量上限不适用于手动选择。若发件邮箱当日剩余额度不足以覆盖全部选项，系统会拒绝测试并显示数量，不会默默跳过一部分。与发件人同域名的种子会显示为灰色并跳过，未连接的种子不可选择。只有自己的面板支持逐个选择种子；共享面板和 Warmbly Cloud 面板的地址是遮蔽的，因此只能选择服务商。
 
 </Fold>
 
 <Fold>
 
-## Starting a test
+## 自有种子测试邮箱 [#your-own-seed-inboxes]
 
-A test needs a sending mailbox, a panel, and a copy to send. The sending mailbox has to be connected and active, and cannot itself be a seed inbox.
+工作区中任何已连接邮箱都可以成为种子收件箱。在投递位置测试页面的**种子收件箱**标签页中进行标记，需要**管理邮箱**权限，每个工作区最多 50 个。
 
-- **Test a campaign step** by choosing the campaign and the step. The step's subject and body are filled in, and the campaign's opt-out line, tracking and attachments apply. Pick a contact if you want the merge fields and AI blocks rendered for someone other than the campaign's first lead.
-- **Test an ad-hoc template** by writing a subject and a body. This is the way to try a draft before it becomes a campaign.
+合适的种子收件箱应像陌生人的邮箱一样工作：
 
-Cancelling a running test stops the copies that have not been sent yet. Copies already sent keep being classified, so a cancelled test still shows where they landed.
+- **使用与发件邮箱不同域名的独立地址。** 如前所述，与发件人同域名的种子会被跳过。
+- **使用主流服务商的个人账户。** 一个 Gmail、一个 Outlook.com 和一个 Yahoo 账户，可以覆盖大多数个人邮箱过滤机制。再添加一个位于你另一个域名下的 Google Workspace 或 Microsoft 365 邮箱，以观察企业邮箱情况。
+- **不要人为干预。** 不要将发件人添加到联系人，不要把其邮件标记为非垃圾邮件，也不要修改过滤规则。每一种操作都会教会服务商“你希望收到这些邮件”，而潜在客户的邮箱恰恰还没有学到这一点。
 
-### Tracking
+标记为种子后，Warmbly 会改变对该邮箱的处理方式：
 
-| Choice | What the copies carry |
+- **不参与预热。** 标记时会关闭预热，取消标记之前，启动预热会以 `mailbox_is_seed` 被拒绝。若种子与预热池交换邮件，它就不再是池中各发件人的陌生收件人。
+- **不发送营销活动邮件。** 它会从所有营销活动的发件邮箱中排除，也不能自行发送投递位置测试。
+- **为测试进行同步。** 它获得较大的每日同步额度，避免多个测试的副本被延迟到 120 分钟窗口之后，并且不导入历史邮件。收到的副本像其他同步邮件一样存储。
+
+实例面板中的邮箱不能同时成为你的种子；邮箱仍在发送测试时，也不能标记为种子。取消种子标记后，它恢复为普通邮箱，但预热仍保持关闭，直到你主动启动。
+
+</Fold>
+
+<Fold>
+
+## 开始测试 [#starting-a-test]
+
+测试需要发件邮箱、面板和待发送内容。发件邮箱必须已连接并启用，且本身不能是种子收件箱。
+
+- **测试营销活动步骤**：选择营销活动和步骤。系统会填入步骤主题和正文，并应用该活动的退订行、跟踪和附件。如果希望合并字段和 AI 内容块使用第一位潜在客户以外的人，请另选联系人。
+- **测试临时模板**：填写主题和正文。适合在草稿变成营销活动之前先行测试。
+
+取消正在运行的测试，会停止尚未发送的副本。已发送副本仍会继续分类，因此已取消测试也会显示它们最终到达的位置。
+
+### 跟踪 [#tracking]
+
+| 选项 | 副本携带的内容 |
 |--------|----------------------|
-| Campaign | The campaign's own open and click tracking. An ad-hoc template has none. This is the default |
-| On | The open pixel and wrapped links |
-| Off | Neither |
-| Compare | Two linked tests to the same seeds, one without tracking and one with it |
+| 跟随营销活动 | 使用活动自己的打开和点击跟踪；临时模板不带跟踪。这是默认选项 |
+| 开启 | 打开像素和改写链接 |
+| 关闭 | 两者都不带 |
+| 对比 | 向同一批种子运行两个关联测试，一个不带跟踪，一个带跟踪 |
 
-A comparison sends each seed both versions back to back, in a random order per seed, so both see the same filter at the same moment. The difference between the two halves is what the pixel and the wrapped links cost you. Both halves send a seed the same words: the copy for that seed is rendered once, with its spintax, merge fields, AI blocks, form links, signature and opt-out line resolved, and the tracked half only adds the pixel and wraps the links. Different seeds can still draw different spintax, as different leads would. If a seed's copy cannot be rendered, neither half is sent to that seed. It counts as two tests and sends twice as many copies. A campaign that sends plain text carries no tracking, so **On** and **Compare** are refused for it (`placement_invalid_tracking`).
+对比测试会向每个种子连续发送两个版本，每个种子的顺序随机，使两份邮件在同一时间面对同一过滤器。两组结果的差异反映跟踪像素和改写链接带来的影响。每个种子收到的两个版本文字完全相同：该种子的副本只渲染一次，解析随机文本语法、合并字段、AI 内容块、表单链接、签名和退订行；带跟踪的版本只额外添加像素并改写链接。不同种子仍可以抽到不同的随机文本，就像不同潜在客户一样。如果某个种子的副本无法渲染，两个版本都不会发送给它。对比计为两次测试，发送的副本数量也翻倍。纯文本营销活动不携带跟踪，因此其**开启**和**对比**选项会以 `placement_invalid_tracking` 被拒绝。
 
 </Fold>
 
 <Fold>
 
-## What a test costs
+## 测试费用 [#what-a-test-costs]
 
-**Every copy is a send from the sending mailbox.** It is charged to the mailbox's daily campaign limit, and the mailbox's campaigns see those sends in their daily budget and in their minimum gap between sends. A test to 20 seeds uses 20 sends of that day; a comparison uses 40. Copies still waiting to go out already hold their place in the day, so a campaign cannot spend them while the test sends. When the mailbox has less left than a full test needs, the test goes to fewer seeds instead; below five seeds per test it is refused with `placement_daily_budget`, because a smaller test is noise. Test from a mailbox with headroom, or before its campaigns run for the day.
+**每份副本都算发件邮箱的一次发送。** 它会计入邮箱的每日营销活动限额，邮箱的营销活动也会在当日预算和最小发送间隔中考虑这些发送。向 20 个种子测试会占用当天 20 次发送，对比则占用 40 次。尚未发出的副本也已预留当天额度，因此测试发送期间，营销活动不能消耗这些额度。如果邮箱剩余额度不足以完成整个测试，系统会减少种子数量；每次测试不足五个种子时，会以 `placement_daily_budget` 拒绝，因为更小的测试只会产生噪声。请选择仍有余量的邮箱，或在当天营销活动开始前测试。
 
-A mailbox runs one test at a time: until every copy of a test has been sent, another test from the same mailbox is refused with `placement_sender_busy`.
+一个邮箱同一时间只运行一个测试：在当前测试的全部副本发出之前，同一邮箱的新测试会以 `placement_sender_busy` 被拒绝。
 
-### Free tests and credits
+### 免费测试次数与积分 [#free-tests-and-credits]
 
-On the hosted product, every workspace gets free tests on the shared panel each month:
+托管产品的每个工作区每月都可在共享面板获得免费测试：
 
-| Workspace | Free tests per month | After that |
+| 工作区 | 每月免费次数 | 用完之后 |
 |-----------|----------------------|------------|
-| On a free trial | `3` | Wait for next month, or upgrade |
-| On a paid plan | `40` | `25` [credits](/guides/ai-credits/) per test |
+| 免费试用 | `3` | 等待下个月或升级 |
+| 付费套餐 | `40` | 每次 `25` [积分](/guides/ai-credits/) |
 
-These are the defaults, and the operator can change both numbers. The month is the calendar month in UTC. A tracking comparison counts as two tests. The placement tests page shows how many free tests you have used, and the new-test dialog says which free test a test uses.
+这些是默认值，运维人员可以调整次数和价格。月份按 UTC 日历月计算。跟踪对比计为两次测试。投递位置测试页面会显示已使用的免费次数，新建测试对话框会说明本次使用第几次免费测试。
 
-**A paid test never starts without you agreeing to its price.** Once the free tests are used up, the dialog shows what the test costs and your balance, and you tick **Pay 25 credits for this test** before it can start; the button repeats the price. Through the API the same agreement is `max_credits`, the most you agree to pay; a price above it (because the last free test went to a teammate in the meantime, say) is refused with `placement_quota_exceeded`, naming the price, and nothing is charged. Credits are drawn like any other spend, monthly allowance first and top-ups after, and your [spend limits](/guides/ai-credits/#usage-and-spend-controls) apply. The charge is logged as **Placement test** in the credits history.
+**未同意价格之前，付费测试绝不会开始。** 免费次数耗尽后，对话框显示测试费用和余额，必须勾选**为本次测试支付 25 积分**才能开始；按钮也会重复显示价格。API 使用 `max_credits` 表达相同授权，即你同意支付的最高积分。价格超过该值时，例如等待期间最后一次免费测试被队友使用，会以 `placement_quota_exceeded` 拒绝并说明价格，不扣任何积分。积分与其他消耗一样，先使用月度额度，再使用充值积分，并遵循你的[消耗限额](/guides/ai-credits/#usage-and-spend-controls)。扣费在积分历史中记录为**投递位置测试**。
 
-- **A test that delivers nothing is refunded.** When no copy of a paid test left the sender (the worker was offline, or you cancelled before the first copy went out), its credits go back to the pools they came from, logged as **Placement test refund**, and they stop counting against your spend limits. Monthly credits whose allowance has reset since the charge are not returned, because they would have expired with it. A free test that ended that way does not use up a free test either.
-- **A comparison with one free test left** uses the free test for one half and pays for the other.
-- **Monitors never spend credits.** A monitor's scheduled test uses the free tests like any other, and once they are gone it records why and tries again a day later.
-- **A trial cannot pay.** Credits are part of a paid plan, so a trial waits for the next month.
+- **未发出任何副本的测试会退款。** 如果付费测试没有任何副本离开发件邮箱，例如工作节点离线，或首份副本发送前就取消，积分会退回原来源，记录为**投递位置测试退款**，也不再计入消耗限额。扣费后月度额度已经重置的积分不会退回，因为它们本来也会随重置过期。以这种方式结束的免费测试也不会占用免费次数。
+- **只剩一次免费测试时进行对比**，一半使用免费次数，另一半付费。
+- **监控器绝不消耗积分。** 定期测试与其他测试一样使用免费次数，用完后会记录原因，并在一天后再试。
+- **试用账户不能付费购买测试。** 积分属于付费套餐，因此试用账户需要等待下个月。
 
-Tests on your own seed inboxes are never counted and never cost credits. A self-hosted instance does not meter its own panel at all. Tests on Warmbly Cloud's panel use the free tests of the Warmbly Cloud workspace the instance is linked to; paying for more with credits is not offered there.
+使用自己的种子收件箱测试，既不计入测试额度，也不消耗积分。自托管实例完全不对自己的面板计量。使用 Warmbly Cloud 面板时，消耗的是实例所关联的 Warmbly Cloud 工作区的免费次数；此面板不提供通过积分购买额外测试的方式。
 
 </Fold>
 
 <Fold>
 
-## Campaign placement monitors
+## 营销活动投递位置监测 [#campaign-placement-monitors]
 
-A monitor re-tests a running campaign on a schedule, so a drop in placement shows up before it shows up in your reply rate. Set it up from the campaign.
+监控器按计划重新测试运行中的营销活动，让投递位置下降在回复率下降之前就被发现。从营销活动中设置。
 
-| Setting | Default | Range |
+| 设置 | 默认 | 范围 |
 |---------|---------|-------|
-| Interval | every `7` days | `1` to `30` days |
-| Panel | Instance | Instance, your seed inboxes, or Warmbly Cloud |
-| Alert below | `70%` inbox | `0` to `100` |
-| Pause on alert | off | on or off |
+| 间隔 | 每 `7` 天 | `1` 至 `30` 天 |
+| 面板 | 实例面板 | 实例面板、你的种子收件箱或 Warmbly Cloud |
+| 提醒阈值 | 收件箱到达率低于 `70%` | `0` 至 `100` |
+| 提醒时暂停 | 关闭 | 开启或关闭 |
 
-Each run tests the campaign's first email step that has both a subject and a body, rendered for its first lead, with the campaign's own tracking. The runs rotate through the campaign's sending mailboxes, one mailbox per run, because every mailbox has its own standing and the one that slipped is the one you want to find. A new or re-enabled monitor runs its first test within about five minutes.
+每次运行会测试活动中第一个同时具有主题和正文的邮件步骤，按第一位潜在客户渲染，并使用活动自身的跟踪设置。各次运行会轮换使用活动的发件邮箱，每次一个，因为每个邮箱的信誉不同，目标正是找出表现下滑的邮箱。新建或重新启用的监控器会在约五分钟内运行首次测试。
 
-A monitor only tests a campaign that is running. When a run cannot start (the campaign is paused, none of its mailboxes is connected, the allowance is used, or the mailbox has too little of its daily limit left), the monitor records why and tries again a day later rather than a whole interval later. Its tests count against the monthly allowance and the mailbox's daily limit like any other.
+监控器只测试正在运行的营销活动。如果无法启动，例如活动暂停、没有已连接邮箱、额度用尽，或邮箱当日余量不足，监控器会记录原因，并在一天后重试，而不是等待完整监控间隔。其测试与其他测试一样，计入月度测试额度和邮箱每日限额。
 
-**When a monitor's test lands below its threshold**, everyone in the workspace who can view campaigns gets a **Placement monitor alert**, with the result and a link to the test. With **Pause on alert** on, the campaign is also paused automatically, with the reason in its activity log. Like every [auto-pause](/guides/campaigns/#auto-pause-guardrails), it does not resume on its own: find out what changed, then start the campaign again yourself.
+**监控测试结果低于阈值时**，工作区内所有可以查看营销活动的成员都会收到**投递位置监控提醒**，包含结果和测试链接。开启**提醒时暂停**后，营销活动还会自动暂停，并在活动日志中说明原因。与所有[自动暂停](/guides/campaigns/#auto-pause-guardrails)一样，它不会自行恢复：请先查明变化原因，再手动启动活动。
 
 </Fold>
 
 <Fold>
 
-## Testing a fleet with batches
+## 批量测试邮箱集群 [#testing-a-fleet-with-batches]
 
-A test answers where one mailbox lands. With hundreds or thousands of sending mailboxes the question is different: is the fleet healthy, and if not, is the problem one mailbox, one domain, or one provider? A **placement batch** runs the same test from many mailboxes and reads the results together. Start one with **New batch** on the placement tests page, with **Test sender pool** on a campaign's settings, or with **Test untested mailboxes** from the coverage line.
+单次测试回答一个邮箱的投递位置。拥有数百甚至数千个发件邮箱时，问题变成了：整个邮箱集群是否健康？如果不健康，问题出在单个邮箱、某个域名，还是某类服务商？**投递位置批量测试**从多个邮箱运行相同测试，并统一分析结果。可以在投递位置测试页面点击**新建批次**，在营销活动设置中点击**测试发件邮箱池**，或从覆盖率提示中点击**测试尚未测试的邮箱**。
 
-Each mailbox in a batch gets its own ordinary placement test with its own results, so everything above about how a test runs, what it costs and how to read it applies to every one of them. The batch adds shared settings, one progress view, results grouped across the fleet, and one cancel button.
+批次中的每个邮箱都会运行独立的普通投递位置测试，并保留各自结果，因此上文关于运行方式、费用和结果解读的说明都适用。批次额外提供共享设置、统一进度视图、跨邮箱集群的分组结果，以及一个取消按钮。
 
-### Choosing the senders
+### 选择发件邮箱 [#choosing-the-senders]
 
-| Senders | What it selects |
+| 发件邮箱选择方式 | 选择范围 |
 |---------|-----------------|
-| **Choose mailboxes** | The mailboxes you tick, by hand (`sender_account_ids` in the API) |
-| **A campaign's senders** | Every mailbox the campaign sends from, the same set its scheduler uses (`sender_scope.type` `campaign`) |
-| **All mailboxes** | Every mailbox in the workspace (`sender_scope.type` `workspace`) |
+| **选择邮箱** | 手动勾选的邮箱，API 中为 `sender_account_ids` |
+| **营销活动的发件邮箱** | 活动实际使用的全部发件邮箱，与调度器使用同一集合，API 中为 `sender_scope.type` 的 `campaign` |
+| **全部邮箱** | 工作区中的所有邮箱，API 中为 `sender_scope.type` 的 `workspace` |
 
-A campaign's senders and all mailboxes can be narrowed by provider (Google Workspace, Microsoft 365, SMTP and the rest), by sending domain, by mailbox tag, and to mailboxes with no finished placement test in the last so many days. Disconnected mailboxes are left out unless you include them; a mailbox you tick by hand is always kept, and is reported by name if it cannot send when its turn comes. Seed inboxes never send.
+营销活动发件邮箱和全部邮箱可以进一步按服务商（Google Workspace、Microsoft 365、SMTP 等）、发件域名、邮箱标签筛选，也可限制为最近指定天数内没有完成投递位置测试的邮箱。默认排除未连接邮箱，除非选择包含；手动勾选的邮箱始终保留，轮到它时如果无法发送，会按名称报告原因。种子收件箱绝不参与发送。
 
-The senders are resolved on the server and written down when the batch starts. A mailbox tagged or added to the campaign afterwards does not join a batch that is already running, and one removed from it does not leave.
+批次开始时，服务器会解析并记录发件邮箱名单。之后新加标签或新加入活动的邮箱不会进入已经运行的批次；之后从活动移除的邮箱也不会退出该批次。
 
-### Sampling
+### 抽样 [#sampling]
 
-Testing every mailbox is thorough but spends a test and a day's sends from each. A sample tests part of the fleet instead:
+测试每个邮箱最全面，但每个邮箱都会消耗一次测试和当日发送额度。抽样只测试集群的一部分：
 
-| Sample | Result |
+| 抽样方式 | 结果 |
 |--------|--------|
-| **All** | Every selected mailbox |
-| **Random** | That many mailboxes, picked at random |
-| **Percent** | That share of the mailboxes, rounded up. **Spread across providers** splits the sample in proportion to each provider's share of the fleet, so 10% of 800 Google Workspace, 400 SMTP and 147 Microsoft 365 mailboxes is 80, 40 and 15, rather than 135 picked at random |
-| **Per domain** | Up to that many mailboxes from every sending domain, so a large domain is not over-represented |
-| **Per provider** | Up to that many mailboxes from every sending provider |
+| **全部** | 所有选中的邮箱 |
+| **随机** | 随机选取指定数量的邮箱 |
+| **百分比** | 选择相应比例的邮箱，向上取整。**分散到各服务商**按各服务商在集群中的占比分配样本，因此对 800 个 Google Workspace、400 个 SMTP 和 147 个 Microsoft 365 邮箱抽取 10% 时，分别选择 80、40 和 15 个，而非完全随机抽取 135 个 |
+| **按域名** | 每个发件域名最多选择指定数量的邮箱，避免大型域名占据过多样本 |
+| **按服务商** | 每个发件服务商最多选择指定数量的邮箱 |
 
-### How a batch runs
+### 批次的运行方式 [#how-a-batch-runs]
 
-A batch can hold thousands of mailboxes, but only a few send at once. Warmbly starts the next mailbox when one has sent every copy of its test, so at most `20` of a workspace's batch mailboxes are sending at the same time, a batch starts at most `10` mailboxes a minute, and the instance as a whole runs at most `200` batch mailboxes at once, which keeps the shared seed panel from receiving a burst (the operator can change all three). Every batch test runs at the spaced pace; quick is for a single test. Consecutive starts rotate across sending providers and domains, so a batch never works through one provider's mailboxes back to back. The number of mailboxes in a batch has no effect on how many run together; the operator's ceiling on batch size, `10,000` by default, exists only to protect the instance.
+一个批次可以包含数千个邮箱，但同一时间只有少量邮箱发送。某个邮箱发完测试的全部副本后，Warmbly 才会启动下一个邮箱；每个工作区最多同时有 `20` 个批次邮箱在发送，每个批次每分钟最多启动 `10` 个邮箱，整个实例最多同时运行 `200` 个批次邮箱，避免共享种子面板收到突发流量。这三项都可以由运维人员调整。所有批次测试都使用间隔发送，快速方式仅适用于单次测试。连续启动会在不同发件服务商和域名之间轮换，不会接连处理同一服务商的邮箱。批次中的邮箱总数不会影响并发数量；运维人员设置的批次规模上限默认是 `10,000`，仅用于保护实例。
 
-Nothing is reserved when the batch starts. Each mailbox is checked when its turn comes, against its own daily limit, minimum gap, connection, worker and the workspace's standing, exactly as a single test is. So campaigns keep sending while a batch works through the fleet, and a batch never gets around a safeguard a single test would hit.
+批次开始时不会预留任何额度。轮到每个邮箱时，才按与单次测试完全相同的方式检查其每日限额、最小间隔、连接、工作节点及工作区风险状况。因此，批次逐步处理邮箱集群时，营销活动可以继续发送；批次也不能绕过单次测试会遇到的任何保护措施。
 
-A mailbox that cannot run when its turn comes is handled by the batch's policy:
+轮到某个邮箱时无法运行，如何处理取决于批次策略：
 
-| Policy | A mailbox without room today, disconnected or offline |
+| 策略 | 当日无余量、未连接或离线的邮箱 |
 |--------|------------------------------------------------------|
-| **Retry until every sender has been tested** (default, `defer`) | Waits and is tried again: early the next UTC day when its daily limit ran out, an hour later when it was disconnected. The batch keeps going with the other mailboxes, and retries for up to seven days from when it started |
-| **Skip senders that can't send right away** (`skip`) | Skipped, with the reason, and the batch moves on |
+| **重试直到所有发件邮箱都已测试**（默认，`defer`） | 等待后重试：每日限额耗尽时在下一个 UTC 日开始后重试，未连接时一小时后重试。批次继续处理其他邮箱，并自批次开始起最多重试七天 |
+| **跳过无法立即发送的邮箱**（`skip`） | 记录原因并跳过，继续处理后续邮箱 |
 
-A mailbox still sending another test is always retried a quarter of an hour later. A mailbox with no seed it can reach (every seed is on its own domain) is skipped under either policy. One mailbox failing never fails the batch: every mailbox keeps its own result or its own reason, such as its daily limit, its connection or its worker.
+如果邮箱正在发送另一项测试，始终在十五分钟后重试。没有可用种子的邮箱，例如所有种子都与它同域名，在两种策略下都会跳过。一个邮箱失败不会让整个批次失败：每个邮箱保留自己的结果或原因，例如每日限额、连接或工作节点问题。
 
-A batch ends **completed** when every mailbox finished a test, **completed with warnings** when some were skipped or failed, **failed** when none finished, or **cancelled**. When the free tests or the credits you agreed to run out partway, or the campaign or step being tested is deleted, the mailboxes not yet started are skipped with that reason and the batch ends with the results it has.
+全部邮箱都完成测试时，批次为**已完成**；部分跳过或失败时，为**已完成但有警告**；没有任何邮箱完成时，为**失败**；也可能为**已取消**。如果中途免费次数或你同意支付的积分耗尽，或被测试的活动或步骤被删除，尚未启动的邮箱会以相应原因跳过，批次带着已有结果结束。
 
-Cancelling a batch stops it starting mailboxes, cancels the copies not sent yet, and leaves the copies already sent to be classified, so a cancelled batch keeps every result it had.
+取消批次会停止启动新邮箱，取消尚未发出的副本，并保留已发送副本继续分类，因此已取消的批次保留所有已有结果。
 
-### Reading a batch
+### 查看批次结果 [#reading-a-batch]
 
-The batch page shows its progress and the overall placement, then four views:
+批次页面先显示进度和整体投递位置，再提供四种视图：
 
-- **Mailboxes**, worst inbox rate first, with the reason for any that was skipped, deferred or failed. Each opens its own test.
-- **Domains**, each sending domain's placement across its mailboxes, worst first. One bad mailbox on an otherwise healthy domain is a mailbox problem; a whole domain low is that domain's reputation or authentication.
-- **Providers**, the same by sending provider, which shows a problem with one kind of mailbox.
-- **Recipient providers**, a table of sending domains against the providers that received the copies, which shows a domain that only one provider is filtering.
+- **邮箱**：按收件箱到达率从低到高排序，显示跳过、延期或失败原因。每个邮箱都可打开自己的测试。
+- **域名**：汇总各发件域名下邮箱的投递位置，最差的排在前面。整体健康域名中的单个异常邮箱通常是邮箱问题；整个域名都低，则指向该域名的信誉或身份验证。
+- **服务商**：按发件服务商进行相同汇总，便于发现某一类邮箱的问题。
+- **收件服务商**：用表格交叉展示发件域名与收到副本的服务商，便于发现只被某个服务商过滤的域名。
 
-For a tracking comparison the overall figure is the tracked half, the copy the campaign really sends, with the untracked half beside it.
+进行跟踪对比时，整体指标使用带跟踪的一半，即营销活动实际发送的版本，旁边同时展示不带跟踪的一半。
 
-The batch does not group by worker. A worker signs in to your mailbox provider, and the provider delivers the mail from its own servers, so recipients' filters never see which worker handled a mailbox.
+批次不会按工作节点分组。工作节点登录你的邮箱服务商，而服务商从自己的服务器投递邮件，因此收件方过滤器看不到哪个工作节点处理了该邮箱。
 
-### What a batch costs
+### 批次费用 [#what-a-batch-costs]
 
-Before a batch starts, the dialog states the workload: how many tests, the most copies it can send (seeds per test times mailboxes, doubled for a tracking comparison), and how many mailboxes send at once. Each mailbox's daily limit can only make the real number smaller.
+开始前，对话框会说明工作量：测试数量、最多可能发送的副本数，即每次种子数乘以邮箱数，跟踪对比再翻倍，以及同时发送的邮箱数量。各邮箱的每日限额只会使实际数量减少。
 
-Every mailbox's test counts as one test against the monthly free tests (two for a comparison), exactly like a single test. When a batch needs more tests than are free, you agree up front to the most the rest can cost, which the API takes as `max_credits` for the whole batch; the batch never spends more than that, and a test that delivers nothing is refunded as usual. When the tests cannot be paid for (a trial, or a panel without paid tests), a batch larger than the free tests left is refused; take a smaller sample or test on your own seed inboxes, which are never counted.
+每个邮箱的测试都计为一次月度免费测试，对比计两次，与单次测试完全相同。如果批次需要的次数超过免费余量，你需要事先同意剩余部分的最高费用；API 使用整个批次的 `max_credits` 表示该上限。批次绝不会超额消耗，未发出任何副本的测试仍按通常规则退款。如果无法付费，例如试用账户或不支持付费测试的面板，超过剩余免费次数的批次会被拒绝；请缩小样本，或使用始终不计量的自有种子收件箱。
 
-### Fleet coverage
+### 邮箱集群覆盖情况 [#fleet-coverage]
 
-The placement tests page shows how much of your connected fleet finished a placement test in the last 30 days, and how many mailboxes never did. **Test untested mailboxes** starts a batch of exactly those.
-
-</Fold>
-
-<Fold>
-
-## Reading the results honestly
-
-A placement test is a signal, not a verdict. Read it with its limits in mind:
-
-- **Seeds are not your prospects.** A seed inbox has never heard from you, which is what makes it useful, but it also has none of the history a real recipient's mailbox builds up, and providers weigh each recipient's own behaviour heavily.
-- **Corporate gateways are not covered.** Many business recipients sit behind a security gateway such as Mimecast, Proofpoint or Cisco before their Microsoft 365 or Google Workspace mailbox. A seed shows the provider's own filter, not what a gateway in front of it would do.
-- **One test is noise.** A panel holds a handful of seeds per provider, and filters do not treat every copy of the same email alike. One copy in spam is not a problem; the same provider junking most copies across several tests is.
-- **Compare over several tests and providers.** Test more than one sending mailbox, repeat the test on another day, and look for a pattern: a single provider going bad usually points at authentication or content at that provider, while every provider going bad points at the sender.
-- **Never arrived is its own signal.** A copy can go missing because the provider dropped or delayed it, or because the seed had not synced it yet. One missing copy means little; most copies missing at one provider usually means that provider is refusing or deferring your mail.
-
-Tests also feed the seed placement figures on the [Deliverability](/guides/deliverability/#the-dashboard) page, which roll every test in the window up by provider.
+投递位置测试页面显示已连接邮箱集群中，有多少在最近 30 天完成过投递位置测试，以及有多少从未测试过。**测试尚未测试的邮箱**会恰好为这些邮箱创建批次。
 
 </Fold>
 
 <Fold>
 
-## Notifications
+## 如实解读结果 [#reading-the-results-honestly]
 
-| Notification | Who gets it | Default |
+投递位置测试提供的是信号，解读时应考虑它的局限：
+
+- **种子不是你的潜在客户。** 种子收件箱从未收到过你的联系，这正是其价值所在；但它也没有真实收件邮箱积累的历史，而服务商会高度重视每位收件人的自身行为。
+- **不覆盖企业安全网关。** 许多企业收件人在 Microsoft 365 或 Google Workspace 邮箱之前，还部署了 Mimecast、Proofpoint 或 Cisco 等安全网关。种子展示的是服务商自身的过滤结果，无法代表前置网关的处理。
+- **一次测试可能只是噪声。** 每个服务商通常只有少量种子，过滤器也不会对同一邮件的每份副本一视同仁。一份进入垃圾邮件未必有问题；多个测试中，同一服务商将大多数副本归为垃圾邮件，才值得关注。
+- **跨多次测试和服务商比较。** 测试多个发件邮箱，换一天重复，并寻找模式：仅一个服务商恶化，通常指向该服务商处的身份验证或内容问题；所有服务商都恶化，则更可能指向发件人。
+- **始终未到达本身也是信号。** 副本可能因服务商丢弃或延迟而消失，也可能只是种子尚未同步。一份缺失说明不了太多；某个服务商的大部分副本都缺失，通常表示其正在拒绝或推迟接收你的邮件。
+
+测试结果也会进入[邮件送达能力](/guides/deliverability/#the-dashboard)页面的种子投递位置数据，在所选范围内按服务商汇总所有测试。
+
+</Fold>
+
+<Fold>
+
+## 通知 [#notifications]
+
+| 通知 | 接收者 | 默认 |
 |--------------|-------------|---------|
-| Placement test finished | Whoever started the test by hand, once every copy has a verdict. A tracking comparison reports once, with both halves. For a batch, whoever started it, once, when the whole batch ends | On, in-app and push, no email |
-| Placement monitor alert | Everyone who can view campaigns, when a monitor's test lands below its threshold | On, including email |
+| 投递位置测试完成 | 手动发起测试的人，在所有副本都有判定后收到。跟踪对比只报告一次，包含两组结果。批次则在整个批次结束时向发起人通知一次 | 开启应用内和推送，不发送邮件 |
+| 投递位置监控提醒 | 监控测试低于阈值时，所有可以查看营销活动的人 | 开启，包括邮件 |
 
-Both open the test, or the batch. Change them under **Settings > Notifications**; see [notifications](/guides/notifications/).
+两种通知都会打开对应测试或批次。在**设置 > 通知**中修改；参见[通知](/guides/notifications/)。
 
 </Fold>
 
 <Fold>
 
-## Limits
+## 限制 [#limits]
 
-| Limit | Value |
+| 限制 | 数值 |
 |-------|-------|
-| Tests running at once per workspace | `3` (a comparison counts as two). A batch's tests are paced by the batch instead |
-| Mailboxes in one batch | up to `10,000` by default, at most `100,000` (operator setting) |
-| Batch mailboxes sending at once per workspace | `20` by default, at most `500` (operator setting) |
-| Batch mailboxes sending at once across the instance | `200` by default, at most `5,000` (operator setting) |
-| Batch mailboxes started per minute | `10` per batch by default (operator setting) |
-| Batches running at once per workspace | `5` |
-| How long a batch retries a deferred mailbox | `7` days from when it started |
-| Tests sending from one mailbox at once | `1` |
-| Seeds per test | up to `20` by default, at most `100` (operator setting). Seeds you chose by hand all get a copy, up to `50` |
-| Your own seed inboxes | `50` per workspace |
-| Time for a copy to arrive | `120` minutes after it was sent |
-| Monitor interval | `1` to `30` days |
+| 每个工作区同时运行的测试 | `3`，对比计为两次。批次中的测试由批次另行控制节奏 |
+| 单个批次的邮箱数 | 默认最多 `10,000`，最高 `100,000`，由运维人员设置 |
+| 每个工作区同时发送的批次邮箱数 | 默认 `20`，最高 `500`，由运维人员设置 |
+| 整个实例同时发送的批次邮箱数 | 默认 `200`，最高 `5,000`，由运维人员设置 |
+| 每分钟启动的批次邮箱数 | 默认每批次 `10` 个，由运维人员设置 |
+| 每个工作区同时运行的批次 | `5` |
+| 批次重试延期邮箱的期限 | 自批次开始起 `7` 天 |
+| 同一邮箱同时发送的测试数 | `1` |
+| 每次测试的种子数 | 默认最多 `20`，最高 `100`，由运维人员设置。手动选择的种子全部接收副本，最多 `50` 个 |
+| 自有种子收件箱 | 每个工作区 `50` 个 |
+| 等待副本到达的时间 | 发送后 `120` 分钟 |
+| 监控间隔 | `1` 至 `30` 天 |
 
 </Fold>
 
 <Fold>
 
-## Moving a workspace
+## 迁移工作区 [#moving-a-workspace]
 
-Placement tests and their results travel in a [workspace export](/guides/workspace-export-import/) as a record, under Delivery events (without what a paid test cost, since credits do not travel), and so do placement batches with their mailboxes and results. A batch still running when it is exported arrives cancelled, so the destination never starts sending it. Campaign placement monitors travel with the campaigns. Which mailboxes are seed inboxes does not travel, so mark them again on the destination. A test that is still sending leaves its unsent copies behind.
+投递位置测试及其结果作为记录，随[工作区导出](/guides/workspace-export-import/)中的“投递事件”迁移，但不包含付费测试的费用，因为积分不会迁移。投递位置批次及其邮箱和结果也会迁移。导出时仍在运行的批次，导入后为已取消，避免目标实例继续发送。营销活动投递监控器随营销活动迁移。哪些邮箱被标记为种子不会迁移，因此需要在目标实例重新标记。仍在发送的测试不会迁移尚未发出的副本。
 
 </Fold>
 
-## Related guides
+## 相关指南 [#related-guides]
 
 <Cards>
-  <Card title="Deliverability" href="/guides/deliverability/">
-    Bounce, complaint and placement health, and the thresholds Warmbly acts on.
+  <Card title="邮件送达能力" href="/guides/deliverability/">
+    退信、投诉和投递位置健康度，以及 Warmbly 据以采取行动的阈值。
   </Card>
-  <Card title="Campaigns" href="/guides/campaigns/">
-    Content checks, tracking and auto-pause guardrails.
+  <Card title="营销活动" href="/guides/campaigns/">
+    内容检查、跟踪和自动暂停保护措施。
   </Card>
-  <Card title="Placement tests API" href="/api/reference/placement/">
-    Start tests, read results and manage seeds and monitors programmatically.
+  <Card title="投递位置测试 API" href="/api/reference/placement/">
+    通过程序启动测试、读取结果，以及管理种子和监控器。
   </Card>
 </Cards>

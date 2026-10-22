@@ -1,34 +1,34 @@
 ---
-title: Account and organization
-description: Authentication, sessions, your profile and security settings, organization governance, teams, and subscription billing.
+title: "账户与组织"
+description: "身份验证、会话、个人资料与安全设置、组织管理、团队和订阅计费。"
 ---
 
-This group covers everything tied to a human account and the workspace it belongs to: signing in, managing sessions, editing your profile and security settings (notification preferences, two-factor authentication, passkeys), running an organization (members, invitations, custom roles), grouping members into teams, and billing.
+本组接口涵盖个人账户及其所属工作区相关功能：登录、会话管理、个人资料和安全设置（通知偏好、双因素身份验证、通行密钥）、组织管理（成员、邀请、自定义角色）、成员团队分组，以及账单。
 
-Almost every endpoint here is session only. They depend on a human-bound JWT and are never reachable with an API key. The two exceptions are the team endpoints, which accept either a JWT or an API key, and the public auth endpoints (login, register, refresh, password reset, passkey login, 2FA verify), which carry no session at all because they exist to create one. Each endpoint below states its auth explicitly.
+这里几乎所有端点都仅接受会话，依赖绑定到具体用户的 JWT，API 密钥无法访问。有两类例外：团队端点同时接受 JWT 和 API 密钥；公开身份验证端点，包括登录、注册、刷新、密码重置、通行密钥登录和双因素验证，本身无需会话，因为它们用于创建会话。下方各端点均明确标注身份验证要求。
 
-All error responses use the shared envelope (`error`, `message`, `code`, `request_id`). See [Error codes](/api/error-codes/).
+所有错误响应采用共享封装（`error`、`message`、`code`、`request_id`）。参阅[错误码](/api/error-codes/)。
 
-## Authentication
+## 身份验证 [#authentication]
 
-These endpoints are public (no session required). Login and registration are two-step: the first call sends a one-time code by email and returns a short-lived signed `session` token, the second call confirms the code and mints the real token pair. When the deployment runs a captcha, the start calls and both password reset calls require one: a Cloudflare Turnstile token from a browser, or an [App Attest proof](#app-attest-native-apps) from the native app.
+这些端点公开开放，无需会话。登录和注册分两步：首次调用通过邮件发送一次性代码，并返回短期签名 `session` 令牌；第二次调用确认代码，签发正式令牌对。部署启用验证码时，启动调用和两个密码重置调用都需要验证码：浏览器提供 Cloudflare Turnstile 令牌，原生应用提供[App Attest 证明](#app-attest-native-apps)。
 
-### Start login
+### 开始登录 [#start-login]
 
 `POST /auth/login`
 
-Sends a login code to the account email and returns a signed session token to carry into the confirm step.
+向账户邮件地址发送登录代码，并返回签名会话令牌，供确认步骤使用。
 
-Auth: public (not available to API keys).
+身份验证：公开端点，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `email` | string | yes | Account email. |
-| `password` | string | yes | Account password. |
-| `turnstile` | string | yes, unless `app_attest` is sent | Cloudflare Turnstile token. |
-| `app_attest` | object | no | The native app's [App Attest proof](#app-attest-native-apps), sent instead of `turnstile`. |
+| `email` | string | 是 | 账户邮件地址。 |
+| `password` | string | 是 | 账户密码。 |
+| `turnstile` | string | 必填，除非发送了 `app_attest` | Cloudflare Turnstile 令牌。 |
+| `app_attest` | object | 否 | 原生应用的[App Attest 证明](#app-attest-native-apps)，替代 `turnstile` 发送。 |
 
 ```json
 {
@@ -38,7 +38,7 @@ Auth: public (not available to API keys).
 }
 ```
 
-#### Response
+#### 响应 [#response]
 
 ```json
 {
@@ -46,21 +46,21 @@ Auth: public (not available to API keys).
 }
 ```
 
-### Confirm login
+### 确认登录 [#confirm-login]
 
 `POST /auth/login/confirm`
 
-Exchanges the emailed code plus the session token for a token pair. If the account has 2FA enabled, no token pair is returned: `two_fa_required` is `true` and a single-use `pending_token` is returned instead, to be passed to `/auth/2fa/verify/`.
+使用邮件代码和会话令牌换取令牌对。账户启用双因素身份验证时，不返回令牌对；`two_fa_required` 为 `true`，改为返回一次性的 `pending_token`，需将其传给 `/auth/2fa/verify/`。
 
-Auth: public (not available to API keys).
+身份验证：公开端点，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-1]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `session` | string | yes | The token returned by `/auth/login`. |
-| `code` | string | yes | The one-time code from the email. |
-| `turnstile` | string | no | Cloudflare Turnstile token. |
+| `session` | string | 是 | `/auth/login` 返回的令牌。 |
+| `code` | string | 是 | 邮件中的一次性代码。 |
+| `turnstile` | string | 否 | Cloudflare Turnstile 令牌。 |
 
 ```json
 {
@@ -69,9 +69,9 @@ Auth: public (not available to API keys).
 }
 ```
 
-#### Response
+#### 响应 [#response-1]
 
-On success, the full token pair:
+成功时返回完整令牌对：
 
 ```json
 {
@@ -82,7 +82,7 @@ On success, the full token pair:
 }
 ```
 
-When 2FA is enabled, a challenge instead of a session:
+启用双因素身份验证时，返回验证挑战，而非会话：
 
 ```json
 {
@@ -92,17 +92,17 @@ When 2FA is enabled, a challenge instead of a session:
 }
 ```
 
-### Start registration
+### 开始注册 [#start-registration]
 
 `POST /auth/register`
 
-Creates a pending registration and emails a confirmation code. Returns a signed session token for the confirm step.
+创建待确认注册，并通过邮件发送确认代码。返回供确认步骤使用的签名会话令牌。
 
-Auth: public (not available to API keys).
+身份验证：公开端点，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-2]
 
-Same shape as `/auth/login`: `email`, `password`, and `turnstile` or `app_attest`.
+结构与 `/auth/login` 相同：`email`、`password`，以及 `turnstile` 或 `app_attest`。
 
 ```json
 {
@@ -112,7 +112,7 @@ Same shape as `/auth/login`: `email`, `password`, and `turnstile` or `app_attest
 }
 ```
 
-#### Response
+#### 响应 [#response-2]
 
 ```json
 {
@@ -120,23 +120,23 @@ Same shape as `/auth/login`: `email`, `password`, and `turnstile` or `app_attest
 }
 ```
 
-### Confirm registration
+### 确认注册 [#confirm-registration]
 
 `POST /auth/register/confirm`
 
-Confirms the emailed code, creates the account and signs it in: the response is the same shape as a completed `/auth/login` (a `token` pair, or a `two_fa_required` challenge), so the client lands in the dashboard without a second sign-in. `/auth/register` itself returns that shape directly when the deployment does not require email verification. An address that already has an account is refused with `409` `conflict` (see [error codes](/api/error-codes/#409-conflict)).
+确认邮件代码，创建账户并登录：响应结构与完成 `/auth/login` 相同，即 `token` 对或 `two_fa_required` 挑战，因此客户端可直接进入控制台，无需再次登录。部署不要求验证邮件地址时，`/auth/register` 本身会直接返回该结构。地址已存在账户时，返回 `409` `conflict` 并拒绝，参阅[错误码](/api/error-codes/#409-conflict)。
 
-Auth: public (not available to API keys).
+身份验证：公开端点，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-3]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `session` | string | yes | The token returned by `/auth/register`. |
-| `code` | string | yes | The one-time code from the email. |
-| `turnstile` | string | no | Cloudflare Turnstile token. |
+| `session` | string | 是 | `/auth/register` 返回的令牌。 |
+| `code` | string | 是 | 邮件中的一次性代码。 |
+| `turnstile` | string | 否 | Cloudflare Turnstile 令牌。 |
 
-#### Response
+#### 响应 [#response-3]
 
 ```json
 {
@@ -145,19 +145,19 @@ Auth: public (not available to API keys).
 }
 ```
 
-### Refresh token
+### 刷新令牌 [#refresh-token]
 
 `POST /auth/refresh`
 
-Exchanges a valid refresh token for a fresh token pair.
+使用有效刷新令牌换取新的令牌对。
 
-Auth: public (not available to API keys).
+身份验证：公开端点，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-4]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `refresh_token` | string | yes | A valid, unexpired refresh token. |
+| `refresh_token` | string | 是 | 有效且未过期的刷新令牌。 |
 
 ```json
 {
@@ -165,98 +165,98 @@ Auth: public (not available to API keys).
 }
 ```
 
-#### Response
+#### 响应 [#response-4]
 
-A new token pair, same shape as the login confirm success response (`access_token`, `access_token_expires_at`, `refresh_token`, `refresh_token_expires_at`).
+新的令牌对，结构与登录确认成功响应相同（`access_token`、`access_token_expires_at`、`refresh_token`、`refresh_token_expires_at`）。
 
-Every refresh rotates the pair: store the new refresh token and discard the old one. A refresh token that has already been exchanged is refused with `401`. If it is presented again more than two minutes after it was exchanged, it has been used twice, so the whole session is ended and every token issued to it stops working. Inside those two minutes it is treated as two callers refreshing at once and only that request is refused.
+每次刷新都会轮换令牌对：保存新刷新令牌，丢弃旧令牌。已经交换过的刷新令牌会返回 `401` 并被拒绝。如果在交换后超过两分钟再次提交，视为重复使用，整个会话将结束，向该会话签发的所有令牌停止工作。两分钟内则视为两个调用者同时刷新，仅拒绝此次请求。
 
-### Start password reset
+### 开始重置密码 [#start-password-reset]
 
 `POST /auth/reset-password`
 
-Emails a reset code if the address has an account. Always returns `200 OK` (it does not reveal whether the address exists).
+地址存在账户时，通过邮件发送重置代码。始终返回 `200 OK`，不泄露地址是否存在。
 
-Auth: public (not available to API keys).
+身份验证：公开端点，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-5]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `email` | string | yes | Account email. |
-| `turnstile` | string | yes, unless `app_attest` is sent | Cloudflare Turnstile token. |
-| `app_attest` | object | no | The native app's [App Attest proof](#app-attest-native-apps), sent instead of `turnstile`. |
+| `email` | string | 是 | 账户邮件地址。 |
+| `turnstile` | string | 必填，除非发送了 `app_attest` | Cloudflare Turnstile 令牌。 |
+| `app_attest` | object | 否 | 原生应用的[App Attest 证明](#app-attest-native-apps)，替代 `turnstile` 发送。 |
 
-#### Response
+#### 响应 [#response-5]
 
-`200 OK` with an empty body.
+`200 OK`，响应体为空。
 
-### Confirm password reset
+### 确认重置密码 [#confirm-password-reset]
 
 `POST /auth/reset-password/confirm`
 
-Sets a new password using the emailed reset code (carried inside the signed `session` token). A reset token is single-use and bound to the password it was requested against: once the password is written by any path (this endpoint, the signed-in change, or an operator reset), every reset token issued before that write answers `401` however long its own expiry has left.
+使用邮件重置代码设置新密码，代码携带在签名 `session` 令牌中。重置令牌只能使用一次，并绑定到请求重置时的密码：无论通过本端点、登录后的修改，还是运维重置，只要密码被写入，此前签发的所有重置令牌都会返回 `401`，无论自身剩余有效期多长。
 
-Auth: public (not available to API keys).
+身份验证：公开端点，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-6]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `session` | string | yes | The reset session token tied to the email. |
-| `password` | string | yes | The new password. |
-| `turnstile` | string | yes, unless `app_attest` is sent | Cloudflare Turnstile token. |
-| `app_attest` | object | no | The native app's [App Attest proof](#app-attest-native-apps), sent instead of `turnstile`. |
+| `session` | string | 是 | 与该邮件地址绑定的重置会话令牌。 |
+| `password` | string | 是 | 新密码。 |
+| `turnstile` | string | 必填，除非发送了 `app_attest` | Cloudflare Turnstile 令牌。 |
+| `app_attest` | object | 否 | 原生应用的[App Attest 证明](#app-attest-native-apps)，替代 `turnstile` 发送。 |
 
-#### Response
+#### 响应 [#response-6]
 
-`200 OK` with an empty body.
+`200 OK`，响应体为空。
 
-### Begin passkey login
+### 开始通行密钥登录 [#begin-passkey-login]
 
 `POST /auth/passkey/login/begin`
 
-Starts a discoverable (usernameless) WebAuthn assertion. Returns the public-key request options the browser passes to `navigator.credentials.get()`.
+启动可发现的、无需用户名的 WebAuthn 断言。返回供浏览器传入 `navigator.credentials.get()` 的公钥请求选项。
 
-Auth: public (not available to API keys).
+身份验证：公开端点，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-7]
 
-The WebAuthn assertion options object (challenge, RP id, allowed credentials, timeout), to feed directly to the WebAuthn API. The embedded `session` is echoed back in the finish step.
+WebAuthn 断言选项对象，包括挑战、RP ID、允许的凭据和超时，可直接传给 WebAuthn API。完成步骤需回传内嵌的 `session`。
 
-### Finish passkey login
+### 完成通行密钥登录 [#finish-passkey-login]
 
 `POST /auth/passkey/login/finish`
 
-Verifies the signed assertion and mints a token pair. A passkey is strong auth, so there is no email code step.
+验证签名断言，并签发令牌对。通行密钥属于强身份验证，因此没有邮件代码步骤。
 
-Auth: public (not available to API keys).
+身份验证：公开端点，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-7]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `session` | string | yes | The session value from the begin step. |
-| `credential` | object | yes | The raw WebAuthn assertion (`PublicKeyCredential`) from the browser. |
+| `session` | string | 是 | 开始步骤返回的会话值。 |
+| `credential` | object | 是 | 浏览器返回的原始 WebAuthn 断言（`PublicKeyCredential`）。 |
 
-#### Response
+#### 响应 [#response-8]
 
-A token pair (same shape as the login confirm success response).
+令牌对，结构与登录确认成功响应相同。
 
-### Verify 2FA login
+### 验证双重身份验证登录 [#verify-2fa-login]
 
 `POST /auth/2fa/verify`
 
-Exchanges the single-use `pending_token` from a 2FA-gated login plus a TOTP or recovery code for a real session.
+使用需双因素验证的登录返回的一次性 `pending_token`，加上 TOTP 或恢复码，换取正式会话。
 
-Auth: public (not available to API keys).
+身份验证：公开端点，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-8]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `pending_token` | string | yes | The `pending_token` returned by `/auth/login/confirm`. |
-| `code` | string | yes | A current TOTP code or an unused recovery code. |
+| `pending_token` | string | 是 | `/auth/login/confirm` 返回的 `pending_token`。 |
+| `code` | string | 是 | 当前有效的 TOTP 代码，或未使用过的恢复码。 |
 
 ```json
 {
@@ -265,40 +265,40 @@ Auth: public (not available to API keys).
 }
 ```
 
-#### Response
+#### 响应 [#response-9]
 
-A token pair (same shape as the login confirm success response).
+令牌对，结构与登录确认成功响应相同。
 
-### Social sign-in (native apps)
+### 第三方账户登录（原生应用） [#social-sign-in-native-apps]
 
-All three are public and unavailable to API keys. A provider-verified identity counts as strong auth, so there is no email code step, and a first sign-in creates the account, organization, and trial.
+三个端点均公开开放，API 密钥不可用。服务商验证的身份视为强身份验证，因此没有邮件代码步骤；首次登录会创建账户、组织和试用。
 
-| Endpoint | Body | Purpose |
+| 端点 | 请求体 | 用途 |
 |----------|------|---------|
-| `GET /auth/providers` | none | Which native sign-in options this deployment supports, so the mobile app adapts to self-hosted backends without a rebuild. Returns `{apple, google}` objects with `enabled` and a public `client_id`. |
-| `POST /auth/apple` | `identity_token` (required), `first_name`, `last_name` | Exchanges a Sign in with Apple identity token, verified against Apple's keys. Apple shares the name only with the app, so pass it through for first-sign-in prefill. |
-| `POST /auth/google` | `id_token` (required) | Exchanges a Google Sign-In ID token, verified against Google's keys and the client ID from `/auth/providers`. |
+| `GET /auth/providers` | 无 | 本部署支持的原生登录选项，使移动应用无需重新构建即可适配自托管后端。返回 `{apple, google}` 对象，包含 `enabled` 和公开的 `client_id`。 |
+| `POST /auth/apple` | `identity_token`（必填）、`first_name`、`last_name` | 交换“通过 Apple 登录”的身份令牌，使用 Apple 密钥验证。Apple 只会将姓名提供给应用，因此首次登录时应将姓名传入，用于预填。 |
+| `POST /auth/google` | `id_token`（必填） | 交换 Google Sign-In ID 令牌，使用 Google 密钥及 `/auth/providers` 中的客户端 ID 验证。 |
 
-Apple and Google both return a token pair (same shape as the login confirm success response), or a two-factor challenge when the account has TOTP enrolled.
+Apple 和 Google 均返回令牌对，结构与登录确认成功响应相同；账户已启用 TOTP 时则返回双因素验证挑战。
 
-### App Attest (native apps)
+### App Attest（原生应用） [#app-attest-native-apps]
 
-The iOS app proves it is a genuine copy of the app with Apple App Attest, and that proof stands in for the captcha on the captcha-gated calls. Browsers keep sending a Turnstile token. Both endpoints below are public, unavailable to API keys, and share their own per-IP budget (`APP_ATTEST_IP_RATE_LIMIT`, 300 per 15 minutes by default) separate from the one on the rest of `/auth`. When the instance has App Attest off they answer `404` with code [`app_attest_unavailable`](/api/error-codes/#app-attest-refusals). `GET /auth/config` reports whether it is on in `app_attest`.
+iOS 应用通过 Apple App Attest 证明自身为真实应用，该证明在需要验证码的调用中替代验证码。浏览器仍发送 Turnstile 令牌。下方两个端点均公开开放，API 密钥不可用，并共用独立的每 IP 额度（`APP_ATTEST_IP_RATE_LIMIT`，默认每十五分钟 300 次），与其余 `/auth` 接口的额度分开。实例关闭 App Attest 时，返回 `404`，错误码为 [`app_attest_unavailable`](/api/error-codes/#app-attest-refusals)。`GET /auth/config` 通过 `app_attest` 报告是否开启。
 
-| Endpoint | Body | Purpose |
+| 端点 | 请求体 | 用途 |
 |----------|------|---------|
-| `POST /auth/app-attest/challenge` | none | Returns `{"challenge": "..."}`, a base64url string that is single-use and expires after five minutes. Every attestation and every assertion is made over a fresh one. |
-| `POST /auth/app-attest/keys` | `key_id`, `attestation`, `challenge` (all required) | Registers the install's App Attest key, once per install. `key_id` is the base64 of the 32-byte key identifier and `attestation` the base64 object from `DCAppAttestService.attestKey`, made over a client data hash of SHA-256 of the UTF-8 bytes of `challenge`. Answers `204`. |
+| `POST /auth/app-attest/challenge` | 无 | 返回 `{"challenge": "..."}`，其中的 base64url 字符串只能使用一次，五分钟后过期。每次证明和每次断言都必须使用新的挑战。 |
+| `POST /auth/app-attest/keys` | `key_id`、`attestation`、`challenge`，均必填 | 注册该应用安装的 App Attest 密钥，每次安装注册一次。`key_id` 是 32 字节密钥标识符的 base64 编码，`attestation` 是 `DCAppAttestService.attestKey` 返回对象的 base64 编码；其客户端数据哈希为 `challenge` 的 UTF-8 字节经过 SHA-256 得到的值。返回 `204`。 |
 
-The server verifies the attestation's certificate chain against Apple's App Attest root, the nonce, the app id, a counter of 0, the environment (a development-signed build is refused unless the instance allows them) and the key id, then stores the key. A key id is registered once; a second registration of the same id is refused with `app_attest_failed`.
+服务器会根据 Apple App Attest 根证书验证证明的证书链，同时验证随机数、应用 ID、值为 0 的计数器、运行环境（除非实例允许，否则拒绝开发签名构建）和密钥 ID，然后保存密钥。密钥 ID 只能注册一次；再次注册相同 ID 会返回 `app_attest_failed` 并被拒绝。
 
-A captcha-gated call (`POST /auth/login`, `/auth/register`, `/auth/reset-password`, `/auth/reset-password/confirm`) then carries an `app_attest` object in place of `turnstile`:
+之后，需要验证码的调用（`POST /auth/login`、`/auth/register`、`/auth/reset-password`、`/auth/reset-password/confirm`）携带 `app_attest` 对象，替代 `turnstile`：
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `key_id` | string | yes | The registered key identifier, base64. |
-| `assertion` | string | yes | The base64 assertion from `DCAppAttestService.generateAssertion`. |
-| `challenge` | string | yes | A fresh challenge from `POST /auth/app-attest/challenge`. |
+| `key_id` | string | 是 | 已注册的密钥标识符，base64 编码。 |
+| `assertion` | string | 是 | `DCAppAttestService.generateAssertion` 返回的 base64 断言。 |
+| `challenge` | string | 是 | 从 `POST /auth/app-attest/challenge` 获取的新挑战。 |
 
 ```json
 {
@@ -312,7 +312,7 @@ A captcha-gated call (`POST /auth/login`, `/auth/register`, `/auth/reset-passwor
 }
 ```
 
-The assertion is made over a client data hash of SHA-256 of this UTF-8 string, with a newline between the parts:
+断言使用的客户端数据哈希，是以下 UTF-8 字符串的 SHA-256，各部分之间以换行分隔：
 
 ```text
 warmbly-app-attest/v1
@@ -320,66 +320,66 @@ warmbly-app-attest/v1
 <challenge>
 ```
 
-`<action>` names the call: `login`, `register`, `reset_password` or `reset_password_confirm`. A proof made for one call does not verify on another. Each challenge is spent by the first call that presents it, and the assertion's counter must be higher than the last one the key presented. Each registered key also has its own budget of 30 protected calls per hour; past it the call answers `400` with the message `Too many attempts, please try again later.`, the same answer as the other sign-in attempt budgets.
+`<action>` 指定调用类型：`login`、`register`、`reset_password` 或 `reset_password_confirm`。为一种调用生成的证明不能用于另一种。每个挑战由首次提交它的调用消耗，断言计数器必须高于该密钥上次提交的值。每个已注册密钥还具有独立额度，每小时 30 次受保护调用；超出后返回 `400`，消息为 `Too many attempts, please try again later.`，与其他登录尝试额度的响应相同。
 
-A proof that does not verify answers [`app_attest_failed`](/api/error-codes/#app-attest-refusals). A key id this server has never registered answers `app_attest_key_unknown`: register the key again with a fresh challenge, then retry the call. When the deployment runs no captcha, neither `turnstile` nor `app_attest` is checked.
+证明验证失败时返回 [`app_attest_failed`](/api/error-codes/#app-attest-refusals)。密钥 ID 从未在本服务器注册时返回 `app_attest_key_unknown`：应使用新挑战重新注册密钥，再重试调用。部署未启用验证码时，不检查 `turnstile` 或 `app_attest`。
 
-`GET /auth/config` carries `captcha` and `app_attest` together, and the app reads them as one decision: no captcha means nothing to send, a captcha with `app_attest` means the app sends a proof, and a captcha without `app_attest` means email and password sign-in is unavailable in the app. Sign in with Apple, Google and passkeys never need a captcha. The iOS simulator cannot use App Attest, so local development keeps using `TURNSTILE_BYPASS_TOKEN`, which is honoured only when `APP_ENV=dev`.
+`GET /auth/config` 同时携带 `captcha` 和 `app_attest`，应用需综合判断：未启用验证码时无需发送任何内容；启用验证码且具有 `app_attest` 时发送证明；启用验证码但没有 `app_attest` 时，应用内无法使用邮件地址和密码登录。通过 Apple、Google 或通行密钥登录始终无需验证码。iOS 模拟器无法使用 App Attest，因此本地开发继续使用 `TURNSTILE_BYPASS_TOKEN`，但仅在 `APP_ENV=dev` 时生效。
 
-### Browser sign-in
+### 浏览器登录 [#browser-sign-in]
 
-A browser cannot authenticate with the provider itself, so it is sent there and comes back with an authorization code. Sign in with Google, Sign in with Apple and generic OpenID Connect are the same three steps against different providers, and which ones a deployment offers is the `providers` array in `GET /auth/config`.
+浏览器无法自行完成服务商身份验证，因此需跳转过去，再携带授权码返回。“通过 Google 登录”、“通过 Apple 登录”和通用 OpenID Connect 都采用相同的三个步骤，只是服务商不同；部署提供的选项见 `GET /auth/config` 中的 `providers` 数组。
 
-| Endpoint | Body | Purpose |
+| 端点 | 请求体 | 用途 |
 |----------|------|---------|
-| `POST /auth/google/begin` | none | Returns `{"url": "...", "binding": "..."}`. Send the browser to `url`; keep `binding` in that browser and present it at the exchange. The state, nonce and PKCE verifier are minted and held server-side. |
-| `POST /auth/apple/begin` | none | The same for Sign in with Apple. |
-| `POST /auth/oidc/begin` | none | The same for the configured OpenID Connect provider. |
-| `GET /auth/google/callback` | none | Where Google returns the browser. Answers with a redirect to `<APP_URL>/auth/sso?code=...`, or to `<APP_URL>/auth/login?sso_error=...` when the sign-in was refused. |
-| `POST /auth/apple/callback` | form post | Where Apple returns the browser. Apple uses `response_mode=form_post` because the flow requests the email scope, so this arrives as a form rather than a redirect; it also accepts `GET` for a refusal. |
-| `GET /auth/oidc/callback` | none | Where the OpenID Connect provider returns the browser. |
-| `POST /auth/sso/exchange` | `code` and `binding` (both required) | Swaps the single-use handoff code from any callback for the session. `POST /auth/oidc/exchange` is the older name for the same endpoint. |
-| `POST /auth/sso/link` | `pending_token` and `password` (both required) | Completes a sign-in that the exchange answered with `link_required`. Takes the password of the existing account, attaches the provider identity to it, and returns the session (or a two-factor challenge). |
+| `POST /auth/google/begin` | 无 | 返回 `{"url": "...", "binding": "..."}`。将浏览器转到 `url`，在该浏览器中保留 `binding`，并在交换时提交。state、nonce 和 PKCE 验证值均由服务端生成和保存。 |
+| `POST /auth/apple/begin` | 无 | 相同流程，用于“通过 Apple 登录”。 |
+| `POST /auth/oidc/begin` | 无 | 相同流程，用于已配置的 OpenID Connect 服务商。 |
+| `GET /auth/google/callback` | 无 | Google 将浏览器返回到此地址。响应重定向至 `<APP_URL>/auth/sso?code=...`；登录被拒绝时重定向至 `<APP_URL>/auth/login?sso_error=...`。 |
+| `POST /auth/apple/callback` | 表单 POST | Apple 将浏览器返回到此地址。由于流程请求邮件地址权限范围，Apple 使用 `response_mode=form_post`，因此以表单提交而非重定向方式到达；拒绝情况也接受 `GET`。 |
+| `GET /auth/oidc/callback` | 无 | OpenID Connect 服务商将浏览器返回到此地址。 |
+| `POST /auth/sso/exchange` | `code` 和 `binding`，均必填 | 将任意回调返回的一次性交接代码换取会话。`POST /auth/oidc/exchange` 是同一端点的旧名称。 |
+| `POST /auth/sso/link` | `pending_token` 和 `password`，均必填 | 完成交换返回 `link_required` 的登录。接受已有账户的密码，将服务商身份关联到账户，然后返回会话，或双因素验证挑战。 |
 
-The callback never returns a token. It hands the browser an opaque, single-use code with a 60 second lifetime and the client exchanges it over `POST`, so no token lands in a URL, browser history, `Referer` header or proxy log. The exchange returns a token pair, or a two-factor challenge when the account has TOTP enrolled.
+回调绝不返回令牌。它向浏览器交付有效期 60 秒的不透明一次性代码，由客户端通过 `POST` 交换，因此令牌不会出现在 URL、浏览器历史、`Referer` 请求头或代理日志中。交换返回令牌对；账户已启用 TOTP 时，返回双因素验证挑战。
 
-The exchange has a third outcome. A provider identity is bound to an account by its `(issuer, subject)` pair; the first sign-in with a new identity falls back to the verified email address to find an existing account. When that account has a password, the exchange returns `link_required: true` with a `pending_token` (ten minute lifetime), `link_email` and `link_provider`, and nothing is linked and no session exists yet. The client asks for the account's password and posts it with the token to `POST /auth/sso/link`; a correct password attaches the identity and returns the session, so every later sign-in with that provider resolves directly. When the account has TOTP enrolled the answer is a two-factor challenge instead, and the identity is attached only once `POST /auth/2fa/verify` passes. A wrong password is refused with the same `Invalid email or password.` as sign-in and counts against the same per-address budget; three wrong answers, or ten minutes, end the challenge with [`sso_link_expired`](/api/error-codes/) and the sign-in starts over. An account with no password (one created through a provider or an invitation) has nothing to ask for and links on the first sign-in. The native `POST /auth/google` and `POST /auth/apple` return the same `link_required` result and complete through the same endpoint.
+交换还有第三种结果。服务商身份通过 `(issuer, subject)` 组合绑定到账户；新身份首次登录时，会使用已验证邮件地址查找现有账户。如果该账户有密码，交换返回 `link_required: true`，附带 `pending_token`（有效期十分钟）、`link_email` 和 `link_provider`，此时尚未建立关联，也没有会话。客户端应要求输入账户密码，并将其连同令牌提交至 `POST /auth/sso/link`；密码正确后建立身份关联并返回会话，之后通过该服务商登录便可直接找到账户。账户已启用 TOTP 时，改为返回双因素验证挑战，只有 `POST /auth/2fa/verify` 通过后才建立身份关联。密码错误会返回与登录相同的 `Invalid email or password.`，并计入相同的每地址额度；三次错误，或经过十分钟后，挑战以 [`sso_link_expired`](/api/error-codes/) 结束，必须重新开始登录。没有密码的账户，例如通过服务商或邀请创建的账户，无需询问密码，首次登录便会关联。原生端的 `POST /auth/google` 和 `POST /auth/apple` 也返回相同的 `link_required` 结果，并通过同一端点完成。
 
-The exchange also requires the `binding` secret that `begin` returned. A one-time `state` proves the callback answers a request this server made; it does not prove it answers one this browser made. Without the binding, someone could run the flow with their own provider account and send you the resulting link, signing you into their workspace. The binding never travels to the provider and never appears in a URL, so a forwarded link arrives without it and is refused with [`sso_wrong_browser`](/api/error-codes/).
+交换还要求 `begin` 返回的 `binding` 机密值。一次性的 `state` 只能证明回调对应本服务器发出的请求，无法证明对应当前浏览器发出的请求。缺少绑定时，攻击者可能用自己的服务商账户运行流程，再把结果链接发送给你，使你登录其工作区。绑定值不会发送给服务商，也不会出现在 URL 中，因此转发的链接缺少它，会返回 [`sso_wrong_browser`](/api/error-codes/) 并被拒绝。
 
-Redirect URIs are served by the API, not the dashboard: they default to `<API_PUBLIC_URL>/v1/auth/<provider>/callback` and that is the value to register at the provider. See [deployment](/development/deployment-guide/#sign-in-with-google-or-apple-optional).
+重定向 URI 由 API 提供，而非控制台，默认为 `<API_PUBLIC_URL>/v1/auth/<provider>/callback`，应在服务商处注册此值。参阅[部署指南](/development/deployment-guide/#sign-in-with-google-or-apple-optional)。
 
-## Sessions
+## 会话 [#sessions]
 
-Self-service session management for the signed-in user. Revoking by id can only ever touch the caller's own sessions.
+已登录用户的自助会话管理。按 ID 撤销始终只能操作调用者自己的会话。
 
-### Sign out
+### 退出登录 [#sign-out]
 
 `POST /auth/logout`
 
-Revokes the current session and closes the user's open realtime connections. Returns `204 No Content`.
+撤销当前会话，并关闭用户已打开的实时连接。返回 `204 No Content`。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-### Sign out everywhere
+### 退出所有设备上的登录 [#sign-out-everywhere]
 
 `POST /auth/logout-all`
 
-Revokes every session for the user, this one included, and closes their open realtime connections. A revoked session can no longer be refreshed. Returns `204 No Content`.
+撤销用户全部会话，包括当前会话，并关闭其已打开的实时连接。已撤销会话无法继续刷新。返回 `204 No Content`。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-### List sessions
+### 列出会话 [#list-sessions]
 
 `GET /auth/sessions`
 
-Returns the user's active sessions for the account security page, with the current one flagged and floated to the top.
+返回账户安全页面所需的用户有效会话，标记当前会话并将其置顶。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-10]
 
-A bare array of session views.
+直接返回会话视图数组。
 
 ```json
 [
@@ -399,39 +399,39 @@ A bare array of session views.
 ]
 ```
 
-### Revoke other sessions
+### 撤销其他会话 [#revoke-other-sessions]
 
 `DELETE /auth/sessions`
 
-Ends every active session except the current one. Returns `204 No Content`.
+结束当前会话以外的所有有效会话。返回 `204 No Content`。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-### Revoke a session
+### 撤销指定会话 [#revoke-a-session]
 
 `DELETE /auth/sessions/:id`
 
-Ends one of the user's other sessions by id. Returns `204 No Content`.
+按 ID 结束用户的某个其他会话。返回 `204 No Content`。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The session id to revoke. |
+| `id` | path | uuid | 要撤销的会话 ID。 |
 
-## Profile and account
+## 个人资料与账户 [#profile-and-account]
 
-### Get current user
+### 获取当前用户 [#get-current-user]
 
 `GET /auth/me`
 
-Returns the signed-in user, including admin flags and the label registries (folders, tags, and the workspace labels returned as `categories`) the dashboard needs on initial load.
+返回已登录用户，包括管理员标志和控制台初始加载所需的分类目录：文件夹、邮箱标签，以及通过 `categories` 返回的工作区标签。
 
-The registries belong to the workspace, not to the caller: every member of an organization sees the same folders, tags and labels, whoever created them. They are read for the session's currently selected workspace, so switching workspaces changes what comes back.
+这些目录属于工作区，而非调用者：同一组织的所有成员看到相同的文件夹和标签，无论由谁创建。读取范围是会话当前选择的工作区，因此切换工作区会改变返回内容。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-11]
 
 ```json
 {
@@ -455,20 +455,20 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Update profile
+### 更新个人资料 [#update-profile]
 
 `PATCH /auth/me`
 
-Updates editable profile fields. First and last name are both required and capped at 50 characters. Returns `204 No Content`.
+更新可编辑的个人资料字段。名和姓均为必填，最长各 50 个字符。返回 `204 No Content`。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-9]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `first_name` | string | yes | 1 to 50 characters. |
-| `last_name` | string | yes | 1 to 50 characters. |
+| `first_name` | string | 是 | 1 至 50 个字符。 |
+| `last_name` | string | 是 | 1 至 50 个字符。 |
 
 ```json
 {
@@ -477,23 +477,23 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Complete onboarding
+### 完成新手引导 [#complete-onboarding]
 
 `PATCH /auth/me/onboarding`
 
-Persists the onboarding questionnaire (name plus optional persona answers). Returns `204 No Content`.
+保存初始设置问卷，包括姓名和可选的用户角色回答。返回 `204 No Content`。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-10]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `first_name` | string | yes | 1 to 50 characters. |
-| `last_name` | string | yes | 1 to 50 characters. |
-| `referral_source` | string | yes | One of `reddit`, `x`, `facebook`, `google`, `other`. |
-| `role` | string | no | One of `founder`, `sales`, `marketing`, `agency`, `recruiter`, `other`. |
-| `team_size` | string | no | One of `just_me`, `2-10`, `11-50`, `51-200`, `200+`. |
+| `first_name` | string | 是 | 1 至 50 个字符。 |
+| `last_name` | string | 是 | 1 至 50 个字符。 |
+| `referral_source` | string | 是 | 取值为 `reddit`、`x`、`facebook`、`google`、`other` 之一。 |
+| `role` | string | 否 | 取值为 `founder`、`sales`、`marketing`、`agency`、`recruiter`、`other` 之一。 |
+| `team_size` | string | 否 | 取值为 `just_me`、`2-10`、`11-50`、`51-200`、`200+` 之一。 |
 
 ```json
 {
@@ -505,15 +505,15 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Upload avatar
+### 上传头像 [#upload-avatar]
 
 `POST /auth/me/avatar`
 
-Uploads a profile image. `multipart/form-data` with a single `file` field. PNG or JPG only, max 2 MB, max 1024x1024 px.
+上传个人头像。使用 `multipart/form-data`，仅包含一个 `file` 字段。仅支持 PNG 或 JPG，最大 2 MB，尺寸不超过 1024×1024 像素。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-12]
 
 ```json
 {
@@ -521,30 +521,30 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Remove avatar
+### 移除头像 [#remove-avatar]
 
 `DELETE /auth/me/avatar`
 
-Clears the profile image and deletes the stored file on a best-effort basis. Returns `204 No Content`.
+清除个人头像，并尽力删除已保存文件。返回 `204 No Content`。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-### Change password
+### 修改密码 [#change-password]
 
 `POST /auth/me/password`
 
-Updates the signed-in user's password. Every session the account holds is ended, the one making the request included, and the response is the token pair of a new session for the calling device. Tokens issued before the change are refused after it, so the client must replace its stored pair with the one returned. Returns `200 OK`.
+更新已登录用户的密码。账户所有会话都会结束，包括发起请求的会话；响应返回为当前设备创建的新会话令牌对。修改前签发的令牌之后会被拒绝，因此客户端必须用返回值替换已保存的令牌对。返回 `200 OK`。
 
-If the new password was stored but the device could not be issued a new session, the response is `409` with code `password_changed_sign_in_again`. The old tokens are not valid in that case either: discard them and sign in with the new password.
+如果新密码已保存，但无法为设备签发新会话，响应为 `409`，错误码为 `password_changed_sign_in_again`。此时旧令牌同样无效，应丢弃并使用新密码重新登录。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-11]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `current_password` | string | yes | The existing password. |
-| `new_password` | string | yes | The new password. |
+| `current_password` | string | 是 | 现有密码。 |
+| `new_password` | string | 是 | 新密码。 |
 
 ```json
 {
@@ -553,7 +553,7 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-#### Response
+#### 响应 [#response-13]
 
 ```json
 {
@@ -564,19 +564,19 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-## Notification preferences and feed
+## 通知偏好与通知列表 [#notification-preferences-and-feed]
 
-User-scoped, no organization gate. Preferences are a single per-user object; the feed is the in-app notification list.
+限定在用户范围内，不检查组织权限。偏好设置是每用户一个对象；通知流是应用内通知列表。
 
-### Get notification preferences
+### 获取通知偏好 [#get-notification-preferences]
 
 `GET /auth/me/notification-preferences`
 
-Returns the caller's preferences merged over the defaults.
+返回调用者偏好设置，并与默认值合并。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-14]
 
 ```json
 {
@@ -599,19 +599,19 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Update notification preferences
+### 更新通知偏好 [#update-notification-preferences]
 
 `PUT /auth/me/notification-preferences`
 
-Replaces the caller's preferences. The full preferences object is sent under a `preferences` key and echoed back.
+替换调用者偏好设置。完整偏好对象通过 `preferences` 键发送，并原样返回。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-12]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `preferences` | object | yes | The complete preferences object. Each category has `enabled` plus a `channels` object (`in_app`, `email`, `slack`, `push`), alongside `email_digest_minutes` (the email bundling window, `30` to `1440`). Categories absent from the request fall back to their defaults. |
+| `preferences` | object | 是 | 完整偏好设置对象。每个分类包含 `enabled` 和 `channels` 对象（`in_app`、`email`、`slack`、`push`），另有 `email_digest_minutes`，即邮件汇总窗口，范围 `30` 至 `1440`。请求中缺少的分类回退到默认值。 |
 
 ```json
 {
@@ -634,24 +634,24 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-#### Response
+#### 响应 [#response-15]
 
-The same `{ "preferences": { ... } }` object that was sent.
+与发送时相同的 `{ "preferences": { ... } }` 对象。
 
-### List notifications
+### 列出通知 [#list-notifications]
 
 `GET /auth/me/notifications`
 
-Returns the caller's recent in-app feed plus the unread count. This is a fixed-size feed, not a cursor-paginated list.
+返回调用者最近的应用内通知流和未读数。通知流大小固定，不是游标分页列表。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `limit` | query | int | Max items to return (default 50). |
-| `unread` | query | string | `1` or `true` to return only unread items. |
+| `limit` | query | int | 最多返回的条目数，默认 50。 |
+| `unread` | query | string | `1` 或 `true` 表示仅返回未读条目。 |
 
-#### Response
+#### 响应 [#response-16]
 
 ```json
 {
@@ -672,95 +672,95 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Mark all read
+### 将所有通知标为已读 [#mark-all-read]
 
 `PUT /auth/me/notifications`
 
-Marks the caller's whole feed read.
+将调用者整个通知流标为已读。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-17]
 
 ```json
 { "ok": true }
 ```
 
-### Mark one read
+### 将指定通知标为已读 [#mark-one-read]
 
 `POST /auth/me/notifications/:id/read`
 
-Marks a single notification read.
+将单条通知标为已读。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The notification id. |
+| `id` | path | uuid | 通知 ID。 |
 
-#### Response
+#### 响应 [#response-18]
 
 ```json
 { "ok": true }
 ```
 
-### Register a device token
+### 注册设备令牌 [#register-a-device-token]
 
 `POST /auth/me/device-tokens`
 
-Registers an APNs device token for mobile push delivery. The mobile app calls this automatically after the user allows notifications; it is an upsert, so repeating it on every launch is safe. A token already registered by another account moves to the caller (the device changed accounts). Delivery of enabled notifications follows the `push` channel in the preferences above, batched server-side: the first event in a quiet stretch pushes immediately, later events inside the batching window arrive as one summary.
+注册用于移动推送的 APNs 设备令牌。用户允许通知后，移动应用会自动调用；采用插入或更新，因此每次启动时重复调用也是安全的。如果令牌已由其他账户注册，会转移给调用者，表示设备更换了账户。启用通知的投递遵循上方偏好中的 `push` 通道，并在服务端批量处理：一段静默期后的首个事件立即推送，批处理窗口内的后续事件合并为一条摘要。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-13]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `token` | string | yes | The hex APNs device token. |
-| `platform` | string | no | Only `ios` today (the default). |
-| `environment` | string | no | `production` (default) or `development` for sandbox builds. |
+| `token` | string | 是 | 十六进制 APNs 设备令牌。 |
+| `platform` | string | 否 | 目前仅支持 `ios`，也是默认值。 |
+| `environment` | string | 否 | `production`（默认），或沙盒构建使用 `development`。 |
 
 ```json
 { "token": "a1b2c3...", "platform": "ios", "environment": "production" }
 ```
 
-#### Response
+#### 响应 [#response-19]
 
 ```json
 { "ok": true }
 ```
 
-### Delete a device token
+### 删除设备令牌 [#delete-a-device-token]
 
 `DELETE /auth/me/device-tokens/:token`
 
-Removes one of the caller's device tokens. The mobile app calls this on sign-out so the device stops receiving the account's pushes.
+移除调用者的一个设备令牌。移动应用在退出登录时调用，使设备停止接收该账户的推送。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `token` | path | string | The hex device token to remove. |
+| `token` | path | string | 要移除的十六进制设备令牌。 |
 
-#### Response
+#### 响应 [#response-20]
 
 ```json
 { "ok": true }
 ```
 
-## Two-factor authentication
+## 双重身份验证 [#two-factor-authentication]
 
-TOTP-based 2FA. Enrollment and management require a live session. The login challenge itself (`/auth/2fa/verify`) is public and documented above.
+基于 TOTP 的双因素身份验证。启用和管理需要有效会话。登录验证端点本身（`/auth/2fa/verify`）公开开放，已在上文说明。
 
-### 2FA status
+### 双重身份验证状态 [#2fa-status]
 
 `GET /auth/2fa/status`
 
-Reports whether the caller has 2FA enabled, when it was confirmed, and how many recovery codes are left. `confirmed_at` is omitted while 2FA is off.
+报告调用者是否启用双因素身份验证、确认时间，以及剩余恢复码数。未启用时省略 `confirmed_at`。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-21]
 
 ```json
 {
@@ -771,17 +771,17 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Begin enrollment
+### 开始启用双重身份验证 [#begin-enrollment]
 
 `POST /auth/2fa/enroll/start`
 
-Generates a TOTP secret and the `otpauth://` provisioning URI (returned once). The client renders the URI as a QR code; the remaining fields spell out the same parameters for manual entry.
+生成 TOTP 密钥和 `otpauth://` 配置 URI，仅返回一次。客户端将 URI 渲染为二维码；其余字段列明相同参数，供手动输入。
 
-Requires a recent confirmation (`POST /auth/reauth`), like confirming enrollment below; without one it answers `403 reauth_required`. An account with neither a password nor 2FA confirms with a passkey or its linked sign-in provider (`GET /auth/reauth/methods`). One with none of those is accepted from a session signed in within the last five minutes, and an older session answers `400 reauth_no_factor`.
+与下方确认启用操作一样，需要近期身份确认（`POST /auth/reauth`），否则返回 `403 reauth_required`。既没有密码也没有双因素验证的账户，可通过通行密钥或已关联登录服务商确认（`GET /auth/reauth/methods`）。这些方式都没有的账户，仅接受最近五分钟内登录的会话；更早的会话返回 `400 reauth_no_factor`。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-22]
 
 ```json
 {
@@ -795,21 +795,21 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Confirm enrollment
+### 确认启用双重身份验证 [#confirm-enrollment]
 
 `POST /auth/2fa/enroll/confirm`
 
-Verifies a TOTP code, enables 2FA, and returns the one-time recovery codes (shown once). A code that does not match answers `400` with code `two_fa_invalid_code`. Needs the same recent confirmation as beginning enrollment.
+验证 TOTP 代码、启用双因素身份验证，并返回一次性恢复码，恢复码仅显示一次。代码不匹配时返回 `400`，错误码为 `two_fa_invalid_code`。需要与开始启用时相同的近期身份确认。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-14]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `code` | string | yes | A current TOTP code from the authenticator. |
+| `code` | string | 是 | 身份验证器当前的 TOTP 代码。 |
 
-#### Response
+#### 响应 [#response-23]
 
 ```json
 {
@@ -817,21 +817,21 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Regenerate recovery codes
+### 重新生成恢复码 [#regenerate-recovery-codes]
 
 `POST /auth/2fa/recovery-codes`
 
-Replaces every recovery code with a fresh set, returned once. Requires a current TOTP or recovery code in the body; a code that does not match answers `400` with code `two_fa_invalid_code`. The previous codes stop working as soon as the new set is issued. Wrong codes here and on `DELETE /auth/2fa` count against the same per-account attempt budget as `POST /auth/reauth`; once it is spent both answer `400` with "Too many attempts" until it resets. No `Idempotency-Key` is needed: the proof code is single-use, so a retried request is refused rather than rotating the set twice.
+将全部恢复码替换为新集合，仅返回一次。请求体需要当前 TOTP 或恢复码；不匹配时返回 `400`，错误码为 `two_fa_invalid_code`。新集合签发后，旧码立即失效。此处及 `DELETE /auth/2fa` 的错误代码尝试，与 `POST /auth/reauth` 计入同一账户尝试额度；耗尽后，两者均返回 `400` 和“尝试次数过多”，直到额度重置。无需 `Idempotency-Key`：证明代码只能使用一次，因此重试请求会被拒绝，不会重复轮换。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-15]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `code` | string | yes | A current TOTP or recovery code. |
+| `code` | string | 是 | 当前 TOTP 或恢复码。 |
 
-#### Response
+#### 响应 [#response-24]
 
 ```json
 {
@@ -839,58 +839,58 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Disable 2FA
+### 关闭双重身份验证 [#disable-2fa]
 
 `DELETE /auth/2fa`
 
-Turns off 2FA. Requires a current TOTP or recovery code in the body; a code that does not match answers `400` with code `two_fa_invalid_code`.
+关闭双因素身份验证。请求体需要当前 TOTP 或恢复码；不匹配时返回 `400`，错误码为 `two_fa_invalid_code`。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-16]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `code` | string | yes | A current TOTP or recovery code. |
+| `code` | string | 是 | 当前 TOTP 或恢复码。 |
 
-#### Response
+#### 响应 [#response-25]
 
 ```json
 { "ok": true }
 ```
 
-## Passkeys
+## 通行密钥 [#passkeys]
 
-WebAuthn credential management for the signed-in user. The login flow (`/auth/passkey/login/begin` and `/finish`) is public and documented above.
+已登录用户的 WebAuthn 凭据管理。登录流程（`/auth/passkey/login/begin` 和 `/finish`）公开开放，已在上文说明。
 
-### Begin passkey registration
+### 开始注册通行密钥 [#begin-passkey-registration]
 
 `POST /auth/passkey/register/begin`
 
-Returns the WebAuthn creation options the browser passes to `navigator.credentials.create()`.
+返回供浏览器传入 `navigator.credentials.create()` 的 WebAuthn 创建选项。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-26]
 
-The WebAuthn creation options object (challenge, RP, user, pubkey params).
+WebAuthn 创建选项对象，包括挑战、RP、用户和公钥参数。
 
-### Finish passkey registration
+### 完成注册通行密钥 [#finish-passkey-registration]
 
 `POST /auth/passkey/register/finish`
 
-Stores the new credential and returns its display view.
+保存新凭据，并返回其展示视图。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-17]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `name` | string | no | A friendly label for the passkey. |
-| `credential` | object | yes | The raw WebAuthn attestation (`PublicKeyCredential`) from the browser. |
+| `name` | string | 否 | 便于识别的通行密钥标签。 |
+| `credential` | object | 是 | 浏览器返回的原始 WebAuthn 证明（`PublicKeyCredential`）。 |
 
-#### Response
+#### 响应 [#response-27]
 
 ```json
 {
@@ -904,61 +904,61 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### List passkeys
+### 列出通行密钥 [#list-passkeys]
 
 `GET /auth/passkey/credentials`
 
-Returns the user's stored passkeys.
+返回用户已保存的通行密钥。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-28]
 
-A bare array of credential views (same shape as the register finish response).
+直接返回凭据视图数组，结构与完成注册的响应相同。
 
-### Rename a passkey
+### 重命名通行密钥 [#rename-a-passkey]
 
 `PATCH /auth/passkey/credentials/:id`
 
-Renames a stored passkey and returns the updated view.
+重命名已保存的通行密钥，并返回更新后的视图。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The credential id. |
+| `id` | path | uuid | 凭据 ID。 |
 
-#### Request body
+#### 请求体 [#request-body-18]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `name` | string | yes | The new label. |
+| `name` | string | 是 | 新标签。 |
 
-### Delete a passkey
+### 删除通行密钥 [#delete-a-passkey]
 
 `DELETE /auth/passkey/credentials/:id`
 
-Removes a stored passkey. Returns `204 No Content`.
+移除已保存的通行密钥。返回 `204 No Content`。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The credential id. |
+| `id` | path | uuid | 凭据 ID。 |
 
-## Account danger zone
+## 账户高风险操作 [#account-danger-zone]
 
-Delayed hard-delete of the caller's own account, with a confirmation phrase and a grace window.
+延迟永久删除调用者自己的账户，需要确认短语，并提供宽限期。
 
-### Get account danger-zone status
+### 获取账户高风险操作状态 [#get-account-danger-zone-status]
 
 `GET /me/danger-zone`
 
-Returns the danger-zone summary plus any pending deletion.
+返回危险操作区摘要，以及任何待执行的删除。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-29]
 
 ```json
 {
@@ -971,20 +971,20 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Schedule account deletion
+### 安排删除账户 [#schedule-account-deletion]
 
 `POST /me/danger-zone/delete`
 
-Schedules the account for a delayed hard delete. The confirmation must match the email. Returns `202 Accepted` with the scheduled-deletion record.
+安排延迟永久删除账户。确认内容必须匹配账户邮件地址。返回 `202 Accepted`，包含计划删除记录。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-19]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `confirmation` | string | yes | Must equal the account email. |
-| `reason` | string | no | Optional free-text reason. |
+| `confirmation` | string | 是 | 必须等于账户邮件地址。 |
+| `reason` | string | 否 | 可选的自由文本原因。 |
 
 ```json
 {
@@ -993,7 +993,7 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-#### Response
+#### 响应 [#response-30]
 
 ```json
 {
@@ -1007,37 +1007,37 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Cancel account deletion
+### 取消删除账户 [#cancel-account-deletion]
 
 `DELETE /me/danger-zone/delete`
 
-Cancels a pending account deletion.
+取消待执行的账户删除。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body (optional)
+#### 请求体（可选） [#request-body-optional]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `reason` | string | no | Optional free-text reason. |
+| `reason` | string | 否 | 可选的自由文本原因。 |
 
-#### Response
+#### 响应 [#response-31]
 
 ```json
 { "message": "deletion cancelled" }
 ```
 
-## Websocket bootstrap
+## WebSocket 连接初始化 [#websocket-bootstrap]
 
-### Generate a websocket token
+### 生成 WebSocket 令牌 [#generate-a-websocket-token]
 
 `POST /getaway`
 
-Mints a single-session token for the realtime websocket and returns the connect URL plus its TTL in seconds.
+为实时 WebSocket 签发单会话令牌，并返回连接 URL 和以秒为单位的有效期。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-32]
 
 ```json
 {
@@ -1046,26 +1046,26 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-## Organizations
+## 组织 [#organizations]
 
-The organization is the workspace tenant. These endpoints handle creating and switching workspaces, the current workspace and its limits, members, custom roles, invitations, ownership transfer, avatar, and the workspace danger zone. All of `/organization/*` is session only. Mutations are gated by the caller's organization role, noted per endpoint.
+组织即工作区租户。这些端点处理工作区创建和切换、当前工作区及其限制、成员、自定义角色、邀请、所有权转移、头像和工作区危险操作区。所有 `/organization/*` 路由仅接受会话。修改操作由调用者的组织角色权限控制，各端点分别注明。
 
-### Get the workspace sending posture
+### 获取工作区发送限制状态 [#get-the-workspace-sending-posture]
 
 `GET /organization/current/risk`
 
-Returns the workspace's abuse posture and, when it is restricted, why. Readable by any member: a workspace whose sending is limited should be able to see that it is.
+返回工作区的滥用风险处置状态，受限时同时说明原因。任何成员均可读取：发送受限的工作区应能够看到这一状态。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-33]
 
-| Field | Type | Description |
+| 字段 | 类型 | 说明 |
 |-------|------|-------------|
-| `state` | string | `trusted`, `watch`, `restricted`, or `suspended`. |
-| `restricted` | boolean | True for `restricted` and `suspended`; volume is reduced. |
-| `suspended` | boolean | True when sending is stopped entirely. |
-| `reason` | string | Plain-language summary, when there is one. |
+| `state` | string | `trusted`、`watch`、`restricted` 或 `suspended`。 |
+| `restricted` | boolean | `restricted` 和 `suspended` 时为 true，发送量降低。 |
+| `suspended` | boolean | 完全停止发送时为 true。 |
+| `reason` | string | 有摘要时，提供通俗说明。 |
 
 ```json
 {
@@ -1076,30 +1076,30 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-The detector evidence behind a posture is deliberately not returned. It is operator-facing, and handing an actor the exact signals that flagged them is a map for evading the next check. What each state means, and which signals can reach it, is described in [workspace sending posture](/guides/deliverability/).
+有意不返回状态背后的检测证据。这些信息供运维人员使用；向被检测方提供触发判断的精确信号，会帮助其规避后续检查。各状态含义及可能触发它们的信号见[工作区发送限制状态](/guides/deliverability/)。
 
-### Create an organization
+### 创建组织 [#create-an-organization]
 
 `POST /organization`
 
-Creates a new organization owned by the caller. Returns `201 Created`.
+创建由调用者拥有的新组织。返回 `201 Created`。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-20]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `name` | string | yes | 1 to 255 characters. |
-| `timezone` | string | no | Workspace timezone, an IANA name such as `America/New_York`. New campaigns start their schedule in it, and a mailbox with no timezone of its own reads its warmup hours and working hours in it. The dashboard sends the browser's zone. |
+| `name` | string | 是 | 1 至 255 个字符。 |
+| `timezone` | string | 否 | 工作区时区，IANA 名称，例如 `America/New_York`。新营销活动的日程初始采用此时区，没有自身时区的邮箱也据此解释预热时段和工作时间。控制台发送浏览器时区。 |
 
 ```json
 { "name": "Acme Outbound", "timezone": "America/New_York" }
 ```
 
-#### Response
+#### 响应 [#response-34]
 
-The created organization object.
+创建的组织对象。
 
 ```json
 {
@@ -1116,15 +1116,15 @@ The created organization object.
 }
 ```
 
-### List my organizations
+### 列出我所属的组织 [#list-my-organizations]
 
 `GET /organization`
 
-Returns the organizations the caller is a member of.
+返回调用者加入的组织。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-35]
 
 ```json
 {
@@ -1143,19 +1143,19 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Switch organization
+### 切换组织 [#switch-organization]
 
 `POST /organization/switch/:id`
 
-Sets the session's current organization. The caller must be a member.
+设置会话的当前组织。调用者必须是该组织成员。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The organization to switch to. |
+| `id` | path | uuid | 要切换到的组织。 |
 
-#### Response
+#### 响应 [#response-36]
 
 ```json
 {
@@ -1164,15 +1164,15 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Get current organization
+### 获取当前组织 [#get-current-organization]
 
 `GET /organization/current`
 
-Returns the session's current organization with its resolved limits and live counts.
+返回会话当前组织，包含解析后的限制和实时计数。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-37]
 
 ```json
 {
@@ -1201,23 +1201,23 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Update current organization
+### 更新当前组织 [#update-current-organization]
 
 `PATCH /organization/current`
 
-Updates the current organization (name, slug, timezone, presence privacy toggles). A presence privacy change re-gates connected sockets live.
+更新当前组织，包括名称、短标识、时区和在线状态隐私开关。在线状态隐私变更会立即重新限制已连接的实时连接。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_settings`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_settings`。
 
-#### Request body
+#### 请求体 [#request-body-21]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `name` | string | no | New workspace name. |
-| `slug` | string | no | New workspace slug. |
-| `presence_show_online` | boolean | no | When false the realtime service tracks no member (nobody appears online). |
-| `presence_show_activity` | boolean | no | When false online is still shown but viewing/editing detail is stripped. |
-| `timezone` | string | no | Workspace timezone, an IANA name. New campaigns default to it and mailboxes with no timezone of their own read their hours in it. Send an empty string to clear it, after which those fall back to UTC. |
+| `name` | string | 否 | 新的工作区名称。 |
+| `slug` | string | 否 | 新的工作区短标识。 |
+| `presence_show_online` | boolean | 否 | 为 false 时，实时服务不跟踪任何成员，没有人显示为在线。 |
+| `presence_show_activity` | boolean | 否 | 为 false 时，仍显示在线状态，但移除查看和编辑详情。 |
+| `timezone` | string | 否 | 工作区时区，IANA 名称。新营销活动默认使用此时区，没有自身时区的邮箱也据此解释时段。发送空字符串可清除，此后这些情况回退到 UTC。 |
 
 ```json
 {
@@ -1227,19 +1227,19 @@ Auth: Session only (not available to API keys). **Org permission** `manage_setti
 }
 ```
 
-#### Response
+#### 响应 [#response-38]
 
-The updated organization object.
+更新后的组织对象。
 
-### Get organization limits
+### 获取组织限额 [#get-organization-limits]
 
 `GET /organization/current/limits`
 
-Returns the current organization's plan-resolved limits and current usage counts.
+返回当前组织根据套餐解析的限制，以及当前用量计数。
 
-Auth: Session only (not available to API keys). Requires a selected organization.
+身份验证：仅限会话，API 密钥不可用。需要已选择组织。
 
-#### Response
+#### 响应 [#response-39]
 
 ```json
 {
@@ -1260,15 +1260,15 @@ Auth: Session only (not available to API keys). Requires a selected organization
 }
 ```
 
-### List members
+### 列出成员 [#list-members]
 
 `GET /organization/members`
 
-Returns the current organization's members, each hydrated with the user's email, display name, role, and effective permission bitmask.
+返回当前组织的成员，每项填充用户邮件地址、显示名称、角色和实际生效的权限位掩码。
 
-Auth: Session only (not available to API keys). Requires a selected organization.
+身份验证：仅限会话，API 密钥不可用。需要已选择组织。
 
-#### Response
+#### 响应 [#response-40]
 
 ```json
 {
@@ -1289,21 +1289,21 @@ Auth: Session only (not available to API keys). Requires a selected organization
 }
 ```
 
-### Invite a member
+### 邀请成员 [#invite-a-member]
 
 `POST /organization/members/invite`
 
-Invites an email to the organization and emails an accept link. The invitee lands in the given role set. Returns `201 Created`.
+邀请某个邮件地址加入组织，并发送接受邀请链接。受邀人加入指定角色集合。返回 `201 Created`。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_team`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_team`。
 
-#### Request body
+#### 请求体 [#request-body-22]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `email` | string | yes | The invitee's email. |
-| `role_ids` | uuid[] | no | The workspace roles to assign (at least one role overall). |
-| `role_id` | uuid | no | Single-role shorthand, merged with `role_ids`. |
+| `email` | string | 是 | 受邀人的邮件地址。 |
+| `role_ids` | uuid[] | 否 | 要分配的工作区角色，合计至少一个。 |
+| `role_id` | uuid | 否 | 单角色简写，与 `role_ids` 合并。 |
 
 ```json
 {
@@ -1312,7 +1312,7 @@ Auth: Session only (not available to API keys). **Org permission** `manage_team`
 }
 ```
 
-#### Response
+#### 响应 [#response-41]
 
 ```json
 {
@@ -1330,60 +1330,60 @@ Auth: Session only (not available to API keys). **Org permission** `manage_team`
 }
 ```
 
-### Update a member's roles
+### 更新成员角色 [#update-a-members-roles]
 
 `PATCH /organization/members/:id`
 
-Replaces a member's assigned role set. Returns the updated member.
+替换成员分配的角色集合，返回更新后的成员。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_team`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_team`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The member's user id. |
+| `id` | path | uuid | 成员用户 ID。 |
 
-#### Request body
+#### 请求体 [#request-body-23]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `role_ids` | uuid[] | no | New assigned role set (at least one role overall). |
-| `role_id` | uuid | no | Single-role shorthand, merged with `role_ids`. |
+| `role_ids` | uuid[] | 否 | 新分配的角色集合，合计至少一个。 |
+| `role_id` | uuid | 否 | 单角色简写，与 `role_ids` 合并。 |
 
 ```json
 { "role_ids": ["r2...", "r3..."] }
 ```
 
-#### Response
+#### 响应 [#response-42]
 
-The updated member object (same shape as a list-members entry).
+更新后的成员对象，结构与成员列表条目相同。
 
-### Remove a member
+### 移除成员 [#remove-a-member]
 
 `DELETE /organization/members/:id`
 
-Removes a member from the organization. The member's sessions stop selecting it at once, so their next request that needs a workspace answers `400` until they switch to another one. Every OAuth app authorization the member granted in the workspace is revoked. API keys stay, because they belong to the workspace rather than to the member who created them.
+将成员从组织移除。该成员的会话会立即停止选中此组织，因此下一次需要工作区的请求会返回 `400`，直到其切换到其他工作区。该成员在工作区内授予的所有 OAuth 应用授权都会撤销。API 密钥保留，因为它们属于工作区，而非创建它们的成员。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_team`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_team`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The member's user id. |
+| `id` | path | uuid | 成员用户 ID。 |
 
-#### Response
+#### 响应 [#response-43]
 
 ```json
 { "message": "member removed" }
 ```
 
-### List custom roles
+### 列出自定义角色 [#list-custom-roles]
 
 `GET /organization/roles`
 
-Returns the organization's custom roles (named permission sets). Listing is open to every member so role chips render on the roster.
+返回组织自定义角色，即具名权限集合。所有成员均可列出，便于在成员名单显示角色标签。
 
-Auth: Session only (not available to API keys). Requires a selected organization.
+身份验证：仅限会话，API 密钥不可用。需要已选择组织。
 
-#### Response
+#### 响应 [#response-44]
 
 ```json
 {
@@ -1403,22 +1403,22 @@ Auth: Session only (not available to API keys). Requires a selected organization
 }
 ```
 
-### Create a custom role
+### 创建自定义角色 [#create-a-custom-role]
 
 `POST /organization/roles`
 
-Creates a custom role. Returns `201 Created` with the role.
+创建自定义角色。返回 `201 Created`，包含角色。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_team`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_team`。
 
-#### Request body
+#### 请求体 [#request-body-24]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `name` | string | yes | Role name. |
-| `description` | string | no | Role description. |
-| `color` | string | no | Hex color for the chip. |
-| `permissions` | int | no | Organization permission bitmask granted by the role. |
+| `name` | string | 是 | 角色名称。 |
+| `description` | string | 否 | 角色说明。 |
+| `color` | string | 否 | 角色标签的十六进制颜色。 |
+| `permissions` | int | 否 | 角色授予的组织权限位掩码。 |
 
 ```json
 {
@@ -1429,50 +1429,50 @@ Auth: Session only (not available to API keys). **Org permission** `manage_team`
 }
 ```
 
-### Update a custom role
+### 更新自定义角色 [#update-a-custom-role]
 
 `PATCH /organization/roles/:id`
 
-Edits a custom role. Edits propagate to every member assigned to it (permission readers stay JOIN-free).
+编辑自定义角色。变更会传播到所有获分配该角色的成员，权限读取无需 JOIN 查询。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_team`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_team`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The role id. |
+| `id` | path | uuid | 角色 ID。 |
 
-#### Request body
+#### 请求体 [#request-body-25]
 
-All fields optional; nil fields are left untouched.
+所有字段均可选，nil 字段保持不变。
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `name` | string | no | New name. |
-| `description` | string | no | New description. |
-| `color` | string | no | New chip color. |
-| `permissions` | int | no | New permission bitmask. |
+| `name` | string | 否 | 新名称。 |
+| `description` | string | 否 | 新说明。 |
+| `color` | string | 否 | 新的角色标签颜色。 |
+| `permissions` | int | 否 | 新的权限位掩码。 |
 
-### Delete a custom role
+### 删除自定义角色 [#delete-a-custom-role]
 
 `DELETE /organization/roles/:id`
 
-Removes a custom role. Returns `204 No Content`.
+移除自定义角色。返回 `204 No Content`。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_team`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_team`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The role id. |
+| `id` | path | uuid | 角色 ID。 |
 
-### List pending invitations
+### 列出待接受的邀请 [#list-pending-invitations]
 
 `GET /organization/invitations`
 
-Returns the organization's outstanding invitations.
+返回组织尚未接受的邀请。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_team`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_team`。
 
-#### Response
+#### 响应 [#response-45]
 
 ```json
 {
@@ -1491,160 +1491,160 @@ Auth: Session only (not available to API keys). **Org permission** `manage_team`
 }
 ```
 
-### Cancel an invitation
+### 取消邀请 [#cancel-an-invitation]
 
 `DELETE /organization/invitations/:id`
 
-Cancels a pending invitation.
+取消待接受的邀请。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_team`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_team`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The invitation id. |
+| `id` | path | uuid | 邀请 ID。 |
 
-#### Response
+#### 响应 [#response-46]
 
 ```json
 { "message": "invitation cancelled" }
 ```
 
-### Get an invitation link
+### 获取邀请链接 [#get-an-invitation-link]
 
 `GET /organization/invitations/:id/link`
 
-Mints a shareable accept token for a pending invitation so a team manager can copy a real accept link. Invitation tokens are stored only as digests, so each call issues a new link token and the previously copied link stops working; the emailed link keeps working alongside it.
+为待接受邀请生成可分享的接受令牌，便于团队管理员复制有效的接受链接。邀请令牌只保存摘要，因此每次调用都会签发新的链接令牌，此前复制的链接失效；邮件中的链接仍可同时使用。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_team`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_team`。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The invitation id. |
+| `id` | path | uuid | 邀请 ID。 |
 
-#### Response
+#### 响应 [#response-47]
 
 ```json
 { "token": "inv_token_abc123" }
 ```
 
-### Transfer ownership
+### 转移所有权 [#transfer-ownership]
 
 `POST /organization/transfer-ownership`
 
-Transfers organization ownership to another member.
+将组织所有权转移给另一位成员。
 
-Auth: Session only (not available to API keys). **Org permission** `transfer_ownership`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `transfer_ownership`。
 
-#### Request body
+#### 请求体 [#request-body-26]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `new_owner_user_id` | uuid | yes | The member's user id to promote to owner. |
+| `new_owner_user_id` | uuid | 是 | 要提升为所有者的成员用户 ID。 |
 
 ```json
 { "new_owner_user_id": "7b88..." }
 ```
 
-#### Response
+#### 响应 [#response-48]
 
 ```json
 { "message": "ownership transferred" }
 ```
 
-### Upload organization avatar
+### 上传组织头像 [#upload-organization-avatar]
 
 `POST /organization/avatar`
 
-Uploads the workspace image. `multipart/form-data` with a single `file` field. Owner only. PNG or JPG, max 2 MB, max 1024x1024 px.
+上传工作区图片。使用 `multipart/form-data`，仅一个 `file` 字段。仅限所有者。PNG 或 JPG，最大 2 MB，尺寸不超过 1024×1024 像素。
 
-Auth: Session only (not available to API keys). Requires a selected organization (owner only).
+身份验证：仅限会话，API 密钥不可用。需要已选择组织，且仅限所有者。
 
-#### Response
+#### 响应 [#response-49]
 
 ```json
 { "avatar_url": "https://warmbly-assets.s3.amazonaws.com/avatars/organizations/3d11-1718193600.jpg" }
 ```
 
-### Remove organization avatar
+### 移除组织头像 [#remove-organization-avatar]
 
 `DELETE /organization/avatar`
 
-Clears the workspace image and deletes the stored file on a best-effort basis. Owner only. Returns `204 No Content`.
+清除工作区图片，并尽力删除已保存文件。仅限所有者。返回 `204 No Content`。
 
-Auth: Session only (not available to API keys). Requires a selected organization (owner only).
+身份验证：仅限会话，API 密钥不可用。需要已选择组织，且仅限所有者。
 
-### Get organization danger-zone status
+### 获取组织高风险操作状态 [#get-organization-danger-zone-status]
 
 `GET /organization/current/danger-zone`
 
-Returns the workspace danger-zone summary plus any pending deletion.
+返回工作区危险操作区摘要，以及任何待执行的删除。
 
-Auth: Session only (not available to API keys). Requires a selected organization.
+身份验证：仅限会话，API 密钥不可用。需要已选择组织。
 
-#### Response
+#### 响应 [#response-50]
 
-Same shape as the account danger zone, with `resource_type` of `organization` and the org name as the confirmation hint.
+结构与账户危险操作区相同，`resource_type` 为 `organization`，确认提示使用组织名称。
 
-### Schedule organization deletion
+### 安排删除组织 [#schedule-organization-deletion]
 
 `POST /organization/current/danger-zone/delete`
 
-Schedules the current organization for a delayed hard delete. Owner only; the confirmation must match the org name. Returns `202 Accepted` with the scheduled-deletion record.
+安排延迟永久删除当前组织。仅限所有者，确认内容必须匹配组织名称。返回 `202 Accepted`，包含计划删除记录。
 
-Auth: Session only (not available to API keys). Requires a selected organization (owner only).
+身份验证：仅限会话，API 密钥不可用。需要已选择组织，且仅限所有者。
 
-#### Request body
+#### 请求体 [#request-body-27]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `confirmation` | string | yes | Must equal the organization name. |
-| `reason` | string | no | Optional free-text reason. |
+| `confirmation` | string | 是 | 必须等于组织名称。 |
+| `reason` | string | 否 | 可选的自由文本原因。 |
 
 ```json
 { "confirmation": "Acme Outbound" }
 ```
 
-### Cancel organization deletion
+### 取消删除组织 [#cancel-organization-deletion]
 
 `DELETE /organization/current/danger-zone/delete`
 
-Cancels a pending organization deletion.
+取消待执行的组织删除。
 
-Auth: Session only (not available to API keys). Requires a selected organization.
+身份验证：仅限会话，API 密钥不可用。需要已选择组织。
 
-#### Request body (optional)
+#### 请求体（可选） [#request-body-optional-1]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `reason` | string | no | Optional free-text reason. |
+| `reason` | string | 否 | 可选的自由文本原因。 |
 
-#### Response
+#### 响应 [#response-51]
 
 ```json
 { "message": "deletion cancelled" }
 ```
 
-### Submit a limit-increase request
+### 提交提高限额的申请 [#submit-a-limit-increase-request]
 
 `POST /organization/:orgId/limit-requests`
 
-Submits a request to raise one of the organization's limits. The current effective value is captured server-side at submission time. Returns `201 Created`.
+提交提高组织某项限额的申请。提交时由服务端记录当前实际生效值。返回 `201 Created`。
 
-A workspace without a plan that sends (a free workspace, or one on the Warmup plan) can only request `max_email_accounts`; any other field returns `400 bad_request`, because none of those limits applies until the workspace sends. A `daily_campaign_limit` request from a workspace whose daily sends are already unlimited also returns `400 bad_request`, since an approved value would impose a cap rather than raise one.
+没有发送套餐的工作区，包括免费工作区或 Warmup 套餐工作区，只能申请 `max_email_accounts`；其他字段返回 `400 bad_request`，因为工作区开始发送前，这些限额都不适用。每日发送量已不受限的工作区申请 `daily_campaign_limit` 时，也返回 `400 bad_request`，因为批准某个数值反而会施加上限，而不是提高上限。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `orgId` | path | uuid | The organization id. |
+| `orgId` | path | uuid | 组织 ID。 |
 
-#### Request body
+#### 请求体 [#request-body-28]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `field` | string | yes | A limit field (for example `max_email_accounts`, `daily_campaign_limit`). |
-| `requested` | int | yes | The requested value, must be greater than the current effective limit. |
-| `reason` | string | yes | 1 to 2000 characters. |
+| `field` | string | 是 | 限额字段，例如 `max_email_accounts`、`daily_campaign_limit`。 |
+| `requested` | int | 是 | 申请的值，必须大于当前实际生效限额。 |
+| `reason` | string | 是 | 1 至 2000 个字符。 |
 
 ```json
 {
@@ -1654,7 +1654,7 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-#### Response
+#### 响应 [#response-52]
 
 ```json
 {
@@ -1671,49 +1671,49 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### List limit requests
+### 列出限额申请 [#list-limit-requests]
 
 `GET /organization/:orgId/limit-requests`
 
-Returns the organization's limit-increase requests.
+返回组织的限额提升申请。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `orgId` | path | uuid | The organization id. |
+| `orgId` | path | uuid | 组织 ID。 |
 
-#### Response
+#### 响应 [#response-53]
 
 ```json
 { "data": [ { "id": "lr1...", "field": "max_email_accounts", "status": "pending", "requested": 50 } ] }
 ```
 
-### Cancel a limit request
+### 取消限额申请 [#cancel-a-limit-request]
 
 `DELETE /limit-requests/:id`
 
-Cancels a pending limit request. Submitter only. Returns `204 No Content`.
+取消待处理的限额申请。仅限提交者。返回 `204 No Content`。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The limit-request id. |
+| `id` | path | uuid | 限额申请 ID。 |
 
-## Invitations (for the invitee)
+## 邀请（供受邀者使用） [#invitations-for-the-invitee]
 
-These sit outside `/organization` because they act on the signed-in user's own pending invitations.
+这些端点位于 `/organization` 之外，因为它们操作已登录用户自己的待接受邀请。
 
-### List my pending invitations
+### 列出我尚未接受的邀请 [#list-my-pending-invitations]
 
 `GET /invitations`
 
-Returns invitations addressed to the caller's email.
+返回发送到调用者邮件地址的邀请。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Response
+#### 响应 [#response-54]
 
 ```json
 {
@@ -1731,28 +1731,28 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Accept an invitation
+### 接受邀请 [#accept-an-invitation]
 
 `POST /invitations/accept`
 
-Accepts an invitation, either by the secret token (from a `/invite` link) or by the invitation id (from the caller's own pending list). Returns the new membership.
+通过机密令牌（来自 `/invite` 链接），或邀请 ID（来自调用者自己的待接受列表）接受邀请。返回新的成员关系。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-29]
 
-Exactly one of `token` or `invitation_id` is required.
+`token` 和 `invitation_id` 必须且只能提供一个。
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `token` | string | conditional | The secret token from a `/invite` link. |
-| `invitation_id` | uuid | conditional | The invitation id from the caller's pending list. |
+| `token` | string | 有条件必填 | `/invite` 链接中的机密令牌。 |
+| `invitation_id` | uuid | 有条件必填 | 调用者待接受列表中的邀请 ID。 |
 
 ```json
 { "token": "inv_token_abc123" }
 ```
 
-#### Response
+#### 响应 [#response-55]
 
 ```json
 {
@@ -1769,19 +1769,19 @@ Exactly one of `token` or `invitation_id` is required.
 }
 ```
 
-## Teams
+## 团队 [#teams]
 
-Teams group existing organization members under a named, color-tagged label (used for CRM ownership and routing). Unlike the rest of this group, the team endpoints accept either a JWT or an API key, and all require a selected organization. Reads map to the CRM read scope and writes to the CRM write scope.
+团队使用具名、带颜色的标签对现有组织成员分组，用于 CRM 负责人分配和路由。与本组其他接口不同，团队端点同时接受 JWT 和 API 密钥，且都需要已选择组织。读取映射到 CRM 读取权限范围，写入映射到 CRM 写入权限范围。
 
-### List teams
+### 列出团队 [#list-teams]
 
 `GET /teams`
 
-Returns the organization's teams, each hydrated with its members.
+返回组织的团队，每项填充成员列表。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`. Requires a selected organization.
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`。需要已选择组织。
 
-#### Response
+#### 响应 [#response-56]
 
 ```json
 {
@@ -1801,128 +1801,128 @@ Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`. Requires a sel
 }
 ```
 
-### Create a team
+### 创建团队 [#create-a-team]
 
 `POST /teams`
 
-Creates a team. Returns `201 Created` with the team.
+创建团队。返回 `201 Created`，包含团队。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_team`. Requires a selected organization.
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_team`。需要已选择组织。
 
-#### Request body
+#### 请求体 [#request-body-30]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `name` | string | yes | 1 to 255 characters. |
-| `color` | string | no | Hex color (defaults to `#94a3b8`). |
+| `name` | string | 是 | 1 至 255 个字符。 |
+| `color` | string | 否 | 十六进制颜色，默认 `#94a3b8`。 |
 
 ```json
 { "name": "West coast", "color": "#0ea5e9" }
 ```
 
-#### Response
+#### 响应 [#response-57]
 
-The created team object (members starts empty).
+创建的团队对象，成员初始为空。
 
-### Get a team
+### 获取团队 [#get-a-team]
 
 `GET /teams/:id`
 
-Returns a single team with its members.
+返回单个团队及其成员。
 
-Auth: **Scope** `READ_CRM` · **Org permission** `view_contacts`. Requires a selected organization.
+身份验证：**权限范围** `READ_CRM` · **组织权限** `view_contacts`。需要已选择组织。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The team id. |
+| `id` | path | uuid | 团队 ID。 |
 
-### Update a team
+### 更新团队 [#update-a-team]
 
 `PATCH /teams/:id`
 
-Partial-updates a team's name or color. Nil fields are left untouched.
+部分更新团队名称或颜色。nil 字段保持不变。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_team`. Requires a selected organization.
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_team`。需要已选择组织。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The team id. |
+| `id` | path | uuid | 团队 ID。 |
 
-#### Request body
+#### 请求体 [#request-body-31]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `name` | string | no | New name. |
-| `color` | string | no | New color. |
+| `name` | string | 否 | 新名称。 |
+| `color` | string | 否 | 新颜色。 |
 
-#### Response
+#### 响应 [#response-58]
 
-The updated team object.
+更新后的团队对象。
 
-### Delete a team
+### 删除团队 [#delete-a-team]
 
 `DELETE /teams/:id`
 
-Deletes a team. Returns `204 No Content`.
+删除团队。返回 `204 No Content`。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_team`. Requires a selected organization.
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_team`。需要已选择组织。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The team id. |
+| `id` | path | uuid | 团队 ID。 |
 
-### Add a team member
+### 添加团队成员 [#add-a-team-member]
 
 `POST /teams/:id/members`
 
-Adds an existing organization member to the team. Returns the updated team.
+将已有组织成员加入团队，返回更新后的团队。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_team`. Requires a selected organization.
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_team`。需要已选择组织。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The team id. |
+| `id` | path | uuid | 团队 ID。 |
 
-#### Request body
+#### 请求体 [#request-body-32]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `user_id` | uuid | yes | The member's user id (must already belong to the organization). |
+| `user_id` | uuid | 是 | 成员用户 ID，必须已属于该组织。 |
 
 ```json
 { "user_id": "7b88..." }
 ```
 
-#### Response
+#### 响应 [#response-59]
 
-The updated team object, including the new member.
+更新后的团队对象，包含新成员。
 
-### Remove a team member
+### 移除团队成员 [#remove-a-team-member]
 
 `DELETE /teams/:id/members/:userId`
 
-Removes a member from the team. Returns `204 No Content`.
+从团队移除成员。返回 `204 No Content`。
 
-Auth: **Scope** `WRITE_CRM` · **Org permission** `manage_team`. Requires a selected organization.
+身份验证：**权限范围** `WRITE_CRM` · **组织权限** `manage_team`。需要已选择组织。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `id` | path | uuid | The team id. |
-| `userId` | path | uuid | The member's user id. |
+| `id` | path | uuid | 团队 ID。 |
+| `userId` | path | uuid | 成员用户 ID。 |
 
-## Subscription and billing
+## 订阅与计费 [#subscription-and-billing]
 
-The subscription is per-organization. These endpoints read the current subscription, trial, feature access, manage Stripe checkout and the billing portal, change plans, validate discount codes, and submit enterprise inquiries. All of `/subscription/*` is session only.
+订阅按组织计费。这些端点读取当前订阅、试用和功能访问权限，管理 Stripe 结账和账单门户，变更套餐、验证折扣码，并提交企业咨询。所有 `/subscription/*` 路由仅接受会话。
 
-### Get subscription
+### 获取订阅 [#get-subscription]
 
 `GET /subscription`
 
-Returns the current organization's subscription.
+返回当前组织的订阅。
 
-Auth: Session only (not available to API keys). Requires a selected organization.
+身份验证：仅限会话，API 密钥不可用。需要已选择组织。
 
-#### Response
+#### 响应 [#response-60]
 
 ```json
 {
@@ -1943,39 +1943,39 @@ Auth: Session only (not available to API keys). Requires a selected organization
 }
 ```
 
-### Get subscription with limits
+### 获取订阅及其限额 [#get-subscription-with-limits]
 
 `GET /subscription/limits`
 
-Returns the subscription plus the plan's rate limits.
+返回订阅及套餐速率限制。
 
-Auth: Session only (not available to API keys). Requires a selected organization.
+身份验证：仅限会话，API 密钥不可用。需要已选择组织。
 
-#### Response
+#### 响应 [#response-61]
 
-The subscription object as above, extended with the plan's limit fields.
+上述订阅对象，扩展包含套餐限制字段。
 
-### Get trial status
+### 获取试用状态 [#get-trial-status]
 
 `GET /subscription/trial`
 
-Returns the organization's free-trial status.
+返回组织免费试用状态。
 
-Auth: Session only (not available to API keys). Requires a selected organization.
+身份验证：仅限会话，API 密钥不可用。需要已选择组织。
 
-#### Response
+#### 响应 [#response-62]
 
-The trial status object (whether a trial is active, when it ends, whether it has been used).
+试用状态对象，包括试用是否有效、结束时间及是否已使用过。
 
-### Get feature status
+### 获取功能状态 [#get-feature-status]
 
 `GET /subscription/features`
 
-Returns the organization's feature-access status plus convenience flags for the major gated features.
+返回组织的功能访问状态，以及主要受限功能的便捷标志。
 
-Auth: Session only (not available to API keys). Requires a selected organization.
+身份验证：仅限会话，API 密钥不可用。需要已选择组织。
 
-#### Response
+#### 响应 [#response-63]
 
 ```json
 {
@@ -1986,22 +1986,22 @@ Auth: Session only (not available to API keys). Requires a selected organization
 }
 ```
 
-### Create a checkout session
+### 创建结账会话 [#create-a-checkout-session]
 
 `POST /subscription/checkout`
 
-Creates a Stripe checkout session for a price and returns the redirect URL.
+针对某个价格创建 Stripe 结账会话，并返回重定向 URL。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_billing`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_billing`。
 
-#### Request body
+#### 请求体 [#request-body-33]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `price_id` | string | yes | The Stripe price id to subscribe to. |
-| `success_url` | string | yes | Redirect target after successful checkout. |
-| `cancel_url` | string | yes | Redirect target if the user cancels. |
-| `discount_code` | string | no | A discount code to apply. |
+| `price_id` | string | 是 | 要订阅的 Stripe 价格 ID。 |
+| `success_url` | string | 是 | 结账成功后的重定向目标。 |
+| `cancel_url` | string | 是 | 用户取消时的重定向目标。 |
+| `discount_code` | string | 否 | 要应用的折扣码。 |
 
 ```json
 {
@@ -2011,7 +2011,7 @@ Auth: Session only (not available to API keys). **Org permission** `manage_billi
 }
 ```
 
-#### Response
+#### 响应 [#response-64]
 
 ```json
 {
@@ -2020,26 +2020,26 @@ Auth: Session only (not available to API keys). **Org permission** `manage_billi
 }
 ```
 
-### Validate a discount code
+### 验证折扣码 [#validate-a-discount-code]
 
 `POST /subscription/discount/validate`
 
-Previews whether a discount code is valid for the current organization (optionally against a target plan), returning the discount details for display.
+预览折扣码对当前组织是否有效，可选择针对目标套餐检查，并返回供显示的折扣详情。
 
-Auth: Session only (not available to API keys). Requires a selected organization.
+身份验证：仅限会话，API 密钥不可用。需要已选择组织。
 
-#### Request body
+#### 请求体 [#request-body-34]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `code` | string | yes | The discount code. |
-| `plan_id` | uuid | no | A target plan to compute the discounted amount against. |
+| `code` | string | 是 | 折扣码。 |
+| `plan_id` | uuid | 否 | 用于计算折后金额的目标套餐。 |
 
 ```json
 { "code": "LAUNCH20", "plan_id": "plan_pro..." }
 ```
 
-#### Response
+#### 响应 [#response-65]
 
 ```json
 {
@@ -2051,72 +2051,72 @@ Auth: Session only (not available to API keys). Requires a selected organization
 }
 ```
 
-When invalid, `valid` is `false` and `reason` explains why.
+无效时，`valid` 为 `false`，`reason` 说明原因。
 
-### Create a billing portal session
+### 创建账单管理门户会话 [#create-a-billing-portal-session]
 
 `POST /subscription/portal`
 
-Creates a Stripe billing portal session for the organization's customer and returns the portal URL.
+为组织对应的客户创建 Stripe 账单门户会话，并返回门户 URL。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_billing`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_billing`。
 
-#### Request body
+#### 请求体 [#request-body-35]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `return_url` | string | yes | Where Stripe returns the user after the portal. |
+| `return_url` | string | 是 | 离开门户后 Stripe 将用户返回到的位置。 |
 
 ```json
 { "return_url": "https://app.warmbly.com/billing" }
 ```
 
-#### Response
+#### 响应 [#response-66]
 
 ```json
 { "portal_url": "https://billing.stripe.com/p/session/..." }
 ```
 
-### Cancel subscription
+### 取消订阅 [#cancel-subscription]
 
 `POST /subscription/cancel`
 
-Cancels the organization's subscription, either at period end or immediately.
+取消组织订阅，可在当前周期结束时取消，也可立即取消。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_billing`.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_billing`。
 
-#### Request body
+#### 请求体 [#request-body-36]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `cancel_at_period_end` | boolean | no | When true, cancel at the end of the current period instead of immediately. |
+| `cancel_at_period_end` | boolean | 否 | 为 true 时，在当前周期结束时取消，而非立即取消。 |
 
 ```json
 { "cancel_at_period_end": true }
 ```
 
-#### Response
+#### 响应 [#response-67]
 
 ```json
 { "message": "subscription cancelled" }
 ```
 
-### Change plan
+### 更改套餐 [#change-plan]
 
 `POST /subscription/change-plan`
 
-Changes the organization's plan with proration.
+变更组织套餐，并按比例结算差额。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_billing`. Requires a selected organization.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_billing`。需要已选择组织。
 
-#### Request body
+#### 请求体 [#request-body-37]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `plan_id` | uuid | yes | The target plan id. |
-| `proration_behavior` | string | no | One of `create_prorations`, `always_invoice`, `none`. |
-| `discount_code` | string | no | A discount code to apply. |
-| `interval` | string | no | `month` or `year` (defaults to monthly). |
+| `plan_id` | uuid | 是 | 目标套餐 ID。 |
+| `proration_behavior` | string | 否 | 取值为 `create_prorations`、`always_invoice`、`none` 之一。 |
+| `discount_code` | string | 否 | 要应用的折扣码。 |
+| `interval` | string | 否 | `month` 或 `year`，默认按月。 |
 
 ```json
 {
@@ -2126,7 +2126,7 @@ Auth: Session only (not available to API keys). **Org permission** `manage_billi
 }
 ```
 
-#### Response
+#### 响应 [#response-68]
 
 ```json
 {
@@ -2135,40 +2135,40 @@ Auth: Session only (not available to API keys). **Org permission** `manage_billi
 }
 ```
 
-### Preview a plan change
+### 预览套餐变更 [#preview-a-plan-change]
 
 `GET /subscription/preview-change`
 
-Previews the proration for a plan change without applying it.
+预览套餐变更的按比例结算结果，不实际应用。
 
-Auth: Session only (not available to API keys). **Org permission** `manage_billing`. Requires a selected organization.
+身份验证：仅限会话，API 密钥不可用。**组织权限** `manage_billing`。需要已选择组织。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 |-----------|----|------|-------------|
-| `new_plan_id` | query | uuid | The target plan id. |
+| `new_plan_id` | query | uuid | 目标套餐 ID。 |
 
-#### Response
+#### 响应 [#response-69]
 
-The proration preview object (line items, immediate charge, and next invoice amount).
+按比例结算预览对象，包括明细项目、即时扣费和下次账单金额。
 
-### Submit an enterprise inquiry
+### 提交企业方案咨询 [#submit-an-enterprise-inquiry]
 
 `POST /subscription/enterprise-inquiry`
 
-Submits an enterprise pricing inquiry. Returns a confirmation plus the new inquiry id.
+提交企业定价咨询。返回确认信息和新的咨询 ID。
 
-Auth: Session only (not available to API keys).
+身份验证：仅限会话，API 密钥不可用。
 
-#### Request body
+#### 请求体 [#request-body-38]
 
-| Field | Type | Required | Description |
+| 字段 | 类型 | 必填 | 说明 |
 |-------|------|----------|-------------|
-| `company_name` | string | yes | Company name. |
-| `contact_name` | string | yes | Contact name. |
-| `contact_email` | string | yes | Contact email. |
-| `estimated_volume` | int | no | Estimated monthly email volume. |
-| `team_size` | int | no | Team size. |
-| `notes` | string | no | Free-text notes. |
+| `company_name` | string | 是 | 公司名称。 |
+| `contact_name` | string | 是 | 联系人姓名。 |
+| `contact_email` | string | 是 | 联系人邮件地址。 |
+| `estimated_volume` | int | 否 | 预计月度邮件量。 |
+| `team_size` | int | 否 | 团队人数。 |
+| `notes` | string | 否 | 自由文本备注。 |
 
 ```json
 {
@@ -2180,7 +2180,7 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-#### Response
+#### 响应 [#response-70]
 
 ```json
 {
@@ -2189,31 +2189,31 @@ Auth: Session only (not available to API keys).
 }
 ```
 
-### Promo codes and referrals
+### 优惠码与推荐奖励 [#promo-codes-and-referrals]
 
-All session only, requiring org permission `manage_billing` and a selected organization. See the [referral program guide](/guides/referral-program/) for the product rules.
+均仅接受会话，需要 `manage_billing` 组织权限和已选择的组织。产品规则见[推荐计划指南](/guides/referral-program/)。
 
-| Endpoint | Returns |
+| 端点 | 返回值 |
 |----------|---------|
-| `GET /subscription/discounts` | The org's promo-code redemption history (`code`, `type`, `percent_off`, `duration`, `redeemed_at`). |
-| `GET /subscription/referral` | The org's referral status and code. |
-| `POST /subscription/referral` | Creates the org's referral code. |
-| `GET /subscription/referral/attributions` | One row per referred signup. `status` is `pending` (signed up, not yet paid), `qualified` (reached a paid checkout), `rewarded`, or `void` (clawback, self-referral, or cap). `reward_cents` is integer cents. |
-| `GET /subscription/referral/earnings` | The reward ledger. `amount_cents` is positive for a reward, negative for a clawback within the 30-day window; `reason` is `referral_reward` or `referral_clawback:<cause>`; `balance_after_cents` is the running balance. |
+| `GET /subscription/discounts` | 组织的促销码兑换历史（`code`、`type`、`percent_off`、`duration`、`redeemed_at`）。 |
+| `GET /subscription/referral` | 组织的推荐状态和推荐码。 |
+| `POST /subscription/referral` | 创建组织推荐码。 |
+| `GET /subscription/referral/attributions` | 每次被推荐注册对应一行。`status` 为 `pending`（已注册但未付费）、`qualified`（已完成付费结账）、`rewarded` 或 `void`（奖励追回、自我推荐或达到上限）。`reward_cents` 为整数美分。 |
+| `GET /subscription/referral/earnings` | 奖励账本。`amount_cents` 在发放奖励时为正数，在 30 天窗口内追回时为负数；`reason` 为 `referral_reward` 或 `referral_clawback:<cause>`；`balance_after_cents` 为累计余额。 |
 
-## Reference data
+## 参考数据 [#reference-data]
 
-Two read-only reference endpoints sit alongside billing. Unlike the rest of this group they accept any authenticated key (JWT or API key); auth only exists to keep them from being scraped.
+账单功能旁另有两个只读参考端点。与本组其余端点不同，它们接受任意已通过身份验证的凭据，包括 JWT 或 API 密钥；身份验证仅用于防止公开抓取。
 
-### List plans
+### 列出套餐 [#list-plans]
 
 `GET /plans`
 
-Returns the available public subscription plans.
+返回可用的公开订阅套餐。
 
-Auth: any authenticated caller (JWT or API key).
+身份验证：任意已通过身份验证的调用者，JWT 或 API 密钥均可。
 
-#### Response
+#### 响应 [#response-71]
 
 ```json
 {
@@ -2223,16 +2223,16 @@ Auth: any authenticated caller (JWT or API key).
 }
 ```
 
-### List timezones
+### 列出时区 [#list-timezones]
 
 `GET /timezones`
 
-Returns the timezone list the dashboard pickers offer, each with a display name carrying its current UTC offset. Any IANA name is accepted wherever a timezone is written (a campaign schedule, a mailbox, the workspace), so the list is a convenience rather than the set of valid values.
+返回控制台选择器使用的时区列表，每项显示名称带有当前 UTC 偏移量。任何设置时区的位置，包括营销活动日程、邮箱和工作区，都接受任意 IANA 名称，因此该列表只是便于选择，并非全部有效值集合。
 
-Auth: any authenticated caller (JWT or API key).
+身份验证：任意已通过身份验证的调用者，JWT 或 API 密钥均可。
 
-## See also
+## 另请参阅 [#see-also]
 
-- [Authentication](/api/authentication/)
-- [Permissions reference](/api/permissions/)
-- [Error codes](/api/error-codes/)
+- [身份验证](/api/authentication/)
+- [权限参考](/api/permissions/)
+- [错误码](/api/error-codes/)

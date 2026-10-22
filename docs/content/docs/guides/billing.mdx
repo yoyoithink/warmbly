@@ -1,151 +1,151 @@
 ---
-title: Plans and billing
-description: How plans unlock features, how to upgrade from anywhere in the dashboard, and what changes when you switch.
+title: "套餐与账单"
+description: "了解套餐如何解锁功能、如何从控制台各处升级，以及切换套餐后会发生的变化。"
 ---
 
-Every hosted workspace starts free. A paid plan turns on sending from Warmbly Cloud, the unified inbox, contacts, the CRM, automations and integrations.
+每个托管工作区都从免费版开始。付费套餐会启用 Warmbly Cloud 发信、统一收件箱、联系人、CRM、自动化流程和集成。
 
-![Settings > Billing: the plan card, usage against limits, and the subscription actions](/guides/billing.webp)
+![设置 > 账单：套餐卡片、用量与上限，以及订阅操作](/guides/billing.webp)
 
-## Upgrade your plan
+## 升级套餐 [#upgrade-your-plan]
 
 <Steps>
 
 <Step>
 
-Open a feature your plan does not include, or choose **Change plan** under **Settings > Billing**.
+打开当前套餐不包含的功能，或在**设置 > 账单**中选择**更改套餐**。
 
 </Step>
 
 <Step>
 
-Pick a plan, and monthly or annual billing.
+选择套餐以及月付或年付方式。
 
 </Step>
 
 <Step>
 
-With no subscription yet, finish in Stripe Checkout. An existing subscription switches in place.
+尚无订阅时，在 Stripe Checkout 完成付款；已有订阅则直接切换。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- The free workspace warms up to 10 mailboxes.
-- Annual billing is 20% off the monthly price.
-- Only the workspace owner can change the plan.
-- Cancelling keeps the plan active until the end of the paid period, and the workspace keeps its mailboxes, warmup and settings.
-- A workspace that only warms can take the Warmup plan: $15 a month, or $144 a year.
+- 免费工作区最多可为 10 个邮箱预热。
+- 年付相较月付价格享受 20% 折扣。
+- 只有工作区所有者可以更改套餐。
+- 取消后，套餐仍有效至已付费周期结束，工作区会保留邮箱、预热和设置。
+- 仅需预热的工作区可选 Warmup 套餐：每月 $15，或每年 $144。
 
 <Fold>
 
-## What the free workspace includes
+## 免费工作区包含的功能 [#what-the-free-workspace-includes]
 
-Every hosted workspace starts free. The free workspace warms up to 10 mailboxes, connected on the cloud or through a linked self-hosted instance. Sending from Warmbly Cloud, the unified inbox, contacts, the CRM, automations and integrations turn on with a paid plan. A workspace that only warms can take the [Warmup plan](#the-warmup-plan) instead.
+每个托管工作区都从免费版开始，最多可为 10 个邮箱预热，这些邮箱既可以直接连接在云端，也可以通过关联的自托管实例接入。Warmbly Cloud 发信、统一收件箱、联系人、CRM、自动化流程和集成需要付费套餐。仅需预热的工作区也可选择 [Warmup 套餐](#the-warmup-plan)。
 
 </Fold>
 
 <Fold>
 
-## Plans
+## 套餐 [#plans]
 
-Dedicated reviewer workspaces show **Test** in the header instead of a customer plan. They have operator-granted, time-limited access, not a purchased subscription. Joining an existing workspace as a tester does not change its plan badge. See [reviewer accounts](/development/accounts-and-access/#which-workspace-a-tester-lands-in).
+专用审核工作区在页眉显示**测试**，而不是客户套餐。它们获得的是运营人员授予的限时访问权限，并非购买的订阅。以测试人员身份加入已有工作区，不会改变该工作区的套餐标记。参见[审核账户](/development/accounts-and-access/#which-workspace-a-tester-lands-in)。
 
-| Plan | Monthly | Annual (per month) | Sends per day | Includes |
+| 套餐 | 月付 | 年付折合每月 | 每日发送量 | 包含内容 |
 | --- | --- | --- | --- | --- |
-| Starter | $29 | $23 | 150 | Unlimited warmup, unlimited mailboxes, unified inbox, team invitations, bulk contact operations |
-| Grow | $89 | $71 | 3,000 | Everything in Starter |
-| Business | $329 | $263 | 15,000 | Everything in Grow, sending kept apart from other customers, webhooks, advanced outreach |
-| Enterprise | Custom | Custom | 15,000+ | Everything in Business, dedicated support |
+| Starter | $29 | $23 | 150 | 无限预热、无限邮箱、统一收件箱、团队邀请、批量联系人操作 |
+| Grow | $89 | $71 | 3,000 | Starter 的全部功能 |
+| Business | $329 | $263 | 15,000 | Grow 的全部功能、与其他客户隔离的发送环境、Webhook、高级外联功能 |
+| Enterprise | 定制 | 定制 | 15,000+ | Business 的全部功能、专属支持 |
 
-Annual billing is 20% off the monthly price. The same lineup is on the [pricing page](https://warmbly.com/pricing).
+年付相较月付价格享受 20% 折扣。[定价页面](https://warmbly.com/pricing)也列有同样的套餐。
 
-Unlimited mailboxes means exactly that, under a fair-use allowance of one mailbox for every send a day the plan includes: Grow holds `3,000`, Business `15,000`, and either can be raised on request. See [mailbox allowance](/guides/mailboxes/#mailbox-allowance).
+无限邮箱按公平使用额度执行：套餐每天包含多少次发送，就默认允许多少个邮箱。Grow 为 `3,000`，Business 为 `15,000`，两者均可申请提高。参见[邮箱数量额度](/guides/mailboxes/#mailbox-allowance)。
 
-### The Warmup plan
+### Warmup 预热套餐 [#the-warmup-plan]
 
-The Warmup plan is for a workspace that only warms mailboxes and does not send from Warmbly Cloud: $15 a month, or $144 a year. It moves the workspace's mailboxes into the premium warmup pool, which is built for inbox placement:
+Warmup 套餐适合只为邮箱预热、不从 Warmbly Cloud 发信的工作区，每月 $15 或每年 $144。它将工作区邮箱加入面向收件箱到达率优化的付费预热池：
 
-- **Better deliverability.** Warmup mail is exchanged with paying senders first. A free mailbox is let in only after it has been a healthy pool member for at least three days, in a workspace in good standing.
-- **Reputation protected.** A partner that complains, bounces or tampers with warmup mail is pulled from the pool well before mailbox providers would act, and one landing in spam is slowed down, so a struggling mailbox cannot drag yours down. See [pool safety](/guides/warmup/#pool-safety).
-- **Priority matching.** Premium mailboxes are given partners before the free pool is.
-- **No mailbox cap.** Every mailbox the workspace holds warms, whether it is connected on the cloud or through a linked self-hosted instance.
+- **更好的送达能力。** 优先与付费发件邮箱交换预热邮件。免费邮箱只有在池中保持健康至少三天，且所属工作区状态良好时，才会参与。
+- **信誉保护。** 发生投诉、退信或篡改预热邮件的伙伴，会在邮箱服务商采取行动前就被移出池；邮件进入垃圾箱的邮箱会降低发送速度，避免状态不佳的邮箱拖累你的邮箱。参见[预热池安全](/guides/warmup/#pool-safety)。
+- **优先匹配。** 付费邮箱优先于免费池获得伙伴。
+- **不限制邮箱数量。** 工作区持有的每个邮箱都能预热，无论直接连接云端还是通过关联的自托管实例接入。
 
-It is not a self-hosting plan; it is the plan for warmup on its own. Everything else is exactly as on a free workspace: sending, the unified inbox, contacts, the CRM, automations, integrations, AI and team invitations still need one of the plans above. The dashboard keeps those pages locked, and the server refuses sending, the inbox, AI, integrations and placement tests to a Warmup workspace the same way it refuses them to a free one. Any of those plans includes everything the Warmup plan does.
+这不是自托管套餐，而是仅提供预热的套餐。其他功能与免费工作区一致：发信、统一收件箱、联系人、CRM、自动化流程、集成、AI 和团队邀请仍需上表中的套餐。控制台会锁定这些页面，服务器也像对免费工作区一样，拒绝 Warmup 工作区使用发信、收件箱、AI、集成和投递位置测试。上表任一套餐都包含 Warmup 套餐的全部功能。
 
-It has no card in the plans grid. The ways in are the **Upgrade** button on the **Mailboxes** page, the **Only need warmup?** row on the billing overview of a free workspace, and the **Premium** button on a linked instance's **Settings > Warmbly Cloud** page. Each opens the same dialog: pick monthly or yearly, then checkout. Once active the header badge reads **Warmup**, and the overview shows it like any other plan, with the same cancel and resume controls. Its usage section shows the one limit it has, mailboxes, which reads unlimited.
-
-</Fold>
-
-<Fold>
-
-## Upgrading from a locked feature
-
-When you open something your plan does not include, the dashboard opens a full-screen plan chooser instead of sending you to settings. It names the feature, highlights the plan that unlocks it, and lets you pick monthly or annual billing.
-
-- **No subscription yet.** Choosing a plan opens Stripe Checkout. When you come back, you land on the page you left with the feature unlocked.
-- **Already have a Stripe subscription.** Choosing a higher plan switches you in place. The change is prorated and takes effect immediately.
-- **Enterprise.** Opens an inquiry form so you can reach us about custom volume.
-
-Promo codes can be applied in the chooser before checkout.
-
-Warmbly is sold to businesses only, so checkout asks for your company's legal name. Add your VAT or other business tax ID there too if your company has one. Stripe puts both on your invoices. Prices exclude taxes: where Warmbly is required to charge sales tax, VAT, or GST, Stripe adds it based on your billing address, and where it does not, your business accounts for any tax due in its own country, including under the reverse charge.
-
-Only the workspace owner can change the plan. Other members see the same comparison with a note to ask the owner. Which roles can do what is covered in [Team and roles](/guides/team-roles/).
+它不会在套餐网格中单独显示卡片。入口包括 **邮箱** 页面的 **升级** 按钮、免费工作区账单概览中的 **只需要预热？** 一行，以及关联实例 **设置 > Warmbly Cloud** 页面的 **Premium** 按钮。各入口打开同一对话框：选择月付或年付，然后结账。生效后，页眉标记显示 **Warmup** ，概览中像其他套餐一样展示，并提供相同的取消和恢复控件。用量区只显示邮箱这一项限制，值为无限。
 
 </Fold>
 
 <Fold>
 
-## Managing your subscription
+## 从受限功能入口升级 [#upgrading-from-a-locked-feature]
 
-**Settings > Billing** is owner only and splits into four tabs, each with its own link.
+打开套餐未包含的功能时，控制台会直接显示全屏套餐选择器，不必跳到设置。它会注明功能名称，突出显示能解锁该功能的套餐，并支持选择月付或年付。
 
-**Overview** is the control panel for the subscription.
+- **尚无订阅。** 选择套餐会打开 Stripe Checkout。完成后返回先前页面，该功能已解锁。
+- **已有 Stripe 订阅。** 选择更高套餐会直接切换，按比例结算差额并立即生效。
+- **Enterprise。** 打开咨询表单，便于联系定制发送量。
 
-- The plan card shows the plan, its status, the price (per year on a yearly subscription), and the renewal or end date. Change plan opens the same chooser the locked features use.
-- Cancel plan schedules the cancellation for the end of the paid period. The plan stays fully active until then, and Resume clears it with one click. Nothing is lost either way: the workspace returns to the free tier and keeps its mailboxes, warmup and settings.
-- Usage and limits shows live counts against the limits the server actually enforces, for mailboxes, sends today (the cap the sender applies, or unlimited on a plan without one), contacts, campaigns, team members, attachment storage, sends this period, and API calls. A meter turns amber past 70% and red past 90%. A meter with no cap means that limit is unmetered on your plan. A workspace that does not send (free, or on the Warmup plan) sees only the mailbox meter, because none of the others applies to it. The mailbox meter says where its number comes from (fair use, an approved request, or the free allowance), and the storage meter says so when a plan change left the workspace over its quota: existing attachments keep sending, and new uploads wait until you are back under.
-- Banners appear only when something needs a decision: a failed payment, a scheduled cancellation, or a trial about to end.
+结账前可以在选择器中应用优惠码。
 
-Need a single limit raised without moving plan? Request an increase from **Settings > Limits**, linked from the usage section, or straight from the connect dialog when it is mailboxes you need. An operator reviews it and the approved limit takes effect on the workspace, including the daily send allowance the sender enforces. The page shows how much of each limit the workspace uses, and a limit your plan leaves unlimited (mailboxes, on a plan whose daily sends are uncapped) is not offered, because there is nothing to raise. A workspace that does not send can only ask for more mailboxes.
+Warmbly 仅面向企业销售，因此结账时会要求公司法定名称。如有 VAT 或其他企业税号，也应一并填写。Stripe 会将两者写入账单。价格不含税：在 Warmbly 依法需要收取销售税、VAT 或 GST 的地区，Stripe 会按账单地址加计；在无需代收的地区，企业应在本国自行处理应缴税款，包括反向征税机制下的税务责任。
 
-**Plans** compares the lineup as full plan cards, with the best value plan highlighted. For an existing Stripe subscription, monthly plan cards preview the estimated proration and next billing date. Stripe calculates annual proration when you switch. Promo codes and the codes this workspace has redeemed live here too.
-
-**AI and credits** covers the credit balance, top-ups and usage. See [AI credits](/guides/ai-credits/).
-
-**Payment** links out to the Stripe billing portal. Cards and the billing email are held by Stripe and never touch Warmbly, so they are read and changed there. Invoices and PDF receipts live in the portal too.
-
-The portal also lets the owner update the billing address, legal billing name, and business tax ID. Update these details before the next renewal if the company moves or its tax registration changes.
-
-The portal requires a billing account created through checkout. If your workspace has never completed checkout, including a free workspace or one with only an operator-granted plan, the payment tab explains that checkout is required first and links to the plan chooser. Portal and cancellation controls only appear when the corresponding billing account or Stripe subscription exists.
+只有工作区所有者可以更改套餐。其他成员会看到相同的套餐比较，并提示联系所有者。各角色的权限参见[团队与角色](/guides/team-roles/)。
 
 </Fold>
 
 <Fold>
 
-## Plans granted by an operator
+## 管理订阅 [#managing-your-subscription]
 
-A workspace can be put on a plan without paying for it. Warmbly calls this a **managed plan**, and it exists for internal workspaces, design partners and support gestures.
+**设置 > 账单**仅所有者可用，分为四个标签页，各有独立链接。
 
-A managed plan entitles exactly what the plan entitles. Nothing about the product behaves differently, and nothing is charged: no Stripe subscription is created, no invoice is raised, and the billing page still shows what the workspace would pay. The grant carries the reason it was made and who made it, and it can be open-ended or given an expiry date, in which case it lapses on its own.
+**概览**是订阅控制面板。
 
-Upgrading a workspace with only a managed plan opens Checkout to create a Stripe subscription. Proration previews and cancellation apply only to an existing Stripe subscription. If the selected billing interval has no configured price, the dashboard explains that the plan is unavailable instead of redirecting to the portal.
+- 套餐卡片显示套餐、状态、价格（年付订阅显示年价），以及续费或结束日期。更改套餐会打开与受限功能相同的选择器。
+- 取消套餐会安排在已付费周期结束时取消，此前功能仍完整可用。点击恢复即可撤销取消安排。两种操作都不会丢失数据：回到免费层级后，工作区仍保留邮箱、预热和设置。
+- 用量与限制实时对照服务器实际执行的上限，展示邮箱、今日发送（发信端实际应用的上限，无上限套餐则为无限）、联系人、营销活动、团队成员、附件存储、本周期发送及 API 调用。用量超过 70% 显示琥珀色，超过 90% 显示红色。没有上限的计量条表示套餐不计量该项。不具备发信功能的工作区，即免费版或 Warmup 套餐，只显示邮箱计量条，因为其他项目不适用。邮箱计量条说明额度来源：公平使用、已批准申请或免费额度。套餐变更导致存储超额时，存储计量条也会说明；现有附件仍可发送，新上传需等用量回到额度内。
+- 只有需要决定时才显示横幅，例如支付失败、已安排取消或试用即将结束。
 
-Operators grant one from the admin panel on the workspace, under **Plan**. The organization list marks granted workspaces with a `managed` badge and can filter to them, so "who is paid because we said so" is answerable without checking Stripe. A grant that has lapsed keeps its reason on file and is shown as `grant lapsed` rather than disappearing.
+只想提高某一项上限，不想切换套餐？可从用量区链接进入**设置 > 限制**提出申请；需要增加邮箱时，也可直接在连接对话框申请。运营人员审核后，新上限在工作区生效，包括发信端执行的每日发送额度。该页面显示各项限额的已用量。套餐本就无限的项目不会提供提高申请，例如每日发送无上限套餐的邮箱数量，因为无需再提高。不具备发信功能的工作区只能申请更多邮箱。
 
-A grant is held beside the plan a workspace pays for, never on top of it, so a paying workspace that is granted a different plan goes back to the one it pays for when the grant ends. Revoking returns the workspace to whatever it actually pays for, which for most is the free plan.
+**套餐**以完整卡片比较各档套餐，并突出显示性价比最高的选项。已有 Stripe 订阅时，月付套餐卡片会预览预计按比例结算金额和下次账单日期。年付差额由 Stripe 在切换时计算。优惠码以及当前工作区已兑换的代码也显示在这里。
 
-One thing a grant does not do: monthly AI credits are granted when an invoice is paid, and a granted plan raises no invoice, so a managed workspace does not receive a recurring credit allowance. Top up its balance directly if it needs credits.
+**AI 与积分**包含积分余额、充值和用量，参见 [AI 积分](/guides/ai-credits/)。
+
+**付款**链接到 Stripe 账单门户。银行卡与账单邮箱由 Stripe 保存，不经过 Warmbly，因此在该门户查看和修改。账单及 PDF 收据也保存在门户中。
+
+所有者还可以在门户中更新账单地址、法定账单名称和企业税号。公司搬迁或税务登记变化后，应在下次续费前更新。
+
+门户要求已有通过结账创建的账单账户。如果工作区从未完成结账，包括免费工作区或仅有运营人员赠予套餐的工作区，付款标签页会说明需先结账，并链接到套餐选择器。只有相应账单账户或 Stripe 订阅存在时，才显示门户入口和取消控件。
 
 </Fold>
 
 <Fold>
 
-## Self-hosted deployments
+## 由运营人员授予的套餐 [#plans-granted-by-an-operator]
 
-A self-hosted instance running without a billing provider has every feature unlocked and no billing page. See [Warmbly Cloud](/guides/warmbly-cloud/) for how a self-hosted instance links to a hosted workspace.
+工作区可以无需付款就获授套餐。Warmbly 将其称为**托管授予套餐**，用于内部工作区、设计合作伙伴或客户支持赠予。
+
+获授套餐的功能权益与同名套餐完全相同，产品行为没有区别，也不会收费：不创建 Stripe 订阅、不生成账单，但账单页面仍显示正常应付价格。授予记录包含原因和操作者，可设为无限期，或指定到期日期，到期后自动失效。
+
+仅有获授套餐的工作区升级时，会打开 Checkout 创建 Stripe 订阅。按比例结算预览和取消操作仅适用于已有 Stripe 订阅。如果所选计费周期没有配置价格，控制台会说明套餐不可用，而不会重定向到门户。
+
+运营人员在管理员面板的工作区**套餐**下授予。组织列表以 `managed` 标记获授工作区，并支持筛选，便于无需查看 Stripe 就能知道哪些工作区获得了赠予权益。授予到期后仍保留原因，并显示 `grant lapsed`，不会直接消失。
+
+授予记录与工作区自行付费的套餐并存，不覆盖它。因此，已付费工作区获授其他套餐时，授予结束后会恢复原付费套餐。撤销授予会回到其实际购买的套餐，对大多数工作区而言就是免费版。
+
+授予不会带来定期 AI 积分：月度 AI 积分在账单支付时发放，而获授套餐不生成账单，因此这类工作区没有循环发放的积分额度。需要积分时应直接为余额充值。
+
+</Fold>
+
+<Fold>
+
+## 自托管部署 [#self-hosted-deployments]
+
+未启用计费服务商的自托管实例会解锁全部功能，且没有账单页面。自托管实例如何关联托管工作区，参见 [Warmbly Cloud](/guides/warmbly-cloud/)。
 
 </Fold>

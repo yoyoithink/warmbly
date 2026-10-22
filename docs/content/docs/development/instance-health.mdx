@@ -1,37 +1,37 @@
 ---
-title: Instance health
-description: The Setup and health page, what every check means, how to clear it, and how to run the same checks from a shell.
+title: 实例健康状态
+description: 介绍“设置与健康状态”页面、各项检查的含义、如何消除检查问题，以及如何在命令行运行相同检查。
 ---
 
-Warmbly reports configuration findings, service reachability and operational measurements separately. A silent instance and a healthy instance can look identical from the outside. The panel shows missing, partial and stale coverage explicitly instead of treating silence as proof of health.
+Warmbly 分别报告配置发现、服务可达性和运行测量。一个没有动静的实例，从外部看可能与健康实例完全一样。面板会明确展示缺失、部分和过期的覆盖，不把没有消息当成健康证明。
 
-## Setup and health
+## 设置与健康状态 [#setup-and-health]
 
-The page lives in the [admin panel](/development/admin-panel/) on `:5174`, under **Instance > Setup and health**. **Findings** lists configuration findings, **Services** holds per-service reachability probes and the platform mail card, and **Operations** holds read-only operational measurements. It is operator tooling, not a customer dashboard, and every route behind it is gated on a platform admin permission. Tabs support direct links such as `/health?tab=operations`.
+页面位于 `:5174` 的[管理面板](/development/admin-panel/)，路径为**实例 > 设置与健康状态**。**发现**列出配置问题，**服务**提供逐服务可达性探测和平台邮件卡片，**运行**展示只读运行测量。这是运维工具，不是客户控制台，背后每条路由都受平台管理权限控制。选项卡支持直接链接，例如 `/health?tab=operations`。
 
-Configuration errors and warnings appear on the admin Overview, and the sidebar badge counts those findings. Informational notes do not count toward the badge. If there are no errors or warnings, Findings says **No errors or warnings reported**, not that all checks ran or the instance is healthy. The separate Overview monitoring panel shows operational signals and positive broker queue measurements.
+配置错误和警告也会显示在管理概览，侧边栏徽章统计这些发现。信息性说明不计入徽章。没有错误或警告时，“发现”显示**未报告错误或警告**，不表示所有检查都已执行或实例健康。独立的概览监控面板显示运行信号和大于零的消息代理队列测量。
 
-| Severity | Means |
+| 严重级别 | 含义 |
 |---|---|
-| `error` | Something is broken or unsafe right now. Sending, signing in or key access is affected |
-| `warning` | Works today, will hurt you. Misconfiguration, a published secret, a concentration risk |
-| `info` | No action required, stated so you are not surprised later |
+| `error` | 当前已有故障或不安全状态，影响发送、登录或密钥访问 |
+| `warning` | 今天仍能工作，但存在隐患，例如配置错误、公开秘密值或集中风险 |
+| `info` | 无需操作，提前说明以免之后意外 |
 
-Only findings are listed. A passing check returns nothing, but a skipped or unavailable check may also have no finding. The health response currently reports `execution_coverage: "unreported"`; an empty list is not a confirmed all-clear. Older responses without this additive field are treated the same way. The receipt time shown on Findings is when the browser received the response, not a source-evidence timestamp.
+列表只显示发现项。通过的检查不返回内容，但跳过或不可用的检查也可能没有发现。健康响应目前报告 `execution_coverage: "unreported"`；空列表不是已确认的全面正常。没有此新增字段的旧响应也按相同方式处理。“发现”显示的接收时间，是浏览器收到响应的时间，不是来源证据时间戳。
 
-Each row carries a title, the full message including the fix, and a link to the section of these docs that explains it. Every check that ships today is instance-wide, so no row is scoped to a single mailbox, worker or campaign.
+每行包含标题、附修复方法的完整消息，以及解释该问题的文档链接。目前所有检查都在实例范围运行，因此没有行限定到单个邮箱、工作节点或营销活动。
 
-The configuration checks are documented below. Operational evidence has its own coverage and limits.
+下方说明配置检查；运行证据有独立的覆盖范围和限制。
 
-## Running the checks from a shell
+## 在命令行运行检查 [#running-the-checks-from-a-shell]
 
 ```bash
 make doctor
 ```
 
-That runs `warmblyctl status`, which prints this instance's state (accounts, platform admins, registration mode, mail transport, `APP_URL`) followed by a **Checks** section holding the same findings, and exits non-zero when anything is at error severity. It is the right thing to put at the end of a deploy script, and it is what to reach for when the backend is unhealthy enough that the admin panel will not load.
+它运行 `warmblyctl status`，先打印实例状态，包括账户、平台管理员、注册模式、邮件传输和 `APP_URL`，再在**检查**部分列出相同发现。任何错误级别问题都会使命令以非零状态退出。它适合放在部署脚本结尾，也适用于后端健康状况差到管理面板无法加载时。
 
-Every command works in any runtime:
+每条命令都适用于任意运行环境：
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl status   # docker compose
@@ -40,271 +40,271 @@ kubectl exec -it deploy/warmbly-backend -- warmblyctl status
 warmblyctl status                                          # bare binary
 ```
 
-`status` is one of nine commands. The rest, including the ones that create an account and reset a password when nobody can sign in, are on the [warmblyctl reference](/development/warmblyctl/).
+`status` 是九个命令之一。其余命令，包括无人能登录时创建账户和重置密码的命令，见 [warmblyctl 参考](/development/warmblyctl/)。
 
-## Health endpoints
+## 健康检查端点 [#health-endpoints]
 
-These endpoints answer different questions.
+这些端点回答不同问题。
 
-| Endpoint | Auth | Use it for |
+| 端点 | 身份验证 | 用途 |
 |---|---|---|
-| `GET /health` | none | Liveness. Is the process up. This is the one a load balancer or an orchestrator probes |
-| `GET /admin/instance/health` | platform admin, `view_analytics` | Deep diagnostics: the finding list the panel renders |
-| `GET /admin/system/status` | platform admin, `view_analytics` | Scoped backing-service probes at `checked_at`, not send or sync throughput |
-| `GET /admin/instance/monitoring` | platform admin, `view_analytics` | Versioned operational snapshot with per-source permission filtering and explicit measurement coverage |
+| `GET /health` | 无 | 存活检查，确认进程是否运行，供负载均衡器或编排器探测 |
+| `GET /admin/instance/health` | 平台管理员，`view_analytics` | 深度诊断，即面板显示的发现列表 |
+| `GET /admin/system/status` | 平台管理员，`view_analytics` | 在 `checked_at` 时刻执行的特定基础服务探测，不是发送或同步吞吐量 |
+| `GET /admin/instance/monitoring` | 平台管理员，`view_analytics` | 带版本的运行快照，按来源过滤权限，并明确测量覆盖范围 |
 
-<Callout type="warn" title="Do not point a load balancer at the deep endpoint">
-The diagnostic endpoint reports warnings about configuration, and a warning is not a reason to take a node out of rotation. Use `GET /health` for liveness and leave the diagnostics to the panel and to `make doctor`.
+<Callout type="warn" title="不要让负载均衡器探测深度诊断端点">
+诊断端点会报告配置警告，但警告不是将节点移出服务轮换的理由。存活检查使用 `GET /health`，诊断交给面板和 `make doctor`。
 </Callout>
 
-Two neighbouring endpoints round out the surface, both under **Instance** in the panel:
+面板**实例**下还有以下相邻端点：
 
-| Endpoint | Auth | Returns |
+| 端点 | 身份验证 | 返回内容 |
 |---|---|---|
-| `GET /admin/instance/config` | `manage_settings` | Every configuration entry with its resolved value, source and restart requirement. Sensitive keys return a fingerprint, never a value |
-| `GET /admin/instance/limits` | `view_analytics` | The effective sending, warmup and rate limits this build compiles in |
-| `GET /admin/instance/update` | `view_analytics` | The running build, the newest release, and the updater's state. Backs the version pill at the foot of the sidebar; see [Updates](/development/updates/) |
+| `GET /admin/instance/config` | `manage_settings` | 所有配置项及其解析值、来源和是否需要重启。敏感键只返回指纹，不返回值 |
+| `GET /admin/instance/limits` | `view_analytics` | 当前构建编译进来的实际发送、预热和速率限额 |
+| `GET /admin/instance/update` | `view_analytics` | 运行构建、最新发布和更新器状态。为侧边栏底部版本标记提供数据，见[更新](/development/updates/) |
 
-## Operational monitoring
+## 运行监控 [#operational-monitoring]
 
-**Operations** renders the version `"1"` snapshot from `GET /admin/instance/monitoring`. It covers registered workers, worker sample receipt, confirmed sends, campaign reservations, dispatch, safety holds, sync state and fair-use waits, stored mailbox errors, jobs, dead letters, webhooks, customer notification rows, send-result effects, domain checks, warmup mailbox loading and broker queue observations. Dead letters without safe replay proof remain visible as recovery-unverified even when a retry date has passed; the due, waiting and unscheduled counts only cover non-sending campaign wakeup passes. The consumer does not have a task scheduler for automatic replay. Unsupported sources remain visible as unavailable, including detailed send-wait attribution and external tracking-broker diagnostics. Optional arrival-outbox measurements are unavailable when their schema is absent; monitoring needs no arrival migration and does not require a new worker wire version.
+**运行**展示版本 `"1"` 的快照，来自 `GET /admin/instance/monitoring`。它覆盖已登记工作节点、工作节点样本接收、已确认发送、营销活动预留、派发、安全暂停、同步状态和合理使用等待、已存储邮箱错误、作业、死信、Webhook、客户通知行、发送结果效果、域检查、预热邮箱加载，以及消息代理队列观察。没有安全重放证明的死信，即使已超过重试日期，仍显示为恢复未验证；到期、等待和未安排计数仅覆盖不发送邮件的营销活动唤醒轮次。消费者没有用于自动重放的任务调度器。不支持的来源仍显示为不可用，包括详细发送等待归因和外部跟踪代理诊断。可选来信发件箱测量在 Schema 不存在时不可用；监控不要求来信迁移，也不需要新的工作节点传输版本。
 
-The backend collects with an eight-second overall timeout, three seconds per source and at most four concurrent collectors. It shares a one-minute snapshot across admins, then filters source permissions for each response. HTTP responses are not cacheable. On collection failure it can retain a source's last good measurement for at most five minutes, marked stale and with its original observation/evidence clocks. After that it is unavailable. Source samples are bounded; measured/expected scope counts and incomplete coverage expose truncation. Counts in partial samples may be lower bounds, never extrapolated fleet totals.
+后端收集总超时为八秒，单来源三秒，最多四个并发收集器。管理员间共享一分钟快照，再按每个响应过滤来源权限。HTTP 响应不可缓存。收集失败时，可保留来源最后一次成功测量最多五分钟，标为过期，并保留原观察和证据时钟；之后变为不可用。来源样本有数量边界，已测/预期范围计数及不完整覆盖会暴露截断。部分样本中的计数可能只是下界，绝不会外推为整个节点集群总量。
 
-Unresolved mailbox reports are stored evidence, not proof of an ongoing provider failure. New transport reports explicitly distinguish `sync`, `send` and `unknown` operations. Their `created_at` remains the latest failure observation; `observation_source` distinguishes a valid worker clock from receipt fallback, and `received_at` records backend receipt separately. Missing, invalid or future worker clocks fall back to receipt time. Older redelivery cannot move the latest observation backward. Upgrading does not rewrite historical clocks or guess the operation from a nullable task ID.
+未解决邮箱报告是存储的证据，不能证明服务商仍在失败。新的传输报告明确区分 `sync`、`send` 和 `unknown` 操作。其 `created_at` 仍表示最新失败观察；`observation_source` 区分有效工作节点时钟和接收时间回退，`received_at` 单独记录后端接收时间。工作节点时间缺失、无效或位于未来时，回退到接收时间。更旧的重投不能把最新观察时间向后移。升级不会改写历史时钟，也不会根据可空任务 ID 猜测操作类型。
 
-Inbound sync cannot prove sending recovered. A completed provider pass automatically reconciles only earlier, explicitly sync-scoped native transport reports. Provider-confirmed sends independently reconcile earlier native send-scoped reports, with confirmed-task provenance, in the existing send-result transaction. Each operation retains its own monotonic success clock, so delayed older native failures stay resolved history instead of reopening an outage or emitting a fresh warning. Failure timestamps have second precision; recovery must be more than one second later. Credential and policy errors still use their existing recovery flows.
+入站同步不能证明发送已恢复。完成的服务商同步轮次，只会自动核对更早、明确属于同步范围的原生传输报告。服务商确认的发送则在现有发送结果事务中，凭已确认任务来源，独立核对更早的原生发送报告。各操作保留自己的单调成功时钟，因此延迟到达的旧原生失败会保持为已解决历史，不会重新打开故障或产生新警告。失败时间戳精度为秒；恢复必须晚一秒以上。凭据和策略错误继续使用现有恢复流程。
 
-Transport recovery additionally requires the worker's immutable, instance-local mailbox generation. The control plane reads that generation and the mailbox configuration and credentials in one database snapshot. It is part of the worker's execution identity, so an unchanged-credential restore still drains and replaces the old mailbox transport rather than relabeling it. Only a freshly completed provider sync pass stamps its generation; imported seeds, progress, partial or deferred passes, heartbeats and resumed checkpoints cannot create new proof. Sending captures the loaded transport's generation before execution and retains it in the genuine result. A task execution or dispatch marker alone is not proof of the restored configuration, and cannot establish sync recovery.
+传输恢复还要求工作节点提供不可变、仅属于本实例的邮箱代际标识。控制平面在同一数据库快照中读取该标识、邮箱配置和凭据。它是工作节点执行身份的一部分，因此即使恢复时凭据未变，也会等待旧邮箱传输结束并替换，而不是重新贴标签。只有新完成的服务商同步轮次才记录其代际；导入示例、进度、部分或延期轮次、心跳和续接检查点，都不能产生新证明。发送在执行前捕获已加载传输的代际，并保留到真实结果中。任务执行或派发标记本身不能证明恢复后的配置，也不能建立同步恢复。
 
-Workspace import rotates this generation and invalidates derived clocks transactionally for actually inserted or overwritten mailboxes, including actual mailbox credential-table writes. Skipped, foreign, rolled-back and unaffected rows keep their generation and clocks. This is a restore-incarnation boundary, not a version for every ordinary settings edit or token refresh. The generation comparison and recovery write lock the same mailbox fence as restore, preserving task-before-mailbox lock order. A late pre-import or spanning result, even with a recent timestamp, cannot recreate current recovery. Genuine send outcomes still settle normally, including accounting and audit; mismatch never discards them or changes restrictive holds. Operator confirmation and imported confirmation history do not authorize transport recovery, even if metadata contains a generation.
+工作区导入会在事务中，为实际插入或覆盖的邮箱轮换代际并使派生时钟失效，包括实际写入邮箱凭据表的情况。跳过、外部组织、回滚和未受影响的行，保留原代际和时钟。这是恢复实例化边界，不是每次普通设置编辑或令牌刷新的版本。代际比较和恢复写入，会获取与恢复相同的邮箱边界锁，并保留先任务后邮箱的锁顺序。迟到的导入前结果或跨越导入的结果，即使时间戳较新，也不能重建当前恢复。真实发送结果仍正常结算，包括计数和审计；代际不匹配绝不会丢弃结果或改变限制性暂停。运维确认及导入确认历史不授权传输恢复，即使元数据带有代际也是如此。
 
-Missing generation remains unproven. Old workers continue to send and sync through upgraded consumers, but cannot advance these derived recovery clocks. New typed workers recover automatically with no customer confirmation, worker re-enrollment or shared-token permission change. JSON and Kafka/Avro fields are additive; the native registry regression checks both directions under FULL_TRANSITIVE compatibility. Upgrade the database and every backend and consumer before workers. Local regression results do not establish production provider recovery.
+缺少代际仍表示未证实。旧工作节点通过升级后的消费者仍可发送和同步，但不能推进这些派生恢复时钟。新的类型化工作节点会自动恢复，无需客户确认、重新登记节点或改变共享令牌权限。JSON 和 Kafka/Avro 字段是新增字段；原生注册表回归测试在 FULL_TRANSITIVE 兼容性下检查双向兼容。先升级数据库和所有后端、消费者，再升级工作节点。本地回归结果不能证明生产服务商已恢复。
 
-Legacy and imported reports with unknown observation provenance stay outside native active-report deduplication and automatic recovery. Their IDs, timestamps, task references and resolutions remain available. Untyped worker events have unknown operation scope, even when their observation clock is valid. Neither sync nor sending alone can automatically clear ambiguous operation evidence. No new customer action is required for new typed reports. Transport recovery does not prove recipient delivery, inbox currentness or permission to replay an uncertain send. Sync passes can complete while the arrival queue is still behind. Unknown-send safety holds are not cleared by report reconciliation.
+观察来源未知的旧版及导入报告，不参与原生活跃报告去重和自动恢复。其 ID、时间戳、任务引用和解决记录仍可读取。未类型化的工作节点事件，即使观察时钟有效，操作范围仍为未知。同步或发送本身都不能自动清除含糊的操作证据。新类型化报告无需客户新增操作。传输恢复不能证明收件人已收到、收件箱已同步到最新，也不代表允许重放结果不确定的发送。来信队列仍积压时，同步轮次也可能完成。报告核对不会清除未知发送安全暂停。
 
-Quiesce old mailbox-error writers and result consumers before applying migration 288: old account-plus-code conflict targets are incompatible with the new native unique index. Roll out schema and all backend/result consumers before typed workers. Old workers remain supported through new consumers, but their untyped reports stay unknown. Do not run old result consumers alongside typed workers; old consumers can still apply account-wide resolution. Workspace import resets report operation and observation provenance and invalidates derived destination clocks only for mailboxes actually written. Whole-instance database backups retain the original provenance and clocks. Downgrade refuses any set of unresolved reports that old uniqueness cannot represent, including multiple historical reports of the same operation, rather than discarding evidence or inventing recovery. A refused real-driver downgrade leaves migration metadata dirty and the typed schema intact. Verify the preserved schema and roll forward; do not delete reports or clear safety holds to force a downgrade.
+应用迁移 288 前，应暂停旧邮箱错误写入者和结果消费者：旧的“账户加代码”冲突目标与新的原生唯一索引不兼容。先发布 Schema 及所有后端/结果消费者，再部署类型化工作节点。旧工作节点仍可通过新消费者使用，但未类型化报告保持未知。不要让旧结果消费者与类型化工作节点同时运行，因为旧消费者仍可能执行账户范围解决。工作区导入只对实际写入的邮箱重置报告操作和观察来源，并使目标派生时钟失效。整实例数据库备份保留原来源和时钟。如果旧唯一性无法表示一组未解决报告，包括同一操作的多个历史报告，降级会拒绝，而不会丢弃证据或虚构恢复。真实驱动拒绝降级后，迁移元数据会保持 dirty，类型化 Schema 保持完整。应验证保留的 Schema 并向前修复，不要删除报告或清除安全暂停来强制降级。
 
-The local task dispatcher also waits five minutes before revisiting a task whose handler returned successfully but left it pending with an already-due schedule. This lets newer due work run without treating the no-op as a failure. It preserves any later retry floor, the original scheduled time, send outcomes and safety holds. Tasks that completed, became active or were rescheduled into the future do not receive this extra wait. A retry wait is not evidence of provider recovery.
+如果任务处理器成功返回，但任务仍待处理且计划时间已到，本地任务派发器还会等待五分钟再访问它。这样新到期工作有机会运行，也不会把无操作结果当成失败。它保留任何更晚的重试下限、原计划时间、发送结果和安全暂停。已完成、变为活跃或重新安排到未来的任务，不会额外等待。重试等待不是服务商恢复证据。
 
-Failed attempts keep their existing retry policy. During a mixed-version rollout, older local dispatchers can still clear successful no-op waits. Verify dispatch fairness only after every service running the local dispatcher has been upgraded.
+失败尝试保留现有重试策略。混合版本发布期间，旧本地派发器仍可能清除成功但无操作的等待。只有所有运行本地派发器的服务升级后，才应验证派发公平性。
 
-Worker heartbeat totals and up to 20 worker details share one PostgreSQL snapshot and one database observation clock, captured after reading the registered workers. That source's observation can be later than the overall snapshot start; its collection-attempt clock still marks the refresh request start, not measurement time. Null timestamps, timestamps at least five minutes old, and timestamps ahead of that observation remain visible. Future worker details are unknown clock evidence, not proof of a stopped worker: HTTP heartbeat registration uses the database clock, while Redis-mirrored heartbeats retain the worker's timestamp. A future-only aggregate is also unknown; any stale or null heartbeat keeps the aggregate's stale-telemetry condition. Counts and positive warning severity do not change. No clock-skew tolerance is assumed. Expected scopes count all matching workers, measured scopes count the bounded details, and truncation is partial coverage even when the aggregate is complete.
+工作节点心跳总量和最多 20 个节点详情，共用一个 PostgreSQL 快照和一个数据库观察时钟，该时钟在读取已登记节点后捕获。因此来源观察可能晚于整体快照开始；其收集尝试时钟仍表示刷新请求开始，不是测量时间。空时间戳、至少五分钟前的时间戳，以及晚于该观察时刻的时间戳，都会保持可见。未来时间的节点详情属于未知时钟证据，不能证明节点停止：HTTP 心跳登记使用数据库时钟，Redis 镜像心跳保留节点时间戳。仅含未来值的汇总也属于未知；只要有过期或空心跳，汇总就保留过期遥测条件。计数和已有警告严重级别不变，不假定任何时钟偏差容差。预期范围统计全部匹配节点，已测范围统计有界详情；即使汇总完整，详情截断仍属于部分覆盖。
 
-### Reading a snapshot
+### 解读状态快照 [#reading-a-snapshot]
 
-Aggregate sources collected in one database query, including sync and worker health samples, capture one database reference time for all their thresholds, windows and source/metric observations. A normal completion or receipt visible when the query starts is compared with that reference, not the earlier refresh request start. Genuinely future-dated evidence still warns, with no clock-skew tolerance. The snapshot's checked time and cache expiry keep their collection-start meaning; the database observation does not confirm provider recovery.
+通过单次数据库查询收集的汇总来源，包括同步和工作节点健康样本，会为全部阈值、窗口和来源/指标观察捕获同一数据库参考时间。查询开始时可见的正常完成或接收记录，与该参考时间比较，而不是更早的刷新请求开始时间。真正位于未来的证据仍会警告，不设时钟偏差容差。快照检查时间和缓存到期时间仍以收集开始为基准；数据库观察不确认服务商恢复。
 
-- **Snapshot checked** and **Collection attempted** are collection clocks. They do not confirm delivery, sync or recovery. **Source observed** and **Observed** are the measurement clocks; **Evidence since**, **Latest evidence**, their ages and any window are distinct. The UI retains the original clocks after a failed refresh and marks retained measurements stale. A successful browser fetch of old data does not make it fresh.
-- `fresh`, `stale` and `unavailable` describe measurement availability. The UI also marks observations older than two minutes or implausibly future-dated as stale/unknown. Coverage can be complete only for the measured sources; it does not mean every customer operation succeeded.
-- A nullable count is **Not measured**, not zero. A successful zero means no matching rows in that metric's scope/window. Zero recent sends means **No matching recent evidence**, not healthy throughput. A completed task, heartbeat, low memory usage or sync tick does not prove delivery or recovery.
-- Recent/persistent failure evidence, recovery unverified, safety holds, backlog and stale telemetry remain separate conditions. An old failure without later confirmed send evidence is **Recovery unverified**, not proof that a new failure is happening now. Unknown warning observations such as missing assignment remain unknown, not fabricated provider outages.
-- Schedule waits, retry waits, budget waits, daily-limit waits and in-flight work are informational. **Next eligible** describes eligibility, not a promise of success. A safety hold is a restriction, not an outage; monitoring never clears it.
-- A stale running-backfill warning applies only to active mailboxes without an active fair-use hold. Inactive or revoked mailbox state remains visible in the backfill history counts, without treating a stopped mailbox as a current sync failure. Reactivation does not reset that history or claim recovery; an unchanged old running state warns again.
-- A declining unknown-hold count alone does not prove successful sends. Definitive outcomes or nonce-gated retirement of commands that never started can resolve an unknown, but cancellation, deferral and authorized repair keep the mailbox held when another unknown or unresolved outcome conflict remains. Compare task-scoped evidence, not only before-and-after totals.
-- Contradictory definitive results retain the original applied outcome and accounting, record a payload-free conflict outcome, and hold sending without replay. Automatic conflict evidence is separate from operator/provider confirmation. Duplicate results cannot undo a fresh local confirmation of that conflict. Repair and result processing share the same task and mailbox locks so a concurrent conflict cannot disappear during hold recalculation.
-- Workspace archives preserve recovery audit history but reset its local provenance. Imported or older audit history without explicit local provenance cannot execute an operator-confirmed result or lift a conflict hold. Independent authoritative worker results still reconcile unknown sends automatically; only genuinely unresolved evidence needs fresh local administrator/provider confirmation. Two contradictory definitive outcomes are not resolved by choosing whichever arrived last. An upgrade does not infer that historical confirmations originated locally. Recovery-audit rollback is refused while audit rows remain; roll forward instead of deleting evidence to force a downgrade.
-- Normal customer sending, mailbox connection and authentication flows gain no new confirmation step. Administrators handle exceptional uncertain outcomes through the existing scoped recovery API after checking provider evidence; customers do not need to read logs or supply technical task identifiers. Status toggles, credential repair and duplicate results are not shortcuts around another unresolved send. See [send-safety upgrade ordering](/development/send-safety/#conflict-audit-upgrade-ordering) before enabling the audit extension on a mixed-version backend fleet.
-- Positive broker lag/pending/ack-pending/redelivered counts appear prominently on Overview even though the backend deliberately labels them `unknown` with severity `info`. Kafka committed lag excludes uncommitted processing; JetStream pending and acknowledgement-pending are different measurements. Neither is provider-send throughput. Redelivered is not a lifetime retry rate; absent group members can occur during rebalancing.
-- Counts, affected mailboxes, affected organizations and rows with unknown organization are separate quantities. Metrics and per-worker scopes may overlap. The attention total counts recorded signals, not failed sends or unique customers; do not add metric counts together.
-- Query errors, permission denials, unsupported capability, missing dependencies/schema and timeouts do not produce an all-clear. No sources or no metrics means unknown coverage. Raw provider/connection errors, credentials, payloads and mailbox addresses are not rendered by the monitoring panel.
+- **快照检查时间**和**收集尝试时间**是收集时钟，不确认投递、同步或恢复。**来源观察时间**和**观察时间**是测量时钟；**证据起始时间**、**最新证据**、各自时长及窗口互相独立。刷新失败后，界面保留原时钟并将测量标为过期。浏览器成功获取旧数据，不会让数据变新。
+- `fresh`、`stale` 和 `unavailable` 描述测量可用性。界面也会将超过两分钟或不合理地位于未来的观察标为过期/未知。完整覆盖只针对已测来源，不代表每个客户操作都成功。
+- 可空计数表示**未测量**，不是零。成功测得零，表示该指标范围和窗口内没有匹配行。近期发送为零表示**没有匹配的近期证据**，不表示吞吐健康。任务完成、心跳、低内存占用或同步跳动，都不能证明投递或恢复。
+- 近期或持续失败证据、恢复未验证、安全暂停、积压和过期遥测，是不同状态。旧失败之后没有确认发送证据，表示**恢复未验证**，不证明当前正发生新失败。分配缺失等未知警告仍为未知，不会虚构服务商故障。
+- 计划等待、重试等待、预算等待、每日限额等待和在途工作属于信息性状态。**下次符合条件时间**描述资格，不承诺成功。安全暂停是一项限制，不是故障；监控不会清除它。
+- 历史回填运行状态过期警告，只适用于活跃且没有有效合理使用暂停的邮箱。未激活或已撤销邮箱仍出现在回填历史计数中，但不会把停止邮箱视为当前同步失败。重新激活不会重置历史或声称恢复；未变化的旧运行状态会再次警告。
+- 未知暂停数量下降，本身不能证明发送成功。明确结果或通过随机令牌保护的尚未开始命令退役，可以解决未知；但若仍有其他未知或未解决结果冲突，取消、延期和授权修复都会继续暂停邮箱。应比较任务范围证据，而不只比较前后总数。
+- 矛盾的明确结果保留最初已应用结果和计数，记录不含载荷的冲突结果，并暂停发送，不重放。自动冲突证据与运维/服务商确认分开。重复结果不能撤销针对该冲突的新本地确认。修复和结果处理共享相同任务与邮箱锁，避免并发冲突在重新计算暂停时消失。
+- 工作区归档保留恢复审计历史，但重置其本地来源。导入或较早的审计历史若没有明确本地来源，不能执行运维确认结果，也不能解除冲突暂停。独立权威工作节点结果仍会自动核对未知发送；只有真正未解决的证据才需要新的本地管理员/服务商确认。两个矛盾的明确结果，不能靠选择最后到达者解决。升级不会推断历史确认来自本地。只要仍有审计行，恢复审计回滚就会拒绝；应向前修复，不要删除证据强制降级。
+- 正常客户发送、邮箱连接和身份验证流程不会新增确认步骤。管理员检查服务商证据后，通过现有受作用域限制的恢复 API 处理例外的不确定结果；客户无需读日志或提供技术任务标识符。状态开关、凭据修复和重复结果，都不能绕过另一项未解决发送。在混合版本后端集群启用审计扩展前，参见[发送安全升级顺序](/development/send-safety/#conflict-audit-upgrade-ordering)。
+- 大于零的消息代理延迟、待处理、等待确认和重投计数，会在概览显著显示，即使后端有意将它们标为 `unknown`、严重级别为 `info`。Kafka 已提交延迟不包括未提交处理；JetStream 待处理和等待确认是不同测量，二者都不是服务商发送吞吐量。重投不是生命周期重试率；组成员缺失可能发生在重新平衡期间。
+- 计数、受影响邮箱、受影响组织和组织未知的行，是不同数量。指标与逐工作节点范围可能重叠。“需要关注”总量统计已记录信号，不是失败发送或独立客户数；不要把各指标计数相加。
+- 查询错误、权限拒绝、能力不支持、依赖或 Schema 缺失，以及超时，都不会产生全面正常结论。没有来源或指标表示覆盖未知。监控面板不显示原始服务商/连接错误、凭据、载荷或邮箱地址。
 
-The Overview and Operations tab share the same frontend query cache, scoped to admin identity and permission mask. Monitoring polls at most once per minute while mounted in a visible tab, does not refetch on focus or retry automatically, and offers a refresh control that respects `refresh_after`. Service probes poll every 15 seconds while their tab is mounted; passed probes establish reachability at that time only. Failed or stale probes remain explicit, including whether a cached probe previously passed or failed, and raw component connection errors are withheld. The existing platform mail card is shown only with `manage_settings`, which its inspection and send-test endpoints require.
+概览和“运行”选项卡共用同一个前端查询缓存，按管理员身份和权限掩码限定。在可见选项卡挂载期间，监控最多每分钟轮询一次，不因重新聚焦而获取，也不自动重试，并提供遵守 `refresh_after` 的刷新控件。“服务”选项卡挂载时，每 15 秒探测一次；通过的探测只证明当时可达。失败或过期探测始终明确显示，包括缓存探测此前通过还是失败，但隐藏原始组件连接错误。现有平台邮件卡片只向具有 `manage_settings` 的管理员显示，其检查和测试发送端点也要求该权限。
 
-This is observation-only tooling. It does not subscribe to brokers, create streams/groups, reconnect mailboxes, move assignments or offsets, reclaim tasks, replay results, clear holds, notify customers or deploy changes. Investigation links open existing admin pages when those pages cover the measured population; actions there retain their existing confirmations and permissions. Aggregate dispatch and send measurements have no direct link because the existing campaign-only detail tabs exclude some counted pending or warmup tasks. Keep the count and its evidence time in view while investigating through authorized backend diagnostics.
+这是只用于观察的工具。它不会订阅消息代理、创建流或组、重连邮箱、移动分配或偏移量、回收任务、重放结果、清除暂停、通知客户或部署改动。当现有管理页面覆盖测量人群时，调查链接会打开对应页面，其中操作仍遵循原有确认和权限。汇总派发和发送测量没有直接链接，因为现有仅营销活动详情页不包含部分计入的待处理或预热任务。通过已授权后端诊断调查时，应同时保留计数和证据时间供参考。
 
-### Monitoring permissions
+### 监控权限 [#monitoring-permissions]
 
-Every monitoring request requires an MFA-verified platform admin session and `view_analytics`, not a workspace API key. Source sections additionally require the bit below. Denied sources retain only an unavailable placeholder with `permission_denied`; their counts, scope measurements and private metrics are absent. The frontend also filters sections and checks destination permissions for every investigation link. Monitoring fails closed when an older identity response has no known admin mask.
+每次监控请求都要求经过 MFA 验证的平台管理员会话和 `view_analytics`，不能使用工作区 API 密钥。各来源部分还要求下表附加权限位。被拒绝来源只保留带 `permission_denied` 的不可用占位，不含计数、范围测量或私有指标。前端也会过滤部分，并检查每个调查链接目标的权限。旧身份响应没有已知管理权限掩码时，监控保守拒绝。
 
-| Source IDs | Additional platform admin bit |
+| 来源 ID | 附加平台管理权限位 |
 |---|---|
-| `send_safety`, `sync`, `mailbox_errors`, `arrivals`, `domain_auth` | `view_users` |
-| `sends`, `campaign_reservations`, `dispatch`, `dead_letters`, `result_effects`, `warmup_loading`, `send_wait_attribution` | `view_campaigns` |
-| `workers`, `worker_samples`, `worker_command_broker` | `view_workers` |
-| `jobs`, `backend_event_broker`, `tracking_broker` | `view_analytics` (already required) |
+| `send_safety`、`sync`、`mailbox_errors`、`arrivals`、`domain_auth` | `view_users` |
+| `sends`、`campaign_reservations`、`dispatch`、`dead_letters`、`result_effects`、`warmup_loading`、`send_wait_attribution` | `view_campaigns` |
+| `workers`、`worker_samples`、`worker_command_broker` | `view_workers` |
+| `jobs`、`backend_event_broker`、`tracking_broker` | `view_analytics`，已是基础要求 |
 | `webhooks` | `view_organizations` |
 | `notifications` | `manage_settings` |
 
-For example, an admin may see webhook measurements with `view_organizations` but not a link into Sends without `view_campaigns`. Worker details, sync/mailboxes, organization details, jobs and configuration links likewise require their native page bit. Arbitrary/external investigation URLs are not accepted.
+例如，管理员具有 `view_organizations` 时可以看到 Webhook 测量，但没有 `view_campaigns` 就不能链接到“发送”。工作节点详情、同步/邮箱、组织详情、作业和配置链接，也都要求对应页面原生权限位。不接受任意或外部调查 URL。
 
-## Security and secrets
+## 安全与机密信息 [#security-and-secrets]
 
-### secret_published_default
+### secret_published_default [#secret_published_default]
 
-One or more of `AUTH_SECRET`, `KMS_LOCAL_MASTER_KEY`, `CREDENTIALS_ENCRYPTION_KEY`, `INTERNAL_API_TOKEN` or `SECRET_KEY_BASE` still holds the value shipped in `docker-compose.yml`. Those values are published in this repository, so anyone can forge a session token or unwrap every organization key.
+`AUTH_SECRET`、`KMS_LOCAL_MASTER_KEY`、`CREDENTIALS_ENCRYPTION_KEY`、`INTERNAL_API_TOKEN` 或 `SECRET_KEY_BASE` 中至少一个仍使用 `docker-compose.yml` 随附的值。这些值已公开在仓库中，因此任何人都可以伪造会话令牌，或解开所有组织密钥。
 
-Generate real values and restart. See [secrets](/development/configuration/#secrets). The backend refuses to boot on a published default once `APP_ENV` is not `dev`, but only the backend does that check: the consumer and every worker start happily on one, which is why this check exists.
+生成真实值并重启，参见[秘密值](/development/configuration/#secrets)。`APP_ENV` 不为 `dev` 时，后端会拒绝使用公开默认值启动；但只有后端执行此检查，消费者和所有工作节点仍会使用这些值启动，因此需要此检查项。
 
-### allow_insecure_defaults
+### allow_insecure_defaults [#allow_insecure_defaults]
 
-`ALLOW_INSECURE_DEFAULTS=true` overrides the boot refusal above. Remove it once you have generated real values.
+`ALLOW_INSECURE_DEFAULTS=true` 会覆盖上述启动拒绝。生成真实值后应移除。
 
-### credentials_key_unset
+### credentials_key_unset [#credentials_key_unset]
 
-`CREDENTIALS_ENCRYPTION_KEY` is empty, so mailbox SMTP and IMAP passwords are stored without being sealed. Set a 64 hex character key (`openssl rand -hex 32`) before connecting any mailbox, and back it up: losing it makes connected mailboxes unrecoverable. See [encryption](/development/configuration/#encryption).
+`CREDENTIALS_ENCRYPTION_KEY` 为空，因此邮箱 SMTP 和 IMAP 密码未密封存储。连接任何邮箱前，设置一个 64 字符十六进制密钥，可用 `openssl rand -hex 32` 生成，并做好备份；丢失后，已连接邮箱将无法恢复。参见[加密](/development/configuration/#encryption)。
 
-### internal_token_unset
+### internal_token_unset [#internal_token_unset]
 
-`INTERNAL_API_TOKEN` is empty, so every request to `/api/v1/internal/` is rejected. Workers cannot fetch organization keys and the tracking service cannot resolve click links. Nothing fails at boot, only at runtime. See [workers](/development/configuration/#workers).
+`INTERNAL_API_TOKEN` 为空，因此发往 `/api/v1/internal/` 的所有请求都被拒绝。工作节点无法获取组织密钥，跟踪服务无法解析点击链接。启动时不会失败，只在运行时出错。参见[工作节点](/development/configuration/#workers)。
 
-### trusted_proxies_unset
+### trusted_proxies_unset [#trusted_proxies_unset]
 
-The request that loaded this page carried an `X-Forwarded-For` header while `TRUSTED_PROXIES` is empty, so Warmbly is recording your proxy's address as the client address. The per IP login limiter, session records, audit rows and API key IP allowlists all read the wrong address. Set `TRUSTED_PROXIES` to your proxy's CIDR. See [network and proxy](/development/configuration/#network-and-proxy).
+加载此页面的请求携带 `X-Forwarded-For`，但 `TRUSTED_PROXIES` 为空，因此 Warmbly 将代理地址记录为客户端地址。按 IP 登录限流、会话记录、审计行和 API 密钥 IP 白名单都会读取错误地址。将 `TRUSTED_PROXIES` 设置为代理的 CIDR。参见[网络与代理](/development/configuration/#network-and-proxy)。
 
-### captcha_misconfigured
+### captcha_misconfigured [#captcha_misconfigured]
 
-`CAPTCHA_PROVIDER=turnstile` with an empty `TURNSTILE_SECRET` fails every verification, which means nobody can sign in. Set the secret or set `CAPTCHA_PROVIDER=none`. See [captcha](/development/configuration/#captcha).
+`CAPTCHA_PROVIDER=turnstile` 配合空 `TURNSTILE_SECRET`，会使每次验证失败，导致无人能登录。设置密钥，或改为 `CAPTCHA_PROVIDER=none`。参见[验证码](/development/configuration/#captcha)。
 
-### turnstile_bypass_set
+### turnstile_bypass_set [#turnstile_bypass_set]
 
-`TURNSTILE_BYPASS_TOKEN` is set. It is only honoured when `APP_ENV=dev`, so on a production deployment it does nothing except confuse the next person. Remove it.
+已设置 `TURNSTILE_BYPASS_TOKEN`。它仅在 `APP_ENV=dev` 时生效，因此在生产部署中除了让后来维护的人困惑外没有作用，应移除。
 
-### dev_mode_public
+### dev_mode_public [#dev_mode_public]
 
-`APP_ENV` is not `prod` while `APP_URL` is not a loopback address. Dev mode allows the published default secrets and enables debug logging. Set `APP_ENV=prod`. See [deployment](/development/configuration/#deployment).
+`APP_ENV` 不为 `prod`，同时 `APP_URL` 不是回环地址。开发模式允许公开默认秘密值并启用调试日志。请设置 `APP_ENV=prod`。参见[部署](/development/configuration/#deployment)。
 
-### unsafe_webhook_urls
+### unsafe_webhook_urls [#unsafe_webhook_urls]
 
-`WARMBLY_ALLOW_UNSAFE_WEBHOOK_URLS=true` lets customer webhooks point at `http://` and private addresses, which means any workspace member can make the backend reach into your internal network. Development only. See [webhooks](/guides/webhooks/).
+`WARMBLY_ALLOW_UNSAFE_WEBHOOK_URLS=true` 允许客户 Webhook 指向 `http://` 和私有地址，意味着任何工作区成员都可能让后端访问内部网络。仅适用于开发。参见 [Webhook](/guides/webhooks/)。
 
-### tls_verification_off
+### tls_verification_off [#tls_verification_off]
 
-`SMTP_TLS_INSECURE_SKIP_VERIFY` or `MAIL_TLS_INSECURE` is on, so TLS certificate verification is disabled for platform mail or for mailbox connections. Only legitimate for a relay using a private certificate authority.
+已开启 `SMTP_TLS_INSECURE_SKIP_VERIFY` 或 `MAIL_TLS_INSECURE`，平台邮件或邮箱连接的 TLS 证书验证因此关闭。只有使用私有证书机构的中继才适合这样设置。
 
-## URLs and reachability
+## URL 与可达性 [#urls-and-reachability]
 
-The dashboard, API and admin panel may use different hosts. `APP_URL` names the customer dashboard used in emailed links, not the API or admin panel. The checks do not compare it to the backend request's host or the admin panel's origin; HTTPS and CORS checks still apply.
+控制台、API 和管理面板可以使用不同主机。`APP_URL` 指定邮件链接中的客户控制台，不是 API 或管理面板。检查不会把它与后端请求主机或管理面板来源比较；HTTPS 和 CORS 检查仍然适用。
 
-### app_url_unset
+### app_url_unset [#app_url_unset]
 
-`APP_URL` and `FRONTEND_BASE_URL` are both empty, so password reset, invitation and setup links are being built against `https://app.warmbly.com`. Those links go to the hosted service, not to your instance, and a live reset token in one of them leaves your deployment. Set `APP_URL` to your dashboard origin. See [addresses](/development/configuration/#addresses).
+`APP_URL` 和 `FRONTEND_BASE_URL` 都为空，因此密码重置、邀请和设置链接基于 `https://app.warmbly.com` 生成。它们会到达托管服务，而不是你的实例，其中有效的重置令牌会离开你的部署。将 `APP_URL` 设为控制台来源。参见[地址](/development/configuration/#addresses)。
 
-### app_url_insecure
+### app_url_insecure [#app_url_insecure]
 
-`APP_URL` uses `http://` on a non-loopback host. Browsers refuse WebAuthn outside a secure context, so passkeys are disabled, and session cookies travel in the clear. Put the dashboard behind HTTPS.
+`APP_URL` 在非回环主机上使用 `http://`。浏览器拒绝在非安全上下文使用 WebAuthn，因此通行密钥不可用，会话 Cookie 也明文传输。请为控制台启用 HTTPS。
 
-### cors_missing_origin
+### cors_missing_origin [#cors_missing_origin]
 
-An origin that talks to the API is not in the resolved CORS list, so the browser blocks its requests. In practice the app loads and then every request fails. Add it to `CORS_ALLOW_ORIGINS`.
+访问 API 的某个来源不在解析后的 CORS 列表中，浏览器会阻止请求。实际表现为应用加载成功，随后所有请求失败。将该来源加入 `CORS_ALLOW_ORIGINS`。
 
-### api_public_url_unset_oidc
+### api_public_url_unset_oidc [#api_public_url_unset_oidc]
 
-`OIDC_ISSUER_URL` is set while both `API_PUBLIC_URL` and `OIDC_REDIRECT_URL` are empty, so there is no redirect URL and the single sign-on path is disabled. Set `API_PUBLIC_URL` to this backend's public base. See [single sign-on](/development/accounts-and-access/#single-sign-on).
+已设置 `OIDC_ISSUER_URL`，但 `API_PUBLIC_URL` 和 `OIDC_REDIRECT_URL` 都为空，因此没有重定向 URL，单点登录路径被禁用。将 `API_PUBLIC_URL` 设置为后端公开基础地址。参见[单点登录](/development/accounts-and-access/#single-sign-on)。
 
-### oidc_discovery_failed
+### oidc_discovery_failed [#oidc_discovery_failed]
 
-Discovery against the configured issuer failed at boot, so the single sign-on button is not shown. The message carries the underlying error. Check the issuer URL, its TLS chain, and that the backend can reach it.
+启动时无法从配置的签发者完成发现，因此不显示单点登录按钮。消息包含底层错误。检查签发者 URL、TLS 证书链，以及后端能否访问它。
 
-### app_origin_wildcard
+### app_origin_wildcard [#app_origin_wildcard]
 
-Neither `APP_ORIGIN` nor a usable `APP_URL` is set, so the mailbox OAuth callback page posts the authorization code back to the dashboard with a wildcard target origin. Set `APP_URL` to your dashboard origin, or `APP_ORIGIN` if the dashboard is served somewhere else. Setting `APP_URL` alone clears this: the callback page derives its target from it.
+既没有 `APP_ORIGIN`，也没有可用的 `APP_URL`，因此邮箱 OAuth 回调页面用通配目标来源，将授权码发回控制台。将 `APP_URL` 设置为控制台来源；控制台位于其他位置时，可设置 `APP_ORIGIN`。仅设置 `APP_URL` 就能消除此项，因为回调页会从它派生目标。
 
-### tracking_domain_unreachable
+### tracking_domain_unreachable [#tracking_domain_unreachable]
 
-`TRACKING_DOMAIN` is set but a probe from the backend did not get an answer, so open pixels and click links in campaign mail will not record. Recipients still receive the mail.
+已设置 `TRACKING_DOMAIN`，但后端探测没有得到响应，因此营销活动邮件中的打开像素和点击链接不会记录。收件人仍会收到邮件。
 
-## Platform mail
+## 平台邮件 [#platform-mail]
 
-### mail_transport_log
+### mail_transport_log [#mail_transport_log]
 
-`MAIL_TRANSPORT=log` writes every message to the backend log instead of delivering it. Login codes, password resets, team invitations and notification digests will never arrive.
+`MAIL_TRANSPORT=log` 将每封邮件写入后端日志，不实际投递。登录验证码、密码重置、团队邀请和通知摘要都不会到达收件人。
 
-Invitations still work: copy the invite link from **Settings > Members** and send it yourself. See [without a mail relay](/development/accounts-and-access/#without-a-mail-relay). To fix it properly, point `MAIL_TRANSPORT` at a relay. See [platform mail](/development/configuration/#platform-mail).
+邀请仍然可用：从**设置 > 成员**复制邀请链接并自行发送。参见[没有邮件中继时](/development/accounts-and-access/#without-a-mail-relay)。要完整解决，请将 `MAIL_TRANSPORT` 指向中继，参见[平台邮件](/development/configuration/#platform-mail)。
 
-### mail_preflight_failed
+### mail_preflight_failed [#mail_preflight_failed]
 
-The transport is meant to deliver, and the relay did not accept a connection. The message carries the raw SMTP dialogue. Nobody can reset a password or receive an invitation until this is fixed. This check stays quiet when `mail_transport_log` has already fired, so one incident is one row.
+传输本应实际投递，但中继不接受连接。消息包含原始 SMTP 对话。修复前，无人能重置密码或接收邀请。如果已触发 `mail_transport_log`，此检查不会重复报告，让一个事件只占一行。
 
-### mail_identity_unset
+### mail_identity_unset [#mail_identity_unset]
 
-`EMAIL_ADDRESS` or `EMAIL_NAME` is missing. The backend refuses to start without them, but the consumer only warns and silently disables all notification and digest email, so this instance can look healthy while sending nothing.
+缺少 `EMAIL_ADDRESS` 或 `EMAIL_NAME`。后端会拒绝启动，但消费者只警告，并悄悄关闭全部通知和摘要邮件，因此实例可能看似健康，却没有任何邮件发送。
 
-### mail_from_domain_mismatch
+### mail_from_domain_mismatch [#mail_from_domain_mismatch]
 
-Platform mail is sent from a domain that differs from the dashboard's. Mailbox providers may treat that as a mismatch. Only a problem if you did not intend them to differ.
+平台邮件发件域与控制台域不同，邮箱服务商可能将其视为不匹配。只有这种差异并非你有意设置时，才需要处理。
 
-### login_code_demoted
+### login_code_demoted [#login_code_demoted]
 
-`AUTH_LOGIN_CODE=always` was demoted to `new_device` at boot because the transport does not deliver. Otherwise nobody could ever complete a login. See [login codes](/development/accounts-and-access/#login-codes).
+由于传输不实际投递，启动时将 `AUTH_LOGIN_CODE=always` 降为 `new_device`。否则无人能完成登录。参见[登录验证码](/development/accounts-and-access/#login-codes)。
 
-## Updates
+## 更新 [#updates]
 
-### update_available
+### update_available [#update_available]
 
-A newer Warmbly exists: a release on the configured channel is newer than the running build, or the checkout is behind its branch. The message names both versions and how to apply it. With the updater running, the version pill at the foot of the sidebar has an **Update and restart** button; without it, `git pull && make up`. See [Updates](/development/updates/).
+存在更新的 Warmbly：配置渠道中的发布新于运行构建，或检出目录落后分支。消息会指出两个版本及应用方法。更新器运行时，侧边栏底部版本标记提供**更新并重启**按钮；否则使用 `git pull && make up`。参见[更新](/development/updates/)。
 
-### updater_unreachable
+### updater_unreachable [#updater_unreachable]
 
-`UPDATER_URL` is set but nothing answers there, so the update button cannot work. Start the updater (the `updater` compose profile, or the systemd unit on a bare-metal host), fix the address, or remove the variable to update by hand. See [enabling the updater](/development/updates/#enabling-the-updater).
+已设置 `UPDATER_URL`，但地址没有响应，因此更新按钮无法工作。启动更新器，使用 `updater` Compose 配置组或裸机 systemd 单元；也可修正地址，或移除变量并手动更新。参见[启用更新器](/development/updates/#enabling-the-updater)。
 
-## Accounts and access
+## 账户与访问权限 [#accounts-and-access]
 
-### registration_mode
+### registration_mode [#registration_mode]
 
-Always reported as information, with a description of the active mode. `DISABLE_REGISTRATION=false` means public signup is open, not disabled. `invite_only` closes public signup while keeping invitations enabled; signup from an invitation also requires `access.allow_invited_signup`. `true` closes signups and invitations. If `SSO_AUTO_PROVISION=true`, the note also explains that verified single sign-on identities can provision accounts independently of this mode. See [registration modes](/development/accounts-and-access/#registration-modes).
+始终作为信息项报告，并说明当前模式。`DISABLE_REGISTRATION=false` 表示开放公众注册，不是禁用。`invite_only` 关闭公众注册，但保留邀请；通过邀请注册还要求 `access.allow_invited_signup`。`true` 同时关闭注册和邀请。设置 `SSO_AUTO_PROVISION=true` 时，说明还会指出：已验证的单点登录身份可独立于该模式创建账户。参见[注册模式](/development/accounts-and-access/#registration-modes)。
 
-### no_sign_in_method
+### no_sign_in_method [#no_sign_in_method]
 
-`DISABLE_PASSWORD_LOGIN=true` with no OIDC, Google or Apple provider configured leaves no way to sign in to this instance at all. Set `DISABLE_PASSWORD_LOGIN=false` or configure `OIDC_ISSUER_URL`. A provider counts as configured only when every value it needs is set, which is what the next two checks report.
+`DISABLE_PASSWORD_LOGIN=true`，同时没有配置 OIDC、Google 或 Apple 服务商，会让实例完全没有登录方式。设置 `DISABLE_PASSWORD_LOGIN=false`，或配置 `OIDC_ISSUER_URL`。只有服务商所需全部值都存在，才算配置完成，下面两项检查会报告缺失。
 
-### google_sign_in_incomplete
+### google_sign_in_incomplete [#google_sign_in_incomplete]
 
-Some of the Google sign-in configuration is set and some is missing, so the button is not shown. `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are both required, and the callback needs a redirect URI, which derives from `API_PUBLIC_URL` when `GOOGLE_REDIRECT_URI` is unset. The same check warns when the redirect URI points at the dashboard: it is served by the API. See [sign-in methods](/development/accounts-and-access/#sign-in-methods).
+Google 登录配置部分存在、部分缺失，因此不显示按钮。`GOOGLE_CLIENT_ID` 和 `GOOGLE_CLIENT_SECRET` 都必需；回调还需要重定向 URI，默认从 `API_PUBLIC_URL` 派生，前提是未设置 `GOOGLE_REDIRECT_URI`。重定向 URI 指向控制台时，同一检查也会警告，因为回调由 API 提供。参见[登录方式](/development/accounts-and-access/#sign-in-methods)。
 
-### apple_sign_in_incomplete
+### apple_sign_in_incomplete [#apple_sign_in_incomplete]
 
-The same for Sign in with Apple, which needs `APPLE_APP_ID` (the Services ID), `APPLE_TEAM_ID`, `APPLE_KEY_ID` and `APPLE_KEY_SECRET` together, plus an HTTPS redirect URI. Apple refuses a plain-http return URL, so Sign in with Apple cannot run against a local http install.
+“使用 Apple 登录”的对应检查，需要同时提供 `APPLE_APP_ID`，即 Services ID，`APPLE_TEAM_ID`、`APPLE_KEY_ID` 和 `APPLE_KEY_SECRET`，以及 HTTPS 重定向 URI。Apple 拒绝普通 HTTP 返回地址，因此不能在本地 HTTP 安装上使用。
 
-### single_platform_admin
+### single_platform_admin [#single_platform_admin]
 
-Exactly one account holds **Grant admin access**. Read-only or operational admins do not provide a backup for granting access. This is a recovery advisory, not a broken instance. Add a trusted second admin with that permission from **Accounts > Admins** (the finding links there when you have permission), or recover with `warmblyctl user grant-admin`. See [platform admins](/development/accounts-and-access/#platform-admins).
+只有一个账户拥有**授予管理权限**。只读或运维管理员不能作为授予权限的备份。这是一项恢复建议，不表示实例故障。可从**账户 > 管理员**添加第二位可信管理员并授予该权限；有相应权限时，发现项会链接到该页面。也可通过 `warmblyctl user grant-admin` 恢复。参见[平台管理员](/development/accounts-and-access/#platform-admins)。
 
-### bootstrap_password_still_set
+### bootstrap_password_still_set [#bootstrap_password_still_set]
 
-`WARMBLY_BOOTSTRAP_PASSWORD` is still in this deployment's environment. It is read only while the users table is empty, so it now does nothing except leave a plaintext password where `docker inspect` can read it. Remove it. See [first owner](/development/accounts-and-access/#first-owner).
+部署环境中仍有 `WARMBLY_BOOTSTRAP_PASSWORD`。它只在 users 表为空时读取，现在除了将明文密码留在 `docker inspect` 可读位置外，没有任何作用。请移除。参见[首位所有者](/development/accounts-and-access/#first-owner)。
 
-### setup_link_outstanding
+### setup_link_outstanding [#setup_link_outstanding]
 
-The instance has no accounts and a single-use setup link is live. Find it with `make claim`, or print a fresh one with `warmblyctl setup-link`. See [first run](/development/first-run/).
+实例没有账户，且有有效的一次性设置链接。通过 `make claim` 查找，或使用 `warmblyctl setup-link` 打印新链接。参见[首次运行](/development/first-run/)。
 
-### expired_invitations
+### expired_invitations [#expired_invitations]
 
-Some invitations have expired. They cannot be accepted and are no longer visible in the dashboard, but they do not block new invitations: re-inviting the same address replaces the expired row. Admins with `manage_organizations` can use **Remove expired invitations** on the finding, confirm removal across all workspaces, and refresh the checks automatically. Only already-expired records are deleted; active invitations, users and workspace membership stay unchanged. The cleanup is recorded in the admin audit log. See [invitations](/development/accounts-and-access/#invitations).
+有些邀请已过期，无法接受，也不再出现在控制台，但不会阻止新邀请：重新邀请同一地址会替换过期行。拥有 `manage_organizations` 的管理员，可在发现项上选择**移除过期邀请**，确认跨全部工作区移除，然后自动刷新检查。仅删除已经过期的记录；活跃邀请、用户和工作区成员关系不变。清理会记录到管理审计日志。参见[邀请](/development/accounts-and-access/#invitations)。
 
-## Workers
+## 工作节点 [#workers]
 
-### no_worker_heartbeat
+### no_worker_heartbeat [#no_worker_heartbeat]
 
-No worker has checked in for more than five minutes while mailboxes are assigned to workers, so nothing is being sent or synced.
+邮箱仍分配给工作节点，但超过五分钟没有任何节点报到，因此没有发送或同步。
 
-Check the worker process is running, then check `ENCRYPTED_KEYS_BACKEND_URL` and `ENCRYPTED_KEYS_WORKER_TOKEN`: an empty value lets the worker start, subscribe and never register, with no log line to tell you. See [workers](/development/configuration/#workers).
+先确认工作节点进程运行，再检查 `ENCRYPTED_KEYS_BACKEND_URL` 和 `ENCRYPTED_KEYS_WORKER_TOKEN`：任一为空，都会让节点启动并订阅，却从不登记，也没有日志说明。参见[工作节点](/development/configuration/#workers)。
 
-### tracking_domain_shares_brand
+### tracking_domain_shares_brand [#tracking_domain_shares_brand]
 
-`TRACKING_DOMAIN` is on the same registered domain as `APP_URL` or `API_PUBLIC_URL`. Every campaign's links and unsubscribe pages carry that host, so complaints against any one workspace can get it listed on a URL blocklist, and the listing reaches the domain that also serves your marketing site and your platform mail.
+`TRACKING_DOMAIN` 与 `APP_URL` 或 `API_PUBLIC_URL` 位于同一个注册域名下。每个营销活动的链接和退订页面都会携带该主机，因此任一工作区的投诉都可能让它进入 URL 黑名单，并波及承载营销网站和平台邮件的域名。
 
-Use a separate registered domain for tracking, and move workspaces onto their own verified tracking domains so their link reputation is theirs rather than shared.
+请为跟踪使用独立注册域名，并让各工作区迁移到自己的已验证跟踪域名，使链接信誉归各自所有，而不是共享。
 
-### fleet_infra_unreachable
+### fleet_infra_unreachable [#fleet_infra_unreachable]
 
-Nodes are checking in from more than one machine, and `NATS_URL`, `REDIS` or `ENCRYPTED_KEYS_BACKEND_URL` still names a host that only resolves here, such as a compose service name or loopback. A joining node inherits those values verbatim, so it enrols, keeps heartbeating over HTTP, and reaches neither the bus nor the cache. The fleet looks healthy the whole time, which is why this is a check rather than a log line. See [split deployment](/development/split-deployment/).
+有来自多台机器的节点报到，但 `NATS_URL`、`REDIS` 或 `ENCRYPTED_KEYS_BACKEND_URL` 仍指向只在本机可解析的主机，例如 Compose 服务名或回环地址。加入节点会原样继承这些值，因此能登记并通过 HTTP 持续心跳，却无法访问总线和缓存。整个期间节点集群都可能看似健康，因此这是检查项，而不只是日志。参见[分拆部署](/development/split-deployment/)。
 
-More than one machine is read as more than one distinct address among live nodes, so scaled replicas on a single host do not trigger it.
+多台机器按活跃节点中不同地址数大于一判断，因此同主机上的扩容副本不会触发。
 
-### codec_registry
+### codec_registry [#codec_registry]
 
-`CODEC_PROVIDER` is `avro` and `SCHEMA_REGISTRY_URL` is empty. Avro resolves every event against a registry, so there is nothing to encode against. Set it, or set `CODEC_PROVIDER=json`, which needs no registry. See [event bus](/development/configuration/#event-bus).
+`CODEC_PROVIDER` 为 `avro`，但 `SCHEMA_REGISTRY_URL` 为空。Avro 每个事件都需要注册表，因此没有可用于编码的 Schema。请设置它，或改用无需注册表的 `CODEC_PROVIDER=json`。参见[事件总线](/development/configuration/#event-bus)。
 
-## Database
+## 数据库 [#database]
 
-### migrations_dirty
+### migrations_dirty [#migrations_dirty]
 
-The `schema_migrations` row is marked dirty. The backend applies migrations at boot; a dirty row means one failed halfway and must be resolved before the instance is used. The message carries the version it stopped at.
+`schema_migrations` 行标记为 dirty。后端启动时应用迁移；dirty 表示某个迁移中途失败，实例使用前必须解决。消息会说明停在哪个版本。
 
-### warmup_pools_missing
+### warmup_pools_missing [#warmup_pools_missing]
 
-Fewer than two warmup pools exist, so warmup cannot place a mailbox and every warmup task fails. Migration `000156` creates the free and premium pools on every instance and nothing else does; a data-only restore or a manual delete removes them, and the migration will not run a second time. Put them back under their fixed ids:
+预热池少于两个，预热无法放置邮箱，每个预热任务都会失败。只有迁移 `000156` 会在每个实例创建免费和付费池；仅数据恢复或手动删除会移除它们，而迁移不会再次运行。请按固定 ID 恢复：
 
 ```sql
 INSERT INTO warmup_pools (id, pool_type, name)
@@ -313,44 +313,44 @@ VALUES ('77777777-aaaa-0000-0000-000000000001', 'free', 'Free warmup pool'),
 ON CONFLICT (id) DO NOTHING;
 ```
 
-## Redis
+## Redis [#redis]
 
-### redis_unreachable
+### redis_unreachable [#redis_unreachable]
 
-Redis is not reachable. Rate limits, the organization key cache, the realtime bridge and the first-run setup token are all down. See [cache](/development/configuration/#cache).
+Redis 不可达。速率限制、组织密钥缓存、实时桥接和首次设置令牌都不可用。参见[缓存](/development/configuration/#cache)。
 
-## Realtime
+## 实时服务 [#realtime]
 
-### websocket_unreachable
+### websocket_unreachable [#websocket_unreachable]
 
-The backend turned `WEBSOCKET_URL` into a `/health` URL and the realtime service did not answer it, so the dashboard will not update live and presence stays empty. Anything below a `500` counts as an answer, so an auth wall does not trip this.
+后端将 `WEBSOCKET_URL` 转换为 `/health` URL，但实时服务没有响应，因此控制台不会实时更新，在线状态为空。任何低于 `500` 的状态都视为响应，所以身份验证拦截页不会触发此项。
 
-A reachable realtime service that still leaves the dashboard dead has a different cause, and no check reports it: `AUTH_SECRET` on the backend and `JWT_SECRET` on the realtime service must be identical or every token is rejected. **Instance > Configuration > Environment** shows a four character fingerprint for each sensitive value so you can compare the two without either being disclosed.
+实时服务可达、控制台却仍无实时功能，属于另一种原因，没有检查项报告：后端的 `AUTH_SECRET` 必须与实时服务 `JWT_SECRET` 完全相同，否则每个令牌都被拒绝。**实例 > 配置 > 环境**为敏感值显示四字符指纹，便于比较而不暴露原值。
 
-## Storage
+## 存储 [#storage]
 
-### blob_root_missing
+### blob_root_missing [#blob_root_missing]
 
-`BLOB_PROVIDER=filesystem` and `BLOB_FS_ROOT` is unset, missing or not writable, so email bodies, attachments and avatars cannot be stored. The check writes and deletes a probe file to prove the path is usable. The backend, the consumer and every worker on the host must share that path. See [storage](/development/configuration/#storage).
+`BLOB_PROVIDER=filesystem`，但 `BLOB_FS_ROOT` 未设置、不存在或不可写，因此无法存储邮件正文、附件和头像。检查会写入并删除探测文件，证明路径可用。主机上的后端、消费者和所有工作节点必须共享该路径。参见[存储](/development/configuration/#storage)。
 
-### fleet_blobs_not_shared
+### fleet_blobs_not_shared [#fleet_blobs_not_shared]
 
-`BLOB_PROVIDER=filesystem` while nodes check in from more than one machine. A worker reads the message body the backend wrote, so a node that does not share this filesystem cannot send, and nothing says so until the last step of a send. Move to `BLOB_PROVIDER=s3` with a bucket both sides reach. See [split deployment](/development/split-deployment/).
+`BLOB_PROVIDER=filesystem`，但节点从多台机器报到。工作节点需要读取后端写入的正文，因此不共享此文件系统的节点无法发送，直到发送最后一步才会报错。请改为 `BLOB_PROVIDER=s3`，使用双方都可访问的存储桶。参见[分拆部署](/development/split-deployment/)。
 
-## What each service needs to be healthy
+## 各服务达到健康状态所需的条件 [#what-each-service-needs-to-be-healthy]
 
-| Service | Needs |
+| 服务 | 要求 |
 |---|---|
-| backend | The five secrets, `PRIMARY_DB`, `REDIS`, the provider switches, the public URLs, `EMAIL_ADDRESS`, `EMAIL_NAME` and `GEODB_PATH` |
-| consumer | The same shared block. It writes to Postgres, so it needs `PRIMARY_DB` and both encryption keys, and it needs the mail identity or it silently sends nothing. `GEODB_PATH` is optional and only adds a location to opens and clicks |
-| worker | No database. The event bus, `REDIS`, both encryption keys, `ENCRYPTED_KEYS_BACKEND_URL` plus the worker token, and the `BOX_*` OAuth clients |
-| tracking | The event bus, plus `BACKEND_INTERNAL_URL` and `INTERNAL_API_TOKEN`. It exits at boot without either of those two |
-| realtime | `JWT_SECRET` equal to the backend's `AUTH_SECRET`, plus `SECRET_KEY_BASE` and `DATABASE_URL`. It refuses to boot without all three. `REDIS_URL`, `PHX_HOST` and the connection limits have defaults |
-| web and admin | Only the `WARMBLY_*` URLs, read at container start and written into `/config.js` |
+| backend | 五个秘密值、`PRIMARY_DB`、`REDIS`、提供程序开关、公开 URL、`EMAIL_ADDRESS`、`EMAIL_NAME` 和 `GEODB_PATH` |
+| consumer | 相同共享配置。它写入 Postgres，因此需要 `PRIMARY_DB` 和两个加密密钥；还需要邮件身份，否则会悄悄不发送任何邮件。`GEODB_PATH` 可选，只为打开和点击补充位置 |
+| worker | 不需要数据库。需要事件总线、`REDIS`、两个加密密钥、`ENCRYPTED_KEYS_BACKEND_URL` 和工作节点令牌，以及 `BOX_*` OAuth 客户端 |
+| tracking | 事件总线，以及 `BACKEND_INTERNAL_URL` 和 `INTERNAL_API_TOKEN`；后二者缺少任一个，启动时就会退出 |
+| realtime | `JWT_SECRET` 与后端 `AUTH_SECRET` 相等，另需 `SECRET_KEY_BASE` 和 `DATABASE_URL`，三者不全则拒绝启动。`REDIS_URL`、`PHX_HOST` 和连接限额都有默认值 |
+| web 和 admin | 只需要 `WARMBLY_*` URL，在容器启动时读取并写入 `/config.js` |
 
-## See also
+## 另请参阅 [#see-also]
 
-- [Configuration reference](/development/configuration/) for every variable named here, including the [realtime](/development/configuration/#realtime-service) and [tracking](/development/configuration/#tracking-service) variables no check reads
-- [Accounts and access](/development/accounts-and-access/) for the access checks
-- [warmblyctl](/development/warmblyctl/) for `status` and every other operator command
-- [Troubleshooting](/development/troubleshooting/) for symptoms that do not come from a check
+- [配置参考](/development/configuration/)：本页所有变量，包括没有检查读取的[实时服务](/development/configuration/#realtime-service)和[跟踪服务](/development/configuration/#tracking-service)变量。
+- [账户与访问权限](/development/accounts-and-access/)：访问相关检查。
+- [warmblyctl](/development/warmblyctl/)：`status` 和所有其他运维命令。
+- [故障排查](/development/troubleshooting/)：并非来自检查项的现象。

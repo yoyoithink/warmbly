@@ -1,12 +1,11 @@
 {
-  "title": "Development",
-  "description": "Self-host, deploy, and develop Warmbly",
+  "title": "开发",
+  "description": "自托管、部署与开发 Warmbly",
   "root": true,
   "pages": [
-    "---Self-hosting---",
+    "---自托管---",
     "install",
     "deployment-guide",
-    "aws-fargate",
     "coolify",
     "bare-metal",
     "split-deployment",
@@ -24,10 +23,10 @@
     "operator-notifications",
     "updates",
     "troubleshooting",
-    "---Development---",
+    "---开发---",
     "local-development",
     "sandbox",
-    "---Reference---",
+    "---参考---",
     "architecture",
     "events"
   ]

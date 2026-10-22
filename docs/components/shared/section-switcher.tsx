@@ -8,10 +8,10 @@ import { cn } from '@/lib/cn';
 
 // The four doc sections; the header switcher moves between them from any page.
 const SECTIONS = [
-  { prefix: '/guides', href: '/guides/', name: 'Guides', text: 'Using the product, step by step', icon: BookOpen },
-  { prefix: '/learn', href: '/learn/email-warmup/', name: 'Learn', text: 'Cold email and deliverability basics', icon: GraduationCap },
-  { prefix: '/api', href: '/api/', name: 'API reference', text: 'REST API, SDKs, webhooks, CLI and MCP', icon: Code2 },
-  { prefix: '/development', href: '/development/install/', name: 'Self-hosting', text: 'Install and run your own instance', icon: Server },
+  { prefix: '/guides', href: '/guides/', name: '操作指南', text: '循序渐进掌握产品功能', icon: BookOpen },
+  { prefix: '/learn', href: '/learn/email-warmup/', name: '基础知识', text: '冷邮件与邮件送达能力基础', icon: GraduationCap },
+  { prefix: '/api', href: '/api/', name: 'API 参考', text: 'REST API、SDK、Webhook、CLI 和 MCP', icon: Code2 },
+  { prefix: '/development', href: '/development/install/', name: '自托管', text: '安装并运行自己的实例', icon: Server },
 ];
 
 export function SectionSwitcher() {

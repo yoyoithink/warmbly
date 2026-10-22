@@ -1,68 +1,68 @@
 ---
-title: Permissions reference
-description: Complete reference for the 22 API permissions available in Warmbly.
+title: "权限参考"
+description: "Warmbly 提供的 22 项 API 权限的完整参考。"
 ---
 
-Warmbly uses a bitmask system for API permissions. Each permission is one bit in a `uint64`, so a single integer can express any combination of the permissions below.
+Warmbly 使用位掩码管理 API 权限。每项权限对应 `uint64` 中的一个位，因此单个整数即可表示以下权限的任意组合。
 
-These same permissions are the [OAuth](/api/oauth/) scopes, lowercased: `READ_EMAILS` is the scope `read_emails`. An OAuth access token carries a bitmask of granted permissions and is checked through the identical gates as an API key.
+同一组权限转为小写后也用作 [OAuth](/api/oauth/) 权限范围：例如 `READ_EMAILS` 对应权限范围 `read_emails`。OAuth 访问令牌携带已授予权限的位掩码，并接受与 API 密钥完全相同的权限检查。
 
-## Permission values
+## 权限值 [#permission-values]
 
-| Permission | Bit | Value | Category | Description |
+| 权限 | 位 | 值 | 类别 | 说明 |
 |------------|-----|-------|----------|-------------|
-| `READ_EMAILS` | 0 | 1 | read | View email accounts and settings |
-| `READ_CAMPAIGNS` | 1 | 2 | read | View campaigns and sequences |
-| `READ_CONTACTS` | 2 | 4 | read | View contact lists, segments, notes, and activities |
-| `READ_UNIBOX` | 3 | 8 | read | Access unified inbox |
-| `READ_ANALYTICS` | 4 | 16 | read | View analytics and statistics |
-| `WRITE_EMAILS` | 5 | 32 | write | Modify email account settings |
-| `WRITE_CAMPAIGNS` | 6 | 64 | write | Create and modify campaigns and sequences |
-| `WRITE_CONTACTS` | 7 | 128 | write | Create and modify contacts, segments, notes, activities |
-| `WRITE_UNIBOX` | 8 | 256 | write | Mark emails as read/unread and send replies |
-| `BULK_CONTACTS` | 9 | 512 | bulk | Bulk import/export/delete contacts |
-| `BULK_CAMPAIGNS` | 10 | 1024 | bulk | Bulk campaign operations |
-| `REALTIME_SUBSCRIBE` | 11 | 2048 | special | Subscribe to realtime events |
-| `WEBHOOKS` | 12 | 4096 | special | Manage webhook endpoints |
-| `API_KEYS` | 13 | 8192 | special | Create and manage API keys |
-| `SEND_CAMPAIGNS` | 14 | 16384 | write | Start and stop campaigns (sends real mail) |
-| `READ_TEMPLATES` | 15 | 32768 | read | View reply templates |
-| `WRITE_TEMPLATES` | 16 | 65536 | write | Create and modify reply templates |
-| `READ_CRM` | 17 | 131072 | read | View pipelines, deals, and CRM tasks |
-| `WRITE_CRM` | 18 | 262144 | write | Create and modify pipelines, deals, CRM tasks |
-| `READ_AUDIT_LOGS` | 19 | 524288 | read | View organization audit logs |
-| `INTEGRATIONS` | 20 | 1048576 | special | Connect and manage third-party integrations |
-| `WARMUP_ROUTING` | 21 | 2097152 | special | Manage warmup routing rules |
-| `AI_AGENT` | 22 | 4194304 | special | Run the AI assistant and MCP tools |
-| `AI_RESEARCH` | 23 | 8388608 | special | Run AI contact research |
+| `READ_EMAILS` | 0 | 1 | 读取 | 查看邮箱账户和设置 |
+| `READ_CAMPAIGNS` | 1 | 2 | 读取 | 查看营销活动和邮件序列 |
+| `READ_CONTACTS` | 2 | 4 | 读取 | 查看联系人列表、分群、备注和活动记录 |
+| `READ_UNIBOX` | 3 | 8 | 读取 | 访问统一收件箱 |
+| `READ_ANALYTICS` | 4 | 16 | 读取 | 查看分析数据和统计信息 |
+| `WRITE_EMAILS` | 5 | 32 | 写入 | 修改邮箱账户设置 |
+| `WRITE_CAMPAIGNS` | 6 | 64 | 写入 | 创建和修改营销活动及邮件序列 |
+| `WRITE_CONTACTS` | 7 | 128 | 写入 | 创建和修改联系人、分群、备注及活动记录 |
+| `WRITE_UNIBOX` | 8 | 256 | 写入 | 将邮件标记为已读或未读，并发送回复 |
+| `BULK_CONTACTS` | 9 | 512 | 批量操作 | 批量导入、导出或删除联系人 |
+| `BULK_CAMPAIGNS` | 10 | 1024 | 批量操作 | 批量操作营销活动 |
+| `REALTIME_SUBSCRIBE` | 11 | 2048 | 特殊权限 | 订阅实时事件 |
+| `WEBHOOKS` | 12 | 4096 | 特殊权限 | 管理 Webhook 端点 |
+| `API_KEYS` | 13 | 8192 | 特殊权限 | 创建和管理 API 密钥 |
+| `SEND_CAMPAIGNS` | 14 | 16384 | 写入 | 启动和停止营销活动（会实际发送邮件） |
+| `READ_TEMPLATES` | 15 | 32768 | 读取 | 查看回复模板 |
+| `WRITE_TEMPLATES` | 16 | 65536 | 写入 | 创建和修改回复模板 |
+| `READ_CRM` | 17 | 131072 | 读取 | 查看销售管道、商机和 CRM 任务 |
+| `WRITE_CRM` | 18 | 262144 | 写入 | 创建和修改销售管道、商机及 CRM 任务 |
+| `READ_AUDIT_LOGS` | 19 | 524288 | 读取 | 查看组织审计日志 |
+| `INTEGRATIONS` | 20 | 1048576 | 特殊权限 | 连接和管理第三方集成 |
+| `WARMUP_ROUTING` | 21 | 2097152 | 特殊权限 | 管理预热路由规则 |
+| `AI_AGENT` | 22 | 4194304 | 特殊权限 | 运行 AI 助手和 MCP 工具 |
+| `AI_RESEARCH` | 23 | 8388608 | 特殊权限 | 运行 AI 联系人调研 |
 
-`AI_AGENT` gates the web and playbook tools (`search_web`, `fetch_url`, `load_skill`) on [`/v1/mcp`](/api/mcp/) and [`/ai/tools`](/api/agent-tools/); every other tool there checks its own scope. It also gates the [AI skills](/api/endpoints/#ai-skills) endpoints for keys; creating, editing or deleting a playbook with a key further needs the member who created the key to hold `manage_settings`.
+`AI_AGENT` 控制在 [`/v1/mcp`](/api/mcp/) 和 [`/ai/tools`](/api/agent-tools/) 上使用网页和操作手册工具（`search_web`、`fetch_url`、`load_skill`）的权限；其中其他工具各自检查所需的权限范围。API 密钥访问 [AI 技能](/api/endpoints/#ai-skills)端点时，也受此权限约束；使用密钥创建、编辑或删除操作手册时，创建该密钥的成员还必须具有 `manage_settings` 权限。
 
-`SEND_CAMPAIGNS` is intentionally separate from `WRITE_CAMPAIGNS`: editing a campaign draft and starting one that actually transmits mail are different blast radii, so a key can be granted the first without the second. An [inbox placement test](/guides/placement-tests/) sends real mail from a real mailbox too, so starting or cancelling one, and scheduling a campaign's placement monitor, takes `SEND_CAMPAIGNS`, while reading results takes `READ_ANALYTICS`.
+`SEND_CAMPAIGNS` 与 `WRITE_CAMPAIGNS` 有意分开：编辑营销活动草稿与启动实际发送邮件的营销活动，所产生的影响范围不同，因此可以仅授予密钥前者权限。[收件箱投递位置测试](/guides/placement-tests/)同样会从真实邮箱发送实际邮件，所以启动或取消测试，以及安排营销活动的投递位置监测，都需要 `SEND_CAMPAIGNS`；读取结果则需要 `READ_ANALYTICS`。
 
-## Categories
+## 类别 [#categories]
 
-### Read
+### 读取 [#read]
 
-Read-only data access. Safe for monitoring, reporting, BI sync.
+只读数据访问。适用于监控、报告和 BI 同步。
 
-### Write
+### 写入 [#write]
 
-Resource mutation, but no campaign starts. A key with the full write set can edit drafts but cannot turn on a campaign.
+允许修改资源，但不能启动营销活动。具有完整写入权限集的密钥可以编辑草稿，但无法开启营销活动。
 
-### Bulk
+### 批量操作 [#bulk]
 
-High-volume operations. These can touch large numbers of rows in a single request, so they're broken out from the per-record write permissions.
+高容量操作。一次请求可能影响大量记录，因此这些权限独立于逐条记录的写入权限。
 
-### Special
+### 特殊权限 [#special]
 
-Realtime subscriptions, webhooks, integrations, warmup routing, AI assistant / MCP access, AI contact research, and self-service key management. Grant individually.
+实时订阅、Webhook、集成、预热路由、AI 助手 / MCP 访问、AI 联系人调研，以及自助密钥管理。请按需逐项授予。
 
-## What a role can delegate
+## 角色可以授予的权限 [#what-a-role-can-delegate]
 
-An API key or an OAuth grant acts for a member of the workspace, so it never holds a permission that member's role does not cover. Each API permission maps to the [team role permission](/guides/team-roles/) it needs; the workspace owner covers every one.
+API 密钥或 OAuth 授权代表工作区中的某位成员执行操作，因此其权限始终不会超出该成员角色所覆盖的范围。每项 API 权限都映射到其所需的[团队角色权限](/guides/team-roles/)；工作区所有者具有全部权限。
 
-| API permission | Member needs |
+| API 权限 | 成员所需权限 |
 |----------------|--------------|
 | `READ_EMAILS`, `READ_CAMPAIGNS`, `READ_TEMPLATES` | `view_campaigns` |
 | `READ_CONTACTS`, `READ_CRM` | `view_contacts` |
@@ -76,23 +76,23 @@ An API key or an OAuth grant acts for a member of the workspace, so it never hol
 | `API_KEYS` | `manage_api_keys` |
 | `INTEGRATIONS` | `use_integrations` |
 | `AI_AGENT` | `use_ai` |
-| `AI_RESEARCH` | `view_contacts` and `use_ai` |
-| `REALTIME_SUBSCRIBE` | any member |
+| `AI_RESEARCH` | `view_contacts` 和 `use_ai` |
+| `REALTIME_SUBSCRIBE` | 任意成员 |
 
-Where it applies:
+适用情况：
 
-- **Creating or editing an API key** from the dashboard refuses a permission outside the member's role with `403` `api_key_permissions_exceed_caller`.
-- **Creating or editing an API key with an API key** keeps the result inside the calling key: no permission it lacks, and when the calling key is limited to some mailboxes or IP addresses, the new or edited key must be limited to a subset of them. The same `403` `api_key_permissions_exceed_caller` answers otherwise.
-- **An OAuth grant** carries only the requested scopes the approving member's role covers, re-checked against the member's current role on every request. See [OAuth scopes](/api/oauth/#scopes). `API_KEYS` is never granted to an OAuth app, and OAuth tokens cannot create, edit, revoke or delete API keys (`403` `oauth_token_not_allowed`).
-- **A member restricted to [selected resources](/guides/team-roles/#access-scope)** holds only `view_campaigns`, `view_analytics` and `access_unibox` from their roles, so a key or grant acting for them is limited to the read permissions those cover, and to the read routes and grants their scope allows ([which routes](/api/endpoints/)). A key's own mailbox allowlist still applies on top. Restricted members cannot create keys.
+- 从控制台**创建或编辑 API 密钥**时，如果权限超出成员角色范围，将返回 `403` `api_key_permissions_exceed_caller` 并拒绝操作。
+- **使用 API 密钥创建或编辑另一个 API 密钥**时，结果必须处于调用方密钥的限制范围内：不能授予调用方密钥自身不具备的权限；如果调用方密钥仅允许访问部分邮箱或仅允许来自部分 IP 地址的请求，则新建或编辑后的密钥也必须限制为其子集。否则同样返回 `403` `api_key_permissions_exceed_caller`。
+- **OAuth 授权**仅包含请求的权限范围中，批准授权的成员角色所覆盖的部分；每次请求都会根据该成员当前的角色重新检查。请参阅[OAuth 权限范围](/api/oauth/#scopes)。`API_KEYS` 永远不会授予 OAuth 应用，OAuth 令牌也不能创建、编辑、撤销或删除 API 密钥（`403` `oauth_token_not_allowed`）。
+- **访问范围受限于[选定资源](/guides/team-roles/#access-scope)的成员**只能从其角色中获得 `view_campaigns`、`view_analytics` 和 `access_unibox`，因此代表该成员的密钥或授权也仅能具有这些权限所覆盖的读取权限，并仅能使用其访问范围允许的读取路由和授权（[适用路由](/api/endpoints/)）。密钥自身的邮箱允许列表仍会叠加生效。访问范围受限的成员不能创建密钥。
 
-## Preset combinations
+## 预设组合 [#preset-combinations]
 
-Both presets are returned by `GET /api-keys/permissions` for convenience. The same response carries `grantable`, the mask the caller may put on a key (its role's reach, or the calling key's own permissions), and `app_scopes`, the mask an OAuth app may request.
+为方便使用，`GET /api-keys/permissions` 会返回两个预设。同一响应还包含 `grantable`，表示调用者可赋予密钥的权限掩码（其角色覆盖范围，或调用方密钥自身的权限），以及 `app_scopes`，表示 OAuth 应用可请求的权限掩码。
 
-### Read only (688159)
+### 只读（688159） [#read-only-688159]
 
-All read permissions combined:
+所有读取权限的组合：
 
 ```
 READ_EMAILS | READ_CAMPAIGNS | READ_CONTACTS | READ_UNIBOX | READ_ANALYTICS
@@ -101,17 +101,17 @@ READ_EMAILS | READ_CAMPAIGNS | READ_CONTACTS | READ_UNIBOX | READ_ANALYTICS
 = 688159
 ```
 
-### Full access (16777215)
+### 完全访问（16777215） [#full-access-16777215]
 
-All 24 permissions:
+全部 24 项权限：
 
 ```
 (1 << 24) - 1 = 16777215
 ```
 
-## Working with bitmasks
+## 使用位掩码 [#working-with-bitmasks]
 
-### Combining
+### 组合权限 [#combining]
 
 ```javascript
 const READ_EMAILS = 1;
@@ -122,7 +122,7 @@ const permissions = READ_EMAILS | READ_CAMPAIGNS | SEND_CAMPAIGNS;
 // 16387
 ```
 
-### Checking
+### 检查权限 [#checking]
 
 ```javascript
 function hasPermission(permissions, required) {
@@ -133,15 +133,15 @@ hasPermission(16387, 16384); // true: SEND_CAMPAIGNS granted
 hasPermission(16387, 64);    // false: WRITE_CAMPAIGNS missing
 ```
 
-### Rejecting unknown bits
+### 拒绝未知权限位 [#rejecting-unknown-bits]
 
-`POST /api-keys` rejects any request whose `permissions` field has bits outside the known set, so a stale client can't accidentally request a future permission. The current mask of valid bits is `4194303`.
+如果请求的 `permissions` 字段包含已知权限集合之外的位，`POST /api-keys` 会拒绝该请求，防止旧客户端意外请求未来新增的权限。当前有效位掩码为 `4194303`。
 
-## Common permission sets
+## 常用权限集 [#common-permission-sets]
 
-### Monitoring integration
+### 监控集成 [#monitoring-integration]
 
-For dashboards and reporting:
+用于仪表板和报告：
 
 ```javascript
 const MONITORING =
@@ -151,7 +151,7 @@ const MONITORING =
 // 19
 ```
 
-### CRM sync
+### CRM 同步 [#crm-sync]
 
 ```javascript
 const CRM_SYNC =
@@ -163,7 +163,7 @@ const CRM_SYNC =
 // 393860
 ```
 
-### Campaign automation (drafts only, no send)
+### 营销活动自动化（仅草稿，不发送） [#campaign-automation-drafts-only-no-send]
 
 ```javascript
 const CAMPAIGN_DRAFTS =
@@ -175,11 +175,11 @@ const CAMPAIGN_DRAFTS =
 // 98374
 ```
 
-### Campaign automation (with send)
+### 营销活动自动化（包含发送） [#campaign-automation-with-send]
 
-Same as above, plus `SEND_CAMPAIGNS` (16384). Grant only when the integration genuinely needs to start campaigns.
+与上例相同，另加 `SEND_CAMPAIGNS`（16384）。只有集成确实需要启动营销活动时，才应授予此权限。
 
-## Permission constants
+## 权限常量 [#permission-constants]
 
 <Tabs defaultValue="javascript">
 
@@ -289,8 +289,8 @@ const (
 
 </Tabs>
 
-## See also
+## 另请参阅 [#see-also]
 
-- [Authentication](/api/authentication/)
-- [Endpoints](/api/endpoints/)
-- [Team & roles](/guides/team-roles/)
+- [身份验证](/api/authentication/)
+- [端点](/api/endpoints/)
+- [团队与角色](/guides/team-roles/)

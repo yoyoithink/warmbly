@@ -1,25 +1,25 @@
 ---
-title: AI skills
-description: Teach your AI features how your team works by writing reusable playbooks Remie, research, and reply drafts follow.
+title: AI 技能
+description: 编写可复用的操作指南，让 Remie、联系人调研和回复草稿功能按你团队的工作方式执行。
 ---
 
-AI skills are short playbooks you write once and your AI features reuse everywhere. A skill captures how your team actually works: how you qualify a lead, handle a common objection, or run a first call. Remie, contact research, and reply drafts all read your enabled skills, so their output follows your process instead of a generic default.
+AI 技能是编写一次、即可供各项 AI 功能重复使用的简短操作指南。技能记录团队实际的工作方法，例如如何判断潜在客户是否合格、如何处理常见异议，或如何进行首次沟通电话。Remie、联系人调研和回复草稿都会读取已启用的技能，使输出遵循你的流程，而不是通用默认方式。
 
-Skills live under **Settings, AI skills** and require the **Manage settings** permission.
+技能位于**设置 > AI 技能**，需要**管理设置**权限。
 
-## How skills are used
+## 技能的使用方式 [#how-skills-are-used]
 
-Every skill has a short **name**, a one-line **description**, and a **playbook** (the full instructions, written in plain markdown).
+每项技能包含一个简短的**名称**、一句话的**描述**，以及**操作指南**（用普通 Markdown 编写的完整指令）。
 
-When an AI feature runs, it is shown the name and description of each enabled skill. When one is relevant to what it is doing, it loads the full playbook and follows it. This keeps prompts short while still giving the AI access to everything you have written down. A skill you switch off is hidden from the AI entirely.
+AI 功能运行时，会看到每项已启用技能的名称和描述。某项技能与当前工作相关时，AI 才会加载完整指南并照着执行。这样既能保持提示词简短，也能让 AI 获取你记录的全部操作知识。关闭的技能会对 AI 完全隐藏。
 
-## Writing a good skill
+## 如何编写有效的技能 [#writing-a-good-skill]
 
-- Keep the **name** short and specific, like "Objection handling" or "Discovery call".
-- Make the **description** a single line about when to use it, so the AI knows when it applies.
-- In the **playbook**, write plain, direct instructions. Bullet points and short steps work well. Say what to do and what to avoid.
+- **名称**简短具体，例如“处理异议”或“需求沟通电话”。
+- **描述**用一句话说明何时使用，让 AI 知道适用条件。
+- **操作指南**使用清楚、直接的指令。项目符号和简短步骤都很合适，应说明要做什么，以及避免什么。
 
-## Example: objection handling
+## 示例：处理异议 [#example-objection-handling]
 
 ```
 Name: Objection handling
@@ -37,7 +37,7 @@ When a prospect says "not right now":
 - Keep it short and low pressure.
 ```
 
-## Example: discovery call booking
+## 示例：预约需求沟通电话 [#example-discovery-call-booking]
 
 ```
 Name: Discovery call booking
@@ -50,10 +50,10 @@ Description: How to ask for and frame a first call.
 - Match our voice: direct, warm, lowercase openers are fine.
 ```
 
-## Where skills apply
+## 技能的适用范围 [#where-skills-apply]
 
-- **Remie**: follows relevant skills when it drafts, plans, or answers.
-- **Contact research**: uses skills to judge what is worth surfacing about a contact.
-- **Reply drafts**: writes replies that follow your playbooks.
+- **Remie**：起草、规划或回答时遵循相关技能。
+- **联系人调研**：根据技能判断联系人的哪些信息值得呈现。
+- **回复草稿**：按操作指南撰写回复。
 
-Because skills are shared across your workspace, one person can capture how the team works and everyone's AI output improves at once.
+技能在整个工作区共享，因此只需一人记录团队的工作方式，所有成员的 AI 输出都能同步改善。

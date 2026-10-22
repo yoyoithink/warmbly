@@ -1,37 +1,37 @@
 ---
-title: AI variables
-description: Drop AI blocks into a campaign email that write a unique, personalized snippet for each recipient at send time.
+title: AI 变量
+description: 在营销活动邮件中插入 AI 内容块，发送时为每位收件人生成独特的个性化片段。
 ---
 
-An AI variable is a block you place inside a campaign email that generates its own copy for every recipient. Where a normal variable like `{{first_name}}` substitutes a stored field, an AI variable runs a short instruction against each contact and writes a snippet tailored to them, right where you dropped it. The rest of the email is yours; the AI variable fills one spot with something specific to the person receiving it.
+AI 变量是放入营销活动邮件中的内容块，会为每位收件人分别生成文案。普通变量（例如 `{{first_name}}`）只是替换已存储的字段，AI 变量则针对每位联系人执行一条简短指令，在插入位置写出适合对方的片段。邮件其余部分由你编写，AI 变量只为其中一个位置补充与收件人有关的具体内容。
 
-Because it runs per recipient, an AI variable costs credits for each contact it resolves. Plan for that the same way you plan send volume.
+由于按收件人运行，每解析一位联系人的 AI 变量都会消耗积分。规划成本时，应像规划发送量一样考虑这一点。
 
-## Adding an AI variable
+## 添加 AI 变量 [#adding-an-ai-variable]
 
-In the campaign email editor, place your cursor where you want the personalized copy and insert an AI variable. Give it a short instruction, for example "one line noting something specific about their company" or "a friendly opener that references `{{company}}`". The instruction is itself a template, so you can reference contact fields inside it and they render per contact before the model runs.
+在营销活动邮件编辑器中，将光标放到需要个性化文案的位置，插入 AI 变量。为它编写简短指令，例如“用一句话提及对方公司的一个具体情况”，或“写一句提到 `{{company}}` 的友好开场白”。指令自身也支持模板，因此可引用联系人字段；模型运行前，这些字段会先按每位联系人的数据渲染。
 
-By default a block writes instantly from the contact's own fields. That is the right choice for most blocks. One optional add-on personalizes deeper:
+默认情况下，内容块直接根据联系人已有字段即时撰写。这适用于大多数内容块。还有一项可选增强能力，可以进一步个性化：
 
-- **Web search** runs a bounded lookup about the contact's company before writing, so the snippet can reference something beyond their stored fields. It adds the cost of that lookup.
+- **网络搜索**会在撰写前，对联系人的公司进行有限范围的查询，让片段可以引用已存储字段之外的信息。这会额外产生查询费用。
 
-The block always uses the model configured for your workspace; there is no separate model setting to choose. Keep instructions tight: an AI variable is meant to fill a phrase or a sentence or two, not write the whole email.
+内容块始终使用工作区配置的模型，无需也不能单独选择模型。指令应简洁明确：AI 变量用于填入一个短语或一两句话，不用于撰写整封邮件。
 
-## Previewing
+## 预览 [#previewing]
 
-Use the editor's preview to see the block written for a built-in sample contact, shown inside the whole message so you can check it reads naturally where it lands. A preview costs the same as a send-time resolution, because it runs the same generation, and the editor shows what that example actually cost.
+使用编辑器预览功能，可以针对内置示例联系人生成内容块，并将其放在完整邮件中显示，便于检查插入后是否自然。预览与发送时解析的费用相同，因为执行的是同样的生成过程；编辑器会显示该示例实际消耗的费用。
 
-## How it resolves at send time
+## 发送时如何生成内容 [#how-it-resolves-at-send-time]
 
-When the campaign sends to a contact, each AI variable in that email is generated for that contact just before tracking and signature are added, so the AI copy is tracked and styled like the rest of the email. The result is cached per contact and step: if a send is retried, the same snippet is reused instead of generating (and charging) again. Different contacts always get their own copy.
+营销活动向联系人发送邮件时，会在添加跟踪和签名前，为该联系人生成邮件中的每个 AI 变量。因此，AI 文案与邮件其余内容一样参与跟踪和样式处理。结果按联系人和步骤缓存：如果发送重试，会重用同一片段，不再重新生成或扣费。不同联系人始终会得到各自的文案。
 
-A block whose instruction renders empty for a contact resolves to nothing and costs nothing. A block with a malformed configuration is skipped rather than blocking the send. If the AI provider fails, that recipient's send is retried later with the cached result, so you are never charged for output you did not receive.
+如果某个内容块的指令对该联系人渲染为空，则不输出内容，也不收费。配置格式错误的内容块会被跳过，不会阻塞发送。如果 AI 服务商失败，该收件人的发送会稍后重试，并利用缓存结果，因此你不会为未获得的输出付费。
 
-## Cost and safety
+## 费用与安全 [#cost-and-safety]
 
-- A block is billed by usage: the model and the tokens each snippet uses, plus the web search when it is on. See [AI credits](/guides/ai-credits/) for how usage maps to credits.
-- Costs multiply by recipients, not by email: a block that resolves for 500 contacts is charged 500 times over the campaign's run.
-- The contact's fields and any web results are treated as untrusted input, so text a contact controls cannot change the block's instruction.
-- Web lookups are derived only from the contact's company and name, never from anything a contact wrote to you.
+- 内容块按用量计费：包括模型、每个片段使用的 Token，以及启用时的网络搜索。用量如何换算成积分，参见 [AI 积分](/guides/ai-credits/)。
+- 费用随收件人数增加，而不是只按邮件模板计算：一个内容块如果为 500 位联系人解析，就会在营销活动运行期间计费 500 次。
+- 联系人字段和网络结果都被视为不可信输入，因此联系人可控制的文本不能改变内容块的指令。
+- 网络查询仅根据联系人的公司和姓名生成，绝不使用联系人给你写来的内容。
 
-AI variables gather and write copy; they do not decide who to send to or when. Your campaign sending rules, warmup, and deliverability guards apply exactly as they would to any other email.
+AI 变量负责收集信息并撰写文案，不决定向谁发送或何时发送。营销活动的发送规则、邮箱预热和邮件送达保护，与处理其他邮件时完全相同。

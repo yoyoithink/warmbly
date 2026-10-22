@@ -1,270 +1,270 @@
 ---
-title: "Export and import"
-description: "Move a whole workspace between Warmbly instances, including mailboxes, campaigns, contacts, and inbox history."
+title: "导出与导入"
+description: "在 Warmbly 实例之间迁移整个工作区，包括邮箱、营销活动、联系人与收件箱历史记录。"
 ---
 
-A workspace archive is one file holding everything a workspace owns. Use it to move a workspace between Warmbly instances, for example from a self-hosted install to the cloud or back.
+工作区归档是一个包含工作区所有数据的文件，可用于在 Warmbly 实例之间迁移，例如从自托管安装迁往云端，或反向迁移。
 
-## Move a workspace
+## 迁移工作区 [#move-a-workspace]
 
 <Steps>
 
 <Step>
 
-On the source instance, open **Settings > Data**, pick the groups to export, and select **Start export**.
+在来源实例打开**设置 > 数据**，选择要导出的数据组，再点击**开始导出**。
 
 </Step>
 
 <Step>
 
-To keep mailboxes connected, turn on **Include mailbox credentials** and choose a passphrase.
+如果要保留邮箱连接，请开启**包含邮箱凭据**，并设置口令。
 
 </Step>
 
 <Step>
 
-When the archive lands in the **Archives** list, select **Download**.
+归档出现在**归档文件**列表后，选择**下载**。
 
 </Step>
 
 <Step>
 
-On the destination, choose the archive file, enter its passphrase, and select **Check this archive**.
+在目标实例选择归档文件，输入口令，并点击**检查此归档**。
 
 </Step>
 
 <Step>
 
-Read the report, pick the groups to apply, and confirm.
+阅读报告，选择要应用的数据组，然后确认。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Export and import are limited to the workspace owner.
-- Archives are kept for 7 days and then deleted automatically.
-- The passphrase is never stored. If you lose it, the credentials in that archive cannot be recovered.
-- An import runs as one transaction. If anything fails, nothing lands.
-- Mailbox overwrite preserves report history, send audit and existing restrictive holds. Destination tasks with send-protection evidence retain their identity, typed payload and send evidence, including older completed tasks, uncertain or applied results without a worker nonce, and known warmup charges. An unprotected task can accept newer imported history without that history blocking its own later task payloads. Source-only history does not grant permission to send. If the archive and destination hold different tasks or have different restrictive hold reasons, overwrite fails and the whole import rolls back rather than discarding either protection. Skipped mailboxes are unaffected. Transport recovery is checked against the destination's newly loaded mailbox transport; an old or in-flight result cannot clear restored transport warnings.
-- To move a whole self-hosted install, use `warmblyctl backup` and `warmblyctl restore` instead.
+- 只有工作区所有者可以导出和导入。
+- 归档保留 7 天，之后自动删除。
+- 口令绝不存储。遗失后，归档中的凭据无法恢复。
+- 导入作为一个事务运行。任何环节失败，都不会写入任何内容。
+- 覆盖邮箱时会保留报告历史、发送审计和现有限制性暂停。目标端具有发送保护证据的任务会保留身份、带类型的载荷和发送证据，包括较旧的已完成任务、没有工作节点 nonce 的不确定结果或已应用结果，以及已知预热扣减。未受保护的任务可以接受较新的导入历史，且不会因这段历史阻止该任务之后自己的载荷。仅来自来源端的历史不授予发送权限。如果归档与目标端暂停的是不同任务，或限制性暂停原因不同，覆盖会失败，整个导入回滚，不会丢弃任何一侧的保护。跳过的邮箱不受影响。传输恢复会根据目标端新加载的邮箱传输配置检查；旧结果或仍在途的结果，不能清除恢复出来的传输警告。
+- 要迁移整个自托管安装，请改用 `warmblyctl backup` 和 `warmblyctl restore`。
 
 <Fold>
 
-## About workspace archives
+## 工作区归档简介 [#about-workspace-archives]
 
-A workspace archive is a single file holding everything one workspace owns. It exists so you can move between instances: a self-hosted install to the cloud, the cloud back to self-hosted, or one self-host to another.
+工作区归档是一个包含某个工作区全部数据的文件，方便在实例之间迁移：从自托管到云端、从云端回到自托管，或从一个自托管实例迁往另一个。
 
-Diagnostic participation, shared/rolling limits, restrictive send evidence and audited repair-resolution history travel with their registered mailbox/task/organization data. Source-worker executor handles reset; exact provider-message DKIM authorization/nonces are excluded. Portable minimal receipt proof remains historical evidence, never an execution grant. The reconciliation webhook/notification outbox is source-instance-local and excluded to prevent replay on import; drain pending effects before moving. Whole-instance database backups retain it. See [send-safety retention and rollback](/development/send-safety/#upgrade-rollback-and-portability).
+诊断参与状态、共享/滚动限额、限制性发送证据，以及经过审计的修复解决历史，会随其所属的邮箱、任务或组织数据迁移。来源工作节点的执行器句柄重置；针对具体服务商邮件的 DKIM 授权和 nonce 不导出。可移植的最小回执证明仅保留为历史证据，绝不是执行授权。对账 Webhook/通知发件箱属于来源实例本地数据，为防止导入后重放而排除；迁移前应让待处理效果执行完毕。整个实例的数据库备份则保留它。参见[发送安全保留与回滚](/development/send-safety/#upgrade-rollback-and-portability)。
 
-Permanent unknown-warmup retirement markers travel with send history. Imported retired tasks remain cancelled with their outcome recorded as unknown; they never authorize a retry. Use a destination with the compatible retirement schema and recovery code.
+永久终止未知预热任务的标记会随发送历史迁移。导入的已终止任务保持取消，结果记录为未知，绝不授权重试。目标端应具有兼容的终止标记架构和恢复代码。
 
-Campaign task replay intent resets to unverified on workspace import. The destination cannot replay an imported dead letter as a verified non-sending wakeup. A contact or sequence binding remains restrictive send intent even if that record is later removed. Whole-instance backups retain the durable intent; migration rollback refuses to discard retained send intent or unverified pending campaign dead letters.
+工作区导入会将营销活动任务的重放意图重置为未验证。目标端不能将导入的死信作为已验证的“不发送邮件的唤醒任务”重放。即使之后删除相关记录，联系人或序列绑定仍然是限制性的发送意图。整个实例备份会保留持久化意图；迁移回滚会拒绝丢弃已保留的发送意图，或未验证的待处理营销活动死信。
 
-<Callout title="Moving a whole self-hosted instance is a different tool">
-This page moves **one workspace** between two running instances, re-sealing its secrets for the destination's keys. To move an entire self-hosted install (every workspace, its users, its platform admins) use `warmblyctl backup` and `warmblyctl restore`, which carry the database, the blob root and the encryption keys as one bundle. See [data control](/development/data-control/#backups). The two are not interchangeable: a bundle cannot be applied to a single workspace, and this archive cannot restore an instance.
+<Callout title="整个自托管实例的迁移需使用另一工具">
+本页用于在两个运行中的实例之间迁移**一个工作区**，并用目标端密钥重新加密机密。迁移整个自托管安装，包括所有工作区、用户和平台管理员，应使用 `warmblyctl backup` 和 `warmblyctl restore`，将数据库、二进制文件根目录和加密密钥打包为一个备份包。参见[数据控制](/development/data-control/#backups)。二者不能互换：整实例备份包不能应用到单个工作区，工作区归档也不能恢复整个实例。
 </Callout>
 
-Everything here lives under **Settings > Data**, and is limited to the workspace owner. An export with credentials contains every mailbox password in the workspace, so it sits at the same level as deleting the workspace.
+这里的所有操作都位于**设置 > 数据**，且只允许工作区所有者执行。包含凭据的导出会携带工作区内每个邮箱的密码，因此其权限级别与删除工作区相同。
 
 </Fold>
 
 <Fold>
 
-## What an archive contains
+## 归档包含的内容 [#what-an-archive-contains]
 
-The data is split into groups. Every export includes **Workspace**; the rest are yours to choose.
+数据划分为多个组。每次导出始终包含**工作区**，其他组由你选择。
 
-| Group | Contents |
+| 数据组 | 内容 |
 |-------|----------|
-| Workspace | The organization, members with their [access scope](/guides/team-roles/#access-scope) and mailbox grants, roles, teams, mailboxes and their profile photos, mailbox tags, the column mappings saved by [mailbox imports](/guides/mailbox-import/), inbox vendor connections, [root redirects](/guides/sending-domains/#root-redirects), API keys, webhooks, and settings, including the website tracking site key. Always included |
-| Contacts | Contacts, labels, the column mappings saved by [contact imports](/guides/contacts-crm/#importing), segments with their manual overrides, forms with their images, submissions, personalized link tickets and funnel events, notes, activities, the suppression list, and each contact's [HubSpot](/guides/hubspot/) record id, owner, lifecycle stage, lead status and company |
-| Campaigns | Campaigns, folders, restricted members' campaign and folder grants, sequences, senders, linked segments, attachments, the email image library, per-campaign settings, each lead's step progress with its per-link clicks and per-event opens, the colleagues [copied on each lead](/guides/campaigns/#copying-colleagues-on-one-lead), [placement monitors](/guides/placement-tests/#campaign-placement-monitors), and the [unsubscribe links](/guides/unsubscribe/) already in recipients' inboxes |
-| CRM | Pipelines, deals, tasks, and meeting bookings |
-| Automations | Automations, connected integrations (including [Clay](/guides/clay/) defaults and events), saved [Apollo](/guides/apollo/) imports, lead sync sources, and the workspace's CRM mode: whether it runs on [HubSpot](/guides/hubspot/), its setup choices, the owner matches, and which Warmbly record is which HubSpot record |
-| Assistant | Remie sessions and messages (including conversations held in [Slack](/guides/slack/)), skills, MCP servers, and AI settings |
-| Warmup | Warmup participation, routing rules, statistics and inbox placement history, appeals, expiring reconnect-recognition fingerprints, and the standing of every penalised address, current or removed, so a move is not a way past a block |
-| Inbox | Unified inbox threads, message bodies, conversation labels, mailbox sync state, and completed automatic-tagging verdicts with their raw probabilities |
-| Send history | Queued and completed send tasks with their payloads |
-| Delivery events | Bounces, complaints, opens, clicks, [placement tests](/guides/placement-tests/) and batches with where each copy landed, and website page views with the browser records that tie them to contacts |
-| Verification evidence | What real mail showed about each contact's address (deliveries, opens, replies, bounces), so verdicts and confidence survive the move |
-| Logs | Audit log, campaign logs, and notifications |
-| Billing history | Subscription, credit ledger, and referral records |
+| 工作区 | 组织、成员及其[访问范围](/guides/team-roles/#access-scope)和邮箱授权、角色、团队、邮箱及头像、邮箱标签、[邮箱导入](/guides/mailbox-import/)保存的列映射、邮箱供应商连接、[根域名重定向](/guides/sending-domains/#root-redirects)、API 密钥、Webhook 和设置，包括网站跟踪站点密钥。始终包含 |
+| 联系人 | 联系人、标签、[联系人导入](/guides/contacts-crm/#importing)保存的列映射、分群及手动覆盖、表单及图片/提交/个性化链接票据/漏斗事件、备注、活动、禁止发送名单，以及各联系人的 [HubSpot](/guides/hubspot/) 记录 ID、负责人、生命周期阶段、潜在客户状态和公司 |
+| 营销活动 | 营销活动、文件夹、受限成员的活动与文件夹授权、邮件序列、发件邮箱、关联分群、附件、邮件图片库、各活动设置、每位潜在客户的步骤进度及逐链接点击和逐事件打开、[每位潜在客户的抄送同事](/guides/campaigns/#copying-colleagues-on-one-lead)、[投递位置监控器](/guides/placement-tests/#campaign-placement-monitors)，以及已位于收件人收件箱中的[退订链接](/guides/unsubscribe/) |
+| CRM | 销售管道、商机、任务和会议预约 |
+| 自动化流程 | 自动化流程、已连接集成，包括 [Clay](/guides/clay/) 默认设置和事件、已保存的 [Apollo](/guides/apollo/) 导入、潜在客户同步来源，以及工作区 CRM 模式：是否使用 [HubSpot](/guides/hubspot/)、设置选项、负责人匹配，以及 Warmbly 与 HubSpot 记录的对应关系 |
+| 助手 | Remie 会话和消息，包括在 [Slack](/guides/slack/) 中进行的对话、技能、MCP 服务器和 AI 设置 |
+| 预热 | 预热参与状态、路由规则、统计和收件箱投递位置历史、申诉、会过期的重连识别指纹，以及所有受罚地址的状态，无论地址当前存在还是已移除，确保迁移不能绕过封禁 |
+| 收件箱 | 统一收件箱会话、邮件正文、会话标签、邮箱同步状态，以及已完成的自动标签判定和原始概率 |
+| 发送历史 | 已排队和已完成的发送任务及其载荷 |
+| 投递事件 | 退信、投诉、打开、点击、[投递位置测试](/guides/placement-tests/)及批次和每份副本的落点，以及网站浏览记录和将其关联到联系人的浏览器记录 |
+| 验证证据 | 真实邮件对各联系人地址提供的证据，包括投递、打开、回复和退信，让判定及置信度在迁移后保留 |
+| 日志 | 审计日志、营销活动日志和通知 |
+| 账单历史 | 订阅、积分账本和推荐记录 |
 
-Inbox, send history, delivery events, and logs are the ones that grow without limit. Turn them off and you get a small archive that still rebuilds a working workspace; leave them on for a faithful copy.
+收件箱、发送历史、投递事件和日志会持续增长。关闭这些组可得到较小的归档，仍能重建可用工作区；保留它们则可获得更完整的副本。
 
-The pending warmup-filing queue stays on its source instance. The destination resyncs mail and files recognized warmup messages using its own workers and the mailbox's placement setting.
+待处理的预热邮件归档队列保留在来源实例。目标端重新同步邮件，并使用自己的工作节点和邮箱投递位置设置，对识别出的预热邮件进行归档。
 
-Warmup statistics travel as history. Source-only per-task charge and refund markers reset on import so settling an old task cannot refund another send's destination statistics. Existing destination charge dates and older completed-day counters are protected on overwrite; preserving older counts does not create charge or refund proof. Whole-instance database backups retain these markers.
+预热统计作为历史迁移。仅来源端拥有的逐任务扣减和退款标记，在导入时重置，避免结算旧任务时退还另一次发送在目标端的统计。覆盖时会保护目标端已有的扣减日期和较早已完成日期的计数；保留旧计数并不产生扣减或退款证明。整个实例的数据库备份会保留这些标记。
 
-Mailbox transport-error reports travel as history, retaining every report ID, observation timestamp, task reference and recorded resolution. Their operation and observation provenance reset to unknown, including overwrite imports and older archives without those fields. Imported and legacy historical reports do not share the uniqueness rule for new, locally observed reports and are not automatically cleared by a successful sync or send. Unknown history means recovery is unverified, not that a provider is still failing.
+邮箱传输错误报告作为历史迁移，保留每个报告 ID、观察时间、任务引用和已记录解决结果。其操作与观察来源信息会重置为未知，覆盖导入以及没有这些字段的旧归档也一样。导入和旧版历史报告不适用新本地观察报告的唯一性规则，也不会因一次成功同步或发送而自动清除。历史来源未知表示恢复未经验证，不表示服务商仍在故障。
 
-Instance-local transport-success clocks do not travel with an archive. The mailbox transport generation is omitted from exported rows, manifest columns and stored-result/confirmation JSON envelopes; other result and audit evidence remains intact. Importing a new mailbox or overwriting an existing one creates its own destination generation and invalidates only that mailbox's derived transport clocks in the same transaction. Skipped mailboxes and mailboxes not in the archive keep their generation and clocks. This does not clear restrictive send holds, confirmed-task evidence or accounting history.
+实例本地的传输成功时间记录不会随归档迁移。导出的行、清单列，以及已存储结果/确认 JSON 封套中都省略邮箱传输代次；其他结果和审计证据保持完整。导入新邮箱或覆盖现有邮箱，会创建目标端自己的代次，并在同一事务中仅使该邮箱派生的传输时间记录失效。被跳过和不在归档中的邮箱保留原代次与时间记录。这不会清除限制性发送暂停、已确认任务证据或计量历史。
 
-Send-recovery audit rows also travel as history, including operator confirmations and payload-free contradictory outcome metadata. Source-only rows import without local provenance; an existing destination row with locally recorded provenance is retained on overwrite. A source-instance confirmation cannot become an executable result or release a conflict hold on the destination. Unknown outcomes stay restrictive until independent authoritative worker results or a fresh local administrator/provider confirmation resolves them; importing an archive never authorizes a resend. Legitimate destination-local late results can still settle and apply accounting once. Recovery uses available authoritative results automatically, without a new customer sending or connection step. Only unresolved evidence needs administrator verification, not customer log investigation.
+发送恢复审计行也作为历史迁移，包括运维人员确认，以及不含载荷的矛盾结果元数据。仅来源端有的行导入时不具有本地来源证明；覆盖时，目标端已有且记录了本地来源证明的行会保留。来源实例的确认不能在目标端变成可执行结果，也不能解除冲突暂停。未知结果继续保持限制，直到独立的权威工作节点结果，或新的本地管理员/服务商确认将其解决；导入归档绝不授权重新发送。合法的目标端本地迟到结果仍可结算，并且只应用一次计量。恢复会自动使用可用的权威结果，无需客户新建发送或重新连接步骤。只有尚未解决的证据需要管理员验证，不要求客户调查日志。
 
-Move recovery history only to a destination with compatible recovery code and schema. An older destination can reject the new conflict evidence type or misinterpret historical confirmations even when it can read the archive. Do not discard audit rows to force an import or downgrade. See [conflict-audit upgrade ordering](/development/send-safety/#conflict-audit-upgrade-ordering).
+恢复历史只应迁移到具有兼容恢复代码和架构的目标端。旧目标端即使能读取归档，也可能拒绝新的冲突证据类型，或误解历史确认。不要为强行导入或降级而删除审计行。参见[冲突审计升级顺序](/development/send-safety/#conflict-audit-upgrade-ordering)。
 
-[Test workspace samples](/development/accounts-and-access/#adding-sample-data) move as ordinary contacts, campaigns and CRM records in their corresponding groups; reply templates are in **Assistant**. Their instance-wide admin audit marker does not travel, and import does not grant managed Test access.
+[测试工作区示例数据](/development/accounts-and-access/#adding-sample-data)作为普通联系人、营销活动和 CRM 记录，随对应组迁移；回复模板在**助手**组。其全实例管理员审计标记不会迁移，导入也不会授予受管理的 Test 访问权限。
 
-A restricted member stays restricted on the destination. Their campaign and folder grants travel with **Campaigns**, so an import without that group brings them in with no campaign access rather than more.
+受限成员在目标端仍受限。其营销活动和文件夹授权随**营销活动**组迁移，因此不包含该组的导入会使其没有活动访问权限，而不会扩大权限。
 
-<Callout type="info" title="Suppression always travels with contacts">
-The suppression list is part of the Contacts group and is never optional within it. An import that dropped it would start mailing people who already opted out.
+<Callout type="info" title="禁止发送名单始终随联系人一同迁移">
+禁止发送名单属于联系人组，在组内不能选择排除。若导入丢失它，就可能重新向已经退订的人发送邮件。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Exporting
+## 导出 [#exporting]
 
-Pick your groups, decide about credentials, and select **Start export**. The archive builds in the background, so you can leave the page; the **Archives** list shows live progress and a **Download** button when it lands.
+选择数据组，决定是否包含凭据，然后点击**开始导出**。归档在后台生成，可以离开页面；**归档文件**列表显示实时进度，完成后出现**下载**按钮。
 
-Archives are kept for 7 days and then deleted automatically. Each one is a full copy of the workspace, so they are not stored indefinitely. You can delete one yourself at any time, and export again whenever you need a fresh copy.
+归档保留 7 天后自动删除。每份都是工作区的完整副本，因此不会无限期保存。你可以随时自行删除，并在需要最新副本时重新导出。
 
-### Credentials
+### 凭据 [#credentials]
 
-Mailbox passwords, OAuth tokens, and integration keys are encrypted with keys that belong to the instance they live on. Those keys mean nothing anywhere else, so credentials cannot simply be copied.
+邮箱密码、OAuth 令牌和集成密钥使用所在实例的密钥加密。这些密钥在其他实例没有意义，因此凭据不能直接复制。
 
-Turn on **Include mailbox credentials** and Warmbly decrypts them, then re-seals them inside the archive with a key derived from a passphrase you choose. Import that archive with the same passphrase and the destination unseals them and re-encrypts them under its own keys. Mailboxes arrive connected and keep sending.
+开启**包含邮箱凭据**后，Warmbly 会解密凭据，再用你所选口令派生的密钥，将它们重新加密到归档中。使用同一口令导入时，目标端解密并用自己的密钥重新加密。邮箱导入后保持连接，并继续发送。
 
-<Callout type="warn" title="The passphrase is never stored">
-Warmbly does not keep it on either instance. If you lose it, the credentials inside that archive cannot be recovered and you have to export again. Use at least 12 characters and put it in a password manager before you close the page.
+<Callout type="warn" title="加密口令不会被保存">
+Warmbly 在任一实例都不会保存口令。遗失后，归档中的凭据无法恢复，只能重新导出。请至少使用 12 个字符，并在关闭页面前存入密码管理器。
 </Callout>
 
-Leave the option off and the credential fields travel empty. Everything else imports normally, and each mailbox arrives marked for reconnection: open it on the destination and sign in again, exactly like connecting it the first time.
+关闭此选项时，凭据字段以空值迁移。其他内容正常导入，每个邮箱标记为需要重新连接：在目标端打开邮箱并再次登录，与首次连接相同。
 
-Webhook signing secrets follow the same rule, including the one an [OAuth app](/api/oauth/#receiving-events-as-an-app-webhooks) signs its deliveries with. Without the option, rotate the app's webhook secret on the destination before relying on its deliveries.
+Webhook 签名密钥遵循相同规则，包括 [OAuth 应用](/api/oauth/#receiving-events-as-an-app-webhooks)用于签署投递的密钥。未包含凭据时，应先在目标端轮换应用 Webhook 密钥，再依赖其投递。
 
 </Fold>
 
 <Fold>
 
-## Importing
+## 导入 [#importing]
 
-Choose the archive file, enter its passphrase if it has one, and select **Check this archive**. Nothing is written yet. Warmbly reads the file and reports:
+选择归档文件，如果有口令则输入，再点击**检查此归档**。此时尚未写入任何内容。Warmbly 读取文件并报告：
 
-- which workspace it came from, when, and how many rows it holds
-- whether your passphrase opens its credentials
-- how many rows already exist in the destination workspace
-- which members have no account on this instance
-- anything in the archive this instance is too old to understand
+- 来源工作区、导出时间和行数
+- 口令是否能解开凭据
+- 目标工作区中已有多少行
+- 哪些成员在当前实例没有账户
+- 归档中是否有当前实例版本过旧而无法理解的内容
 
-Then pick the groups to apply, decide what happens to rows that already exist, and confirm.
+然后选择要应用的数据组，决定如何处理已有行，再确认。
 
-### Rows that already exist
+### 已存在的数据行 [#rows-that-already-exist]
 
-**Keep what is here** is the default: the archive only adds rows the destination does not already have. This is the right choice for an empty destination workspace, and the safe one for a workspace already in use.
+**保留现有内容**是默认选项：归档只添加目标端尚不存在的行。这适合空的目标工作区，对已经使用中的工作区也更稳妥。
 
-**Replace with the archive** overwrites matching rows in the destination workspace with the archive's versions. Use it when you are re-running an import to pick up changes made on the source since the last one. It cannot be undone.
+**用归档替换**会以归档版本覆盖目标工作区的匹配行。适用于重新导入，以获取上次导入之后来源端的变化。此操作无法撤销。
 
-### Records of another workspace
+### 其他工作区的记录 [#records-of-another-workspace]
 
-An import only writes the destination workspace's own records, and everything it brings in points only at that workspace's data. Records keep their identifiers across a move, so an archive holding records that already belong to another workspace on the same instance (for example, one exported from a workspace that still lives there) is refused as a whole and nothing is written. The archive check reports this before you confirm. Import such an archive into the workspace it was exported from, or into a workspace on another instance.
+导入只写入目标工作区自身的记录，带入的所有引用也只能指向该工作区的数据。记录迁移时保留标识符，因此如果归档包含的记录已属于同一实例中的另一个工作区，例如从仍存在的工作区导出的记录，整个导入会被拒绝，不写入任何内容。归档检查会在确认前报告此情况。应将这类归档导入原工作区，或导入其他实例上的工作区。
 
-### How people are matched
+### 人员匹配方式 [#how-people-are-matched]
 
-Members are matched to destination accounts by email address, so the same person keeps their campaigns, contacts, and notes. An archive never carries password material and can never create an account.
+成员按电子邮件地址匹配到目标账户，因此同一人保留其营销活动、联系人和备注。归档绝不携带账户密码材料，也不能创建账户。
 
-Anyone in the archive without an account on the destination has their rows reassigned to the person running the import, and the preflight report names them before you commit. Invite them afterwards and they get their access back through the normal member flow.
+归档中没有对应目标账户的成员，其记录会重新分配给执行导入的人；预检报告会在提交前列出这些成员。之后可邀请他们，通过正常成员流程恢复访问。
 
-### What deliberately does not import
+### 明确排除在导入范围之外的内容 [#what-deliberately-does-not-import]
 
-Cloud connections and mailbox enrollments never travel, including workspace-scoped connections and retained legacy links. Connect the destination workspace separately to its own Cloud workspace. Cloud-served redirects arrive served locally with their source connection association cleared.
+Cloud 连接和邮箱加入 Cloud 的状态绝不迁移，包括工作区级连接和保留的旧版关联。请将目标工作区单独连接到它自己的 Cloud 工作区。原由 Cloud 提供的重定向，导入后改为本地提供，并清除来源连接关联。
 
-Some things belong to an instance rather than to a workspace, so they are not applied even when the archive contains them:
+有些内容属于实例，而非工作区，因此即使归档包含，也不会应用：
 
-| Not imported | Why |
+| 不导入的内容 | 原因 |
 |--------------|-----|
-| Billing history | Subscription, credits, and referral balances belong to the platform that was paid. The destination issues its own |
-| Plan limit overrides | A capacity grant is a decision by one platform's operators, not a property the workspace carries |
-| Worker assignment | The destination places mailboxes on its own workers |
-| Mailbox sync checkpoints | Replaying a checkpoint would make the destination skip everything that arrived between export and import, so it re-syncs from scratch |
-| Reply processing checkpoints | Claims that prevent a synchronized inbox message from being handled twice belong to the source process. They reset so the destination can safely classify its imported inbox state |
-| Pending warmup verification | Mail waiting for this instance's local or cloud warmup check is not exported. The destination re-syncs it from the provider and applies its own verification |
-| Raw warmup receipt provenance | `warmup_received` observations, first-folder/auth header provenance and provider thread handles are source-instance evidence and are explicitly excluded. Aggregated warmup placement history travels, but raw receipt provenance does not |
-| Warmup dispatch and continuation authority | Parent task/receipt/message handles, lineage authority, queue revisions, worker IDs, dispatch nonces and native result state reset. Imported historical diagnostic metadata and tokens do not authorize automatic continuation on the destination |
-| Provider-attempt history | Immutable attempted timestamps and recipient counts travel in the sending group, retaining restrictive daily/rolling evidence after a capacity refund. Historical attempt nonces never authorize a new executor command |
-| Warmup pool membership | Pools are shared across every workspace on an instance, so membership is re-earned rather than asserted by a file |
-| Domain authentication timings | The verdict travels (public DNS reads the same anywhere), but the destination re-checks before it can stop any sending, so a mailbox is never blocked on an observation the new instance never made |
-| Risk and review status | A workspace's abuse posture is one platform's verdict about a tenant on its own infrastructure, reached from evidence the destination never saw. An archive can neither carry a restriction nor clear one |
-| Cold rotation state | Whether a mailbox is resting or held in reserve is this instance's decision about sending it watched. Every mailbox arrives in normal rotation and earns its way out again |
-| Cold sending ramps | How far a mailbox had eased into cold volume raises its cap, and the destination never watched it send. Mailboxes re-graduate from their warmup maturity, which costs a few days and errs toward sending less |
-| Seed inboxes | Which mailboxes are placement seed inboxes is this instance's choice of test inboxes, and an archive must not add mailboxes to another instance's seed panel. Every mailbox arrives as an ordinary one; mark your own seed inboxes again on the destination |
-| Placement test sends | Copies of a test that had not been sent yet stay behind, so the destination never sends to the source instance's seeds. So does the copy a running tracking comparison rendered for each seed. Tests and their results arrive as a record, without what a test cost in credits, since the credit ledger does not travel. A campaign's placement monitor keeps its settings and next run, but not the record of its last run. A placement batch that was still running arrives cancelled, with the results it had, so it never starts sending from the destination |
-| Scheduled deletions | A pending deletion from the source must never follow the workspace to its new home |
-| Failure and delivery counters | A webhook endpoint's failure streak and auto-disable state, and whether a notification's email already went out, describe what happened on the source. They start fresh, so an endpoint is not pre-disabled on the new instance and a notification is not re-sent |
-| Sends still in flight | A campaign step handed to a worker on the source has no worker on the destination to report back, so it arrives queued and is sent there instead of waiting forever. Steps already sent keep their history |
-| An invalid workspace name | An archive's workspace name is applied only when it passes the same [naming rules](/api/error-codes/#name-refusals) as a rename. Otherwise the destination keeps its own |
-| Invalid form settings | Each form passes the same checks as an edit. A redirect address that is not an `http` or `https` URL is cleared, a design the editor would refuse resets to the default, and an embed domain that is not a domain is dropped. A published form that lost an embed domain arrives as a draft, so review its domains and publish it again |
-| Webhook endpoints the destination refuses | An endpoint whose address the destination would not accept as a new one (not `https`, or not a public host) arrives disabled. Fix its address and enable it again |
-| Personal list layouts | Which columns each member shows on the contacts list and how they sort it, and how they arrange the unibox scope rail (Favorites, row order, hidden rows), belongs to the person, not the workspace. Everyone starts from the default view on the new instance and sets it up again |
-| Salesforce links and activity | Which Salesforce record each contact is, the activity waiting to be logged and its recent results, and how far the pull loop read. The destination links contacts again by address on its first sync, and activity already logged is in Salesforce. Saved list view and Campaign imports do travel, with the records each one already brought in |
-| Apollo enrichment runs | A record of which contacts were matched and what it cost in Apollo credits on the source. The contacts it enriched travel with their new fields. Saved [Apollo](/guides/apollo/) imports do travel, with the people each one already brought in, so a moved import does not bring them in again |
-| Send plan snapshots | A campaign's precomputed "today's sending plan" is worked out from the campaign, its leads, its mailboxes and the instance's own limits, which all travel. The destination works it out again in the background, so a plan for today is current where the campaign now lives rather than a copy of what the source instance expected |
-| HubSpot sync queue and pull checkpoints | Writes queued for [HubSpot](/guides/hubspot/) and the record of how far each pull had read belong to the instance doing the work. The destination logs its own activity from the move onward and starts its own pull, which reads HubSpot afresh |
+| 账单历史 | 订阅、积分和推荐余额属于实际收款的平台，目标平台提供自己的额度 |
+| 套餐限额覆盖 | 容量特批是某个平台运维人员的决定，不是工作区可携带的属性 |
+| 工作节点分配 | 目标端会将邮箱分配到自己的工作节点 |
+| 邮箱同步检查点 | 重放检查点可能使目标端跳过导出至导入之间到达的邮件，因此从头重新同步 |
+| 回复处理检查点 | 防止同步收件箱邮件被重复处理的占用记录属于来源进程。它们会重置，让目标端安全地分类导入后的收件箱状态 |
+| 待处理预热验证 | 等待当前实例本地或云端预热检查的邮件不导出。目标端从服务商重新同步，并应用自己的验证 |
+| 原始预热回执来源信息 | `warmup_received` 观察、首个文件夹/认证邮件头来源信息，以及服务商会话句柄都是来源实例证据，明确排除。聚合预热投递位置历史会迁移，原始回执来源信息不会 |
+| 预热调度与继续执行授权 | 父任务/回执/消息句柄、沿袭授权、队列修订号、工作节点 ID、调度 nonce 和原生结果状态都会重置。导入的历史诊断元数据和令牌不能授权目标端自动继续执行 |
+| 服务商尝试历史 | 不可变的尝试时间戳和收件人数随发送组迁移，即使容量已退还，仍保留每日/滚动限制证据。历史尝试 nonce 绝不授权新的执行器命令 |
+| 预热池成员身份 | 池由实例中的所有工作区共享，成员身份需要重新取得，不能由文件声明 |
+| 域名身份验证计时 | 判定会迁移，因为公共 DNS 在各地相同；但目标端必须重新检查，才能停止发送，避免依据新实例从未观察过的情况封锁邮箱 |
+| 风险与审查状态 | 工作区滥用风险状态是某个平台基于自身基础设施上租户证据作出的判定，目标端未见过这些证据。归档既不能携带限制，也不能清除限制 |
+| 冷邮件轮换状态 | 邮箱休息或处于备用状态，是当前实例依据自己观察到的发送作出的决定。每个邮箱导入后恢复正常轮换，再根据目标端观察重新调整 |
+| 冷邮件发送量递增进度 | 已逐步提升到的冷邮件量会提高上限，但目标端从未观察过其发送。邮箱根据预热成熟度重新逐步过渡，可能多花几天，以偏向少发为原则 |
+| 种子收件箱 | 哪些邮箱作为投递测试种子，是实例自己的测试邮箱选择，归档不能向其他实例的种子面板添加邮箱。所有邮箱都作为普通邮箱导入；请在目标端重新标记自有种子 |
+| 投递位置测试发送 | 尚未发送的副本保留在来源端，避免目标端向来源实例的种子发信；运行中跟踪对比为各种子渲染的副本也不迁移。测试及结果作为记录导入，不带积分费用，因为积分账本不迁移。活动投递监控器保留设置和下次运行时间，不保留上次运行记录。仍在运行的批次以已取消状态导入，保留已有结果，绝不会从目标端继续发送 |
+| 计划删除 | 来源端的待执行删除绝不能跟随工作区来到新位置 |
+| 失败和投递计数 | Webhook 端点连续失败次数及自动停用状态、通知邮件是否已发出，都描述来源端的情况。目标端重新开始，避免端点预先停用，也避免通知重发 |
+| 仍在途的发送 | 来源端已交给工作节点的活动步骤，在目标端没有对应工作节点回报，因此以排队状态到达并在目标端发送，而非永久等待。已发送步骤保留历史 |
+| 无效工作区名称 | 归档中的工作区名称只有通过与重命名相同的[命名规则](/api/error-codes/#name-refusals)才应用，否则保留目标端名称 |
+| 无效表单设置 | 每个表单都通过与编辑相同的检查。不是 `http` 或 `https` URL 的跳转地址会清除，编辑器会拒绝的设计恢复默认，非法嵌入域名被丢弃。已发布表单若丢失嵌入域名，会以草稿导入；请检查域名后重新发布 |
+| 目标端拒绝的 Webhook 端点 | 地址不符合目标端新建规则，例如不是 `https` 或不是公网主机，会以停用状态导入。修复地址后重新启用 |
+| 个人列表布局 | 每位成员在联系人列表显示哪些列、如何排序，以及如何排列统一收件箱范围侧栏，包括收藏、行顺序和隐藏行，都属于个人，而非工作区。新实例上每个人从默认视图开始，自行重新设置 |
+| Salesforce 关联与活动 | 各联系人对应的 Salesforce 记录、等待记录的活动及近期结果、拉取循环进度都不迁移。目标端首次同步时重新按地址关联，已记录活动留在 Salesforce。已保存的列表视图和 Campaign 导入会迁移，并保留各自已导入的记录 |
+| Apollo 信息补全运行记录 | 来源端哪些联系人匹配成功、消耗多少 Apollo 积分的记录不迁移。已补全联系人携带新字段迁移。保存的 [Apollo](/guides/apollo/) 导入会携带已导入人员迁移，避免迁移后重复导入 |
+| 发送计划快照 | 活动预计算的“今日发送计划”根据活动、潜在客户、邮箱和实例自身限额得出，相关数据会迁移。目标端会在后台重新计算，让今日计划符合活动的新位置，而非照搬来源实例的预期 |
+| HubSpot 同步队列和拉取检查点 | 排队写入 [HubSpot](/guides/hubspot/) 的内容，以及每次拉取读到哪里，属于实际执行工作的实例。目标端只记录迁移后的自身活动，并开始重新读取 HubSpot 的拉取 |
 
-An import runs as one transaction. If anything fails, nothing lands and the workspace is untouched.
+导入作为一个事务运行。任何环节失败，都不会写入任何内容，工作区保持不变。
 
 </Fold>
 
 <Fold>
 
-## After a move
+## 迁移后 [#after-a-move]
 
-- **Reconnect any mailbox that needs it.** Mailboxes without credentials show as needing a reconnect in the mailbox list.
-- **Point your tracking domain at the new instance.** Click links already delivered keep resolving as long as the domain follows. Tracking domains on mailboxes and campaigns arrive unverified: the destination re-checks mailbox ones hourly, and a campaign's override is verified again from the campaign's settings.
-- **Keep the old instance's image host reachable for a while, or re-place the images.** The image library and its files travel, but mail already sent carries the old instance's address inside each `<img src>`, so those images keep loading from there. Bodies you edit after the move pick up the new address.
-- **Check your inbox vendor connections.** Each vendor's API key is sealed with the workspace's own key, so it travels like a mailbox password: in an export with credentials it is re-sealed for the destination and keeps working. Exported without credentials, the connection arrives without its key; edit it and enter the key again.
-- **Make admin grants again.** A [Google Workspace or Microsoft 365 grant](/guides/mailbox-import/#connect-a-whole-google-workspace-domain) does not travel: it is recorded only after the workspace proves the domain or organization on the instance it runs on, and an archive proves nothing. The mailboxes it connected do travel, but arrive without a grant, so they cannot send or sync until it is made again. On the destination, make the grant again (for Google, the destination's client ID in the Admin console and the proof of the domain; for Microsoft 365, a Global Administrator's consent), then pick those users in the grant's directory, or import a file of their addresses. Each one relinks the mailbox that arrived, with its history and settings, instead of adding a second one.
-- **Point root redirects at the new instance.** A [root redirect](/guides/sending-domains/#root-redirects) travels, but it arrives unverified and serves nothing until the destination's own check sees both of its records. The ownership value is issued per workspace and instance, so publish the value the destination lists in the `_warmbly` `TXT` record, and update the root's address records. A redirect Warmbly Cloud served for the source instance arrives served by the destination, so its root moves off Cloud the same way. Forwarding set through an inbox vendor lives at the vendor and needs nothing.
-- **Repoint your forms domain too.** A custom forms domain travels with the archive, but its verification does not: the record still points at the old instance. Update the `CNAME`, and the hourly re-check picks it up. Until then form links fall back to the shared host rather than breaking.
-- **Check campaign schedules.** Per-contact progress travels, so a running campaign resumes at the step it reached rather than restarting.
-- **Expect the daily send counters to be honoured.** Today's counts come across, so a mailbox cannot double its volume by being migrated mid-day.
-- **Re-authorize integrations** if you exported without credentials. A Salesforce connection syncs nothing until it is reauthorized on the destination; see [Salesforce](/guides/salesforce/#what-moves-with-a-workspace-export).
-- **Reconnect Slack, then link again.** A Slack install belongs to the Slack app of the instance that made it, and Slack sends that app's messages to that instance only. Reconnect under **Integrations > Slack** on the destination, and each member links their Slack account again (the bot offers a link button the first time they message it). Assistant conversations held in Slack arrive in the dashboard history, where you can continue them.
-- **Check HubSpot or Pipedrive mode.** The mode, its choices and the links between Warmbly and CRM records travel, so the destination keeps updating the same records instead of creating duplicates. Its token only keeps working when the archive carried credentials and the destination uses the same HubSpot or Pipedrive app; otherwise reconnect the CRM there. Writes still queued on the source do not travel, so let sync health ([HubSpot](/guides/hubspot/#sync-health-and-fixing-errors), [Pipedrive](/guides/pipedrive/#sync-health-and-fixing-errors)) show nothing pending before exporting. The destination starts its own pull, and in Pipedrive mode registers its own webhooks.
-- **Rotate each webhook's signing secret.** The secret is encrypted at rest with the source instance's key, so it travels only in an export that carries credentials. Exported without them, the endpoint arrives with no secret and its deliveries will not verify at your receiver. Open each endpoint and use **Rotate secret**, then put the new value in your receiver.
+- **重新连接需要连接的邮箱。** 没有凭据的邮箱会在列表中显示需要重新连接。
+- **将跟踪域名指向新实例。** 只要域名跟随迁移，已经投递邮件中的点击链接仍能解析。邮箱和活动的跟踪域名导入后均未验证：目标端每小时检查邮箱域名，活动覆盖域名则从活动设置中重新验证。
+- **暂时保持旧实例的图片主机可访问，或重新插入图片。** 图片库及文件会迁移，但已发送邮件的每个 `<img src>` 仍携带旧实例地址，因此继续从那里加载。迁移后编辑的正文会采用新地址。
+- **检查邮箱供应商连接。** 供应商 API 密钥以工作区自身密钥加密，迁移方式与邮箱密码相同：导出包含凭据时，会重新加密到目标端并继续有效；不包含凭据时，连接没有密钥，需要编辑并重新输入。
+- **重新完成管理员授权。** [Google Workspace 或 Microsoft 365 授权](/guides/mailbox-import/#connect-a-whole-google-workspace-domain)不会迁移：它只能在工作区向所在实例证明域名或组织控制权后记录，而归档不能证明这些。通过授权连接的邮箱会迁移，但不带授权，因此重新授权之前不能发送或同步。在目标端重新授权，Google 需要在管理控制台使用目标端客户端 ID 并证明域名，Microsoft 365 需要全局管理员同意；再从授权目录选择这些用户，或导入其地址文件。每个用户都会重新关联已导入的邮箱及其历史和设置，不会新建重复邮箱。
+- **将根域名重定向指向新实例。** [根域名重定向](/guides/sending-domains/#root-redirects)会迁移，但导入后未验证，在目标端检查确认两类记录之前不提供服务。所有权验证值按工作区和实例签发，因此需将目标端给出的值发布到 `_warmbly` 的 `TXT` 记录，并更新根域名地址记录。原由 Warmbly Cloud 为来源实例提供的重定向，导入后改由目标端提供，根域名同样需从 Cloud 移开。通过邮箱供应商设置的转发保留在供应商处，无需处理。
+- **也要重指向表单域名。** 自定义表单域名随归档迁移，但验证状态不迁移，因为记录仍指向旧实例。更新 `CNAME` 后，每小时复查会发现它。在此之前，表单链接回退到共享主机，不会失效。
+- **检查营销活动计划。** 每位联系人的进度会迁移，因此运行中的活动从已到达步骤继续，不会重新开始。
+- **每日发送计数仍会遵守。** 今日计数会迁移，因此中途迁移不能使邮箱当天发送量翻倍。
+- **重新授权集成**，如果导出未包含凭据。Salesforce 连接在目标端重新授权之前不会同步任何内容；参见 [Salesforce](/guides/salesforce/#what-moves-with-a-workspace-export)。
+- **重新连接 Slack，再重新关联成员。** Slack 安装属于创建它的实例所使用的 Slack 应用，Slack 只会将该应用的消息发送到原实例。在目标端的**集成 > Slack**重新连接，每位成员再关联自己的 Slack 账户；首次向机器人发消息时，会收到关联按钮。Slack 中的助手对话会进入控制台历史，可以在那里继续。
+- **检查 HubSpot 或 Pipedrive 模式。** 模式、设置选项以及 Warmbly 与 CRM 记录之间的关联会迁移，因此目标端继续更新同一记录，不会重复创建。只有归档包含凭据，且目标使用相同 HubSpot 或 Pipedrive 应用时，令牌才继续有效；否则需在那里重新连接 CRM。来源端尚未执行的写入不会迁移，因此应在导出前确认同步健康度没有待处理项，参见 [HubSpot](/guides/hubspot/#sync-health-and-fixing-errors)和 [Pipedrive](/guides/pipedrive/#sync-health-and-fixing-errors)。目标端会开始自己的拉取，Pipedrive 模式还会注册自己的 Webhook。
+- **轮换每个 Webhook 的签名密钥。** 密钥静态存储时使用来源实例密钥加密，因此只有包含凭据的导出才携带。不含凭据时，端点导入后没有密钥，接收方无法验证投递。请打开各端点，使用**轮换密钥**，再将新值配置到接收方。
 
-<Callout type="info" title="Moving from a self-hosted instance">
-If you have shell access to the source, `warmblyctl org export` writes the same archive straight to a file without going through a browser, which is the easier route for a large workspace. See the [warmblyctl reference](/development/warmblyctl/).
+<Callout type="info" title="从自托管实例迁移">
+如果可以访问来源端 shell，`warmblyctl org export` 可将相同归档直接写入文件，无需经过浏览器，更适合大型工作区。参见 [warmblyctl 参考](/development/warmblyctl/)。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## What does not travel
+## 不会一同迁移的内容 [#what-does-not-travel]
 
-Pending mailbox arrivals and their delivery queue are instance-local. Provider mappings whose arrivals are still pending are excluded too. Let the source consumer finish its pending arrivals before exporting; importing the archive does not replay that source queue. A [full-instance backup](/development/data-control/#mailbox-sync-recovery-data) instead preserves the queue together with its keys and message-body storage.
+待处理的邮箱到达记录及其投递队列属于实例本地数据。仍有待处理到达记录的服务商映射也会排除。导出前请让来源消费者处理完待到达邮件；导入归档不会重放来源队列。[整个实例备份](/development/data-control/#mailbox-sync-recovery-data)则会连同密钥和邮件正文存储一起保留队列。
 
-The Test workspace classification is instance-local. Importing an archive does not classify the destination as Test or grant a managed Test plan or testing credits.
+Test 工作区分类属于实例本地状态。导入归档不会将目标标记为 Test，也不会授予受管理的 Test 套餐或测试积分。
 
-A few things belong to the instance rather than the workspace and are left out on purpose: the instance's link to Warmbly Cloud and which mailboxes it enrolled in the hosted pool ([Warmbly Cloud](/guides/warmbly-cloud/)), linked self-hosted instances on a cloud workspace, Google Workspace and Microsoft 365 admin grants, live sessions, in-flight OAuth handshakes and the organization's wrapped data key. Reconnect to Warmbly Cloud and make each admin grant again after the move.
+另有一些内容属于实例而非工作区，会有意排除：实例与 Warmbly Cloud 的关联，以及加入托管池的邮箱，参见 [Warmbly Cloud](/guides/warmbly-cloud/)；云端工作区关联的自托管实例；Google Workspace 和 Microsoft 365 管理员授权；活动会话；进行中的 OAuth 握手；以及组织经过封装的数据密钥。迁移后需重新连接 Warmbly Cloud，并重新完成各项管理员授权。
 
-[Mailbox imports](/guides/mailbox-import/) do not travel either, finished or running: an import is work the source instance is doing, and its rows hold credentials in flight. The mailboxes an import connected are ordinary mailboxes and move with the Workspace group, and the saved column mappings come too, so the same file maps itself on the destination. Let a running import finish before exporting: rows it has not connected yet are not in the archive.
+[邮箱导入任务](/guides/mailbox-import/)无论已完成还是运行中，都不会迁移，因为它们是来源实例正在执行的工作，行中还持有处理中凭据。导入已连接的邮箱属于普通邮箱，随工作区组迁移；保存的列映射也会迁移，因此相同文件在目标端仍可自动映射。请让运行中的导入完成后再导出，尚未连接的行不在归档中。
 
-[Contact imports](/guides/contacts-crm/#importing) do not travel, finished or running, for the same reason: an import is work the source instance is doing. The contacts it created are ordinary contacts and move with the Contacts group, and the saved column mappings come with them. Let a running import finish before exporting, or the rows it has not reached are not in the archive.
+[联系人导入任务](/guides/contacts-crm/#importing)无论已完成还是运行中，也因同样原因不迁移：它们是来源实例的工作。已创建联系人作为普通联系人随联系人组迁移，保存的列映射也一同迁移。导出前应等待正在运行的导入完成，否则尚未处理到的行不会包含在归档中。
 
-The list of past exports and imports does not travel either. Each job is a record of work the instance that ran it did, and an export's archive lives in that instance's storage until it expires. The destination lists only the exports and imports run there.
+历史导出和导入列表也不会迁移。每项任务记录的是执行它的实例所做的工作，导出归档保存在该实例存储中直到过期。目标端只列出自己运行过的导出和导入。
 
-A [community directory](/guides/integrations/#community-apps) listing does not travel. The OAuth app itself moves with the archive, but its listing is a publication on the source instance, featured or hidden by its team. Publish it again on the destination, where it starts as link only and is featured or not by that instance's team. An app suspended on the source arrives suspended, and so does every app imported into a workspace whose members may not build apps on the destination; the destination's operators decide whether to lift it. An import never clears a suspension the destination already applied. Each app passes the same checks as registering it: a name that breaks the [naming rules](/api/error-codes/#name-refusals) becomes "Imported app", and a website, redirect URI or webhook address the destination would refuse is dropped. Its logo arrives empty, so upload it again.
+[社区目录](/guides/integrations/#community-apps)条目不会迁移。OAuth 应用本身随归档迁移，但目录条目是在来源实例上发布、由其团队精选或隐藏的内容。请在目标端重新发布，最初为仅通过链接访问，再由目标实例团队决定是否精选。来源端已暂停的应用导入后仍暂停；如果目标工作区成员无权构建应用，所有导入应用也会暂停，由目标运维人员决定是否解除。导入绝不会清除目标端已有的暂停。每个应用都通过与注册相同的检查：违反[命名规则](/api/error-codes/#name-refusals)的名称改为“Imported app”；目标端不接受的网站、重定向 URI 或 Webhook 地址会被移除。徽标以空值导入，需要重新上传。
 
-[Slack](/guides/slack/) account links, the record of which Slack thread belongs to which assistant conversation, and which Slack thread mirrors which inbox conversation in the [inbox channel](/guides/slack/#inbox-in-slack) do not travel. They name the Slack install on the source instance, so members link again after Slack is reconnected on the destination, and inbox conversations start new Slack threads there. The assistant conversations themselves move with the Assistant group.
+[Slack](/guides/slack/)账户关联、Slack 讨论串与助手对话的对应记录，以及[收件箱频道](/guides/slack/#inbox-in-slack)中 Slack 讨论串与邮箱会话的镜像关系，都不会迁移。它们指向来源实例的 Slack 安装，因此目标端重新连接 Slack 后，成员需要重新关联，收件箱会话也会在那里创建新的 Slack 讨论串。助手对话本身随助手组迁移。
 
-Reply and forward drafts kept in your browser are also excluded. Finish or copy them before moving to another instance. See [reply drafts](/guides/unibox/#reply-drafts).
+保存在浏览器中的回复和转发草稿也不包含在内。迁往其他实例前，请完成发送或复制草稿。参见[回复草稿](/guides/unibox/#reply-drafts)。
 
 </Fold>
 
 <Fold>
 
-## Limits
+## 限制 [#limits]
 
-- One export and one import can run per workspace at a time.
-- An uploaded archive can be up to 8 GB.
-- Archives expire 7 days after they finish.
-- An archive can be imported into any instance running the same or a newer release. A newer archive on an older instance is refused, with the version in the message.
+- 每个工作区同一时间最多运行一个导出和一个导入。
+- 上传归档最大 8 GB。
+- 归档在生成完成 7 天后过期。
+- 归档可导入相同或更新版本的实例。较新归档导入旧实例时会被拒绝，提示中会说明版本。
 
 </Fold>

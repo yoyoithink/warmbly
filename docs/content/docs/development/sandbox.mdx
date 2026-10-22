@@ -1,145 +1,145 @@
 ---
-title: Sandbox
-description: A fully working local demo environment, with live sending, replies, opens, clicks, warmup, and a full history and analytics dataset running end to end.
+title: 沙盒
+description: 功能完整的本地演示环境，端到端运行实际发送、回复、打开、点击和邮箱预热，并提供完整的历史记录与分析数据集。
 ---
 
-The sandbox turns a local stack into a living product demo. It seeds a showcase organization ("Sunrise Labs") whose mailboxes really send and really sync, backfills a complete history and analytics dataset so every dashboard surface is populated on first load, then runs a simulator that plays the internet: it delivers captured mail into recipient inboxes, opens tracking pixels, clicks tracked links, and replies as the seeded contacts. Campaign stats climb, the unibox fills with threaded replies, warmup interactions verify, and the dashboard updates in realtime, all through production code paths. The only simulated thing is the humans.
+沙盒将本地服务栈变成持续活动的产品演示。它创建示例组织“Sunrise Labs”，其中邮箱会真实发送和同步；再回填完整历史与分析数据，让所有控制台界面首次加载时就有内容；随后运行模拟器扮演互联网：将捕获的邮件投递到收件人邮箱，加载跟踪像素，点击跟踪链接，并以示例联系人身份回复。营销活动统计不断增长，统一收件箱出现带会话关系的回复，预热互动得到验证，控制台实时更新；这些都通过生产代码路径执行。唯一模拟的是人。
 
-## Quick start
+## 快速入门 [#quick-start]
 
-One command brings up the whole thing:
+一条命令启动全部组件：
 
 ```bash
 make sandbox
 ```
 
-It starts the infra (postgres, redis, nats, mailpit, dovecot), runs migrations, seeds the showcase org, brings up realtime and tracking as containers (no host Elixir or cargo needed), then runs the backend, consumer, worker, dashboard, admin, and the simulator together in that terminal. Ctrl-C stops the app; the infra stays up for next time.
+它启动基础设施 postgres、redis、nats、mailpit 和 dovecot，执行迁移，创建示例组织，以容器启动实时及跟踪服务，无需主机安装 Elixir 或 cargo，然后在该终端一起运行后端、消费者、工作节点、控制台、管理端和模拟器。Ctrl-C 停止应用，基础设施继续运行，供下次使用。
 
-Then sign in at `http://localhost:5173`:
+然后在 `http://localhost:5173` 登录：
 
-| Field | Value |
+| 字段 | 值 |
 |-------|-------|
-| Email | `sandbox@warmbly.test` |
-| Password | `password123` |
-| Organization | Sunrise Labs (Pro plan) |
+| 邮箱 | `sandbox@warmbly.test` |
+| 密码 | `password123` |
+| 组织 | Sunrise Labs，专业版套餐 |
 
-The dashboard is already full from the seeded history. Live activity starts shortly after: watch the `make sandbox` output for a running feed of `delivered` / `opened` / `clicked` / `replied` lines, and Mailpit at `http://localhost:18025` for every message on the wire.
+填充的历史已让控制台内容完整。实时活动稍后开始：观察 `make sandbox` 输出中持续出现的 `delivered` / `opened` / `clicked` / `replied` 行，并在 `http://localhost:18025` 的 Mailpit 查看每封实际传输邮件。
 
-Two other entry points:
+另外两个入口：
 
-- `make sandbox SEED=false` runs the stack against existing data without re-seeding.
-- `make sandbox-seed` seeds (or resets) the showcase org and exits, without the app or simulator.
+- `make sandbox SEED=false` 使用已有数据运行服务栈，不重新填充。
+- `make sandbox-seed` 创建或重置示例组织后退出，不启动应用或模拟器。
 
-## What gets seeded
+## 会载入哪些示例数据 [#what-gets-seeded]
 
-`make sandbox-seed` is idempotent and safe to re-run. It provisions:
+`make sandbox-seed` 是幂等的，可安全重跑。它会配置：
 
-- the full `internal/seed` fixture first (plans, workers, the demo orgs), so it works on a fresh database
-- the Sunrise Labs org on an active Pro subscription, owned by `sandbox@warmbly.test`, plus a second teammate (Marco Diaz, admin), one pending invitation, and an active developer API key
-- AI credits: the plan's monthly allowance plus a 5,000-credit purchased top-up, so the assistant and every other AI surface work out of the box (re-seeding refills both pools)
-- 20 sender mailboxes on `@sunrise.test` (a healthy warmup pool by the dashboard's own coverage bar), assigned to the worker `make sandbox` runs, spread across the whole warmup lifecycle: seven graduated senders that finished their ramp weeks ago and carry full (~50/day) cold volume, eight mid-ramp, three freshly connected, one with warmup paused, and one on reduced health with an open provider warning. Every account has matching warmup ramp stats and daily send counts backfilled, varied pool health scores, a personal signature, and a tag (VIP, Agency, or Cold); pacing is demo friendly (45s minimum gap, 100/day cap)
-- campaigns in every list bucket: two active ("Sunrise Q3 launch outreach", 3 steps, 48 contacts; "Agency partnerships", 2 steps, 24 contacts), one paused, one completed, and one draft, all with tracking enabled, every step connected to the next (the scheduler only follows explicit step connections), all 20 senders in the rotation, and a realistic funnel of sent, opened, clicked, replied, and bounced timestamps spread over three weeks
-- six placement seed inboxes on the instance panel, on domains of their own (`gmail-seeds.test`, `workspace-seeds.test`, `m365-seeds.test`, `outlook-seeds.test`, `yahoo-seeds.test`) with the provider each stands in for, so a [placement test](/guides/placement-tests/) from any Sunrise mailbox has somewhere to land
-- a live unified inbox: threaded inbound replies across several senders, including a meeting request, an out-of-office autoreply, a not-interested reply, and a bounce notice, with a mix of read and unread
-- a CRM pipeline with five stages, five deals across them, tasks, contact notes, and per-contact activity timelines
-- the analytics tables behind the deliverability and reporting views: deliverability events (opens, clicks, replies, bounces, complaints, unsubscribes), reply-intent classifications, a suppression list, and resolved and open mailbox errors
-- an org audit trail (campaign created and started, mailbox connected, member invited, deal created, key created) so the audit log has depth
-- reply templates, notifications (some unread), and labels everywhere they appear: folders (Outbound, Nurture), mailbox tags (VIP, Cold, Agency), and workspace labels (Lead, Customer, Churn risk) bound to the campaigns, senders, several contacts, and inbox threads
-- working credentials for every `smtp_imap` account in the database, including the older `make seed` fixtures, sealed with `CREDENTIALS_ENCRYPTION_KEY` so the worker can decrypt and use them
-- an [Advisor](/guides/advisor/) showcase (see below), and one evaluation run at the end of seeding so the recommendations exist before you log in
+- 先加载完整 `internal/seed` 示例，包括套餐、工作节点和演示组织，因此也可用于全新数据库。
+- 拥有活跃专业版订阅的 Sunrise Labs 组织，所有者为 `sandbox@warmbly.test`；另有第二位团队成员 Marco Diaz，角色为管理员，以及一条待接受邀请和一个有效开发者 API 密钥。
+- AI 积分：套餐每月额度加上购买的 5,000 积分补充额度，让助手和所有其他 AI 功能开箱可用；重新填充会补满两个积分池。
+- 20 个 `@sunrise.test` 发件邮箱，按控制台自身覆盖指标形成健康预热池，分配给 `make sandbox` 运行的工作节点，覆盖完整预热生命周期：七个已完成递增数周、拥有完整约每天 50 封冷邮件量的成熟发件人，八个正在递增，三个刚连接，一个暂停预热，一个健康度下降且有未解决服务商警告。每个账户都回填匹配的预热递增统计和每日发送计数，并有不同的池健康分、个人签名，以及 VIP、Agency 或 Cold 标签。发送节奏适合演示，最短间隔 45 秒，上限每天 100 封。
+- 各个列表分类中的营销活动：两个活跃活动，“Sunrise Q3 launch outreach”有三步骤、48 位联系人，“Agency partnerships”有两步骤、24 位联系人；另有一个暂停、一个完成和一个草稿。全部启用跟踪，每一步明确连接到下一步，因为调度器只沿显式步骤连接执行；20 个发件人全部参与轮换，并有分布在三周内、符合实际漏斗形态的发送、打开、点击、回复和退信时间戳。
+- 实例面板中的六个投递位置种子邮箱，使用自己的域名 `gmail-seeds.test`、`workspace-seeds.test`、`m365-seeds.test`、`outlook-seeds.test` 和 `yahoo-seeds.test`，各自标明所模拟的服务商，让任意 Sunrise 邮箱的[投递位置测试](/guides/placement-tests/)都有接收目标。
+- 活跃的统一收件箱：多个发件人收到归入会话的回复，包括会议请求、休假自动回复、不感兴趣回复和退信通知，混合已读与未读。
+- 五阶段 CRM 销售管道，五个分布在不同阶段的交易，以及任务、联系人备注和逐联系人活动时间线。
+- 送达能力和报告视图背后的分析表：打开、点击、回复、退信、投诉和退订事件，回复意图分类、禁止发送名单，以及已解决和未解决邮箱错误。
+- 组织审计轨迹，包括营销活动创建和启动、邮箱连接、成员邀请、交易创建和密钥创建，使审计日志具有历史深度。
+- 回复模板、通知，其中部分未读，以及所有应出现标签的位置：文件夹 Outbound 和 Nurture，邮箱标签 VIP、Cold、Agency，工作区标签 Lead、Customer、Churn risk，并关联营销活动、发件人、多个联系人和收件箱会话。
+- 数据库中每个 `smtp_imap` 账户的可用凭据，包括旧的 `make seed` 示例；它们由 `CREDENTIALS_ENCRYPTION_KEY` 密封，使工作节点能够解密并使用。
+- 一个[顾问](/guides/advisor/)演示，见下文；填充结束时运行一次评估，让你登录前就有建议。
 
-### The Advisor showcase
+### Advisor 演示 [#the-advisor-showcase]
 
-The Advisor only has something to say about a workspace with problems, so the seeder gives Sunrise Labs a few deliberate ones. Everything else is normalized to a well-run baseline first (every sender at the 50/day safe cap, on its own verified tracking domain, with SPF, DKIM, and DMARC passing), so the findings that remain are specific rather than a wall of the same card repeated twenty times.
+顾问只有面对存在问题的工作区才有建议，因此数据填充器会刻意给 Sunrise Labs 设置几个问题。其他方面会先归一化为管理良好的基线：每个发件人使用每天 50 封安全上限、各自已验证的跟踪域名，SPF、DKIM 和 DMARC 均通过。这样剩余发现具有针对性，而不是同一张卡片重复二十遍。
 
-The seeded problems, all in `internal/sandbox/advisor.go`:
+所有预置问题定义在 `internal/sandbox/advisor.go`：
 
-- `liam.walsh@sunrise.test` has a month of real sending behind it (1,600 completed tasks) with 72 bounces and one complaint, putting it at `4.5%` bounce and `0.06%` complaint. Both come from real `tasks` and `deliverability_events` rows, so the Advisor's numbers reconcile with the Deliverability page rather than contradicting it. Its cap is also raised to 120/day.
-- `yuki.sato@sunrise.test` has SPF and DKIM but no DMARC, and a 90-second gap between sends.
-- `erik.lund@sunrise.test` was connected six days ago, went straight to the full 50/day cap, and has warmup paused.
-- "Q4 outbound (first draft)" is a paused campaign written the way first drafts get written: one email with no follow-up, one-click unsubscribe off, a shouting subject line that truncates, 246 words, four links, bulk-mail phrasing, and an `{{if}}` with no `{{end}}` (which does not fail a send, it silently degrades to literal text). Its 160-contact audience is a quarter shared inboxes with a third missing the first name the copy greets on.
+- `liam.walsh@sunrise.test` 有一个月真实发送记录，即 1,600 个已完成任务，包含 72 次退信和一次投诉，退信率为 `4.5%`，投诉率为 `0.06%`。两者来自真实 `tasks` 和 `deliverability_events` 行，因此顾问数字与送达能力页面一致，不会相互矛盾。它的上限也被提高到每天 120 封。
+- `yuki.sato@sunrise.test` 有 SPF 和 DKIM，但没有 DMARC，发送间隔为 90 秒。
+- `erik.lund@sunrise.test` 六天前连接，直接使用每天 50 封完整上限，并暂停了预热。
+- “Q4 outbound (first draft)”是一个暂停活动，呈现典型初稿问题：只有一封邮件、没有跟进，关闭一键退订，主题像喊话且会截断，正文 246 词、四个链接，使用群发式措辞，还有 `{{if}}` 却没有 `{{end}}`，这不会让发送失败，而是悄悄退化为字面文本。其 160 位联系人中，四分之一为共享收件箱，三分之一缺少正文称呼所需的名字。
 
-Nothing here stops the sandbox sending: caps go up rather than down, gaps get shorter, the authentication columns are observation-only, and the deliberately-rough campaign stays paused so it never mails the synthetic list.
+这些设置不会阻止沙盒发送：上限提高而非降低，间隔变短，身份验证列仅用于观察；刻意粗糙的营销活动始终暂停，因此不会向模拟名单发送。
 
-Seeding ends by running one evaluation and printing what it found, so `make sandbox-seed` on its own tells you the whole path works. Expect roughly twenty findings and a score in the thirties.
+填充结束时会运行一次评估并打印发现，因此单独执行 `make sandbox-seed` 就能确认整条路径工作。预计约二十项发现，分数在三十多分。
 
-## How it works
+## 工作原理 [#how-it-works]
 
-Real mail servers stand in for the internet's mail infrastructure:
+真实邮件服务器代替互联网邮件基础设施：
 
-- **Mailpit** is the SMTP sink. Every mailbox's outbound server points at it, so all sends (campaign and warmup) are captured and visible in its UI.
-- **Dovecot** hosts the mailboxes' inboxes. It accepts any username with the password `sandbox` and auto-creates the maildir on first use. The worker's real IMAP sync polls it every minute.
+- **Mailpit** 是 SMTP 接收器。每个邮箱的出站服务器都指向它，因此所有营销活动和预热发送都会被捕获，并可在界面查看。
+- **Dovecot** 承载邮箱收件箱，接受任意用户名和密码 `sandbox`，首次使用时自动创建 maildir。工作节点真实的 IMAP 同步每分钟轮询一次。
 
-The simulator bridges the two and plays every human. It also plays the spam filter for the seed inboxes: a placement copy the content check scores below 70 goes to Junk, and a fixed share of the rest does too, more on the Microsoft and Yahoo seeds and more again for tracked copy, so a test and its tracking comparison both show a spread:
+模拟器连接两者，并扮演所有人。它还为种子邮箱扮演垃圾邮件过滤器：内容检查低于 70 分的投递位置副本会进入 Junk，其他邮件也有固定比例进入；Microsoft 和 Yahoo 种子的比例更高，带跟踪的内容还会更高，因此测试及其跟踪对比都能看到分布：
 
-1. It polls Mailpit's API for new messages (the read flag is its cursor).
-2. Mail addressed to a hosted mailbox (for example warmup mail between pool members) is appended into that user's Dovecot inbox. The recipient's worker sync picks it up, the warmup token verifies, and engagement actions run against the real IMAP folders.
-3. Mail addressed to a seeded contact triggers a persona: after humanized delays, most contacts open the pixel against the local tracking service, some click the tracked link, and some reply. Replies are composed with correct `In-Reply-To` threading and appended into the sending mailbox's inbox, or into the mailbox its reply-to names when that is another sandbox mailbox, the way a mail client answers a `Reply-To`, so reply attribution, the reply classifier, `EMAIL_REPLIED` realtime events, and the unibox all behave exactly as in production. A slice of replies are out-of-office autoresponders (with `Auto-Submitted` headers) so classifier gating is visible too.
+1. 轮询 Mailpit API 获取新邮件，以已读标志作为游标。
+2. 发给托管邮箱的邮件，例如池成员之间的预热邮件，会追加到该用户的 Dovecot 收件箱。收件人的工作节点同步读取它，验证预热令牌，并在真实 IMAP 文件夹上执行互动操作。
+3. 发给示例联系人的邮件会触发对应角色：经过模拟真人的延迟后，多数联系人向本地跟踪服务加载像素，部分点击跟踪链接，部分回复。回复带正确的 `In-Reply-To` 会话关系，并追加到发件邮箱收件箱；如果回复地址指向另一个沙盒邮箱，则写入该邮箱，模拟邮件客户端按 `Reply-To` 回复。因此回复归因、回复分类器、`EMAIL_REPLIED` 实时事件和统一收件箱都与生产行为一致。部分回复为带 `Auto-Submitted` 邮件头的休假自动回复，也能看到分类限制的效果。
 
-Personas are derived from a hash of the contact's address, so behavior is stable across restarts without any extra state: roughly 92% open, 57% of openers click, 45% of openers reply, with reply tones split across interested, question, not-interested, and out-of-office. The rates are deliberately hotter than real-world outreach so the demo stays lively.
+角色由联系人地址的哈希派生，因此重启后行为仍稳定，无需额外状态：约 92% 打开，打开者中 57% 点击、45% 回复；回复语气分为感兴趣、提问、不感兴趣和休假。为使演示保持活跃，这些比例有意高于真实外联。
 
-## Pieces involved
+## 涉及的组件 [#pieces-involved]
 
-| Piece | Role |
+| 组件 | 作用 |
 |-------|------|
-| `cmd/sandbox` | seeder + simulator binary (`-seed-only`, `-simulate-only`) |
-| `internal/sandbox` | seeding, history and analytics fixtures, Mailpit client, personas, IMAP delivery |
-| `dovecot` compose service | IMAP host for sandbox inboxes (ports 10143/10993), `sandbox` profile |
-| `mailpit` compose service | SMTP sink + capture API (ports 11025/18025) |
-| `CREDENTIALS_ENCRYPTION_KEY` | seals mailbox credentials at rest; fixed dev value in the Makefile |
-| `MAIL_TLS_INSECURE=true` | worker-only dev knob: skip TLS verification and allow the TLS-less Mailpit; never set in production |
+| `cmd/sandbox` | 数据填充器和模拟器二进制，支持 `-seed-only`、`-simulate-only` |
+| `internal/sandbox` | 数据填充、历史和分析样例、Mailpit 客户端、角色及 IMAP 投递 |
+| `dovecot` Compose 服务 | 沙盒收件箱的 IMAP 主机，端口 10143/10993，属于 `sandbox` 配置组 |
+| `mailpit` Compose 服务 | SMTP 接收器及捕获 API，端口 11025/18025 |
+| `CREDENTIALS_ENCRYPTION_KEY` | 密封静态存储的邮箱凭据，Makefile 提供固定开发值 |
+| `MAIL_TLS_INSECURE=true` | 仅工作节点使用的开发开关：跳过 TLS 验证并允许无 TLS 的 Mailpit；生产环境绝不可设置 |
 
-## Environment variables
+## 环境变量 [#environment-variables]
 
-`make sandbox` sets everything for the default stack. When running `cmd/sandbox` by hand:
+`make sandbox` 会配置默认服务栈所需的一切。手动运行 `cmd/sandbox` 时使用：
 
-| Variable | Default | Meaning |
+| 变量 | 默认值 | 含义 |
 |----------|---------|---------|
-| `PRIMARY_DB` | dev postgres on `:15432` | database for seeding and directory lookups |
-| `MAILPIT_URL` | `http://localhost:18025` | Mailpit API base |
-| `TRACKING_URL` | `http://localhost:3000` | tracking service for pixel/click hits |
-| `DOVECOT_IMAP_ADDR` | `localhost:10993` | where the simulator appends mail |
-| `DOVECOT_PASSWORD` | `sandbox` | Dovecot's static password |
-| `SANDBOX_SMTP_HOST` / `SANDBOX_SMTP_PORT` | `localhost` / `11025` | seeded as the mailboxes' outbound server (the worker dials it) |
-| `SANDBOX_IMAP_HOST` / `SANDBOX_IMAP_PORT` | `localhost` / `10993` | seeded as the mailboxes' inbound server (the worker dials it) |
-| `CREDENTIALS_ENCRYPTION_KEY` | set by the Makefile | must match the backend's key |
-| `SANDBOX_VENDOR_ADDR` | `127.0.0.1:18099` | where the mock inbox vendor API listens |
-| `SANDBOX_VENDOR_LATENCY_MS` | `1200` | how long the mock vendor takes to answer, like a real API; `0` answers at once |
+| `PRIMARY_DB` | `:15432` 上的开发 Postgres | 数据填充和目录查询使用的数据库 |
+| `MAILPIT_URL` | `http://localhost:18025` | Mailpit API 基础地址 |
+| `TRACKING_URL` | `http://localhost:3000` | 接收像素和点击访问的跟踪服务 |
+| `DOVECOT_IMAP_ADDR` | `localhost:10993` | 模拟器追加邮件的位置 |
+| `DOVECOT_PASSWORD` | `sandbox` | Dovecot 固定密码 |
+| `SANDBOX_SMTP_HOST` / `SANDBOX_SMTP_PORT` | `localhost` / `11025` | 填充为邮箱出站服务器，工作节点连接此地址 |
+| `SANDBOX_IMAP_HOST` / `SANDBOX_IMAP_PORT` | `localhost` / `10993` | 填充为邮箱入站服务器，工作节点连接此地址 |
+| `CREDENTIALS_ENCRYPTION_KEY` | 由 Makefile 设置 | 必须与后端密钥一致 |
+| `SANDBOX_VENDOR_ADDR` | `127.0.0.1:18099` | 模拟邮箱供应商 API 的监听地址 |
+| `SANDBOX_VENDOR_LATENCY_MS` | `1200` | 模拟供应商的响应延迟，模拟真实 API；`0` 表示立即响应 |
 
-## Mock inbox vendors
+## 模拟邮箱供应商 [#mock-inbox-vendors]
 
-The simulator also plays two inbox vendors, so connecting a vendor account, importing its mailboxes and managing its domains work with no vendor account. `make sandbox` starts it and points the backend at it with `MAILVENDOR_SANDBOX_URL=http://127.0.0.1:18099`. To run only the mock next to your own backend, use `go run ./cmd/sandbox -vendors-only` and start the backend with the same variable. The backend ignores it unless `APP_ENV` is `dev`.
+模拟器还扮演两个邮箱供应商，因此无需真实供应商账户，也能连接供应商账户、导入邮箱并管理域名。`make sandbox` 启动它，并通过 `MAILVENDOR_SANDBOX_URL=http://127.0.0.1:18099` 将后端指向它。如果只想在自己的后端旁运行模拟服务，使用 `go run ./cmd/sandbox -vendors-only`，并以相同变量启动后端。除非 `APP_ENV` 为 `dev`，否则后端忽略此变量。
 
-Connect either vendor from **Add account > Inbox vendor** with any API key. The InboxKit mock has two workspaces, so its mailboxes show which one each sits in:
+在**添加账户 > 邮箱供应商**中使用任意 API 密钥即可连接两者。InboxKit 模拟器有两个工作区，因此邮箱会显示各自所属工作区：
 
-| Vendor | Mailboxes | Domains |
+| 供应商 | 邮箱 | 域名 |
 |--------|-----------|---------|
-| InboxKit | eight Google Workspace mailboxes, on `sunrise-outbound.test` in the "Sunrise Outbound" workspace and `trysunrise.test` in "Sunrise Trials". Only a password comes back, as with the real API, and `.test` has no mail servers, so their rows ask for server settings; **Fix** on a row can point it at the sandbox's Mailpit (`localhost:11025`) and Dovecot (`localhost:10993`) | forwarding and DNS writes, so **Sending domains** can set the root forward and the tracking record in one click |
-| Mailforge | four mailboxes on `sunrisehq.test`, hosted on the sandbox's Mailpit and Dovecot, so they import and connect for real | forwarding only |
+| InboxKit | 八个 Google Workspace 邮箱，分别位于“Sunrise Outbound”工作区的 `sunrise-outbound.test` 和“Sunrise Trials”工作区的 `trysunrise.test`。与真实 API 一样，只返回密码；`.test` 没有邮件服务器，因此对应行会要求服务器设置。点击行上的**修复**，可指向沙盒 Mailpit `localhost:11025` 和 Dovecot `localhost:10993` | 支持转发和 DNS 写入，因此**发送域名**可一键设置根域名转发和跟踪记录 |
+| Mailforge | `sunrisehq.test` 上的四个邮箱，托管在沙盒 Mailpit 和 Dovecot，因此能够真正导入并连接 | 仅支持转发 |
 
-The mock keeps its state in memory, so a restart puts every domain back the way it started.
+模拟服务在内存保存状态，因此重启后每个域名恢复初始状态。
 
-## Demo script
+## 演示脚本 [#demo-script]
 
-A tour that shows the platform working end to end:
+以下演示流程展示平台端到端工作：
 
-1. **Dashboard**: the overview lands full. Overall stats, top campaigns, recent activity, account health, and the daily trend chart are all populated from the seeded history before a single live send.
-2. **Campaigns**: all four buckets are filled (active, paused, completed, draft). Open the Sunrise Q3 launch campaign; sent counts tick up as the scheduler paces live sends across the twenty mailboxes, and opens, clicks, and replies accumulate on top of the seeded funnel.
-3. **Unibox**: replies arrive threaded under the original message with full bodies, synced by the worker over IMAP. Out-of-office autoresponders appear but do not count as human replies.
-4. **Deliverability and analytics**: the deliverability view shows bounces, complaints, and unsubscribes with rates; reply intents and the suppression list are populated; mailboxes surface one resolved and one open error.
-5. **Mailboxes**: each sender shows warmup activity climbing its ramp; the warmup pool exchanges verified mail between accounts.
-6. **Mailpit** (`http://localhost:18025`): the raw wire view; every message the platform sends, including warmup tokens and tracking rewrites.
-7. **Advisor**: Accounts, Campaigns, Contacts, and Deliverability each badge the number of urgent findings behind them. Open Accounts to see the three problem senders, then open "Q4 outbound (first draft)" under Campaigns for the copy and list findings. Press **Fix** on one (for example, warmup paused on `erik.lund`) to see the before/after preview, apply it, and undo it from the card.
-8. **Realtime**: open a second browser window and watch counts and inbox rows update live without refreshing. Applying an Advisor fix in one window clears the card in the other.
+1. **控制台**：进入概览即有完整内容。尚未发生任何实时发送时，整体统计、热门营销活动、近期活动、账户健康和每日趋势图就已由历史数据填满。
+2. **营销活动**：活跃、暂停、完成和草稿四类都有内容。打开 Sunrise Q3 launch 活动；调度器在二十个邮箱间按节奏真实发送，发送计数不断增长，打开、点击和回复继续累加到预置漏斗上。
+3. **统一收件箱**：回复通过工作节点的 IMAP 同步到达，带完整正文并归在原邮件下。休假自动回复会显示，但不计为真人回复。
+4. **邮件送达能力与分析**：送达能力视图显示退信、投诉和退订及其比例；回复意图和禁止发送名单已有数据；邮箱显示一个已解决错误和一个未解决错误。
+5. **邮箱**：各发件人显示不断递增的预热活动，预热池在账户之间交换已验证邮件。
+6. **Mailpit**，地址为 `http://localhost:18025`：查看原始传输内容，包含平台发送的每封邮件、预热令牌和跟踪重写。
+7. **顾问**：账户、营销活动、联系人和送达能力各显示其后紧急发现的数量。先打开账户查看三个问题发件人，再到营销活动打开“Q4 outbound (first draft)”，查看文案和名单问题。对某项点击**修复**，例如 `erik.lund` 的预热暂停，查看修改前后预览，应用后也可从卡片撤销。
+8. **实时更新**：打开第二个浏览器窗口，观察计数和收件箱行无需刷新即更新。在一个窗口应用顾问修复，另一个窗口中的卡片也会消失。
 
-## Troubleshooting
+## 故障排查 [#troubleshooting]
 
-**No sends shortly after startup.** Check the backend log for campaign reconciler lines and that the worker is running with the account loaded (`email account added to worker`). The worker learns about mailboxes from the backend's reconciler within a minute of both being up.
+**启动后不久仍没有发送。** 检查后端日志中的营销活动协调器记录，并确认工作节点正在运行且已加载账户，日志为 `email account added to worker`。后端和工作节点都启动后，工作节点会在一分钟内通过后端协调器获知邮箱。
 
-**Sends fail with TLS errors.** The worker must run with `MAIL_TLS_INSECURE=true` (set by `make worker`). Production configurations must never set it.
+**发送因 TLS 错误失败。** 工作节点必须设置 `MAIL_TLS_INSECURE=true`，`make worker` 已设置。生产配置绝不能使用它。
 
-**Replies missing from the unibox.** Confirm the simulator is running and the consumer is up: delivery is simulator to Dovecot to worker IMAP sync to the event bus to consumer.
+**统一收件箱没有回复。** 确认模拟器和消费者都在运行：投递链路为模拟器、Dovecot、工作节点 IMAP 同步、事件总线、消费者。
 
-**Opens/clicks not counting.** The tracking service must be up (`make sandbox` runs it as a container; `make tracking` runs it natively if you have cargo). The consumer processes tracking events into campaign stats.
+**打开和点击不计数。** 跟踪服务必须运行；`make sandbox` 以容器运行它，安装 cargo 后也可通过 `make tracking` 原生运行。消费者将跟踪事件处理到营销活动统计。
 
-**Start over.** `make db-wipe && make sandbox` reseeds from scratch. Dovecot and Mailpit state can be cleared with `docker compose -p warmbly rm -sf dovecot mailpit` followed by `make sandbox`.
+**从头开始。** `make db-wipe && make sandbox` 会重新完整填充。可以先执行 `docker compose -p warmbly rm -sf dovecot mailpit`，再执行 `make sandbox`，清空 Dovecot 和 Mailpit 状态。

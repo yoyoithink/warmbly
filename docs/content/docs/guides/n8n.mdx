@@ -1,37 +1,37 @@
 ---
-title: n8n
-description: Connect Warmbly to n8n workflows, self-hosted or cloud, with the REST API and webhooks in both directions.
+title: "n8n"
+description: "使用 REST API 和双向 Webhook，将 Warmbly 连接到自托管或云端的 n8n 工作流。"
 ---
 
-n8n has no Warmbly node yet, and it does not need one: its HTTP Request and Webhook nodes cover both directions, and every Warmbly endpoint is documented in the [API reference](/api/endpoints/).
+n8n 目前尚无 Warmbly 专用节点，但并不需要专用节点：HTTP Request（HTTP 请求）和 Webhook 节点即可支持双向连接，Warmbly 的所有端点都记录在 [API 参考](/api/endpoints/)中。
 
-## Connecting
+## 建立连接 [#connecting]
 
-Create a scoped [API key](/api/authentication/) in Settings > API keys with only the scopes the workflow needs (contacts and campaigns for lead intake; add inbox for replies). In n8n, add a **Header Auth** credential with the name `Authorization` and the value `Bearer <your key>`, and attach it to every HTTP Request node that calls Warmbly.
+在设置 > API 密钥中创建限定权限范围的 [API 密钥](/api/authentication/)，仅授予工作流需要的权限：接入潜在客户需要联系人和营销活动权限，处理回复时再增加收件箱权限。在 n8n 中添加 **Header Auth**（请求头身份验证） 凭据，名称设为 `Authorization`，值设为 `Bearer <your key>`，并将其绑定到每个调用 Warmbly 的 HTTP Request 节点。
 
-## Warmbly to n8n
+## 从 Warmbly 到 n8n [#warmbly-to-n8n]
 
-To start a workflow from a Warmbly event, add a **Webhook** node, copy its production URL, and either:
+若要通过 Warmbly 事件启动工作流，添加 **Webhook** 节点，复制其生产环境 URL，然后选择以下任一方式：
 
-- register it as a [webhook endpoint](/guides/webhooks/) subscribed to the events you want (signed with HMAC so the workflow can verify the sender), or
-- add an n8n connection on the Integrations page and use it as a **Send a webhook** action inside an [automation](/guides/automations/), which lets you filter and branch before the request leaves Warmbly.
+- 将其注册为 [Webhook 端点](/guides/webhooks/)，订阅所需事件。投递使用 HMAC 签名，工作流可据此验证发送方。
+- 在集成页面添加 n8n 连接，并在[自动化流程](/guides/automations/)中将其用作**发送 Webhook** 操作。这样便可在请求离开 Warmbly 之前先筛选或分支处理。
 
-Both deliver the same JSON body: a delivery id, the event type and the full event data.
+两种方式投递的 JSON 请求体相同，均包含投递 ID、事件类型和完整事件数据。
 
-## n8n to Warmbly
+## 从 n8n 到 Warmbly [#n8n-to-warmbly]
 
-Two routes, depending on where you want the field mapping to live.
+根据希望在哪里完成字段映射，可以选择两条路径。
 
-**Mapping in n8n.** An HTTP Request node calling `POST /v1/contacts` with the contact's fields, its labels (`categories`) and `campaigns`. The write is an upsert by email, so re-running a workflow updates the contact instead of duplicating it.
+**在 n8n 中映射。** 使用 HTTP Request 节点调用 `POST /v1/contacts`，提交联系人字段、标签（`categories`）和 `campaigns`。该操作按邮箱地址执行更新或插入，因此重新运行工作流会更新联系人，而不会创建重复记录。
 
-**Mapping in Warmbly.** Create an automation with the **Inbound webhook** trigger, copy its URL, and POST the raw payload to it from an HTTP Request node. The automation's **Create or update contact** action maps the JSON keys onto contact fields with templates (`{{.email}}`, `{{.answers.company}}`), tags the contact and enrols it in a campaign, and the same flow can notify Slack or open a task. See [Lead intake](/guides/automations/#lead-intake). This route needs no API key: the URL is the credential.
+**在 Warmbly 中映射。** 创建使用 **传入 Webhook** 触发器的自动化流程，复制其 URL，然后通过 HTTP Request 节点向该 URL 发送包含原始载荷的 POST 请求。自动化流程中的 **创建或更新联系人** 操作会使用模板（`{{.email}}`、`{{.answers.company}}`）将 JSON 键映射到联系人字段，为联系人添加标签并加入营销活动；同一流程还可以通知 Slack 或创建任务。参见[潜在客户接入](/guides/automations/#lead-intake)。此路径无需 API 密钥，URL 本身就是凭据。
 
-## Lead forms and other lead sources
+## 潜在客户表单及其他来源 [#lead-forms-and-other-lead-sources]
 
-n8n's *Facebook Lead Ads Trigger* node fires on a new Facebook or Instagram submission. LinkedIn Lead Gen Forms and TikTok Lead Generation have no dedicated node; point their lead notification webhooks at an n8n *Webhook* node instead. Connect either to one of the routes above and the ad's answers become a tagged, campaign-enrolled contact that your mailbox follows up with. The follow-up still runs under each mailbox's daily cap and spacing, so a burst of leads queues rather than going out at once.
+Facebook 或 Instagram 收到新表单提交时，n8n 的 *Facebook Lead Ads Trigger*（Facebook 潜在客户广告触发器） 节点会触发。LinkedIn Lead Gen Forms 和 TikTok Lead Generation 没有专用节点，可将其潜在客户通知 Webhook 指向 n8n 的 *Webhook* 节点。将任一来源接入上面的路径，广告表单中的回答就会转为带有标签、已加入营销活动的联系人，由你的邮箱继续跟进。跟进仍遵守每个邮箱的每日发送上限和间隔，因此突然涌入的潜在客户会排队处理，而不会一次性全部发送。
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- **Sending respects your limits.** Sends and replies made through the API honor each mailbox's daily cap and spacing.
-- **Rate limits** apply per API key; a large backfill should go through the [import endpoints](/api/reference/contacts/#commit-an-import) rather than one request per row.
-- For the lowest latency without hosting a URL, subscribe to the [developer websocket](/api/realtime/) instead of a webhook.
+- **发送遵守既定限制。** 通过 API 发送邮件和回复时，均遵守各邮箱的每日上限和发送间隔。
+- **速率限制**按 API 密钥计算。大规模回填应使用[导入端点](/api/reference/contacts/#commit-an-import)，而不是每行发起一次请求。
+- 若希望尽可能降低延迟，又不想托管接收 URL，可订阅[开发者 WebSocket](/api/realtime/)，代替 Webhook。

@@ -1,442 +1,442 @@
 ---
-title: "Unibox"
-description: "A unified inbox across all connected mailboxes, with labels and threading."
+title: "统一收件箱（Unibox）"
+description: "跨所有已连接邮箱的统一收件箱，支持标签与邮件会话串联。"
 ---
 
-Unibox is one inbox for every connected mailbox. You read, sort and reply from a single screen instead of logging into each account.
+统一收件箱（Unibox）集中展示所有已连接邮箱。你可以在同一页面阅读、整理和回复邮件，无须逐个登录账户。
 
-![The unibox: folders, mailboxes and labels on the left, the conversation list, and the open thread](/guides/unibox.webp)
+![统一收件箱：左侧为文件夹、邮箱和标签，中间为对话列表，右侧为已打开线程](/guides/unibox.webp)
 
-## Reply to a conversation
+## 回复会话 [#reply-to-a-conversation]
 
 <Steps>
 
 <Step>
 
-Open **Inbox** from the main navigation.
+从主导航打开**收件箱**。
 
 </Step>
 
 <Step>
 
-Pick a folder, view or mailbox in the **scope rail** on the left.
+在左侧**范围侧栏**选择文件夹、视图或邮箱。
 
 </Step>
 
 <Step>
 
-Click a conversation in the list to read the whole thread.
+点击列表中的对话，阅读完整线程。
 
 </Step>
 
 <Step>
 
-Reply in the thread. **From** starts on the mailbox that holds the message.
+在线程内回复。**发件人**默认使用保存该邮件的邮箱。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Verified warmup mail stays out of Unibox and does not raise the unread count.
-- Archive and Delete also file the conversation in Gmail, Outlook or your IMAP mailbox, and Delete only moves mail to the mailbox's own trash.
-- Remote images in mail you receive stay hidden until you click **Load images**.
-- Instant sends wait 30 seconds by default, so you can **Cancel** one before it goes.
-- Nothing needs refreshing: new mail and unread counts update on their own.
+- 已验证的预热邮件不会进入统一收件箱，也不会增加未读数量。
+- 归档和删除也会同步整理 Gmail、Outlook 或 IMAP 邮箱中的对话；删除只会将邮件移入邮箱自身的垃圾箱。
+- 收到邮件中的远程图片保持隐藏，直到你点击**加载图片**。
+- 立即发送默认等待 30 秒，因此发出前仍可**取消**。
+- 无须刷新：新邮件和未读计数会自动更新。
 
 <Fold>
 
-## What the inbox shows
+## 收件箱显示的内容 [#what-the-inbox-shows]
 
-Browsing filters, searches and view choices are [remembered in your browser tab](/guides/browsing/) across refreshes and navigation, separately for each user and workspace.
+浏览筛选、搜索和视图选择会[在浏览器标签页中记住](/guides/browsing/)，刷新或导航后仍保留，并按用户和工作区分别保存。
 
-One inbox for every connected mailbox. Read, sort, and reply from a single screen instead of logging into each account. Three columns: a **scope rail** for picking what to look at, a **conversation list**, and a **thread view** where you read and reply.
+所有已连接邮箱共用一个收件箱，可在同一页面阅读、整理和回复，无须逐个登录账户。页面分为三栏：选择查看范围的**范围侧栏**、**对话列表**，以及阅读和回复的**线程视图**。
 
-Verified [warmup mail](/guides/warmup/) stays out of Unibox, including your mailbox's Sent copies and warmup run by [Warmbly Cloud](/guides/warmbly-cloud/). It does not create inbox notifications, raise the unread count or trigger reply classification. The consumer also checks existing messages in batches (once a day and after every restart) and removes confirmed warmup from Unibox, and any reply notification it had raised goes with it. This leaves the messages in your email provider and keeps ordinary conversations intact.
+已验证的[预热邮件](/guides/warmup/)不会进入统一收件箱，包括邮箱的已发送副本及 [Warmbly Cloud](/guides/warmbly-cloud/) 运行的预热邮件。它们不会产生收件箱通知、增加未读计数或触发回复分类。消费者还会每天及每次重启后批量检查已有邮件，从统一收件箱移除确认属于预热的邮件，同时移除此前产生的回复通知。服务商邮箱中的邮件仍保留，普通对话不受影响。
 
 </Fold>
 
 <Fold>
 
-## Layout
+## 布局 [#layout]
 
-The top navigation shows your workspace and **Inbox**, without mailbox, folder or message identifiers. When a scope or conversation is open, click **Inbox** in the breadcrumb to return to the default inbox view. On phones, the header keeps the workspace picker and hides the section breadcrumbs.
+顶部导航显示工作区和**收件箱**，不显示邮箱、文件夹或邮件标识符。打开某个范围或对话后，点击面包屑中的**收件箱**可返回默认收件箱视图。手机上，页眉保留工作区选择器，隐藏分区面包屑。
 
-The columns are yours to size. Every choice here is remembered in the browser you made it in, so the inbox opens the way you left it.
+各栏宽度可自行调整。本节中的选择会保存在当前浏览器，下次打开时恢复你离开时的布局。
 
-| Control | What it does |
+| 控件 | 功能说明 |
 | --- | --- |
-| The divider between the scope rail and the list | Drag it to resize the scope rail. With focus, arrow keys nudge it (hold `Shift` for a bigger step), `Home` and `End` set the minimum and maximum, and `Enter` (or a double-click) restores the default 220 px. The width is remembered in this browser. |
-| The divider between the list and the thread | Drag it to widen the conversation list so long subjects fit, or to give the space back to the thread. It also takes the keyboard once it has focus: arrow keys nudge it (hold `Shift` for a bigger step), `Home` and `End` go to the narrowest and widest the window allows, `Enter` (or a double-click) puts it back to the default. |
-| **Collapse** at the bottom of the left navigation, or `b` | Shrinks Warmbly's own navigation to an icon rail and gives the width to the page. Row labels become tooltips; unread mail keeps its count badge and an open [Advisor](/guides/advisor/) finding shows as a coloured dot on the icon. The same control expands it again. |
-| The section headers in the left navigation (Email, CRM, Resources) | Click one to fold its section away, and again to bring it back. Like the other layout choices, it is remembered in this browser. A folded section still shows the page you are on, and a coloured dot beside its header flags an open [Advisor](/guides/advisor/) finding on one of the pages it hides. The icon rail follows the same choice. |
-| The section headers in the scope rail (Mail, Views, Mailboxes, Labels, Tags) | Click one to fold its section away, and again to bring it back. A folded section still shows the scope you are looking at, and a small blue dot beside its header means a row it folds away has a highlighted count (rows you hid never raise it). The **…** beside a header (or a right-click on it) folds every other section, unfolds them all, or moves the section up or down the rail. The pencil on **Mail** and **Views** puts the rows in edit mode: untick a row to hide it, drag it by its handle (or focus the handle and use the arrow keys) to reorder, and press **Done**, `Escape`, or click anywhere else. **Reset** puts that section back the way it shipped. On a phone, a long press on a header or row opens the same menu. Each row also has its own **…** menu and right-click menu to move it, hide it (with an undo), or mark a folder read, and `Alt` with an arrow key moves the focused row. Only one of these menus is open at a time: opening another, clicking or tapping anywhere else, or `Escape` closes it. A small "2 hidden" beside the pencil tells you rows are off the rail. Hiding a row only takes it off the rail, so its shortcuts and links keep working, and the scope you are in always stays visible. Hidden rows and the order of rows and sections are saved to your account for each workspace, so your phone and every other browser you sign in on show the same rail; which sections are folded is remembered per browser. |
-| **Add to Favorites** in a row's **…** menu, or the star beside a row in the **Mail** and **Views** edit mode | Pins that scope to a **Favorites** section at the top of the scope rail, so the places you check every day sit together whichever section they come from: Inbox and Sent from Mail, a view such as Needs a reply, one mailbox, or a label or tag. The section only appears once something is in it, and each row also stays in its own section with the same live count. Favorites fold, move and reorder like the other sections (drag in edit mode, or `Alt` with an arrow key). **Rename** in a favorite's menu, `F2` on a focused favorite, or the pencil beside it in edit mode gives it a name of its own, such as "Inbox work", while its home row keeps the real one; clear the name to go back. Untick a favorite in edit mode, or choose **Remove from Favorites**, to take it out (with an undo), and **Remove all favorites** in the section's **…** menu empties it. The scope you are in is highlighted once, in Favorites unless you opened it from its own section. Favorites, with their names, are saved to your account for each workspace like the rest of the rail's arrangement, so they follow you to your phone and any other browser, and they are not shared with teammates. A rail you arranged before this was saved to your account is picked up the first time you open the unibox. |
-| The contact button in the thread header | Shows or hides the contact panel on the right. It starts closed when no preference is saved. Opening or closing it sticks across conversations, and existing preferences are preserved. |
+| 范围侧栏与列表之间的分隔线 | 拖动可调整范围侧栏宽度。聚焦后，方向键可微调（按住 `Shift` 增大步长），`Home` 和 `End` 分别设为最小和最大宽度，`Enter` 或双击恢复默认 220 px。宽度保存在当前浏览器。 |
+| 列表与线程之间的分隔线 | 拖动可加宽对话列表，以显示较长主题，也可将空间留给线程。聚焦后同样支持键盘：方向键微调（按住 `Shift` 增大步长），`Home` 和 `End` 调至窗口允许的最窄和最宽，`Enter` 或双击恢复默认。 |
+| 左侧导航底部的**折叠**，或 `b` | 将 Warmbly 主导航收起为图标栏，为页面腾出宽度。行名称改为提示文字；未读邮件仍显示计数徽标，未解决的[优化顾问（Advisor）](/guides/advisor/)问题在图标上显示彩色圆点。相同控件可再次展开导航。 |
+| 左侧导航中的分区标题（邮件、CRM、资源） | 点击可收起分区，再次点击恢复。与其他布局选择一样，此状态保存在当前浏览器。收起后仍显示当前页面；标题旁的彩色圆点表示隐藏页面中有未解决的[优化顾问（Advisor）](/guides/advisor/)问题。图标栏也遵循相同选择。 |
+| 范围侧栏中的分区标题（邮件、视图、邮箱、标签、邮箱标签） | 点击可收起分区，再次点击恢复。收起的分区仍显示当前查看范围；标题旁的小蓝点表示被折叠的某行有高亮计数（主动隐藏的行不会触发）。标题旁的 **…** 或右键菜单可折叠其他全部分区、全部展开，或将分区向上、向下移动。**邮件**和**视图**旁的铅笔可进入行编辑模式：取消勾选以隐藏行，拖动手柄或聚焦手柄后用方向键排序，完成后按**完成**、`Escape`，或点击其他位置。**重置**恢复该分区的初始布局。手机上长按标题或行可打开相同菜单。每行也有自己的 **…** 和右键菜单，可移动、隐藏（支持撤销）或将文件夹标为已读；`Alt` 配合方向键可移动聚焦行。一次只打开一个菜单，打开另一个、点击或轻触其他位置，或按 `Escape` 都会关闭它。铅笔旁的“已隐藏 2 项”等文字提示有行已隐藏。隐藏只影响侧栏显示，快捷键和链接继续可用，当前范围始终保持可见。隐藏项以及行、分区顺序按工作区保存到账户，因此手机和其他已登录浏览器显示相同侧栏；分区折叠状态则按浏览器保存。 |
+| 行的 **…** 菜单中的**添加到收藏**，或**邮件**和**视图**编辑模式下行旁的星标 | 将范围固定到侧栏顶部的**收藏**分区，让每天查看的位置集中显示，无论它们原属哪个分区：邮件中的收件箱和已发送、需要回复等视图、单个邮箱、标签或邮箱标签。收藏有内容后才显示该分区，各行也继续保留在原分区，使用相同实时计数。收藏可像其他分区一样折叠、移动和排序（编辑模式下拖动，或 `Alt` 配合方向键）。通过收藏菜单中的**重命名**、聚焦收藏后按 `F2`，或编辑模式下点击其旁的铅笔，可设置独立名称，例如“工作收件箱”，原位置的行仍保留真实名称；清空名称即可恢复。编辑模式下取消勾选，或选择**从收藏中移除**可移除并支持撤销；分区 **…** 菜单中的**移除全部收藏**可清空收藏。当前范围只高亮一次，默认在收藏中高亮，除非你从原分区打开。收藏及名称与侧栏其他排列一样，按工作区保存到你的账户，随你同步到手机和其他浏览器，不与团队成员共享。在侧栏布局改为账户保存之前设置的布局，会在首次打开统一收件箱时接续使用。 |
+| 线程标题栏中的联系人按钮 | 显示或隐藏右侧联系人面板。没有已保存偏好时默认关闭。打开或关闭状态跨对话保留，已有偏好不变。 |
 
-How wide the list can get depends on the window: the thread always keeps enough room to read a message, and the contact panel counts toward that when it is open, so the widest setting is narrower on a laptop than on a large monitor.
+列表可用的最大宽度取决于窗口：线程始终保留足够阅读邮件的空间，打开联系人面板时也会计入，因此笔记本上的最大宽度小于大屏显示器。
 
-On a screen narrower than 1024px the contact panel is an overlay rather than a column, so it always starts closed there. Below 768px the list and the thread take turns on the full screen instead of sitting side by side.
+屏幕宽度小于 1024px 时，联系人面板改为覆盖层而非独立列，因此始终默认关闭。小于 768px 时，列表和线程轮流占满屏幕，不再并排。
 
-The contact panel shows the person on the other side of the conversation: the first sender who is not one of the workspace's mailboxes. It finds their contact by address first. When that address is not a contact but the conversation answers one of your campaign emails (people often reply from an alias, a second domain or a colleague's account), the panel shows the lead that campaign wrote to, with a **Replied from** line naming the address the reply actually came from. Only when neither matches does it offer **Add as contact**.
+联系人面板显示对话另一方，即第一个不属于工作区邮箱的发件人。它先按地址查找联系人。如果该地址不是联系人，但对话是在回复营销活动邮件（对方常会从别名、第二个域名或同事账户回复），面板会显示该活动原先联系的潜在客户，并通过**实际回复地址**说明实际回复地址。只有两者都未匹配时，才提供**添加为联系人**。
 
 </Fold>
 
 <Fold>
 
-## Keyboard
+## 键盘操作 [#keyboard]
 
-The conversation list takes the keyboard, so a triage pass never needs the mouse. Press `?` anywhere in Warmbly for the full list; these are the ones that act on the inbox.
+对话列表支持键盘操作，整轮邮件分拣无须鼠标。在 Warmbly 任意位置按 `?` 可查看完整快捷键；以下快捷键用于收件箱。
 
-| Key | Does |
+| 按键 | 作用 |
 | --- | --- |
-| `j` / `k` | Move down and up the list. From no selection, `j` takes the first conversation and `k` the last, whichever way the list is sorted. |
-| `g g` / `G` | Jump to the first or last conversation. |
-| `Enter` | Open the top conversation when nothing is selected yet. |
-| `x` | Tick or untick the row you are on, to build a selection. |
-| `e` | Archive the selection, or the row you are on when nothing is ticked. |
-| `Escape` | Clear the ticked rows, then the open conversation. Inside the search box it gives the keyboard back to the list. |
-| `/` | Put the caret in the list's search box. |
-| `c` | Label the open conversation. |
+| `j` / `k` | 在列表中向下或向上移动。尚未选择时，无论列表如何排序，`j` 选中第一条对话，`k` 选中最后一条。 |
+| `g g` / `G` | 跳到第一条或最后一条对话。 |
+| `Enter` | 尚未选择时，打开最上方对话。 |
+| `x` | 勾选或取消勾选当前行，以建立选择集。 |
+| `e` | 归档选中内容；没有勾选项时归档当前行。 |
+| `Escape` | 先清除勾选行，再关闭已打开对话。在搜索框中使用时，将键盘焦点交回列表。 |
+| `/` | 将输入光标移到列表搜索框。 |
+| `c` | 为已打开对话添加标签。 |
 
-The shortcuts modal only lists what the screen you are on can actually do, so these rows appear while the inbox is open and not elsewhere.
+快捷键弹窗只列出当前页面实际可执行的操作，因此这些项目只在收件箱打开时显示。
 
 </Fold>
 
 <Fold>
 
-## Folders
+## 文件夹 [#folders]
 
-The rail is two short groups and then your mailboxes. The first group is where you work: **All mail**, **Inbox**, **Unread**, **Awaiting reply**, **Agent drafts**, **Snoozed**. The second holds the rest of the mail folders, plus **Scheduled** alongside them, so direction is visually clear instead of one combined list:
+侧栏先显示两个简短分组，再显示各邮箱。第一组是日常处理区：**全部邮件**、**收件箱**、**未读**、**等待回复**、**智能体草稿**、**稍后处理**。第二组包含其他邮件文件夹及**计划发送**，便于直观看清收发方向：
 
-| Folder | Group | Shows |
+| 文件夹 | 分组 | 显示内容 |
 | --- | --- | --- |
-| Inbox | First | Inbound mail, plus anything filed in a custom folder at the provider, unless that folder is [excluded from sync](/guides/mailboxes/#folders-you-do-not-want-synced) |
-| Drafts | Second | Messages sitting in a mailbox's drafts folder |
-| Sent | Second | Outbound mail, campaign and manual |
-| Archive | Second | Archived (Gmail's All Mail, the Archive folder elsewhere) |
-| Spam | Second | Junked at the provider |
-| Trash | Second | Deleted |
+| 收件箱 | 第一组 | 收到的邮件，以及服务商自定义文件夹中的邮件，除非该文件夹被[排除同步](/guides/mailboxes/#folders-you-do-not-want-synced) |
+| 草稿 | 第二组 | 邮箱草稿文件夹中的邮件 |
+| 已发送 | 第二组 | 发出的营销活动邮件和手动邮件 |
+| 归档 | 第二组 | 已归档邮件（Gmail 的全部邮件，其他服务商的归档文件夹） |
+| 垃圾邮件 | 第二组 | 服务商标为垃圾邮件的内容 |
+| 垃圾箱 | 第二组 | 已删除 |
 
-**Scheduled** sits between Sent and Archive. It is a view rather than a folder, listing every send queued from the workspace's mailboxes, whichever teammate queued it, and it reads naturally next to Sent.
+**计划发送**位于已发送与归档之间。它是视图而非文件夹，列出工作区所有邮箱排队中的发送，无论由哪位团队成员安排，与已发送放在一起便于理解。
 
-Opening **Inbox** from the main navigation starts in the Inbox folder. Sent messages live in **Sent**; choose **All mail** when you want inbound and outbound messages together. An Inbox conversation still shows its complete history, including your replies, when you open it.
+从主导航打开**收件箱**时，默认进入收件箱文件夹。发出的邮件位于**已发送**；如需同时查看收件和发件，选择**全部邮件**。打开收件箱中的对话后，仍会看到包括你的回复在内的完整历史。
 
-Each message starts in the folder the provider has it in: IMAP special-use folder attributes, Gmail labels, and Outlook well-known folders all map to the same six. Moves at the provider (archiving, deleting, junking a message, clearing it out of spam, moving it back to the inbox) follow on the next sync. In Gmail each of those is a label change, and Warmbly files the message by the labels it ends up with, so a conversation archived in Gmail leaves Inbox here too. Gmail mailboxes are also rechecked against Gmail every few hours, which catches a move the live sync missed. Drafts are also reconciled: a draft the mailbox no longer holds is removed here too, so the fresh copy Gmail saves on every autosave does not leave the previous ones behind. You can also file a conversation yourself, which moves it in the mailbox too; see [filing a conversation](#filing-a-conversation). The active row is highlighted grey, unread counts sit on the right in blue, and hovering a folder reveals a three-dot menu with **Mark all as read** (on a phone it is always shown, to the right of the count).
+每封邮件最初归入服务商所在的文件夹：IMAP 特殊用途文件夹属性、Gmail 标签和 Outlook 已知文件夹都映射到相同六类。服务商侧的移动（归档、删除、标为垃圾邮件、移出垃圾邮件或移回收件箱）会在下次同步跟进。在 Gmail 中，这些操作都是标签变更，Warmbly 根据最终标签归类，因此在 Gmail 归档的对话也会离开此处收件箱。Gmail 邮箱还会每隔数小时重新核对，以捕获实时同步遗漏的移动。草稿同样会协调：邮箱中已不存在的草稿会在此处移除，避免 Gmail 每次自动保存的新副本留下旧草稿。你也可自行整理对话，同步移动邮箱中的邮件，详见[整理对话](#filing-a-conversation)。当前行灰色高亮，右侧蓝色显示未读数；悬停文件夹会显示包含**全部标为已读**的三点菜单，手机上则始终显示在计数右侧。
 
-Spam and Trash stay out of every other view, and so does Archive: filing a conversation is how you take it out of the way, so it leaves Unread, Awaiting reply, every mailbox, label and tag view, and the unread badge. **All mail** and the **Archive** folder are the two places it stays, which is where you go to find it again.
+垃圾邮件和垃圾箱不会出现在其他视图，归档也一样：整理对话会将它移出日常待处理区域，因此不再出现在未读、等待回复、各邮箱、标签和邮箱标签视图中，也不计入未读徽标。它仍保留在**全部邮件**和**归档**文件夹，可在那里重新找到。
 
-<Callout type="info" title="Spam and Trash start from when you connect">
-The initial import that runs when a mailbox is first connected covers Inbox, Sent, Archive, and Drafts. It deliberately skips the existing contents of Spam and Trash, whose history would consume the import budget that belongs to real conversations. Both folders fill normally from the moment the mailbox is connected, so they show what arrives from then on rather than what was already there.
+<Callout type="info" title="垃圾邮件和垃圾箱从连接时开始同步">
+首次连接邮箱时的初始导入覆盖收件箱、已发送、归档和草稿。有意跳过垃圾邮件和垃圾箱的已有内容，避免它们的历史占用本应留给真实对话的导入额度。连接后这两个文件夹会正常接收同步，因此展示连接之后到达的内容，而非之前已有内容。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Scopes
+## 权限范围 [#scopes]
 
-| View | Shows |
+| 视图 | 显示内容 |
 | --- | --- |
-| All mail | Every conversation across every mailbox, archived ones included (except Spam and Trash) |
-| Unread | At least one unread message |
-| Awaiting reply | You wrote last and they have not answered |
-| Agent drafts | Conversations where the [inbox agent](/guides/inbox-agent/) has a reply waiting for review |
-| Snoozed | Snoozed for later |
-| Scheduled | Sends queued from the workspace's mailboxes |
+| 全部邮件 | 所有邮箱的全部对话，包括已归档内容，不含垃圾邮件和垃圾箱 |
+| 未读 | 至少有一封未读邮件的对话 |
+| 等待回复 | 你最后发信，对方尚未回复 |
+| 智能体草稿 | [收件箱智能体](/guides/inbox-agent/)已有回复等待审核的对话 |
+| 稍后处理 | 已设为稍后处理的对话 |
+| 计划发送 | 工作区邮箱排队中的发送 |
 
-Below those sit the premade **Views**, which answer the questions a pipeline turns on. They are built on the labels [automatic inbox tagging](/guides/inbox-tagging/) writes, exist from the moment the workspace is created, and need nothing set up:
+下方是预设**视图**，对应销售管道中常见的处理问题。它们基于[自动收件箱标签](/guides/inbox-tagging/)生成的标签，工作区创建后即存在，无须设置：
 
-| View | Shows |
+| 视图 | 显示内容 |
 | --- | --- |
-| Action required | Automated mail that needs someone to act: a failed payment, a suspended account, a suspicious sign-in, a sending limit, a service about to expire |
-| Hot leads | Replies labelled Interested, Meeting or Pricing |
-| Needs a reply | They wrote last and nobody has answered for two days or more |
-| Follow up | You wrote last and heard nothing, or an interested thread went quiet |
-| Declined | Not interested, wrong person, or asked to unsubscribe |
-| Automated | Mail nobody wrote: sign-in codes, receipts, notifications, newsletters, bounces and auto-replies |
+| 需要处理 | 需要人工处理的自动邮件，如付款失败、账户停用、可疑登录、发送限制或服务即将到期 |
+| 高意向潜在客户 | 标有有兴趣、会议或价格咨询标签的回复 |
+| 需要回复 | 对方最后发信，已两天或更久无人回复 |
+| 待跟进 | 你最后发信且未收到答复，或原先有兴趣的线程不再有回应 |
+| 已拒绝 | 无兴趣、找错人，或请求退订 |
+| 自动邮件 | 非人工撰写的邮件：登录验证码、收据、通知、新闻通讯、退信和自动回复 |
 
-A view is a filter over its labels, so a conversation appears in it as soon as a label lands and leaves it when the label does. Without a classifier key on the instance only the two follow-up views fill, from sent-message dates alone.
+视图按标签筛选，因此对话获得标签后立即进入对应视图，标签移除后随即离开。实例未配置分类器密钥时，只有两个跟进视图会根据已发送邮件日期填充。
 
-**Automated** is different: it is where machine mail lives instead of the inbox. When automatic tagging judges that nobody wrote a conversation, it leaves **Inbox**, Unread, every mailbox and tag view, and the unread badge, and shows only under Automated (and in All mail). A message the classifier was not sure about stays in the inbox. A reply from a person brings the conversation straight back, before it is even classified. Automated mail that needs your action, such as a failed payment for a mailbox's subscription or a suspended account, never goes to Automated: it stays in the inbox labelled **Action required**, and the **Action required** view lists it with its unread count (see [Mail that needs your action](/guides/inbox-tagging/#mail-that-needs-your-action)).
+**自动邮件**有所不同：机器生成邮件会进入此处，而非收件箱。自动标签判断对话不是人工撰写后，它会离开**收件箱**、未读、各邮箱和邮箱标签视图，也不计入未读徽标，只显示在自动邮件和全部邮件中。分类器不确定的邮件仍留在收件箱。人工回复会让对话立即返回，甚至不必等分类完成。需要你处理的自动邮件，如邮箱订阅付款失败或账户停用，绝不会进入自动邮件：它们留在收件箱并标为**需要处理**，同时在**需要处理**视图中显示未读计数，详见[需要你处理的邮件](/guides/inbox-tagging/#mail-that-needs-your-action)。
 
-Below the views, the rail lists each mailbox with its unread count, plus your **Labels** and **Tags**. Long lists collapse to the first few with a `Show all` toggle and an inline filter. For a slice of time (today, the last week), use the date range in the filters rather than a view; the list's title shows which view you are in, with how many conversations are loaded.
+视图下方，侧栏列出各邮箱及未读数，以及**标签**和**邮箱标签**。长列表默认只显示前几项，并提供 `Show all`（显示全部）开关及内联筛选。需要按今天、最近一周等时间范围查看时，请使用筛选器的日期范围，而非视图；列表标题显示当前视图及已加载对话数量。
 
-Counts come from the server in one request, so they always match the rows. The current view and open conversation live in the URL (`/app/unibox/unread`), so refreshing, bookmarking, and sharing all land in the same place.
+计数由服务器在一次请求中返回，因此始终与行内容一致。当前视图和已打开对话保存在 URL 中（`/app/unibox/unread`），刷新、收藏或分享都会到达相同位置。
 
-Search (press `/`) covers the sender and recipients, the subject, and the text of the messages themselves, so a name, an address, or a phrase from the middle of an email all find the conversation. A half-typed word matches as a prefix, so results narrow as you type rather than appearing only once a word is finished. Quoted phrases match exactly, `OR` widens, and a `-word` excludes.
+搜索（按 `/`）覆盖发件人、收件人、主题和邮件正文，因此姓名、地址或正文中间的短语都能找到对话。输入部分单词即可按前缀匹配，结果随输入逐步缩小，无须等完整单词。引号内短语精确匹配，`OR` 扩大匹配范围，`-word` 排除指定词。
 
-Participant substring matching starts once the query contains at least three consecutive letters or numbers. Shorter queries still search subject and message words, including prefixes. Search is case-insensitive, and `%`, `_`, and `\` are literal characters, not participant wildcards. If a search cannot finish, the list shows an error instead of claiming there are no matches.
+查询包含至少三个连续字母或数字后，开始对参与者执行子串匹配。更短查询仍搜索主题和正文单词，包括前缀。搜索不区分大小写，`%`、`_` 和 `\` 均为普通字面字符，不是参与者通配符。如果搜索无法完成，列表会显示错误，而不会声称没有匹配结果。
 
-It searches the scope you are in. When that finds nothing, the empty state offers **Search all mail**, which widens to every folder and keeps what you typed. Changing view yourself clears the box, so a query typed for one scope never silently filters the next.
+搜索限定于当前范围。没有结果时，空状态提供**搜索全部邮件**，扩展到所有文件夹并保留已输入内容。手动切换视图会清空搜索框，避免为一个范围输入的查询悄然筛选下一个范围。
 
-The filter button next to the title opens a small panel that narrows the list on the spot: read state, a date range (today, the last 7 or 30 days, or two dates), sender, labels, mailboxes (or a whole tag of them), and sort order. Anything you add shows as a chip under the search box, and each chip removes itself with one click. A view that already fixes one of these, such as Unread or a single mailbox, does not offer that control again.
+标题旁的筛选按钮打开小面板，可即时按已读状态、日期范围（今天、最近 7 或 30 天，或两个指定日期）、发件人、标签、邮箱或整组邮箱标签，以及排序方式缩小列表。新增条件在搜索框下显示为标签块，点击即可移除。如果视图已固定某项条件，如未读或单个邮箱，就不再重复提供该控件。
 
 </Fold>
 
 <Fold>
 
-## Threading
+## 邮件会话串联 [#threading]
 
-Each row is a conversation, not a message, with a count next to the sender when more than one message is inside. Opening it shows every message in order, with the message count and the owning mailbox under the subject. Replies and new inbound mail land in the same thread. Rows group under `Today`, `Yesterday`, `This week`, and `Earlier` headers.
+每行代表一个对话，而非单封邮件；包含多封邮件时，发件人旁会显示数量。打开后按顺序展示全部邮件，主题下方显示邮件数和所属邮箱。回复及新来信归入同一线程。列表按 `Today`（今天）、`Yesterday`（昨天）、`This week`（本周）和 `Earlier`（更早）分组。
 
-The list loads more conversations as you reach the end of it, and it keeps its place: opening a conversation, or leaving the inbox and coming back, returns you to the row you were on rather than the top of the list.
+滚动至列表末尾时会加载更多对话，并保持位置：打开对话，或离开收件箱后返回，都会回到此前所在行，而非列表顶部。
 
-Picking another folder or view closes the open conversation, since it may not be in the new list. To close it yourself, use the **X** at the right of the conversation header on a wide screen, the back link above it on a phone (it names the list you came from), or `Escape`.
+切换文件夹或视图会关闭已打开对话，因为它可能不属于新列表。手动关闭时，宽屏可点击对话标题右侧 **X**，手机可点击上方返回链接（显示来源列表名称），也可按 `Escape`。
 
-Threading applies on both sides. A reply carries an `In-Reply-To` header naming the last message in the conversation, which is what nests it for the recipient. From a Gmail mailbox that holds the conversation it also carries Gmail's thread id, which nests it in your own mailbox. The recipient's mail client only ever sees the header: a thread id means nothing outside the mailbox that issued it, so a reply sent [from another mailbox](#choosing-the-sending-mailbox) goes without one.
+线程关联在收发两侧都生效。回复携带指向对话最后一封邮件的 `In-Reply-To` 标头，使收件人将其归入同一线程。如果从保存该对话的 Gmail 邮箱发送，还会携带 Gmail 线程 ID，使其在你的邮箱中也归入原线程。收件人邮件客户端只看标头：线程 ID 在生成它的邮箱之外没有意义，因此[从其他邮箱](#choosing-the-sending-mailbox)发出的回复不会携带该 ID。
 
-<Callout type="info" title="Keyboard navigation">
-`j` / `k` move between rows, `Enter` opens, `Esc` closes, `/` focuses search, `c` labels. Press `?` for the full list.
+<Callout type="info" title="键盘导航">
+`j`／`k` 在行之间移动，`Enter` 打开，`Esc` 关闭，`/` 聚焦搜索，`c` 添加标签。按 `?` 查看完整列表。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Reading a message
+## 阅读邮件 [#reading-a-message]
 
-The newest message in a conversation opens expanded, along with anything still unread. Older messages collapse to their preview line; click the header (or the preview) to open one. Bodies load per message, so a long thread does not pull down every message at once.
+打开对话时，最新邮件和所有未读邮件会展开；较旧邮件折叠为预览行，点击标题或预览即可展开。正文按封加载，因此长线程不会一次下载全部邮件。
 
-What you see is the message as it was sent: paragraphs, line breaks, lists, tables, and inline images are all preserved, and special characters and emoji render as themselves rather than as entity codes. The conversation list still shows a one-line preview, which is a summary of the message and not the message itself.
+显示内容保留邮件发出时的样式：段落、换行、列表、表格和内嵌图片均保留，特殊字符和表情也按原样显示，而非实体编码。对话列表仍显示单行预览；预览只是邮件摘要，不是完整邮件。
 
-HTML mail renders in an isolated frame, so a sender's styling cannot leak into the dashboard and nothing in the message can run code. Links open in a new tab and carry no referrer. If the stored copy of a message cannot be read, Warmbly shows the preview it has and says so instead of failing to open the conversation.
+HTML 邮件在隔离框架中显示，发件人样式不会影响控制台，邮件内容也无法执行代码。链接在新标签页打开且不携带来源信息。已存邮件副本无法读取时，Warmbly 会显示已有预览并说明原因，而不会导致整个对话打不开。
 
-The conversation has one reading scrollbar. Message bodies resize as you change the pane width, load images or expand quoted history. Wide newsletters fit the pane instead of clipping the right edge; layouts that cannot wrap scale down to stay complete. The subject and actions stay above the reading area, with Reply and Forward below it. Narrow panes put filing actions behind **More thread actions**, even on a wide screen.
+对话使用一个阅读滚动条。调整窗格宽度、加载图片或展开引用历史时，正文会自动调整。宽版新闻通讯会适应窗格，避免右侧被截断；无法换行的布局会缩小以完整显示。主题和操作保持在阅读区上方，回复和转发位于下方。窗格较窄时，即使整个屏幕很宽，整理操作也会收进**更多线程操作**。
 
-Warmbly removes its open-tracking pixels from the displayed copy, including quoted messages. Reading mail here, whether in Inbox, Sent or another view, does not record a campaign open. The delivered email keeps its tracking pixel for recipient opens.
+Warmbly 会从显示副本（包括引用邮件）中移除自身的打开跟踪像素。无论在收件箱、已发送还是其他视图阅读，都不会记录营销活动打开。实际送达的邮件仍保留像素，用于记录收件人打开。
 
-Remote images in mail you receive are held back until you ask for them. Any sender can put a tracking pixel in a message, and loading it would tell them when you read it, your IP address and your mail client. A message that references remote images, backgrounds or fonts shows a bar with **Load images**; click it to show them for that message. Images embedded in the message itself display straight away, and your own sent messages are not affected.
+收到邮件中的远程图片只有你主动请求后才加载。任何发件人都可放入跟踪像素，加载会告知其阅读时间、IP 地址和邮件客户端。引用远程图片、背景或字体的邮件会显示带有**加载图片**的提示条，点击后为该封邮件显示这些内容。邮件自身嵌入的图片立即显示，你自己发出的邮件不受影响。
 
-Recognized quoted history collapses behind **Show quoted text**. Click it to read the full chain. Messages made entirely of quoted content and ambiguous inline replies stay visible. Outgoing messages from the connected mailbox have a blue left border and an **Outgoing** badge.
+识别出的引用历史会折叠到**显示引用文本**后，点击可阅读完整链条。完全由引用内容组成的邮件，以及无法明确识别的行内回复保持可见。从已连接邮箱发出的邮件有蓝色左边框和**发出**徽标。
 
-### Message details
+### 邮件详情 [#message-details]
 
-Every open message has a details toggle on its recipient line, the `to` under the sender's name, and the sender's name and address open the same panel. It shows the message envelope in place: every From, Reply-To, To, Cc and Bcc address, when it was sent and, if that differs, when the mailbox received it, both in your own time zone, the mailbox and folder it lives in, its size, and the Message-ID and In-Reply-To headers. Click any address or identifier to copy it. The info icon next to Reply and Forward opens the same panel, including on a message that is still collapsed.
+每封展开邮件的收件人行都有详情开关，即发件人姓名下方的 `to`；点击发件人姓名或地址也会打开同一面板。它就地展示邮件信封信息：全部 From、Reply-To、To、Cc 和 Bcc 地址，发送时间及与其不同时的接收时间（均使用你的时区），所属邮箱和文件夹、大小，以及 Message-ID 和 In-Reply-To 标头。点击任意地址或标识符即可复制。回复和转发旁的信息图标也会打开该面板，即使邮件仍处于折叠状态。
 
 </Fold>
 
 <Fold>
 
-## Labels
+## 标签 [#labels]
 
-Labels are one workspace list, used on [contacts](/guides/contacts-crm/#labels), on conversations here and by [forms](/guides/forms/), so `Interested` means the same thing on a contact as it does on a conversation. The list is shared with the rest of the team too: a label anyone creates is available to everyone, and a conversation one member labels shows that label to the next. Label with the tag button in the conversation header or `c`: search existing labels, tick what applies, or type a name and **Create**. A conversation can carry several.
+工作区共用一份标签列表，用于[联系人](/guides/contacts-crm/#labels)、此处对话及[表单](/guides/forms/)，因此 `Interested` 在联系人和对话上含义相同。标签也与团队共享：任何人创建的标签都对所有人可用，一位成员给对话添加的标签也会显示给下一位成员。使用对话标题栏的标签按钮或 `c`：搜索已有标签、勾选适用项，或输入名称后**创建**。一个对话可有多个标签。
 
-Labeled conversations show colored chips on the row and in the header, and each label appears in the rail with its own count for one-click filtering. Labels you apply are never touched by the system. [Automatic inbox tagging](/guides/inbox-tagging/) adds its own labels alongside them, additively, and never removes one a person applied.
+已加标签的对话在列表行和标题栏显示彩色标签块，各标签也会在侧栏显示自己的计数，便于一键筛选。你手动添加的标签绝不会被系统改动。[收件箱自动打标签](/guides/inbox-tagging/)只会在其旁边追加自己的标签，绝不移除人工标签。
 
-<Callout type="info" title="Labels vs mailbox tags">
-Labels mark conversations and contacts. Mailbox tags mark the mailboxes themselves (grouping accounts by client or domain). Both filter from the rail, but they describe different things.
+<Callout type="info" title="会话标签与邮箱标签">
+标签用于标记对话和联系人；邮箱标签标记邮箱本身，可按客户或域名分组账户。两者都能从侧栏筛选，但描述的对象不同。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Read state
+## 已读状态 [#read-state]
 
-A conversation is unread when any message inside is unseen, marked by a blue dot in the margin, bolder text, and a blue timestamp. Opening it marks its messages seen and updates the counts, and so does **Mark as read** on the row or on a selection, without opening anything.
+对话中只要有一封邮件未查看，就视为未读，表现为边缘蓝点、加粗文字和蓝色时间。打开后会将其中邮件标为已读并更新计数；也可在行或选择集上使用**标为已读**，无须打开。
 
-**Mark as unread** marks only the newest message you received in the conversation unread, preferring one outside Spam and Trash. If the conversation has no received message, its newest sent copy turns unread instead. Otherwise your own sent copies stay read. Drafts are never marked unread, and marking individual message ids or sweeping a folder never marks sent or draft copies unread. Marking it unread from the open conversation closes it, because the reader marks whatever it shows as read.
+**标为未读**只将对话中最新收到的邮件标为未读，并优先选择垃圾邮件和垃圾箱之外的邮件。如果没有收到的邮件，则将最新发出副本标为未读；其他情况下，你自己的发出副本保持已读。草稿绝不会标为未读，按单独邮件 ID 或批量处理文件夹也不会将发出副本和草稿标为未读。从已打开对话执行此操作会关闭对话，因为阅读器会将显示内容标为已读。
 
-Read state travels both ways. A message arriving already read is stored that way, and reading a conversation here marks it read in the mailbox itself, so Gmail, Outlook and any IMAP mailbox stop showing it bold too. **Mark as unread** does the same in reverse, and **Mark all as read** on a folder carries the whole sweep across. Only a real change travels: opening a conversation you have already read costs nothing at the provider.
+已读状态双向同步。到达时已读的邮件会按已读存储；在此阅读对话，也会将邮箱本身的邮件标为已读，因此 Gmail、Outlook 和 IMAP 客户端也不再加粗。**标为未读**反向同步，文件夹上的**全部标为已读**会同步整个批量操作。只同步实际变更：再次打开已读对话不会在服务商处产生操作。
 
-The relay runs on the worker that holds the mailbox, just after Warmbly's own copy is updated, so the dashboard never waits on it. If the mailbox is between workers at that moment, or the provider refuses, Warmbly keeps your read state and the mailbox keeps its own; nothing retries, because the next sync reports whatever the provider actually thinks.
+Warmbly 自身副本更新后，由持有该邮箱的工作节点立即转发已读操作，因此控制台不会等待服务商响应。如果邮箱恰好正在节点间迁移，或服务商拒绝，Warmbly 保留你的已读状态，服务商邮箱保留自己的状态，不会重试，因为下一次同步会报告服务商实际状态。
 
 </Fold>
 
 <Fold>
 
-## Filing a conversation
+## 整理会话 [#filing-a-conversation]
 
-The thread header carries three filing actions, on the row above the message on a wide screen and behind the three-dot menu on a narrow one:
+线程标题栏提供三项整理操作：宽屏显示在邮件上方一行，窄屏收进三点菜单：
 
-| Action | Does |
+| 操作 | 作用 |
 | --- | --- |
-| Mark as unread | Marks the newest received message unread, or the newest sent copy if none was received, and closes it |
-| Archive | Moves the conversation to Archive, so it leaves Inbox |
-| Delete | Moves the conversation to Trash, so it leaves every view except Trash |
+| 标为未读 | 将最新收到的邮件标为未读；没有收到邮件时使用最新发出副本，并关闭对话 |
+| 归档 | 将对话移入归档，使其离开收件箱 |
+| 删除 | 将对话移入垃圾箱，使其离开垃圾箱以外的全部视图 |
 
-Archive and Delete both offer **Undo** on the confirmation toast. Open the Trash or Archive folder and the same header offers **Move to inbox**, so nothing filed by accident is stuck.
+归档和删除的确认提示均提供**撤销**。打开垃圾箱或归档后，相同标题栏提供**移回收件箱**，因此误整理的对话都可恢复。
 
-### From the list, without opening anything
+### 直接从列表操作，无需打开邮件 [#from-the-list-without-opening-anything]
 
-You do not have to open a conversation to deal with it. Hover a row (or just look at it on a phone, where they are always shown) and the right of the first line carries **Archive** and a three-dot menu with **Open in new tab**, **Mark as read / unread**, **Snooze**, **Labels**, **Archive** or **Move to inbox**, and **Delete**. Right-clicking a row (or pressing the menu key, or `Shift` + `F10`, on a focused row) opens the same menu where you clicked. On a phone, press and hold a row for about half a second to open that menu at your finger without opening the conversation. In Archive and Trash the same controls offer the way back rather than the way out.
+无须打开对话即可处理。悬停行时，首行右侧显示**归档**及三点菜单；手机上这些控件始终可见。菜单包含**在新标签页打开**、**标为已读／未读**、**稍后处理**、**标签**、**归档**或**移回收件箱**，以及**删除**。右键点击行，或在聚焦行上按菜单键、`Shift` + `F10`，会在点击处打开同一菜单。手机上长按约半秒，会在手指位置打开菜单，不打开对话。在归档和垃圾箱中，这些控件改为提供恢复路径。
 
-Using one of these on the conversation you have open closes it, as the conversation's own buttons do. That includes **Mark as unread**, since an open conversation counts as read.
+对当前打开的对话执行这些操作，会像对话自身按钮一样关闭它，包括**标为未读**，因为打开的对话会被视为已读。
 
-Archiving from a row files the whole conversation, not the message the row is showing, so it really does leave the view you filed it from.
+从列表行归档会整理整个对话，而非该行预览的单封邮件，因此对话确实会离开原视图。
 
-### Working on several at once
+### 批量处理 [#working-on-several-at-once]
 
-Each row has a tick box in its left gutter, in place of the unread dot. Hover a row to see it, or press **Select** in the list header, which shows every box at once and adds an **All** box that takes everything currently loaded. The **×** next to **All** leaves select mode and drops anything ticked, which is the way out on a phone; `Escape` does the same on a keyboard. `x` ticks the row you are on from the keyboard, and holding `Shift` while ticking takes the whole run between that row and the last one you ticked.
+每行左侧边缘都有复选框，替代未读圆点。悬停行可看到，或点击列表标题中的**选择**一次显示全部复选框，并增加可选中当前已加载所有内容的**全部**框。**全部**旁的 **×** 退出选择模式并取消勾选，适合手机操作；键盘按 `Escape` 同样有效。`x` 勾选当前行，按住 `Shift` 再勾选，会选中当前行与上次勾选行之间的整段。
 
-With anything ticked, a bar appears along the bottom of the screen with the count and the actions that apply to all of them: **Mark read**, **Mark unread**, **Snooze**, **Archive** (or **Move to inbox**) and **Delete**. Each one is a single request, so filing a screenful is as quick as filing one. **Clear** drops the selection, and so does `Escape`; changing view drops it too, since the rows it applied to are no longer the rows on screen.
+勾选任意内容后，屏幕底部出现操作栏，显示数量及作用于全部选中项的操作：**标为已读**、**标为未读**、**稍后处理**、**归档**或**移回收件箱**，以及**删除**。每项只发起一次请求，因此整理一整屏与整理一条同样快速。**清除**或 `Escape` 可取消选择；切换视图也会取消，因为原选择对应的行已不再是当前屏幕内容。
 
-Right-clicking one of the ticked rows (or long-pressing it on a phone) opens a menu for the whole selection, with the same actions as the bar, and it drops the selection once the action is done. Right-clicking a row you have not ticked acts on that row alone and leaves the selection as it was.
+右键点击已勾选行，或在手机长按，会打开针对整个选择集的菜单，操作与底栏相同，完成后取消选择。右键点击未勾选行则只作用于该行，已有选择不变。
 
-### Filing in the mailbox too
+### 同步整理原邮箱中的邮件 [#filing-in-the-mailbox-too]
 
-Like read state, filing travels to the mailbox itself, so a conversation you clean up here is cleaned up in Gmail, Outlook or your IMAP client as well:
+与已读状态一样，整理操作也会同步到邮箱本身，因此此处整理的对话在 Gmail、Outlook 或 IMAP 客户端中也会同步整理：
 
-| Here | Gmail | Outlook | IMAP |
+| 此处操作 | Gmail | Outlook | IMAP |
 | --- | --- | --- | --- |
-| Archive | Takes off the Inbox label | Moves to Archive | Moves to the Archive folder |
-| Delete | Moves to Trash | Moves to Deleted Items | Moves to the Trash folder |
-| Move to inbox | Puts the Inbox label back | Moves to Inbox | Moves to INBOX |
+| 归档 | 移除 Inbox 标签 | 移入归档 | 移入 Archive 文件夹 |
+| 删除 | 移入垃圾箱 | 移入已删除邮件 | 移入 Trash 文件夹 |
+| 移回收件箱 | 重新添加 Inbox 标签 | 移入收件箱 | 移入 INBOX |
 
-Delete never removes mail for good: it lands in the mailbox's own trash, where Undo, **Move to inbox** or the mail client can bring it back until the provider empties it. An IMAP server with no Archive folder gets one, named Archive, as Apple Mail and Outlook do; a server with no Trash folder keeps its copy where it is. Your own sent copies stay in Sent on Outlook and IMAP, as their own clients leave them when you archive a conversation; Gmail files a conversation as a whole, so there they follow it into the trash or back to the inbox. Drafts are never moved, and neither is warmup mail.
+删除绝不会永久移除邮件，而是移入邮箱自身的垃圾箱。在服务商清空前，可通过撤销、**移回收件箱**或邮件客户端恢复。IMAP 服务器没有 Archive 文件夹时，会像 Apple Mail 和 Outlook 一样创建名为 Archive 的文件夹；没有 Trash 文件夹时，服务器副本保持原位。Outlook 和 IMAP 中，你自己的发出副本留在已发送，与其原生客户端归档对话时的行为一致；Gmail 按整个对话整理，因此发出副本会一起进入垃圾箱或返回收件箱。草稿和预热邮件都不会移动。
 
-The move runs on the worker that holds the mailbox, just after Warmbly's own copy is filed, so the list never waits on it. The worker then reports where the provider has each message, which is how the next sync knows the move was yours and not the provider's. If the mailbox is between workers at that moment, or the provider refuses, the conversation stays filed here and keeps its place at the provider; nothing retries.
+Warmbly 自身副本整理完成后，由持有邮箱的工作节点执行移动，因此列表不等待服务商。随后节点报告服务商中各封邮件的位置，使下次同步知道移动来自你的操作，而非服务商。如果邮箱恰好正在节点间迁移，或服务商拒绝，对话在此保持已整理状态，在服务商处保持原位，不会重试。
 
-To keep filing inside Warmbly for one mailbox, turn off **Mirror Archive and Delete** on its Settings tab (see [mailboxes](/guides/mailboxes/#filing-in-the-mailbox)). Filing then only moves the conversation here, and the next sync will not undo it: Warmbly records where the provider has each message separately from where you filed it, and follows the provider only when the provider itself moves the message. So archiving or junking a message in Gmail still reaches Warmbly either way, and an ordinary sync pass does not.
-
-</Fold>
-
-<Fold>
-
-## Replying
-
-Reply, forward, or hover any single message to reply to it specifically. The composer appears when you ask for it or return to a conversation with a saved reply or forward. You can apply a saved **template** or **Insert booking link**. A template with an HTML body keeps its formatting; see [templates and HTML](#templates-and-html).
-
-### Choosing the sending mailbox
-
-**From** starts on the mailbox that holds the message, so a reply you do not touch goes out exactly as before. The exception is a [shared reply inbox](/guides/mailboxes/#a-shared-reply-inbox): when the message answers an email from another mailbox whose reply-to names this one, From starts on that sending mailbox, so the contact keeps hearing from the address they wrote to, and a note under From says so with a button to reply from the inbox itself. The message also shows which mailbox's email it answers, next to the sender's name. Click it to send from any other active mailbox in the workspace: the same searchable picker as [Compose](#composing), with each mailbox's budget for today, auth health and history with the recipient. There is no Auto here; a reply always names its mailbox. The signature preview follows the mailbox you pick. When the mailbox holding the message is no longer active, the composer says so and **Send** stays off until you pick one that is.
-
-A reply from a different mailbox keeps the conversation's subject and its In-Reply-To and References headers, so the recipient sees it in the same conversation. A provider thread belongs to the mailbox that holds it, so unless the mailbox you pick already has a message in this conversation, the first such reply starts a conversation of its own there (later replies from it continue that one), and the recipient's answer arrives in that mailbox, or in the address its reply-to names. A note under **From** says so, with **Switch back** to return to the original mailbox. A forward has no thread to keep, so it simply leaves from the mailbox you pick.
-
-### Forwarding
-
-**Forward** sends the message you picked to someone new. The subject gets `Fwd:` and the To line starts empty. What you type is an optional note; you can send a forward without one. The recipient gets your note, then the sending mailbox's signature (when signature sync is on), then a `Forwarded message` block with the original From, Date, Subject, To and Cc lines and the original message underneath, formatting included. The Date line uses the sending mailbox's time zone.
-
-The [suppression list](/guides/unsubscribe/#the-suppression-list) does not apply to a forward, so you can forward to an address or domain it keeps out of campaigns. The composer shows the message it will forward under your note; expand **Forwarded message** to read it before you send. Attachments on the original are not forwarded. If only a preview of the original is stored (the thread shows "Only a preview of this message is stored"), the composer says so, and the forward carries that preview. Forwarding one of your own tracked sends puts its links back to their real destinations, so the new recipient's clicks do not count against the original send.
-
-Once sent, the forward shows in the conversation you forwarded from, as the next outgoing message with its forwarded block, whichever mailbox sent it. While it waits to go out (the undo window, or a scheduled time) it is listed with the conversation's scheduled sends. It appears once the sending mailbox's Sent folder syncs, and that sync files the copy into this conversation rather than adding a second one. Only Warmbly files it there: the recipient gets an ordinary forward that starts a conversation of its own, with no In-Reply-To or References pointing at the original, and a later reply in the conversation still answers its last message from the other side, never the forward.
-
-### Pausing their follow-ups
-
-The contact panel lists every campaign the sender is a lead of, with their status in it and what happens next: the next step and when, the hold and when it lifts, or why the flow ended. A campaign with a step still to send has **Pause**, which opens the same dialog as the campaign's Leads list (until a date, or until you resume them, with an optional note). A held lead has **Resume** instead; for a contact held because they are [copied on another lead's emails](/guides/campaigns/#copying-colleagues-on-one-lead) it asks first, since it starts a second thread to them. Neither appears on a lead whose flow has ended, and both need the **Manage campaigns** permission. See [Out of office and pausing one lead](/guides/campaigns/#out-of-office-and-pausing-one-lead).
-
-The reply composer offers the same thing for the moment you answer. When the recipient still has a follow-up queued, **Pause follow-ups** next to **Schedule** holds them for 3 days, 1 week, 2 weeks, 30 days or until you resume them. When they are a lead of more than one such campaign, the menu lists each one, all ticked, and you untick the ones to leave running (at least one stays ticked). Nothing is paused until the reply is accepted, and a send that fails pauses nothing. A scheduled reply pauses the follow-ups straight away and counts the length from when the reply goes out, so a follow-up cannot overtake it. Undoing or cancelling the reply does not lift the pause, so use **Resume** in the contact panel if you change your mind. A lead already on hold, for example after an away message arrived while you were writing, keeps that hold.
-
-### Reply drafts
-
-Replies and forwards save after a short typing pause, and save the latest edits when you close the composer, leave the conversation, or reload. Returning to the thread reopens a saved draft, including one addressed to an older message, with the mailbox you picked and its HTML body, if it has one. **Discard** removes it; successfully queuing a send removes it too. Undoing a send restores the message for editing, from the same mailbox.
-
-These reply drafts are personal to your signed-in user and workspace in this browser. They do not sync to other devices, appear in the mailbox's **Drafts** folder, or travel in a [workspace export](/guides/workspace-export-import/). Clearing browser data removes them. **Draft saved** confirms browser storage succeeded; **Draft not saved** means you should copy your text before leaving.
-
-### AI drafts
-
-AI lives at your cursor, not in the toolbar. With the cursor in the body, click the sparkle (or press **⌘J**) for three options: write something inline, **Draft a reply from this thread**, or **Continue writing**.
-
-A thread draft is grounded in the whole conversation, the contact's record and campaign membership, and your workspace **voice profile**. Grounding reads the messages themselves, not their preview lines, with quoted history stripped and the most recent messages given the most room, so the draft answers what was actually asked rather than the opening sentence. While it writes, a review bar offers **Keep**, **Retry**, **Adjust** (steer with an instruction like "shorter"), or **Discard**. Nothing sends until you press Send. Each draft costs [AI credits](/guides/ai-credits/).
-
-Select any text for a floating **Edit with AI** pill: quick actions (improve, shorten, expand, fix grammar, friendlier, more formal) or a free instruction, rewriting just the selection with **Undo** and **Again** one click away. One credit per rewrite. The same control works in the campaign step editor.
-
-An edit applies your instruction and leaves everything else alone: it does not rewrite the passage into a fresh email, and "fix the grammar" changes the grammar and nothing more. Personalization tokens, conditions, spintax, AI blocks, form links and links (their destinations included) are carried through unchanged, so rewriting copy never drops a `{{.FirstName}}` or an opt-out link. Bold, italic and headings inside the rewritten selection are not preserved, so select around them when the styling matters. When the model decides the passage already satisfies the instruction, the review row says **No change** rather than claiming a rewrite you cannot see.
-
-Set your voice profile under **Settings, Workspace**: what you sell, who to, and how you want to sound. It grounds every AI writing surface.
-
-For drafts written automatically on every inbound reply and held for approval, turn on the [inbox agent](/guides/inbox-agent/). It never sends on its own.
+如果某个邮箱只想在 Warmbly 内整理，可在其设置选项卡关闭**同步归档和删除**，详见[邮箱](/guides/mailboxes/#filing-in-the-mailbox)。之后整理只移动此处对话，下次同步不会撤销：Warmbly 分别记录服务商位置和你整理的位置，只有服务商实际移动邮件时才跟进。因此，无论开关状态如何，在 Gmail 归档或标为垃圾邮件都会同步到 Warmbly，而普通同步轮次不会覆盖本地整理。
 
 </Fold>
 
 <Fold>
 
-## Composing
+## 回复 [#replying]
 
-**Compose** at the top of the conversation list, the `n` key anywhere, or the **Email** action on a contact opens a docked window so you can keep browsing while writing.
+可回复、转发，或悬停某一封邮件专门回复它。主动操作，或返回具有已保存回复、转发草稿的对话时，编辑器会出现。可应用已保存的**模板**或**插入预约链接**。带 HTML 正文的模板会保留格式，详见[模板与 HTML](#templates-and-html)。
 
-The window title bar carries **Full screen**, which lifts the same composer to the centre of the screen over a dimmed backdrop for writing something longer. Click the button again, click the backdrop, or press **Escape** to drop it back to the corner with the draft intact. A second **Escape** closes the window, saving to Drafts as usual. **Minimize** always docks to the bottom right.
+### 选择发件邮箱 [#choosing-the-sending-mailbox]
 
-**To** searches contacts as you type and accepts raw addresses. Suppressed recipients (bounced, complained, unsubscribed, or on a domain you listed) are flagged before you write a word, and the send is blocked.
+**发件人**默认是保存邮件的邮箱，因此不修改时，回复的发送方式与此前相同。[共享回复收件箱](/guides/mailboxes/#a-shared-reply-inbox)是例外：如果该邮件回复的是另一邮箱发出、且 Reply-To 指向当前邮箱的邮件，发件人默认改为原发信邮箱，使联系人继续收到自己联系的地址发来的邮件。发件人下方会说明原因，并提供从收件箱自身回复的按钮。邮件也会在发件人姓名旁显示所回复邮件来自哪个邮箱。点击发件人可选择工作区中任意其他活跃邮箱，使用与[写邮件](#composing)相同的可搜索选择器，显示各邮箱当日额度、身份验证健康状态及与收件人的历史。这里没有自动选择，回复始终明确指定邮箱。签名预览随所选邮箱变化。保存邮件的邮箱不再活跃时，编辑器会提示，在选择活跃邮箱前禁用**发送**。
 
-**Seeds**, beside Cc and Bcc, adds your workspace's own [seed inboxes](/guides/placement-tests/#your-own-seed-inboxes) to To, for a quick look by hand at where a message lands. Tick seeds one by one, a whole provider at once, or all of them; the picker remembers your last choice in this browser. It appears once the workspace has a seed inbox and you have the **View campaigns** permission. This sends one message addressed to every seed you add, so each seed sees the others. For a separate copy per seed and a verdict read back automatically, run a [placement test](/guides/placement-tests/#choosing-which-of-your-seeds-get-a-copy) on the seeds you choose.
+从其他邮箱回复会保留对话主题及 In-Reply-To、References 标头，因此收件人仍在同一对话中看到它。服务商线程属于保存它的邮箱，所以除非所选邮箱已有本对话中的邮件，否则首次跨邮箱回复会在那里创建独立线程，后续从该邮箱回复会继续该线程；收件人的答复会到达该邮箱或其 Reply-To 地址。**发件人**下方会说明，并提供**切回原邮箱**恢复原邮箱。转发没有需要延续的线程，直接从所选邮箱发出。
 
-### Auto mailbox selection
+### 转发 [#forwarding]
 
-**From** defaults to **Auto**, scoring every active mailbox in the current workspace for the recipient: an existing conversation with them wins first (contacts should keep hearing from one address), then the most remaining daily budget, with domain auth health as the tiebreaker.
+**转发**将所选邮件发送给新的人。主题添加 `Fwd:`，收件人初始为空。你输入的是可选附言，也可不写直接转发。收件人依次看到附言、发信邮箱签名（启用签名同步时），以及 `Forwarded message` 区块，其中包含原始 From、Date、Subject、To、Cc 行及原邮件正文，保留格式。Date 行使用发信邮箱时区。
 
-The picker shows the pick and its reason before sending. Opening it reveals every mailbox with a budget bar (sent today against its limit), a history badge, and an auth-health dot, so overriding is informed. The menu filters by mailbox tag; with a tag selected, Auto picks within that group only, which is the `from_tag_id` field on `POST /unibox/compose`.
+[禁止发送名单](/guides/unsubscribe/#the-suppression-list)不适用于转发，因此可转发到营销活动禁止发送的地址或域名。编辑器在附言下显示待转发邮件；发送前可展开**转发的邮件**检查。原邮件附件不会转发。如果只保存了原邮件预览（线程提示“仅保存了此邮件的预览”），编辑器会说明，转发也只包含预览。转发你自己发出的跟踪邮件时，链接恢复真实目标，使新收件人的点击不计入原始发送。
 
-### Templates and HTML
+转发后，无论哪个邮箱发送，它都会作为下一封发出邮件，连同转发区块显示在原对话中。等待发出期间（撤销窗口或计划时间），它列在对话的计划发送中。发信邮箱的已发送文件夹同步后才会显示，该同步将副本归入原对话，不另建第二条。只有 Warmbly 这样归类：收件人收到普通转发，创建独立对话，不带指向原对话的 In-Reply-To 或 References；之后在原对话回复，仍回答对方最后一封邮件，绝不会回复该转发。
 
-**Template** in either composer inserts a saved template from **Templates**. Into an empty body it becomes the body; otherwise it goes under what you have written, and its subject fills the subject line only when that is still empty (in a reply, only when it is a bare `Re:` or `Fwd:`). The picker marks templates that have an HTML body.
+### 暂停对方的跟进邮件 [#pausing-their-follow-ups]
 
-A template with an HTML body (**Also send an HTML body** on the template) switches the composer to HTML, and the recipient gets that HTML exactly as written, links behind words and all. The template's plain-text body goes out beside it as the plain-text part, so write both when you want both. A template with only an HTML body gets a plain-text part generated from the HTML, with each link's address after its text.
+联系人面板列出发件人作为潜在客户参与的全部营销活动，显示状态和下一步：下个步骤及时间、暂停及解除时间，或流程结束原因。仍有待发送步骤的活动提供**暂停**，打开与活动潜在客户列表相同的对话框，可暂停到指定日期或手动恢复，并附加备注。已暂停者显示**恢复**；如果联系人因[被抄送到另一位潜在客户的邮件](/guides/campaigns/#copying-colleagues-on-one-lead)而暂停，会先询问确认，因为恢复将向其启动第二条线程。流程已结束的潜在客户不显示这两个操作，二者都需要**管理营销活动**权限。参见[外出自动回复与暂停单个潜在客户](/guides/campaigns/#out-of-office-and-pausing-one-lead)。
 
-In HTML mode the body becomes the same editor as a mailbox signature: **HTML** edits the formatted text (or the source, with the code button), **Preview** shows it as a mail client renders it, and **Plain** holds the plain-text part. With **Sync HTML & plain** on, the plain-text part follows the HTML: **Plain** previews it, and the one that goes out is rendered from the HTML when the email is sent. Sync starts off when the template brought its own plain text. The mailbox signature is still added on send. **HTML** in the action bar switches a plain email to HTML, or back to plain text after asking first, which keeps the plain-text part as the body. AI writing works on plain text only, so it is unavailable in HTML mode, and an AI draft has to be kept or discarded before switching to HTML or adding an HTML template.
+回复编辑器也可在你答复时执行相同操作。收件人仍有后续跟进排队时，**定时发送**旁的**暂停跟进**可暂停 3 天、1 周、2 周、30 天，或直到手动恢复。如果联系人参与多个此类活动，菜单会逐一列出并默认全选，可取消希望继续运行的活动，至少保留一个。只有回复被接受后才会暂停，发送失败不会暂停任何内容。定时回复会立即暂停跟进，并从实际发送时刻计算暂停时长，防止跟进先于回复发出。撤销或取消回复不会解除暂停；改变主意时，请在联系人面板使用**恢复**。如果潜在客户已因其他原因暂停，例如你写作期间收到外出自动回复，则保留原暂停。
 
-### Drafts and history
+### 回复草稿 [#reply-drafts]
 
-Typing autosaves to **Drafts** after a pause, including an HTML body. Closing keeps the draft; sending or emptying removes it. Drafts sit at the top of the inbox's left rail, resume on any device, and are personal rather than shared.
+回复和转发会在短暂停止输入后保存；关闭编辑器、离开对话或重新加载时，也会保存最新修改。返回线程会重新打开已保存草稿，包括针对较旧邮件的草稿，并保留所选邮箱和 HTML 正文（如有）。**舍弃**会删除草稿；成功排队发送也会删除。撤销发送会恢复邮件以供编辑，仍使用原邮箱。
 
-With a recipient set, **History** slides out every conversation you have had with them: tabs split the full thread from just your sent mail, search narrows by subject, rows open the real thread, and the panel notes which mailbox you usually use.
+这些回复草稿仅属于当前浏览器中已登录的用户和工作区，不会同步到其他设备，不会出现在邮箱的**草稿**文件夹，也不随[工作区导出](/guides/workspace-export-import/)迁移。清除浏览器数据会删除它们。**草稿已保存**表示浏览器存储成功；**草稿未保存**表示离开前应先复制文本。
 
-**⌘J**, **Edit with AI**, and a **Suggest** action for an empty subject all work here too. AI drafts are grounded in the contact record, your full correspondence with that address, and your voice profile, and the review card shows what it used. When it genuinely cannot tell what the email is for, it asks one short question instead of inventing a pitch.
+### AI 草稿 [#ai-drafts]
 
-### Sending controls
+AI 功能位于光标处。正文聚焦时，点击星光图标或按 **⌘J**，可选择三种操作：在当前位置写作、**根据此线程起草回复**或**继续写作**。
 
-| Control | Behavior |
+线程草稿以完整对话、联系人记录、营销活动参与情况，以及工作区的**语气风格档案**为依据。读取的是邮件正文而非预览，去除引用历史，并给最近邮件分配最多上下文空间，使草稿回答实际问题，而不只回应开头一句。生成时，审核栏提供**保留**、**重试**、**调整**（例如输入“短一些”进行调整）或**舍弃**。只有按下发送才会发出。每次生成草稿消耗[AI 积分](/guides/ai-credits/)。
+
+选中文本后会出现悬浮的**用 AI 编辑**按钮，可选快速操作（改进、缩短、扩写、修正语法、更友好、更正式）或输入自由指令。只改写选中内容，并提供一键**撤销**和**再试一次**。每次改写消耗一积分。营销活动步骤编辑器也支持相同控件。
+
+编辑会遵循指令，其余内容保持不变：不会把段落重写成一封全新邮件，“修正语法”也只修改语法。个性化标记、条件、spintax、AI 区块、表单链接和普通链接（包括目标）均原样保留，因此改写不会丢失 `{{.FirstName}}` 或退订链接。选中区域内的粗体、斜体和标题样式不会保留，需要样式时请避开这些区域选取。模型判断段落已符合要求时，审核行显示**无更改**，不会声称进行了不可见的改写。
+
+在 **设置 > 工作区** 设置语气风格档案：销售什么、面向谁，以及希望采用什么语气。所有 AI 写作功能都会参考它。
+
+如需自动为每次来信回复起草，并等待批准，请启用[收件箱智能体](/guides/inbox-agent/)。它绝不会自行发送。
+
+</Fold>
+
+<Fold>
+
+## 撰写邮件 [#composing]
+
+点击对话列表顶部的**写邮件**、在任意位置按 `n`，或使用联系人上的**发送邮件**操作，都会打开停靠写信窗口，让你边写边浏览。
+
+窗口标题栏提供**全屏**，将同一个编辑器移到屏幕中央，配以暗色背景，便于长篇写作。再次点击按钮、点击背景或按 **Escape**，会将窗口放回角落，草稿保持不变。再次按 **Escape** 会关闭窗口，并照常保存到草稿。**最小化**始终停靠到右下角。
+
+**收件人**会随输入搜索联系人，也接受直接输入地址。属于禁止发送名单的收件人（退信、投诉、退订或列入禁止域名）会在开始写作前被标出，并阻止发送。
+
+Cc 和 Bcc 旁的**种子邮箱**可将工作区自有[种子邮箱](/guides/placement-tests/#your-own-seed-inboxes)加入收件人，便于手动快速查看邮件落入何处。可逐个勾选、一次选择某个服务商，或全选；选择器会在当前浏览器记住上次选择。工作区至少有一个种子邮箱且你拥有**查看营销活动**权限时才显示。此功能发送一封邮件给所有选中种子，因此各种子都能看到其他收件人。如需每个种子收到独立副本并自动读取结果，请对选定种子运行[投递位置测试](/guides/placement-tests/#choosing-which-of-your-seeds-get-a-copy)。
+
+### 自动选择邮箱 [#auto-mailbox-selection]
+
+**发件人**默认为**自动**，针对收件人为当前工作区每个活跃邮箱评分：优先选择与其已有对话的邮箱，让联系人持续收到同一地址的邮件；其次选择每日剩余额度最多的邮箱，相同时用域名身份验证健康状态决定。
+
+发送前，选择器会显示选中的邮箱及原因。展开后可查看各邮箱的额度条（今日已发送与上限）、历史徽标和身份验证健康圆点，便于判断是否覆盖选择。菜单可按邮箱标签筛选；选择标签后，自动模式仅在该组内选择，对应 `POST /unibox/compose` 的 `from_tag_id` 字段。
+
+### 模板与 HTML [#templates-and-html]
+
+两个编辑器中的**模板**都可从**模板**插入已保存模板。正文为空时直接成为正文，否则附在已写内容下方；模板主题仅在主题栏为空时填入，回复中则仅在主题只有 `Re:` 或 `Fwd:` 时填入。选择器会标出带 HTML 正文的模板。
+
+带 HTML 正文的模板（模板上的**同时发送 HTML 正文**）会将编辑器切换到 HTML，收件人收到原样 HTML，包括文字背后的链接。模板纯文本正文会同时作为纯文本部分发送，因此需要两种版本时应都填写。仅有 HTML 正文的模板会自动生成纯文本部分，并在各链接文字后附上地址。
+
+HTML 模式下，正文使用与邮箱签名相同的编辑器：**HTML**编辑格式化内容，也可通过代码按钮编辑源码；**预览**展示邮件客户端呈现效果；**纯文本**保存纯文本部分。开启**同步 HTML 和纯文本**后，纯文本跟随 HTML，**纯文本**用于预览，实际发送版本在发信时由 HTML 生成。模板自带纯文本时，同步默认关闭。发送时仍会添加邮箱签名。操作栏中的 **HTML** 可将纯文本邮件切换为 HTML，也可在确认后切回纯文本，并将纯文本部分保留为正文。AI 写作仅支持纯文本，因此 HTML 模式不可用；切换为 HTML 或插入 HTML 模板前，必须先保留或舍弃 AI 草稿。
+
+### 草稿与历史记录 [#drafts-and-history]
+
+停止输入片刻后会自动保存到**草稿**，包括 HTML 正文。关闭窗口保留草稿，发送或清空内容则移除。草稿位于收件箱左侧栏顶部，可在任意设备继续编辑，属于个人，不与他人共享。
+
+设置收件人后，**历史记录**会展开与你和对方之间的全部对话：选项卡区分完整线程和仅已发送邮件，搜索可按主题缩小范围，点击行打开真实线程，面板还会提示你通常使用的邮箱。
+
+此处同样支持 **⌘J**、**用 AI 编辑**，以及主题为空时的**建议**操作。AI 草稿依据联系人记录、与该地址的完整往来和语气风格档案生成，审核卡片会显示所用依据。如果确实无法判断邮件目的，它会询问一个简短问题，而不会虚构推销内容。
+
+### 发送控制 [#sending-controls]
+
+| 控件 | 行为 |
 |---------|----------|
-| **Undo send** | Instant sends wait 30s by default (adjustable 5 to 120s under Settings, Profile). A header countdown offers **Cancel**, which returns the email to the composer intact. Applies to API sends with `send_mode: instant` too. |
-| **Schedule** | Queue a send for later. It appears inline in the thread as a dashed card and in the **Scheduled** view, where anyone in the workspace with Unibox access can cancel it. A usage meter warns as the workspace approaches its queued-send cap. |
-| **Snooze** | Clears a conversation until a time you pick, up to 90 days out, with presets or a custom time. **Un-snooze now** brings it back immediately. |
+| **撤销发送** | 立即发送默认等待 30 秒，可在设置 > 个人资料中调整为 5 至 120 秒。标题栏倒计时提供**取消**，将完整邮件返回编辑器。也适用于带 `send_mode: instant` 的 API 发送。 |
+| **定时发送** | 将发送安排到稍后。它会在线程中显示为虚线卡片，并进入**计划发送**视图；工作区内任何拥有统一收件箱访问权限的人都可取消。接近工作区排队发送上限时，用量指示器会警告。 |
+| **稍后处理** | 将对话暂时移出待处理范围，直到选定时间，最多 90 天后，可使用预设或自定义时间。**立即取消稍后处理**可立即恢复。 |
 
-Scheduled and smart-queued sends skip the undo window, since they already wait. Cancel them from the **Scheduled** view, or via `DELETE /unibox/scheduled/:task_id`.
+定时发送和智能排队发送本身已有等待，因此跳过撤销窗口。可从**计划发送**视图或通过 `DELETE /unibox/scheduled/:task_id` 取消。
 
-Replies, forwards and new emails from the unibox are conversations, not outreach, so they never count toward a mailbox's daily campaign limit or its warmup volume, and a mailbox that has sent its campaign emails for the day can still answer a lead. They are held to fair use instead, counted in recipients (every To, Cc and Bcc address).
+统一收件箱中的回复、转发和新邮件属于日常对话，不计入邮箱每日营销活动限额或预热发送量。因此，当天营销邮件额度用完的邮箱仍可回复潜在客户。这些操作改受公平使用限制，按收件人数计量，To、Cc 和 Bcc 中的每个地址都计入。
 
-Each mailbox gets a daily allowance sized below what its provider accepts:
+每个邮箱的每日额度设在服务商允许量之下：
 
-| Mailbox | Recipients in 24 hours |
+| 邮箱 | 24 小时内的收件人数 |
 |---------|------------------------|
-| Google Workspace or Microsoft 365 | 1,500 |
-| Other IMAP/SMTP hosts | 750 |
-| Personal Gmail (gmail.com) | 400 |
-| Personal Outlook (outlook.com, hotmail.com, live.com) | 250 |
+| Google Workspace 或 Microsoft 365 | 1,500 |
+| 其他 IMAP／SMTP 主机 | 750 |
+| 个人 Gmail（gmail.com） | 400 |
+| 个人 Outlook（outlook.com、hotmail.com、live.com） | 250 |
 
-What Warmbly knows about the mailbox can lower it:
+Warmbly 掌握的邮箱情况可能降低该额度：
 
-- connected less than 2 days ago: a quarter; less than 14 days: half
-- throttled in warmup: half; quarantined or blocked: a quarter
-- a workspace under restriction: a quarter
+- 连接不足 2 天：四分之一；不足 14 天：一半
+- 预热中被限流：一半；被隔离或封禁：四分之一
+- 工作区受限制：四分之一
 
-However low that goes, every mailbox keeps at least 50 recipients a day, so a conversation never stalls. Within the day:
+无论如何下调，每个邮箱每天至少保留 50 位收件人额度，使对话可以继续。一天内还适用以下限制：
 
-- any one hour takes at most a fifth of it, so a burst cannot spend the whole day
-- one email goes to at most 100 recipients, or the hourly allowance if that is smaller. A longer list belongs in a campaign
-- new emails that start a conversation take at most a quarter of it. Replies and forwards inside a conversation do not count toward this part, so a mailbox can always keep answering
+- 任意一小时最多使用每日额度的五分之一，防止突发发送耗尽全天额度
+- 单封邮件最多 100 位收件人；若每小时额度更低，则以其为准。更长的收件人列表应使用营销活动
+- 用于开启新对话的邮件最多占每日额度的四分之一。对话内回复和转发不计入这一部分，确保邮箱可持续答复
 
-Your plan sets a second, workspace-wide allowance across all your mailboxes together: twice the plan's daily email limit in any 24 hours, and never less than 100. The free trial's 20 emails a day gives 100 unibox recipients, Starter's 150 gives 300, and Grow's 3,000 gives 6,000. An approved increase to your daily limit raises it too. A plan with no daily limit has no workspace allowance, and neither does a self-hosted instance without billing.
+套餐还会对工作区全部邮箱合计设置第二层额度：任意 24 小时内，为套餐每日邮件限额的两倍，且不少于 100。免费试用每日 20 封对应统一收件箱 100 位收件人，Starter 的 150 封对应 300 位，Grow 的 3,000 封对应 6,000 位。每日限额获准提升后，此额度也会提高。没有每日限额的套餐不设工作区额度；未启用计费的自托管实例也不设。
 
-A mailbox that is paused or reconnecting, held after a send problem, or cooling down after a provider limit sends nothing from the unibox either.
+邮箱处于暂停、重新连接、发送问题后的暂缓，或服务商限额后的冷却状态时，统一收件箱同样无法发送。
 
-A new email or a reply to an address on your [suppression list](/guides/unsubscribe/#the-suppression-list), directly or through its domain, is refused before it is queued, with a message naming the address and the entry that matched it. A forward is not: it passes on mail you already received to people you picked by hand, so you can forward a lead to a client or colleague whose domain you keep out of campaigns. Fair use still counts a forward's recipients.
+新邮件或回复的目标地址直接或通过域名命中[禁止发送名单](/guides/unsubscribe/#the-suppression-list)时，会在排队前被拒绝，并明确显示地址及匹配条目。转发不受此限制：它把已收到的邮件传给你手动选择的人，因此可将潜在客户邮件转发给其域名被排除在营销活动之外的客户或同事。转发收件人仍计入公平使用额度。
 
-When a send is refused for one of those reasons, it is not sent and the mailbox owner sees an error naming the cause and the limit it reached, so they can send it later or from another mailbox. If Warmbly cannot confirm the email reached the mailbox's sending worker, the error says so; check **Sent** before sending it again.
+因上述原因拒绝时，邮件不会发出，邮箱所有者会看到原因及触及的限制，便于稍后或换用邮箱发送。如果 Warmbly 无法确认邮件是否已到达发信工作节点，错误会明确说明；再次发送前请检查**已发送**。
 
 </Fold>
 
 <Fold>
 
-## Realtime
+## 实时更新 [#realtime]
 
-Nothing needs refreshing. New mail appears in the list, updates the open thread, and raises the unread count on its own. The open conversation updates as soon as its mail changes; rail counts, lists and analytics catch up within a couple of seconds, so a burst of incoming mail refreshes them once instead of once per message. The count on **Unibox** in the navigation (and in the browser tab) is the number of unread conversations in **Inbox**, the view it opens, so it never points at mail that view does not list: sent mail, drafts, archived, snoozed and automated conversations are left out. Read-state changes, replies, scheduled sends, snoozes, and label changes all refresh the affected views, keeping rail counts, the list, and the open thread consistent.
+无须刷新。新邮件会自动出现在列表、更新已打开线程并增加未读数。对话内容变化后，打开的对话立即更新；侧栏计数、列表和分析在几秒内跟进，使一批来信只触发一次刷新，而非逐封刷新。导航和浏览器标签页中的 **统一收件箱（Unibox）** 计数，是其默认打开的 **收件箱** 视图中未读对话的数量，因此不会指向该视图看不到的邮件：已发送、草稿、已归档、稍后处理和自动邮件对话均不计入。已读状态变化、回复、计划发送、稍后处理和标签变化都会刷新受影响视图，使侧栏计数、列表和已打开线程保持一致。
 
-<Callout type="info" title="Keeping inboxes healthy">
-Replying promptly supports sender reputation, which warmup and good deliverability practice protect. See [Deliverability](/guides/deliverability/).
+<Callout type="info" title="保持收件箱健康">
+及时回复有助于发件信誉，预热和良好的送达实践也用于维护该信誉。参见[邮件送达能力](/guides/deliverability/)。
 </Callout>
 
 </Fold>
 
-## Related
+## 相关内容 [#related]
 
 <Cards>
-  <Card title="Meetings" href="/guides/meetings/">
-    Connect Calendly or Cal.com and drop booking links into replies.
+  <Card title="会议" href="/guides/meetings/">
+    连接 Calendly 或 Cal.com，在回复中插入预约链接。
   </Card>
-  <Card title="Deliverability" href="/guides/deliverability/">
-    How mailbox health and sending reputation are tracked.
+  <Card title="邮件送达能力" href="/guides/deliverability/">
+    了解如何跟踪邮箱健康状态和发信信誉。
   </Card>
 </Cards>

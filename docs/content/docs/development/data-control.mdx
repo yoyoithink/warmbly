@@ -1,49 +1,49 @@
 ---
-title: Data control
-description: Where every store lives on disk, what each retention window governs, how backups work, and how to move an instance to another host.
+title: "数据控制"
+description: "介绍各类数据在磁盘上的存储位置、各保留期限的适用范围、备份机制，以及如何将实例迁移到另一台主机。"
 ---
 
-Self-hosting Warmbly means holding mailbox credentials, message bodies and contact records on your own disk. This page is the whole answer to where that data is, how long it stays, and how you get it off this machine.
+自托管 Warmbly 意味着将邮箱凭据、邮件正文和联系人记录保存在自己的磁盘上。本页完整说明这些数据存放在哪里、保留多久，以及如何从这台机器迁走。
 
-Three questions, and they have different answers:
+这三个问题各有不同的答案：
 
-| Question | Answer |
+| 问题 | 答案 |
 |---|---|
-| Where is it? | [Six stores](#where-the-data-sits), each pointed at by one variable |
-| How long does it stay? | [Retention windows](#what-is-kept-and-for-how-long), all editable in the admin panel |
-| How do I move it? | [`warmblyctl backup`](#backups) for the instance, [workspace export](/guides/workspace-export-import/) for one workspace |
+| 数据在哪里？ | [六处存储](#where-the-data-sits)，每处由一个变量指定 |
+| 保留多久？ | 按各自的[保留期限](#what-is-kept-and-for-how-long)保留，均可在管理面板中修改 |
+| 如何迁移？ | 整个实例使用 [`warmblyctl backup`](#backups)，单个工作区使用[工作区导出](/guides/workspace-export-import/) |
 
-## Where the data sits
+## 数据的存储位置 [#where-the-data-sits]
 
-Every store's location is one variable in `.env`. Compose reads a source starting with `/` as a bind mount and anything else as a named volume, so the same variable covers both and there is no second compose file.
+每处存储的位置都由 `.env` 中的一个变量指定。Compose 将以 `/` 开头的源视为绑定挂载，其余视为命名卷，因此同一个变量兼容两种形式，无须另一份 Compose 文件。
 
-| Variable | Holds | Default |
+| 变量 | 存储内容 | 默认值 |
 |---|---|---|
-| `WARMBLY_PG_DATA` | Postgres: organizations, users, mailboxes (credentials sealed), contacts, campaigns, the audit trail | `<data root>/postgres` |
-| `WARMBLY_BLOBS` | Message bodies, attachments, avatars, logos and email body images | `<data root>/blobs` |
-| `WARMBLY_NATS_DATA` | The event bus's JetStream state | `<data root>/nats` |
-| `WARMBLY_REDIS_DATA` | Cache and rate-limit counters. Disposable | `<data root>/redis` |
-| `WARMBLY_WORKER_STATE` | A worker's own id and sync cursors. Disposable | `<data root>/worker` |
-| `WARMBLY_UPDATER_STATE` | The last update job's log. Disposable | `<data root>/updater` |
+| `WARMBLY_PG_DATA` | Postgres：组织、用户、邮箱（凭据以加密形式保存）、联系人、营销活动和审计记录 | `<data root>/postgres` |
+| `WARMBLY_BLOBS` | 邮件正文、附件、头像、标志和邮件正文中的图片 | `<data root>/blobs` |
+| `WARMBLY_NATS_DATA` | 事件总线的 JetStream 状态 | `<data root>/nats` |
+| `WARMBLY_REDIS_DATA` | 缓存和限流计数器，可丢弃重建 | `<data root>/redis` |
+| `WARMBLY_WORKER_STATE` | 工作节点自身的 ID 和同步游标，可丢弃重建 | `<data root>/worker` |
+| `WARMBLY_UPDATER_STATE` | 最近一次更新任务的日志，可丢弃重建 | `<data root>/updater` |
 
-An [install from `install.sh`](/development/install/) points all six under one data root, so `/opt/warmbly/data` is the whole of it and you can `rsync` that path. A clone-and-build install keeps Docker named volumes unless you set the same variables.
+[使用 `install.sh` 安装](/development/install/)会将六处存储全部放在同一个数据根目录下，因此 `/opt/warmbly/data` 就包含全部内容，可以对该路径使用 `rsync`。通过克隆仓库并构建的方式安装时，除非设置同样的变量，否则仍使用 Docker 命名卷。
 
-Only the first two carry anything you cannot rebuild. The other four are state a fresh container reconstructs, which is why a backup does not include them.
+只有前两处包含无法重建的数据。其余四处的状态均可由新容器重建，因此不包含在备份中。
 
-### Encryption
+### 加密 [#encryption]
 
-Two keys, and they are not interchangeable.
+这里有两把密钥，不能互换。
 
-| Key | Opens | Read by |
+| 密钥 | 解密对象 | 读取方 |
 |---|---|---|
-| `CREDENTIALS_ENCRYPTION_KEY` | Mailbox SMTP and IMAP credentials, and OAuth tokens | Backend and workers, without an organization context |
-| `KMS_LOCAL_MASTER_KEY` | The per-organization data keys, which in turn open everything else | Backend and consumer |
+| `CREDENTIALS_ENCRYPTION_KEY` | 邮箱的 SMTP、IMAP 凭据和 OAuth 令牌 | 后端和工作节点，无须组织上下文 |
+| `KMS_LOCAL_MASTER_KEY` | 各组织的数据密钥，再由这些密钥解密其余数据 | 后端和消费者 |
 
-Both are unrecoverable. A database backup without them restores an instance whose mailboxes authenticate against nothing, and there is no way back from that. They are in `.env`, and `install.sh` also writes them to `keys-backup.txt` next to the install, which is on the same disk as the database and therefore not a backup either. Copy them somewhere else.
+这两把密钥丢失后都无法恢复。只有数据库备份而没有密钥，恢复出的实例将无法让邮箱通过身份验证，而且无法补救。密钥保存在 `.env` 中，`install.sh` 还会将其写入安装目录旁的 `keys-backup.txt`；该文件与数据库位于同一磁盘，因此也不能算备份。请将密钥另存到其他位置。
 
-### External stores
+### 外部存储 [#external-stores]
 
-Postgres, Redis and blob storage each accept an external target, set at install time or by editing `.env`:
+Postgres、Redis 和 Blob 存储都支持外部目标，可在安装时指定，也可编辑 `.env`：
 
 ```bash
 PRIMARY_DB=postgres://user:pass@db.internal:5432/warmbly?sslmode=require
@@ -53,153 +53,153 @@ BLOB_BUCKET=warmbly
 AWS_ENDPOINT_URL_S3=https://<account>.r2.cloudflarestorage.com
 ```
 
-<Callout type="warn" title="Filesystem blobs stop working when workers run off-host">
-A remote worker writes bodies to its own disk, so the dashboard on the control-plane host finds nothing. Any deployment with workers on more than one machine needs S3-compatible blob storage. This is the one storage choice that is not just a preference.
+<Callout type="warn" title="工作节点离开本机运行后，文件系统对象存储将无法工作">
+远程工作节点会将正文写入自身磁盘，控制平面主机上的控制台因此无法读取。只要工作节点分布在多台机器上，就必须使用兼容 S3 的 Blob 存储。这项存储选择是部署要求，而不只是个人偏好。
 </Callout>
 
-## What is kept, and for how long
+## 保留哪些数据，以及保留多久 [#what-is-kept-and-for-how-long]
 
-Every window below lives in the database, not the environment, and is edited under **Instance > Configuration > Settings** in the admin panel. A sweep runs a few times a day and reads the current value on every pass, so a change takes effect without a restart.
+以下各项期限均保存在数据库中，而非环境变量中；可在管理面板的 **实例 > 配置 > 设置** 中修改。清理程序每天运行数次，每轮都读取当前值，因此修改后无须重启即可生效。
 
-### Mailbox import and sync
+### 邮箱导入与同步 [#mailbox-import-and-sync]
 
-| Setting | Default | Range | What it governs |
+| 设置 | 默认值 | 范围 | 控制内容 |
 |---|---|---|---|
-| `sync.backfill_days` | 90 | 1 to 730 | How far back the initial import reaches when a mailbox is connected, newest first |
-| `sync.backfill_messages` | 5,000 | 1 to 100,000 | The most messages that import stores per mailbox |
-| `sync.daily_messages_per_mailbox` | 2,000 | 1 to 100,000 | New mail one mailbox may store per UTC day |
-| `sync.daily_messages_per_org` | 25,000 | 1 to 2,000,000 | New plus imported mail across one workspace per UTC day |
+| `sync.backfill_days` | 90 | 1 至 730 | 连接邮箱时首次导入向前追溯的天数，按从新到旧的顺序导入 |
+| `sync.backfill_messages` | 5,000 | 1 至 100,000 | 每个邮箱在该次导入中最多存储的邮件数 |
+| `sync.daily_messages_per_mailbox` | 2,000 | 1 至 100,000 | 每个邮箱在每个 UTC 日最多可存储的新邮件数 |
+| `sync.daily_messages_per_org` | 25,000 | 1 至 2,000,000 | 一个工作区在每个 UTC 日内的新邮件与导入邮件总数 |
 
-Mail over a daily budget is deferred, never dropped: the provider cursor is held and the mail is re-offered on the next pass. Replies to the mailbox's own outreach ride a separate budget of the same size and keep landing regardless.
+超出每日额度的邮件会延后处理，绝不会丢弃：系统保留服务商游标，在下一轮再次提交这些邮件。对邮箱自身开发邮件的回复使用另一份大小相同的独立额度，因此仍可继续接收。
 
-### TypeSafe judgments
+### TypeSafe 判断记录 [#typesafe-judgments]
 
-`TYPESAFE_API_KEY` turns on a family of typed judgments, each of which sends a bounded piece of text to TypeSafe and stores a verdict. Without the key none of them runs and no content leaves the instance. What each one sends:
+`TYPESAFE_API_KEY` 会启用一系列具有明确类型的判断。每项判断都会将长度受限的文本发送给 TypeSafe，并保存判定结果。未设置密钥时，这些功能均不运行，也不会有内容离开实例。各项发送的内容如下：
 
-| Judgment | On by | What is sent | Where the verdict lives |
+| 判断功能 | 启用条件 | 发送内容 | 结果存储位置 |
 |---|---|---|---|
-| Automatic inbox tagging | `INBOX_TAGGING_ENABLED=true` | The inbound subject and bounded plain-text body (for a notification recognised offline by its sender, only while the workspace asks notifications whether they need action, or asks one of its own questions of them), plus the previous outbound message in the thread and the name of the campaign it belongs to when one exists, the workspace's own tagging questions, and the names of its tagging languages when any are chosen | `inbox_tag_results`, with the raw probabilities and the actions taken. Completed results travel with the Inbox group in a workspace export; processing claims do not |
-| Reply classification | The key alone | The subject and body of a reply to a campaign, only when no tagging verdict exists for it and the offline layers could not decide | `campaign_contact_progress.reply_class` and `reply_intent` |
-| Copy judgment | The key alone | The subject and body of a campaign step, at Advisor evaluation and on the editor's re-check | `copy_judgments`, keyed by a hash of the copy and never exported |
-| Warmup content lint | The key alone | A generated warmup thread before it enters the bank | Rejected threads are counted on the generation job; nothing else is kept |
-| Bounce classification | The key alone | The bounce reason text, only when it does not name the recipient | `deliverability_events.metadata` |
-| Import column mapping | The key alone | For an import or Google Sheets preview with columns no header matched: every column header, the kind of value each column holds (email addresses, dates, short text and so on, worked out on the instance), and the workspace's custom field names. Never a cell value, and nothing at all unless the first row is clearly headers: none of its cells may be an address, a date or a number, and the Email column must have a header of its own. A contact's row fails that, since its Email cell is the address or blank | Nothing is stored; the answer only fills in the suggested mapping |
-| Form triage | A per-form switch | The submitted answers, labelled by field; never the visitor's address, agent or URL | `form_submissions.triage`, which travels with the Contacts group |
-| Mailbox import columns | The key alone | For a column of an import file that no header name or value pattern placed: the column's header text and a description of its values (such as "16 lowercase letters" or "hostnames"), never a value | Nowhere; the answer only sets that column's suggested field, which can be changed before importing |
-| Mailbox import failures | The key alone | For a connect refusal the import does not recognise: the server's reply with addresses, IP addresses, usernames and long tokens scrubbed out, and the mail host family (such as `google_workspace` or `other`) | `mailbox_import_rows.cause`, as the cause the row is grouped under |
+| 自动收件箱标签 | `INBOX_TAGGING_ENABLED=true` | 来信主题和长度受限的纯文本正文；对于根据发件人离线识别出的通知，仅当工作区要求判断通知是否需要处理，或对通知提出自定义问题时才发送。此外还包括线程中的上一封发出邮件、所属营销活动的名称（如有）、工作区自定义标签问题，以及选定的标签语言名称（如有） | `inbox_tag_results`，包含原始概率和已采取的操作。已完成的结果随工作区导出的收件箱分组迁移；处理任务的领取状态不迁移 |
+| 回复分类 | 仅需设置密钥 | 营销活动回复的主题和正文，仅在尚无标签判定结果且离线判断层无法确定分类时发送 | `campaign_contact_progress.reply_class` 和 `reply_intent` |
+| 文案评估 | 仅需设置密钥 | 在顾问评估及编辑器重新检查时，发送营销活动步骤的主题和正文 | `copy_judgments`，以文案哈希为键，绝不导出 |
+| 预热内容检查 | 仅需设置密钥 | 生成的预热邮件线程，在进入内容库前发送 | 生成任务仅统计被拒绝的线程数，不保留其他内容 |
+| 退信分类 | 仅需设置密钥 | 退信原因文本，仅在其中未指明收件人时发送 | `deliverability_events.metadata` |
+| 导入列映射 | 仅需设置密钥 | 当导入或 Google Sheets 预览中存在无法通过表头匹配的列时，发送所有列的表头、各列值的类型（如邮箱地址、日期、短文本，由实例本地判断）以及工作区的自定义字段名称。绝不发送单元格值；只有第一行明显为表头时才会发送任何内容：其中任何单元格都不能是地址、日期或数字，且邮箱列必须有自己的表头。联系人数据行不满足此条件，因为其邮箱单元格是地址或空值 | 不保存任何内容；结果仅用于填写建议的映射 |
+| 表单分流 | 每个表单单独设置开关 | 按字段标注的提交答案；绝不发送访客地址、用户代理或 URL | `form_submissions.triage`，随联系人分组迁移 |
+| 邮箱导入列识别 | 仅需设置密钥 | 对于导入文件中无法根据表头名称或值模式识别的列，发送该列的表头文字和值的描述（例如“16 个小写字母”或“主机名”），绝不发送实际值 | 不存储；结果仅设置该列的建议字段，可在导入前修改 |
+| 邮箱导入失败分类 | 仅需设置密钥 | 对于导入功能无法识别的连接拒绝，发送已清除邮箱地址、IP 地址、用户名和长令牌的服务器回复，以及邮件主机类别（例如 `google_workspace` 或 `other`） | `mailbox_import_rows.cause`，用作该行的原因分组 |
 
-See [Automatic inbox tagging](/guides/inbox-tagging/), [Advisor](/guides/advisor/), [Warmup](/guides/warmup/), [Deliverability](/guides/deliverability/), [Contacts](/guides/contacts-crm/#mapping-into-your-custom-fields), [Forms](/guides/forms/) and [Import mailboxes](/guides/mailbox-import/).
+参见[自动收件箱标签](/guides/inbox-tagging/)、[Advisor](/guides/advisor/)、[邮箱预热](/guides/warmup/)、[邮件送达能力](/guides/deliverability/)、[联系人](/guides/contacts-crm/#mapping-into-your-custom-fields)、[表单](/guides/forms/)和[导入邮箱](/guides/mailbox-import/)。
 
-### Event history
+### 事件历史 [#event-history]
 
-| Setting | Default | What it holds |
+| 设置 | 默认值 | 存储内容 |
 |---|---|---|
-| `retention.engagement_event_days` | 365 | Per-event open and click logs: client, device, approximate location |
-| `retention.form_event_days` | 180 | Form funnel events: views, starts, field-level drop-off |
-| `retention.audit_log_days` | 90 | The audit trail: actor, IP address, user agent, change payload |
-| `retention.warmup_mail_days` | 30 | Warmup mail in the mailboxes themselves, and the stored copy of each message's body. Deleted by the platform once older than this, wherever the mailbox files it; a mailbox can set its own window |
-| `retention.warmup_event_days` | 365 | Per-message warmup records: tokens, receipts, tampering events, spam moves and their attribution, spam reports. The daily sent and received counts behind the analytics are kept. When each mailbox's owner last acted in it (five-minute marks, no message content) is kept 30 days whatever this is set to |
+| `retention.engagement_event_days` | 365 | 逐事件保存的打开和点击日志：客户端、设备及大致位置 |
+| `retention.form_event_days` | 180 | 表单漏斗事件：浏览、开始填写、字段级流失 |
+| `retention.audit_log_days` | 90 | 审计记录：操作者、IP 地址、用户代理和变更内容 |
+| `retention.warmup_mail_days` | 30 | 邮箱中的预热邮件及每封邮件正文的存储副本。超出此期限后，无论邮箱将其归入何处，平台都会删除；邮箱可设置自己的期限 |
+| `retention.warmup_event_days` | 365 | 逐封保存的预热记录：令牌、回执、篡改事件、移入垃圾邮件及其归因、垃圾邮件报告。统计分析所用的每日收发数量会保留。每个邮箱所有者最近一次操作的时间（以五分钟为单位，不含邮件内容）始终保留 30 天，不受此设置影响 |
 
-The first three are between 1 and 3,650 days, and they are the settings a retention or privacy policy applies to, because each window is also how long the personal data in that log is held. The warmup mail window starts at 3 days and the warmup records window at 30, the least the engagement legs and the pool health bands need.
+前三项的范围是 1 至 3,650 天，数据保留政策或隐私政策应针对这几项设置，因为对应日志中的个人数据也保留相同时间。预热邮件至少保留 3 天，预热记录至少保留 30 天，这是预热互动环节和预热池健康等级所需的最短时间。
 
-None of them change a number anyone reads. Campaign progress keeps its own summary of opens and clicks that outlives the per-event log, so counts, filters and branching are unaffected by shortening any of these. What gets shorter is what a contact's timeline can show, how far a funnel report reaches, and how far back an admin can audit.
+这些设置不会改变用户看到的统计数字。营销活动进度自行保存打开和点击的汇总，其保留时间超过逐事件日志，因此缩短任何期限都不会影响计数、筛选或分支判断。缩短的只是联系人时间线能够展示的范围、漏斗报告可追溯的时间，以及管理员可审计的历史范围。
 
-<Callout type="warn" title="Shortening a window deletes on the next sweep">
-There is no grace period and no copy. Take a backup first if you are not sure.
+<Callout type="warn" title="缩短保留期限后，会在下次清理时删除超期数据">
+没有宽限期，也不会另留副本。如果不确定，请先备份。
 </Callout>
 
-The **minimal retention** preset in the admin panel and in the installer sets the three event logs to 30 days, warmup mail to 7 and warmup records to 30.
+管理面板和安装程序中的**最短保留**预设将三类事件日志设为 30 天、预热邮件设为 7 天、预热记录设为 30 天。
 
-### Warmup mail in mailboxes
+### 邮箱中的预热邮件 [#warmup-mail-in-mailboxes]
 
-Warmup mail is real mail in a real mailbox, filed into the warmup folder in both directions, and it is the platform's job to clear it. Once a message is older than the mailbox's window it is deleted where it sits: moved to Trash on Gmail, which Gmail empties after 30 days, and removed outright on Outlook and IMAP. The platform's stored copy of the body goes with it. Nothing about a deletion the platform made is ever held against the mailbox, and a message deleted by its owner after the first day is treated the same way. See [Warmup](/guides/warmup/#retention) for what the mailbox owner sees.
+预热邮件是真实邮箱中的真实邮件，收发两方向的邮件都会归入预热文件夹，平台负责清理。邮件超过该邮箱的保留期限后，会在当前位置删除：Gmail 将其移入垃圾箱，并在 30 天后清空；Outlook 和 IMAP 则直接删除。平台存储的正文副本也会一并删除。平台执行的删除绝不会导致邮箱受到惩罚；所有者在第一天之后自行删除的邮件也同样处理。邮箱所有者看到的内容请参见[邮箱预热](/guides/warmup/#retention)。
 
-### Warmup standing by address
+### 按邮箱地址保存的预热状态 [#warmup-standing-by-address]
 
-Warmup keeps the standing of every penalised mailbox (score, state, and any block) against its address as well as its row, so removing the mailbox or dropping out of the pool and coming back does not start it clean. The copy is cleared as soon as the mailbox recovers, and once the mailbox is gone it is kept for 90 days after the block ends or after the removal, whichever is later; a block that requires review is kept until an operator lifts it. A mailbox in good standing has no such copy. The window is fixed rather than a setting, and the rows are purged by the same sweep.
+预热系统会同时按邮箱地址和邮箱记录保存受处罚邮箱的状态（分数、状态及封禁），因此删除邮箱或退出预热池后重新加入，都无法清除原有处罚。邮箱恢复后，该副本立即清除；邮箱被删除后，副本保留至封禁结束或删除之日中较晚日期的 90 天后。需要人工审核的封禁会一直保留，直到运维人员解除。状态良好的邮箱没有此类副本。该期限固定，不是可配置设置，相应记录由同一清理程序删除。
 
-### Pending inbox verification
+### 待完成的收件箱验证 [#pending-inbox-verification]
 
-Mail whose warmup verification is temporarily unavailable waits in the `unibox_pending_emails` Postgres table. It holds the sync event, including message metadata and bounded searchable body text, until verification succeeds or the mailbox is deleted. The consumer retries it automatically after restarts. Full bodies remain in blob storage. This pending queue is included in instance backups but excluded from workspace exports, whose destination re-syncs provider mail.
+预热验证暂时不可用的邮件会在 Postgres 的 `unibox_pending_emails` 表中等待。该表保存同步事件，包括邮件元数据和长度受限、可搜索的正文文本，直到验证成功或邮箱被删除。消费者在重启后会自动重试。完整正文仍保存在 Blob 存储中。此待处理队列包含在实例备份中，但不包含在工作区导出中；导入目标会重新同步服务商邮件。
 
-### Placement comparison copies
+### 投递位置对比副本 [#placement-comparison-copies]
 
-A [tracking comparison](/guides/placement-tests/#tracking) renders each seed's copy once and sends it from both halves, so while it runs it keeps that rendered copy, with merge fields and AI blocks filled in for the chosen contact, in the `placement_renders` Postgres table, sealed with the workspace's data key. The placement poller deletes it once neither half of the comparison is running. It is included in instance backups and excluded from workspace exports.
+[跟踪对比测试](/guides/placement-tests/#tracking)会为每个种子邮箱渲染一次文案，并从对比双方发送。因此，测试期间会将该渲染副本保存在 Postgres 的 `placement_renders` 表中，其中已为选定联系人填入合并字段和 AI 区块，并使用工作区数据密钥加密。对比双方均不再运行后，投递位置轮询程序会删除该副本。它包含在实例备份中，但不包含在工作区导出中。
 
-### Native app keys
+### 原生应用密钥 [#native-app-keys]
 
-The iOS app proves it is a genuine copy with [App Attest](/api/reference/account-org/#app-attest-native-apps), and each install registers one key in the `app_attest_keys` Postgres table: the key id, its public key, the app ID and environment it was attested under, its counter, Apple's receipt, and when it was created and last used. A row names no user and no workspace. It has no retention window, is included in instance backups, and does not travel in workspace exports, because it belongs to the instance the app verified against.
+iOS 应用使用 [App Attest](/api/reference/account-org/#app-attest-native-apps) 证明自己是真实应用副本，每次安装都会在 Postgres 的 `app_attest_keys` 表中注册一把密钥：密钥 ID、公钥、证明时的应用 ID 和环境、计数器、Apple 回执，以及创建和最后使用时间。记录不关联任何用户或工作区。它没有保留期限，包含在实例备份中，但不随工作区导出迁移，因为它属于应用完成验证的那个实例。
 
-### Warmup reconnect recovery
+### 重新连接邮箱后的预热恢复 [#warmup-reconnect-recovery]
 
-`warmup_recovery_identifiers` holds SHA-256 fingerprints of a mailbox address and exact warmup message IDs or verification tokens, scoped to a workspace. They survive removing a mailbox so adding the same address again can recognize recent warmup mail without retaining its content or credentials. Each expires 90 days after its source record, expired identifiers are swept every minute in bounded batches, and deleting the workspace removes them immediately. They travel in the Warmup group of a [workspace export](/guides/workspace-export-import/).
+`warmup_recovery_identifiers` 保存邮箱地址及精确预热邮件 ID 或验证令牌的 SHA-256 指纹，作用域为工作区。删除邮箱后这些指纹仍会保留，因此重新添加相同地址时，无须保留邮件内容或凭据即可识别近期预热邮件。每个指纹在源记录产生 90 天后过期，过期标识符每分钟按有界批次清理；删除工作区时立即移除。它们随[工作区导出](/guides/workspace-export-import/)中的预热分组迁移。
 
-`warmup_pending_filings` holds message locators awaiting provider filing and worker acknowledgement. Failed attempts retry after five, fifteen, or thirty minutes according to the row's age. A provider-specified retry time for a failed filing is retained as a separate, monotonic `provider_retry_at` timestamp: it can extend the ordinary retry, but the queue's claim lease alone does not block a valid published action. Duplicate commands recheck that exact filing's persisted provider floor before touching the mailbox. Unassigned mailboxes remain pending until reassignment, without replaying engagement signals. An acknowledgement or mailbox deletion removes the row. This instance-local queue and its provider retry time do not travel in workspace exports; the destination resyncs the mailbox and files recognized warmup messages.
+`warmup_pending_filings` 保存等待服务商归档及工作节点确认的邮件定位信息。失败后，根据记录年龄在五、十五或三十分钟后重试。服务商针对归档失败指定的重试时间单独保存在只会向后延长的 `provider_retry_at` 时间戳中：它可以延长普通重试间隔，但队列任务领取租约本身不会阻止有效的已发布操作。重复命令在访问邮箱前，会重新检查该次归档已持久化的服务商最早重试时间。未分配工作节点的邮箱会一直等待重新分配，且不会重放互动信号。收到确认或删除邮箱后，记录会被移除。此队列及其服务商重试时间仅属于当前实例，不随工作区导出迁移；目标实例会重新同步邮箱，并归档识别出的预热邮件。
 
-Upgrade the backend and database before workers. Existing pending rows start with no provider retry time; there is no guessed historical success or floor. Workers still on an older version do not record or observe these floors, so the protection covers only upgraded workers. The existing retry policy when a worker talks to an older backend is unchanged; unsupported deferral is not a durable acknowledgement. No new setting or mailbox reconnection is required for an existing installation.
+请先升级后端和数据库，再升级工作节点。已有待处理记录初始没有服务商重试时间；系统不会推测历史成功状态或最早重试时间。旧版工作节点不会记录或遵守这些时间限制，因此保护仅覆盖已升级的节点。工作节点与旧版后端通信时，现有重试策略保持不变；不受支持的延期处理不构成持久化确认。已有安装无须新增设置或重新连接邮箱。
 
-Failed deferral writes remain unacknowledged. The worker retains the scoped deadline in memory while retrying persistence without another provider call; that memory is not durable proof. Restart protection begins only after a provider floor is committed. Downgrading the schema retains known provider times in the ordinary queue retry timestamp, but cannot give older workers the new duplicate-command admission check.
+延期记录写入失败时，不会发送确认。工作节点会在内存中保留对应范围的截止时间，并重试持久化，期间不再次调用服务商；内存状态不属于持久化证明。只有服务商最早重试时间提交成功后，重启保护才生效。降级数据库结构会将已知的服务商时间保留在普通队列重试时间戳中，但无法让旧版工作节点具备新增的重复命令准入检查。
 
-### Mailbox import files
+### 邮箱导入文件 [#mailbox-import-files]
 
-A [mailbox import](/guides/mailbox-import/) keeps each row's credentials in `mailbox_import_rows`, sealed with the workspace's own data key, until the row is connected. The credentials of rows that did not connect are kept for 7 days after the import finishes, so a failed row can be fixed and retried, and are then deleted. A finished import and its rows (address, status, cause, and the uploaded cells that are not passwords, which feed the failed-rows download) are deleted 30 days after it finished. Both windows are fixed rather than settings, and the sweep that applies them runs every minute. A connected mailbox's credentials are stored like any other mailbox's.
+[邮箱导入](/guides/mailbox-import/)会将各行凭据保存在 `mailbox_import_rows` 中，使用工作区自身的数据密钥加密，直到该行连接成功。未连接成功的行，其凭据会在导入结束后保留 7 天，便于修正并重试失败行，之后删除。已结束的导入及其各行记录（地址、状态、原因，以及供失败行下载使用的已上传非密码单元格）在结束 30 天后删除。两个期限均固定，不是可配置设置，清理程序每分钟运行。已连接邮箱的凭据按普通邮箱方式存储。
 
-The column mappings an import saves (`mailbox_import_mappings`: which field each header of a file means, no values) are kept until the workspace is deleted, and travel in a [workspace export](/guides/workspace-export-import/). Imports themselves do not.
+导入保存的列映射（`mailbox_import_mappings`：文件各表头对应哪个字段，不含实际值）保留至工作区被删除，并随[工作区导出](/guides/workspace-export-import/)迁移。导入任务本身不迁移。
 
-### Contact import files
+### 联系人导入文件 [#contact-import-files]
 
-A [contact import](/guides/contacts-crm/#importing) keeps every row of the uploaded file, as uploaded, in `contact_import_rows`, with what became of it (the address, whether it was imported, updated, skipped or failed, and why). Contact data is stored the same way the contacts themselves are. A file uploaded but never started is deleted 24 hours after the upload, or after it was discarded; a finished or stopped import and its rows, which feed the failed-rows download, are deleted 30 days after it finished. Both windows are fixed rather than settings, and the sweep that applies them runs every hour. The contacts an import created are ordinary contacts and are not affected.
+[联系人导入](/guides/contacts-crm/#importing)会在 `contact_import_rows` 中原样保留上传文件的每一行及处理结果（地址、是否已导入、更新、跳过或失败，以及原因）。联系人数据采用与联系人记录本身相同的存储方式。上传后从未开始处理的文件会在上传 24 小时后删除，或在放弃该文件后删除；已完成或已停止的导入及其各行记录（供失败行下载使用）在结束 30 天后删除。两个期限均固定，不是可配置设置，清理程序每小时运行。导入创建的联系人属于普通联系人，不受影响。
 
-The column mappings contact imports save (`contact_import_mappings`: which field each header of a file means, no values) are kept until the workspace is deleted, and travel in a [workspace export](/guides/workspace-export-import/). Imports themselves do not.
+联系人导入保存的列映射（`contact_import_mappings`：文件各表头对应哪个字段，不含实际值）保留至工作区被删除，并随[工作区导出](/guides/workspace-export-import/)迁移。导入任务本身不迁移。
 
-### Mailbox sources and redirects
+### 邮箱来源与重定向 [#mailbox-sources-and-redirects]
 
-Three things a workspace can set up alongside its mailboxes, each kept until the workspace deletes it (or the workspace itself is deleted). None has a retention window.
+工作区可以在邮箱之外配置以下三类内容，各项均保留至工作区删除该项或删除工作区本身。它们都没有保留期限。
 
-| Table | Holds | Secrets |
+| 表 | 存储内容 | 密钥与机密值 |
 |---|---|---|
-| `mailbox_vendor_connections` | An [inbox vendor](/guides/mailbox-import/#import-from-an-inbox-vendor) account: which vendor, a label, its status and last error | The API key and account IDs, sealed with the workspace's data key. No response returns them |
-| `mailbox_domain_grants` | A [Google Workspace or Microsoft 365 admin grant](/guides/mailbox-import/#connect-a-whole-google-workspace-domain): the provider, the Workspace domain or Microsoft tenant ID, the domains it covers, and for Google the admin address used to read the directory | None. No token is stored for a grant or for any mailbox it connected; the backend mints a short-lived one from the instance's own Google service account or Microsoft app each time a worker needs it |
-| `domain_redirects` | A [root redirect](/guides/sending-domains/#root-redirects): the domain, the website it sends visitors to, the ownership value for its `_warmbly` `TXT` record, the result of the last DNS check and of the last visit to the domain (what answered, and the proxy when it named itself), and whether this instance or Warmbly Cloud serves it. For one Cloud serves, a copy of the records and the tracking host Cloud listed | None. The ownership value is derived from `AUTH_SECRET`, the workspace and the domain, so it stays the same for that workspace and differs for every other workspace and instance |
+| `mailbox_vendor_connections` | [邮箱供应商](/guides/mailbox-import/#import-from-an-inbox-vendor)账户：供应商、标签、状态和最近一次错误 | API 密钥和账户 ID，使用工作区数据密钥加密；任何响应都不会返回这些内容 |
+| `mailbox_domain_grants` | [Google Workspace 或 Microsoft 365 管理员授权](/guides/mailbox-import/#connect-a-whole-google-workspace-domain)：服务商、Workspace 域名或 Microsoft 租户 ID、覆盖的域名，以及 Google 中用于读取目录的管理员地址 | 无。授权及其连接的任何邮箱都不保存令牌；每当工作节点需要令牌时，后端使用实例自身的 Google 服务账户或 Microsoft 应用签发短期令牌 |
+| `domain_redirects` | [根域名重定向](/guides/sending-domains/#root-redirects)：域名、访客被转到的网站、`_warmbly` `TXT` 记录的所有权验证值、最近一次 DNS 检查和访问域名的结果（响应方，以及代理声明自身身份时的代理信息），还有由当前实例还是 Warmbly Cloud 提供服务。若由 Cloud 提供服务，还保存 Cloud 列出的记录和跟踪主机副本 | 无。所有权验证值由 `AUTH_SECRET`、工作区和域名派生，因此对于该工作区保持一致，而不同工作区和实例的值各不相同 |
 
-A mailbox records which vendor account or grant it came from, and for a grant the address (Google) or Graph user ID (Microsoft) its tokens are minted for. Deleting a vendor connection keeps its mailboxes; deleting a grant stops the mailboxes it connected.
+邮箱会记录其来源供应商账户或授权；对于授权，还记录签发令牌对应的地址（Google）或 Graph 用户 ID（Microsoft）。删除供应商连接会保留其邮箱；删除授权则会停止通过该授权连接的邮箱。
 
-Vendor connections and redirects travel in a [workspace export](/guides/workspace-export-import/); a redirect Warmbly Cloud served arrives served by the destination. Grants do not: a grant is recorded only after the workspace proves the domain (Google) or completes the administrator's consent (Microsoft) on the instance that holds it, and a row from an archive proves neither. The mailboxes a grant connected travel without it. On the destination the workspace makes the grant again and connects the same users, which relinks those mailboxes instead of adding new ones.
+供应商连接和重定向随[工作区导出](/guides/workspace-export-import/)迁移；原先由 Warmbly Cloud 提供服务的重定向，导入后改由目标实例提供服务。授权不会迁移：只有工作区在持有该授权的实例上证明域名所有权（Google）或完成管理员同意（Microsoft）后，系统才会记录授权，归档中的一条记录无法证明这两者。通过授权连接的邮箱会迁移，但不携带授权。在目标实例上，工作区需要重新建立授权并连接相同用户；这会重新关联已有邮箱，不会新增重复邮箱。
 
-Forwarding a domain through an inbox vendor, and a tracking `CNAME` written through one, are stored at the vendor, not here. Warmbly keeps only the vendor's domain list, in memory for five minutes.
+通过邮箱供应商设置的域名转发，以及通过供应商写入的跟踪 `CNAME`，都存储在供应商处，不保存在此处。Warmbly 只将供应商域名列表在内存中保留五分钟。
 
-### Disconnecting a mailbox
+### 断开邮箱连接 [#disconnecting-a-mailbox]
 
-Disconnecting a mailbox, or deleting the workspace holding it, removes its rows from Postgres straight away through the database's own cascades. Two things cannot be done in that instant and are queued instead, then worked off within about a minute:
+断开邮箱或删除其所属工作区时，数据库自身的级联删除会立即移除 Postgres 中的相关记录。有两项操作无法即时完成，会先进入队列，再在约一分钟内处理：
 
-| Owed | What happens |
+| 待清除内容 | 处理方式 |
 |---|---|
-| The OAuth grant | A Gmail mailbox's refresh token is sent to Google's revocation endpoint, which invalidates it and removes the instance from the customer's third-party access list. Microsoft publishes no per-application revocation endpoint, so an Outlook mailbox's tokens are destroyed locally and the customer removes the app themselves |
-| The message bodies | Everything the mailbox wrote under `users/<user>/emails/<mailbox>/` in the blob store is deleted, whether that is a filesystem path or an S3 bucket |
+| OAuth 授权 | 将 Gmail 邮箱的刷新令牌发送到 Google 撤销端点，使其失效，并将实例从客户的第三方访问列表中移除。Microsoft 未提供按应用撤销的端点，因此 Outlook 邮箱的令牌会在本地销毁，客户需自行移除应用 |
+| 邮件正文 | 删除该邮箱在 Blob 存储的 `users/<user>/emails/<mailbox>/` 下写入的全部内容，无论使用文件系统路径还是 S3 存储桶 |
 
-While an erasure is outstanding its row holds a copy of the mailbox's OAuth refresh token, still sealed under `CREDENTIALS_ENCRYPTION_KEY`, because the row it was read from goes with the mailbox and the token is what the revocation sends. It is destroyed with the rest of the row when the erasure finishes.
+清除任务尚未完成时，其记录会保留邮箱 OAuth 刷新令牌的副本，仍使用 `CREDENTIALS_ENCRYPTION_KEY` 加密。这是因为原始记录会随邮箱一起删除，而撤销请求仍需发送该令牌。清除完成后，令牌会随该记录的其余内容一并销毁。
 
-The queue is the `mailbox_erasures` table, and it holds only work still owed: a finished erasure is removed rather than kept, because the row names the address the customer asked to have forgotten. A failure is retried with a widening backoff, capped at six hours, and never abandoned, so an unreachable provider or store delays the erasure instead of losing it. Anything still outstanding after a day is reported by the `mailbox_erasure` job, visible under scheduled jobs in the admin panel.
+队列位于 `mailbox_erasures` 表，只保存尚未完成的工作：已完成的清除任务会被移除，而不会继续保留，因为记录中包含客户要求遗忘的地址。失败后采用逐步延长、最长六小时的退避重试，绝不会放弃，因此服务商或存储不可达只会延迟清除，不会使任务丢失。超过一天仍未完成的任务由 `mailbox_erasure` 作业报告，可在管理面板的计划任务中查看。
 
-This runs on the control plane, which is the only place holding both the credential key and a credential for the blob store. A worker cannot do it: it signs one object at a time through the control plane and holds no bucket credential at all.
+这些操作在控制平面执行，因为只有控制平面同时持有凭据加密密钥和 Blob 存储凭据。工作节点无法执行：它通过控制平面逐个对象获取签名，完全不持有存储桶凭据。
 
-### Set them at install time
+### 在安装时设置 [#set-them-at-install-time]
 
-The installer writes the answers into `.env` as one document, applied on the first boot of a fresh database:
+安装程序会将回答以一份配置文档写入 `.env`，并在全新数据库首次启动时应用：
 
 ```bash
 WARMBLY_SETTINGS_BOOTSTRAP={"sync":{"backfill_days":30},"retention":{"audit_log_days":30}}
 ```
 
-It is read only while the settings row has never been written. From the first save in the admin panel onwards the panel is authoritative, so leaving the line in `.env` never undoes a later edit.
+只有设置记录尚未写入过时才会读取它。从第一次在管理面板保存开始，以面板中的设置为准，因此即使 `.env` 中保留该行，也不会撤销后续修改。
 
-## Backups
+## 备份 [#backups]
 
-`warmblyctl backup` writes one bundle holding the three things that only restore together:
+`warmblyctl backup` 会生成一个备份包，包含必须一起恢复的三类内容：
 
-- the database, as a `pg_dump`
-- the blob root, when blobs are on the filesystem
-- the encryption keys, unless you pass `--no-keys`
+- 数据库，以 `pg_dump` 形式保存
+- Blob 根目录，仅在 Blob 使用文件系统存储时包含
+- 加密密钥，除非指定 `--no-keys`
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl backup --out /data/blobs/warmbly.tar.gz
@@ -207,38 +207,38 @@ docker compose -p warmbly cp backend:/data/blobs/warmbly.tar.gz ./warmbly.tar.gz
   && docker compose -p warmbly exec -T backend rm -f /data/blobs/warmbly.tar.gz
 ```
 
-`/data/blobs` is a hand-off, not a destination: it is the one path the container and the host both see. The `&&` matters twice over. `backup` leaves its own output out of the archive, but a bundle left there is swept into the next run, so it has to be deleted; and a `cp` that failed must not be followed by deleting the only copy that exists.
+`/data/blobs` 是中转位置，而非最终存放位置：这是容器和主机都能访问的同一路径。`&&` 有两重作用。`backup` 会排除自身输出，但留在该处的备份包会被下次备份收录，因此必须删除；另一方面，如果 `cp` 失败，不能继续删除仅存的副本。
 
-The bundle is written 0600 and holds every mailbox credential on the instance plus the keys that open them. Treat the file as you would the instance itself.
+备份包以 0600 权限写入，包含实例上所有邮箱的凭据，以及解密这些凭据的密钥。请像保护实例本身一样保护该文件。
 
-An install from `install.sh --wizard` can schedule this for you: `backup.sh` next to the install, a systemd timer, a retention count, and an optional `aws s3 cp` to somewhere off the host. A backup that only exists on the machine it backs up is not one.
+通过 `install.sh --wizard` 安装时，可以自动安排备份：安装目录旁的 `backup.sh`、systemd 定时器、保留份数，以及可选的 `aws s3 cp`，用于复制到主机之外的位置。仅保存在被备份机器本机上的副本不能算备份。
 
-### Restore
+### 恢复 [#restore]
 
-On the destination host, with the same keys in place:
+在目标主机上，配置好相同密钥后执行：
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl restore --file /data/blobs/warmbly.tar.gz
 docker compose -p warmbly restart
 ```
 
-The restore empties the schema and replays the dump, so it replaces everything currently on that instance and asks you to type `restore` first. It then runs `ANALYZE`, since a dump carries no planner statistics; a failure there only warns.
+恢复会清空数据库结构并重放转储，因此会替换该实例当前的全部内容，执行前会要求输入 `restore`。随后运行 `ANALYZE`，因为转储不包含查询规划器统计信息；此步骤失败时只会给出警告。
 
-Before it does anything it compares the bundle's `CREDENTIALS_ENCRYPTION_KEY` and `KMS_LOCAL_MASTER_KEY` against the destination's and refuses to continue when they differ, printing the two lines to put in `.env`. That check is the point of the command: without it a restore looks like it worked and every mailbox fails to authenticate days later, with no error that names the cause.
+执行任何操作前，命令会将备份包中的 `CREDENTIALS_ENCRYPTION_KEY` 和 `KMS_LOCAL_MASTER_KEY` 与目标实例的对应值比较。如果不一致，就拒绝继续，并输出应写入 `.env` 的两行内容。这项检查是该命令的关键：否则恢复看似成功，但数天后所有邮箱都无法通过身份验证，而且没有错误能直接指出根因。
 
-## Moving an instance
+## 迁移实例 [#moving-an-instance]
 
-Two ways, and they answer different questions.
+有两种方式，分别适用于不同需求。
 
-### The whole instance, to a new host
+### 将整个实例迁移到新主机 [#the-whole-instance-to-a-new-host]
 
-Every workspace, every user, the platform admins, the API keys.
+迁移所有工作区、所有用户、平台管理员和 API 密钥。
 
 <Steps>
 
 <Step>
 
-### Install Warmbly on the new host
+### 在新主机上安装 Warmbly [#install-warmbly-on-the-new-host]
 
 ```bash
 curl -fsSL https://warmbly.com/install.sh | sh -s -- --host <new-hostname>
@@ -248,9 +248,9 @@ curl -fsSL https://warmbly.com/install.sh | sh -s -- --host <new-hostname>
 
 <Step>
 
-### Put the old keys in the new `.env`
+### 将原有密钥写入新的 `.env` [#put-the-old-keys-in-the-new-env]
 
-Copy `CREDENTIALS_ENCRYPTION_KEY` and `KMS_LOCAL_MASTER_KEY` from the old install, then recreate the containers so they take:
+从旧安装复制 `CREDENTIALS_ENCRYPTION_KEY` 和 `KMS_LOCAL_MASTER_KEY`，然后重新创建容器，使其生效：
 
 ```bash
 docker compose -p warmbly up -d
@@ -260,7 +260,7 @@ docker compose -p warmbly up -d
 
 <Step>
 
-### Restore the bundle
+### 恢复备份包 [#restore-the-bundle]
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl restore --file /data/blobs/warmbly.tar.gz
@@ -271,202 +271,137 @@ docker compose -p warmbly restart
 
 <Step>
 
-### Check it
+### 检查结果 [#check-it]
 
 ```bash
 docker compose -p warmbly exec backend warmblyctl status
 ```
 
-Mailboxes should be connected, not needing a reconnect. If they need one, the keys did not match.
+邮箱应保持已连接状态，无须重新连接。如果需要重新连接，说明密钥不匹配。
 
 </Step>
 
 </Steps>
 
-The `rsync` alternative works too and is sometimes simpler, as long as the stack is **stopped** first: a running Postgres data directory copied file by file is not a consistent snapshot and can restore as a corrupt cluster. Stop it, copy the data root and the `.env` to the new host, start it there. It moves the same bytes; the bundle exists because it is the version that survives a different host layout, a different Postgres, a live instance, and a partial copy.
+也可以使用 `rsync`，有时更简单，但必须先**停止**整个服务栈：逐个复制运行中的 Postgres 数据目录文件，无法得到一致快照，恢复出的数据库集群可能损坏。先停止服务，将数据根目录和 `.env` 复制到新主机，再在那里启动。迁移的数据字节相同；备份包的作用在于，它能够应对不同的主机目录布局、不同的 Postgres、仍在运行的实例以及不完整复制。
 
-### One workspace, to another instance
+### 将单个工作区迁移到另一实例 [#one-workspace-to-another-instance]
 
-[Workspace export and import](/guides/workspace-export-import/) moves a single organization's data between two running instances, re-sealing its secrets for the destination's keys. That is the per-customer tool; the bundle here is the instance-level one. They are not interchangeable: a bundle cannot be applied to one workspace, and a workspace archive cannot restore an instance.
+[工作区导出与导入](/guides/workspace-export-import/)用于在两个运行中的实例之间迁移单个组织的数据，并使用目标实例的密钥重新加密敏感信息。这是面向单个客户的迁移工具；本页的备份包则面向整个实例。两者不能互换：备份包不能只应用到一个工作区，工作区归档也无法恢复整个实例。
 
-### Mailbox sync recovery data
+### 邮箱同步恢复数据 [#mailbox-sync-recovery-data]
 
-New durable admissions retain an organization-encrypted arrival payload in `sync_arrival_outbox` alongside the provider map. The queue tracks delivery stages and retries consumer failures under the original message identity. A delivered arrival is removed; an unresolved arrival is retained for retry until it completes or its owning mailbox or organization is deleted. Deleting the mailbox intentionally removes that mailbox's pending work. This queue does not schedule new sends or authorize repeating a send.
+新的持久化接收操作会在 `sync_arrival_outbox` 中保存使用组织密钥加密的到达事件载荷，同时保留服务商映射。队列跟踪交付阶段，并在消费者失败后使用原有邮件身份重试。已交付的到达事件会被移除；尚未解决的事件保留以供重试，直到完成，或其所属邮箱、组织被删除。删除邮箱会有意移除该邮箱的待处理工作。此队列不会安排新的发送，也不会授权重复发送。
 
-Provider reoffers check the canonical message map before admitting new mail. IMAP copies with the same RFC Message-ID in one fetched batch use that same known-message path after the first admission, preserving the stored body and identity without consuming the message budget twice. Live copies still reconcile their UID and flags. This worker fix needs no schema change or backfill, and does not infer historical delivery success from a legacy map without durable admission proof.
+服务商再次提交邮件时，系统会先检查规范邮件映射，再接收新邮件。同一抓取批次中具有相同 RFC Message-ID 的 IMAP 副本，在首次接收后也会走已知邮件处理路径，保留已存正文和邮件身份，不会重复消耗邮件额度。仍存在的副本会继续核对 UID 和标记。此工作节点修复无须修改数据库结构或回填，也不会根据缺乏持久化接收证明的旧映射推断历史交付成功。
 
-A full-instance backup must preserve the database, wrapped organization keys, the root key needed to unwrap them, and referenced message-body storage together. Restoring a queue without its keys or body objects cannot restore delivery. Use the normal consistent instance backup, not a separate copy of just the queue. A workspace archive excludes the queue and provider mappings whose arrivals are still pending. Drain pending work on the source before moving a workspace; importing an archive does not resume source-instance delivery.
+完整实例备份必须一起保存数据库、已封装的组织密钥、解封装所需的根密钥，以及引用的邮件正文存储。只恢复队列而没有密钥或正文对象，无法恢复交付。请使用常规的一致性实例备份，不要单独复制队列。工作区归档不包含队列，也不包含到达事件仍待处理的服务商映射。迁移工作区前，请先处理完源实例上的待处理工作；导入归档不会恢复源实例的交付进程。
 
-The consumer logs aggregate pending counts and oldest-arrival age. Arrivals older than five minutes, or delivery/inspection failures continuing for one minute, raise a deduplicated operator alert through the existing operator-notification integration when configured. Logs and notifications contain counts and age, not message bodies or addresses. Operator notifications repeat at most once per fifteen minutes; without an operator channel, monitor consumer logs for `sync arrival queue needs attention`. An empty queue is not proof of provider success or historical completeness.
+消费者会记录待处理总数和最早到达事件的年龄。到达事件等待超过五分钟，或交付、检查连续失败一分钟时，如果已配置现有的运维通知集成，就会发送去重后的运维告警。日志和通知包含计数及等待时间，不包含邮件正文或地址。运维通知最多每十五分钟重复一次；未设置运维通知渠道时，请监控消费者日志中的 `sync arrival queue needs attention`。队列为空不能证明服务商操作成功，也不能证明历史数据完整。
 
-`sync arrival delivery diagnostics` adds count/duration-only summaries roughly every thirty seconds (the first returned pass and a final shutdown summary can log immediately). Fixed stage names distinguish claim, key lookup, existing decrypt/decode work, NEW_EMAIL/bounce/complaint handler attempts, checkpoint/retire/retry writes and backlog observation. NEW_EMAIL also measures existing warmup-verification, filing/defer, inbox-write, realtime/webhook and optional automation helper attempts. No diagnostic query, payload inspection or additional decryption is performed; the summary has no identifiers, addresses, contents, credentials or raw errors. Existing unrelated logs keep their original behavior.
+`sync arrival delivery diagnostics` 大约每三十秒输出一次仅含计数和耗时的汇总（首次返回的处理轮次及最终关闭汇总可立即记录）。固定阶段名称用于区分任务领取、密钥查找、现有解密与解码工作、NEW_EMAIL／退信／投诉处理器尝试、检查点／移除／重试写入，以及积压观察。NEW_EMAIL 还会测量现有预热验证、归档或延期、收件箱写入、实时通知与 Webhook，以及可选自动化辅助函数的尝试。不会执行额外诊断查询、检查载荷或增加解密；汇总不含标识符、地址、内容、凭据或原始错误。其他无关日志保持原有行为。
 
-Counts are attempts, including failed calls, empty claims and helper calls that find no work, not row completions or provider successes. A checkpoint or retire attempt does not prove a matching row changed. Nested durations are inclusive and cannot be added together. `pass_duration_ms` sums returned pass work in the reporting window, including backlog checks but excluding the five-second ticker wait; last/max pass duration and actual context cancellation/deadline counts are separate. Reports occur after a pass returns, so a dependency that never returns is not diagnosed as a completed pass. The diagnostics do not change the thirty-second timeouts, thirty-two-row batch limit, stage order, lease/retry policy or acknowledgement guards, and do not establish full inbox freshness.
+计数表示尝试次数，包括失败调用、未领到任务及未发现工作的辅助函数调用，而非完成行数或服务商成功次数。尝试写入检查点或移除记录，不代表匹配记录确实发生变化。嵌套耗时包含子步骤，不能相加。`pass_duration_ms` 汇总报告窗口内已返回处理轮次的工作耗时，包括积压检查，但不包括五秒定时器等待；最近一次和最长轮次耗时，以及实际上下文取消、截止时间到期的计数分别记录。报告只在轮次返回后生成，因此永不返回的依赖调用不会被当作已完成轮次进行诊断。这些诊断不会改变三十秒超时、每批三十二行限制、阶段顺序、租约与重试策略或确认保护，也不能证明收件箱已完全同步到最新状态。
 
-The backend also logs `sync arrival admission deferred; durability not confirmed` when it cannot acknowledge an arrival. Diagnostics contain a server-controlled failure stage, a validated SQLSTATE when available, valid user, mailbox and arrival UUIDs, and request identifiers accepted by the middleware's bounded tracing policy. They exclude raw error text, database error details, provider message identifiers, message contents and encryption material. The worker still receives only an unacknowledged admission and retains its cursor. These are control-plane observations, not proof of a provider outage.
+后端无法确认到达事件时，还会记录 `sync arrival admission deferred; durability not confirmed`。诊断包含服务器控制的失败阶段、可用时经过验证的 SQLSTATE、有效的用户／邮箱／到达事件 UUID，以及中间件有界跟踪策略接受的请求标识符。不会包含原始错误文本、数据库错误详情、服务商邮件标识符、邮件内容或加密材料。工作节点仍只会收到未获确认的接收结果，并保留游标。这些是控制平面的观察结果，不能证明服务商发生故障。
 
-See [upgrade order and downgrade limits](/development/install/#mailbox-sync-upgrade-order). Legacy maps without stored arrival payloads cannot reconstruct historical lost mail.
+参见[升级顺序与降级限制](/development/install/#mailbox-sync-upgrade-order)。未保存到达事件载荷的旧映射无法重建历史丢失邮件。
 
-## Outbound calls
+## 出站调用 [#outbound-calls]
 
-### Diagnostic and managed-consent portability
+### 诊断数据与托管授权的可迁移性 [#diagnostic-and-managed-consent-portability]
 
-Warmup placement aggregates travel in a [workspace archive](/guides/workspace-export-import/). Raw `warmup_received` first-observation, authentication-header and provider-thread provenance is explicitly instance-local and is not exported. Imported task lineage, parent receipt/message handles, queue revisions and worker dispatch nonces/results reset, so historical metadata does not authorize a continuation or replay on another instance.
+预热投递位置汇总随[工作区归档](/guides/workspace-export-import/)迁移。原始 `warmup_received` 的首次观察、身份验证标头和服务商线程来源信息明确属于当前实例，不会导出。导入的任务谱系、父回执或邮件句柄、队列修订号，以及工作节点调度随机数和结果都会重置，因此历史元数据不能授权在另一个实例上继续执行或重放。
 
-Managed OAuth consent tables contain operation/reference hashes and restrictive history, not authorization codes, PKCE verifiers, raw session handles or credentials. History remains until organization deletion. Browser/PKCE state in Redis expires after ten minutes; encrypted provider credentials retain their normal Cloud mailbox lifetime. Import keeps restrictive history while clearing source-instance/session/remote/planned-account/activation handles. Disconnect does not erase that history, and downgrade refuses to discard it. Revoking instance access does not delete the independently Cloud-owned provider grant or mailbox; pause or delete that mailbox on Cloud separately. See [managed consent recovery](/guides/warmbly-cloud/).
+托管 OAuth 授权表包含操作或引用哈希及限制性历史记录，不包含授权码、PKCE 验证器、原始会话句柄或凭据。历史记录保留至组织被删除。Redis 中的浏览器与 PKCE 状态十分钟后过期；加密的服务商凭据按 Cloud 邮箱的正常生命周期保留。导入时保留限制性历史，同时清除源实例、会话、远程、计划账户和激活句柄。断开连接不会删除该历史，降级也会拒绝丢弃它。撤销实例访问权限不会删除独立属于 Cloud 的服务商授权或邮箱；需另行在 Cloud 暂停或删除该邮箱。参见[托管授权恢复](/guides/warmbly-cloud/)。
 
-A self-hosted Warmbly makes no outbound call of its own except the one below, which is off with a single setting. The mail host lookup and company logos are listed too: both are off on a self-host unless you turn them on.
+自托管 Warmbly 除下列一项之外，不会自行发起对外调用，而该项可通过一个设置关闭。下表还列出了邮件主机查询和公司标志：自托管环境默认都关闭，只有主动开启后才会使用。
 
-| Call | When | Turn it off |
+| 调用目标 | 调用时机 | 如何关闭 |
 |---|---|---|
-| GitHub releases API | Every 30 minutes, to tell the admin panel a newer version exists | `UPDATE_CHECK_ENABLED=false` |
-| Company logos | While the contact list is on screen, the browser (not the server) asks DuckDuckGo's favicon service (`icons.duckduckgo.com`) for the logo of each contact's company domain, once per domain. Only the domain is sent, never the address or anything else about the contact, and personal inboxes (Gmail, Outlook.com and the like) are never looked up. Without it, contacts show their initials | Off by default on a self-host; `WARMBLY_COMPANY_LOGOS=on` on the web container turns it on (it is on for Warmbly Cloud) |
-| Mail host lookup | When a [mailbox import](/guides/mailbox-import/) meets a domain whose MX records do not name a known provider, and once for each domain of a mailbox whose host is not recorded yet (one connected before hosts were recorded, or one connected by hand over SMTP and IMAP). Mozilla's Thunderbird ISPDB (`autoconfig.thunderbird.net`) is asked for the settings of that domain (or of its MX host's domain), after the domain's own autoconfig file. Only the domain name is sent, and the answer is cached for 6 hours. Without it, detection uses the domain's DNS and its own autoconfig file only | Off by default on a self-host; `MAILHOST_ISPDB=true` turns it on (it is on for Warmbly Cloud) |
+| GitHub 发布版本 API | 每 30 分钟检查一次，以便管理面板提示有新版本 | `UPDATE_CHECK_ENABLED=false` |
+| 公司标志 | 显示联系人列表时，浏览器（非服务器）向 DuckDuckGo 网站图标服务（`icons.duckduckgo.com`）请求各联系人公司域名的标志，每个域名一次。只发送域名，绝不发送邮箱地址或其他联系人信息；不会查询 Gmail、Outlook.com 等个人邮箱域名。关闭后，联系人显示姓名首字母 | 自托管默认关闭；在 Web 容器上设置 `WARMBLY_COMPANY_LOGOS=on` 可开启（Warmbly Cloud 默认开启） |
+| 邮件主机查询 | 当[邮箱导入](/guides/mailbox-import/)遇到 MX 记录无法对应已知服务商的域名时查询；对于尚未记录主机的邮箱域名，也会查询一次（包括主机记录功能上线前连接的邮箱，或手动通过 SMTP、IMAP 连接的邮箱）。先检查域名自身的自动配置文件，再向 Mozilla Thunderbird ISPDB（`autoconfig.thunderbird.net`）查询该域名或其 MX 主机域名的设置。只发送域名，结果缓存 6 小时。关闭后，仅使用域名 DNS 和自身自动配置文件进行识别 | 自托管默认关闭；设置 `MAILHOST_ISPDB=true` 可开启（Warmbly Cloud 默认开启） |
 
-These are made only when a workspace uses the feature behind them, so an instance where nobody does makes none of them:
+以下调用只在工作区使用对应功能时发生；如果实例上无人使用这些功能，就不会发起这些调用：
 
-| Call | When |
+| 调用目标 | 调用时机 |
 |---|---|
-| Inbox vendor APIs (`api.inboxkit.com`, `api.zapmail.ai`, `api.mailforge.ai`, `api.infraforge.ai`, `api.maildoso.com`, `api.cheapinboxes.com`, `server.scaledmail.com`) | A workspace connects a vendor account, lists its mailboxes, imports them (each row's credentials are read as it connects), or has a vendor mailbox stopped on a connection error (checked every 15 minutes, at most once every 6 hours per mailbox). Also when the workspace opens its sending domains (the domain list of each active vendor account, at most once every five minutes per account), forwards a domain through its vendor, or has a tracking `CNAME` written there. Only that workspace's key is sent, to that vendor |
-| Google (`accounts.google.com`, `oauth2.googleapis.com`, `admin.googleapis.com`, `gmail.googleapis.com`) | A workspace creates, checks or uses a Google Workspace grant: the administrator's sign-in when that is how the domain is proved, token minting for the grant's addresses, the admin's directory entry and the domain's directory when picking mailboxes, and a Gmail profile read when a grant or mailbox is verified. Grants are re-checked hourly |
-| Microsoft (`login.microsoftonline.com`, `graph.microsoft.com`) | A workspace creates, checks or uses a Microsoft 365 grant: the administrator's consent sign-in, application token minting for the tenant, the organization's users, and a mailbox read when one connects. Grants are re-checked hourly |
-| DNS lookups | A workspace sets up a root redirect or a domain-wide tracking host, or proves a Google Workspace domain by DNS: `TXT`, address and `CNAME` lookups for that domain, through the host's resolver. Pending redirects are re-checked every 10 minutes, verified ones every 6 hours. The sending-domain authentication check (about once a day per domain, and on demand) reads SPF, DKIM and DMARC the same way, and when the host's resolver does not return a record it asks that domain's own nameservers directly on port 53 (never one on a private or loopback address) |
-| The redirect's own domain | Once a root redirect's DNS verifies, the backend opens `http://<domain>/` and `https://<domain>/` like a visitor, without following it off the domain, to see whether the redirect answers. Only public addresses on ports 80 and 443 are opened. Repeated with the DNS check: every 10 minutes while visitors do not get the redirect (for two weeks after it verified), every 6 hours otherwise |
-| Warmbly Cloud (`api.warmbly.com`, or `WARMBLY_CLOUD_URL`) | A linked instance has a root redirect [served from Warmbly Cloud](/guides/sending-domains/#serve-it-from-warmbly-cloud): the domain, the website and the `www` setting, with the instance's link token, when it is saved, moved, checked or removed, and whenever the instance re-reads Cloud's verdict (on the same schedule as its own redirects) |
+| 邮箱供应商 API（`api.inboxkit.com`、`api.zapmail.ai`、`api.mailforge.ai`、`api.infraforge.ai`、`api.maildoso.com`、`api.cheapinboxes.com`、`server.scaledmail.com`） | 工作区连接供应商账户、列出其邮箱、导入邮箱（每行连接时读取其凭据），或供应商邮箱因连接错误而停止时（每 15 分钟检查一次，每个邮箱最多每 6 小时检查一次）。工作区打开发信域名页面时也会调用（获取各活跃供应商账户的域名列表，每账户最多五分钟一次），通过供应商转发域名或向其写入跟踪 `CNAME` 时同样会调用。只向该供应商发送该工作区的密钥 |
+| Google（`accounts.google.com`、`oauth2.googleapis.com`、`admin.googleapis.com`、`gmail.googleapis.com`） | 工作区创建、检查或使用 Google Workspace 授权时：通过管理员登录证明域名、为授权地址签发令牌、选择邮箱时读取管理员目录条目和域名目录，以及验证授权或邮箱时读取 Gmail 个人资料。授权每小时复查一次 |
+| Microsoft（`login.microsoftonline.com`、`graph.microsoft.com`） | 工作区创建、检查或使用 Microsoft 365 授权时：管理员登录并同意、为租户签发应用令牌、读取组织用户，以及连接邮箱时读取邮箱。授权每小时复查一次 |
+| DNS 查询 | 工作区配置根域名重定向、域级跟踪主机，或通过 DNS 证明 Google Workspace 域名时：使用主机解析器查询该域名的 `TXT`、地址和 `CNAME` 记录。待验证重定向每 10 分钟复查一次，已验证重定向每 6 小时复查一次。发信域名身份验证检查（每域名约每天一次，也可按需触发）以相同方式读取 SPF、DKIM 和 DMARC；如果主机解析器未返回记录，会直接通过 53 端口查询该域名自身的权威名称服务器（绝不访问私有地址或回环地址） |
+| 重定向自身的域名 | 根域名重定向通过 DNS 验证后，后端会像访客一样访问 `http://<domain>/` 和 `https://<domain>/`，但不跟随跳出该域名的重定向，以确认重定向是否响应。只访问 80、443 端口的公网地址。复查与 DNS 检查同步：访客尚未获得重定向时每 10 分钟检查一次（限验证后的两周内），其他情况下每 6 小时一次 |
+| Warmbly Cloud（`api.warmbly.com` 或 `WARMBLY_CLOUD_URL`） | 已关联实例具有[由 Warmbly Cloud 提供服务](/guides/sending-domains/#serve-it-from-warmbly-cloud)的根域名重定向时，在保存、迁移、检查或删除该重定向，以及重新读取 Cloud 判定结果时（与实例自身重定向使用相同计划），会发送域名、目标网站和 `www` 设置，并附带实例关联令牌 |
 
-Everything else is you: mail through the mailboxes you connect, DNS lookups for the domains you check, and whatever integrations you configure. There is no telemetry, no phone-home, and no license check.
+其他调用均由你配置的功能产生：通过所连接邮箱收发邮件、查询待检查域名的 DNS，以及运行已配置的集成。没有遥测、没有主动回传，也没有许可证检查。
 
-### Error reporting
+### 错误报告 [#error-reporting]
 
-An instance reports errors nowhere unless you point it somewhere. Every service reads its own credentials and none of them ship with any, so a default install sends no crash, no stack trace and no browser error to anybody, including us.
+除非指定目标，否则实例不会向任何地方上报错误。各服务读取自己的凭据，且默认都不附带凭据，因此默认安装不会向任何人（包括我们）发送崩溃信息、堆栈跟踪或浏览器错误。
 
-Two backends are supported and you choose either, both, or neither. PostHog is the default one; Sentry works exactly as it always has.
+支持两种后端，可以选择任意一种、同时使用两种，或都不使用。PostHog 是默认方案；Sentry 的使用方式保持不变。
 
-| Service | PostHog | Sentry |
+| 服务 | PostHog | Sentry |
 |---|---|---|
-| Backend, consumer, worker | `POSTHOG_KEY` | `SENTRY_DSN` |
-| Forms service | `POSTHOG_KEY` | `SENTRY_DSN` |
-| Tracking service | `POSTHOG_KEY` | `SENTRY_DSN` |
-| Realtime service | `POSTHOG_KEY` | `SENTRY_DSN` |
-| Dashboard and admin containers | `WARMBLY_POSTHOG_KEY` | `WARMBLY_SENTRY_DSN` |
-| Public form pages | `WARMBLY_POSTHOG_KEY` on the forms service | `WARMBLY_SENTRY_DSN` on the forms service |
+| 后端、消费者、工作节点 | `POSTHOG_KEY` | `SENTRY_DSN` |
+| 表单服务 | `POSTHOG_KEY` | `SENTRY_DSN` |
+| 跟踪服务 | `POSTHOG_KEY` | `SENTRY_DSN` |
+| 实时服务 | `POSTHOG_KEY` | `SENTRY_DSN` |
+| 控制台和管理面板容器 | `WARMBLY_POSTHOG_KEY` | `WARMBLY_SENTRY_DSN` |
+| 公开表单页面 | 表单服务上的 `WARMBLY_POSTHOG_KEY` | 表单服务上的 `WARMBLY_SENTRY_DSN` |
 
-`POSTHOG_HOST` decides which PostHog receives them, including one you run yourself, and `POSTHOG_ERROR_TRACKING=false` turns error reporting off while leaving the key configured for the product analytics below. A Sentry DSN names whatever Sentry Cloud project, self-hosted Sentry or Sentry-compatible server you like.
+`POSTHOG_HOST` 决定接收数据的 PostHog 实例，也可以是你自行运行的实例；`POSTHOG_ERROR_TRACKING=false` 会关闭错误上报，同时保留密钥供下述产品分析使用。Sentry DSN 可以指向你选择的 Sentry Cloud 项目、自托管 Sentry 或兼容 Sentry 的服务器。
 
-Leave them unset, which is the default the installer writes, and nothing leaves the process: there is no host to contact and nothing to opt out of. Errors still reach that service's own log, as they always did. The dashboard, the admin panel and form pages go further and load no reporting code at all, so there is not even a script to block.
+保持未设置状态（即安装程序写入的默认状态），就不会有数据离开进程：没有要联系的主机，也无须退出任何收集。错误仍像以前一样写入服务自身日志。控制台、管理面板和表单页面甚至完全不加载上报代码，因此连需要拦截的脚本都不存在。
 
-What a reported error carries is the exception, its stack trace, the service, the environment and the build, plus enough context to answer it:
+上报错误包含异常、堆栈跟踪、服务、环境、构建版本，以及足以排查问题的上下文：
 
-- **Which workspace and user.** A browser exception carries the organization id and user id of whoever hit it, and a server-side one carries them for the request that panicked, along with its route and request id. That is what makes "this customer says campaigns are broken" a search rather than a guess. On the server side that is a property and nothing more: no person is identified. In the dashboard and the admin panel, with a browser key set, the signed-in user is identified to PostHog (a person profile with their email and name, and an identifier in local storage and a cookie), so the exception belongs to that person; see usage analytics below.
-- **What led to it.** The last routes visited and the last API calls that failed, with their method, path, status and request id.
-- **Nothing else about the request.** No headers, no bodies, no query strings. Session replay exists only in the dashboard and the admin panel, only with a browser key set, and `WARMBLY_POSTHOG_SESSION_REPLAY=false` turns it off; the marketing site and public form pages are never recorded.
+- **哪个工作区和用户。** 浏览器异常包含触发该异常的组织 ID 和用户 ID；服务端异常包含发生 panic 的请求对应的组织 ID、用户 ID、路由和请求 ID。这样，“某客户反馈营销活动出问题”就可以通过搜索排查，无须猜测。在服务端，这些只是属性，不会据此识别个人。在控制台和管理面板中，如果配置了浏览器密钥，已登录用户会在 PostHog 中被识别（建立包含邮箱和姓名的个人档案，并在本地存储和 Cookie 中保存标识符），因此异常会关联到该用户；详见下文使用情况分析。
+- **错误发生前的操作。** 最近访问的路由和最近失败的 API 调用，以及对应方法、路径、状态和请求 ID。
+- **不包含请求的其他内容。** 不含请求头、请求体或查询字符串。会话回放仅存在于控制台和管理面板，且仅在设置浏览器密钥后启用；`WARMBLY_POSTHOG_SESSION_REPLAY=false` 可将其关闭。营销网站和公开表单页面从不录制。
 
-Server-side reports that belong to no request, a scheduled job or a worker, are attributed to the process that raised them and to nobody.
+不属于任何请求的服务端报告（如计划任务或工作节点报告）只归属于触发它的进程，不归属于任何人。
 
-The `warmbly` CLI runs on your own machine and reports nowhere, ever. It has nothing to set.
+`warmbly` CLI 在你的机器上运行，始终不向任何地方上报，也没有需要设置的项目。
 
-### Usage analytics
+### 用量分析 [#usage-analytics]
 
-There are none. A self-hosted instance loads no analytics script and sends no usage data, not aggregated, not anonymised, not "to help us improve the product".
+没有使用情况分析。自托管实例不加载分析脚本，也不发送任何使用数据，无论是汇总数据、匿名数据，还是以“帮助改进产品”为名的数据。
 
-The hosted service at warmbly.com does measure its own marketing site, dashboard and admin panel, including session replay in the two apps, and the code for that ships in the same images you run. It is inert without a key: the installer never asks for one, the `.env` template does not mention it, and a build without one contains no analytics script for you to block. If you want to check, `grep posthog` the served assets of your own dashboard.
+warmbly.com 托管服务会分析自身营销网站、控制台和管理面板的使用情况，也包括两个应用中的会话回放。这些代码包含在你运行的同一套镜像中，但没有密钥时不会生效：安装程序从不询问该密钥，`.env` 模板也不提及；未配置密钥的构建不包含需要拦截的分析脚本。如需核实，可对自己控制台实际提供的静态资源执行 `grep posthog`。
 
-If you do want product analytics on your own instance, the variables are on [configuration](/development/configuration/#product-analytics-and-session-replay) and they accept a self-hosted PostHog. The server-side `POSTHOG_KEY` carries the backend's error tracking and its product events; the browser-side `WARMBLY_POSTHOG_KEY` is what turns on the dashboard's and the admin panel's analytics, session replay and browser errors, and `WARMBLY_POSTHOG_ERROR_TRACKING` and `WARMBLY_POSTHOG_SESSION_REPLAY` switch those last two off separately. That is your decision to make, and nothing about it points at us.
+如果确实希望在自己的实例上使用产品分析，可在[配置](/development/configuration/#product-analytics-and-session-replay)中查看变量，并可将目标设为自托管 PostHog。服务端的 `POSTHOG_KEY` 用于后端错误跟踪和产品事件；浏览器端的 `WARMBLY_POSTHOG_KEY` 用于开启控制台及管理面板的分析、会话回放和浏览器错误上报，`WARMBLY_POSTHOG_ERROR_TRACKING` 和 `WARMBLY_POSTHOG_SESSION_REPLAY` 分别控制后两项是否关闭。是否启用由你决定，数据目标不会因此指向我们。
 
-## Diagnostic evidence and sending restrictions
+## 诊断证据与发送限制 [#diagnostic-evidence-and-sending-restrictions]
 
-Diagnostic participation, shared limits, durable recovery evidence and operator repair history are organization data. Raw MIME is never persisted by the bounded Gmail/Graph DKIM verifier. Minimal verifier/version/time results can attach to historical receipt evidence; source-worker/message authorization nonces are excluded from workspace moves. The SQL reconciliation outbox is source-instance-local and retained by full database backups, not organization archives. Drain it before moving a workspace; pending effects survive restart, delivered rows expire after seven days, and organization/task deletion cascades their removal. Repair audit history lasts with the organization. Rollback refuses pending effects, unknown sends and retained restrictive state. See [send safety](/development/send-safety/).
+诊断参与情况、共享限制、持久化恢复证据和运维修复历史都属于组织数据。对 Gmail／Graph 执行有界 DKIM 验证时，绝不会持久化原始 MIME。历史回执证据可以附带最少量的验证器、版本、时间和结果信息；源工作节点与邮件的授权随机数不随工作区迁移。SQL 对账发件箱仅属于源实例，保留在完整数据库备份中，不包含在组织归档中。迁移工作区前请清空该队列；待执行效果会在重启后保留，已交付记录七天后过期，删除组织或任务会级联删除对应记录。修复审计历史随组织保留。存在待执行效果、结果未知的发送或仍保留的限制状态时，回滚会被拒绝。参见[发送安全](/development/send-safety/)。
 
-## Retained node evidence and admin device requests
+## 保留的节点诊断证据与管理员设备请求 [#retained-node-evidence-and-admin-device-requests]
 
-Recent fleet evidence uses existing primary Redis, not a SQL migration or
-external journal reader. Each node retains at most 1,000 allowlisted events for
-one hour, pruned by observation time/count on ingest and time-filtered on reads.
-Capture metadata expires after two hours; retry deduplication after one hour.
-Ingestion is limited to 30/node/minute. Each process has a 256-event memory
-queue, up to 32 events/batch and at most three bounded transport attempts.
-Permanent HTTP failures are not retried; rate limiting pauses capture uploads
-for the server's bounded `Retry-After` interval (60 seconds by default).
-The rejected batch counts as known loss. Known drops
-reset with the process ID; crashes/lost acknowledgements are not fully measured.
+近期节点集群诊断证据使用现有主 Redis，不需要 SQL 迁移或外部日志读取器。每个节点最多保留 1,000 条允许列表内的事件，保留一小时；写入时按观察时间和数量清理，读取时按时间筛选。采集元数据两小时后过期，重试去重记录一小时后过期。接收上限为每节点每分钟 30 次。各进程具有容量 256 条事件的内存队列，每批最多 32 条，最多进行三次有界传输尝试。永久性 HTTP 失败不会重试；遇到限流时，会按服务器给出的有界 `Retry-After` 间隔（默认 60 秒）暂停采集上传。被拒绝的批次计入已知丢失。已知丢弃计数随进程 ID 重置；进程崩溃及确认丢失无法被完整计量。
 
-Data contains fixed event names, node/mailbox/event/process UUIDs, timestamps,
-canonical severity/category and numeric status/counts. No addresses, subjects,
-message bodies, headers, raw errors, folder names, provider tokens, passwords
-or broker connection strings are forwarded. Allowlists run before transport
-and at ingest/read. This instance-local evidence is not organization mail data
-and is excluded from workspace export/import; it is not a delivery receipt.
+数据包含固定事件名称、节点／邮箱／事件／进程 UUID、时间戳、规范化严重级别和类别，以及数字状态或计数。不转发邮箱地址、主题、邮件正文、标头、原始错误、文件夹名称、服务商令牌、密码或消息代理连接字符串。传输前、接收时和读取时均执行允许列表检查。这些仅属于当前实例的诊断证据不是组织邮件数据，不包含在工作区导出或导入中，也不属于投递回执。
 
-Generic runtime error coverage is explicitly unavailable across all logger
-sources. The worker Zap hook emits coarse `worker_error` events, but worker
-Zerolog and consumer standard-log/Zerolog errors are not captured. Existing
-typed provider/sync/control-plane decision hooks remain available separately.
-Neither recent empty capture nor a zero known-drop counter proves zero errors.
-The API, administrator CLI and Fleet detail disclose this source gap instead
-of forwarding arbitrary log text or trying to infer severity from raw strings.
+系统明确不提供覆盖全部日志来源的通用运行时错误采集。工作节点的 Zap 钩子会生成粗粒度 `worker_error` 事件，但不会采集工作节点的 Zerolog 错误，也不会采集消费者的标准日志或 Zerolog 错误。现有的类型化服务商、同步和控制平面决策钩子仍独立可用。近期采集为空或已知丢弃计数为零，都不能证明没有错误。API、管理员 CLI 和节点集群详情会明确显示这一来源覆盖缺口，而不会转发任意日志文本或尝试从原始字符串推断严重级别。
 
-`NODE_LOG_TOKEN` is a separate 256-bit node-enrollment ingestion credential.
-Its hash stays in Redis until rejoin rotates it or node deletion revokes it;
-enrollment identity is not an event and does not expire with history. Protect
-the node environment like other credentials; never publish `env_b64` or include
-raw credentials in support bundles. Node deletion removes its credential,
-events and capture metadata; TTL retry markers age out independently. Redis
-eviction/restore may lose credential hashes: re-enroll, never fall back to shared
-broker authentication for logs.
+`NODE_LOG_TOKEN` 是通过节点注册获得的独立 256 位日志接收凭据。其哈希保存在 Redis 中，直到重新加入时轮换，或删除节点时撤销；注册身份不属于事件，不会随历史记录过期。请像保护其他凭据一样保护节点环境；绝不要公开 `env_b64`，也不要在支持包中包含原始凭据。删除节点会移除其凭据、事件和采集元数据；具有 TTL 的重试标记独立过期。Redis 淘汰或恢复可能导致凭据哈希丢失：此时应重新注册，绝不能回退到共享消息代理身份验证来提交日志。
 
-Admin device grants/indexes/hashed session-bound consent tokens expire within
-five minutes. Device secrets are hashed; access/refresh tokens are not stored
-there for deferred delivery. Rate counters expire after one/ten minutes.
-Successful issuance uses existing SQL sessions and admin audit logs, retaining
-the original MFA flag/provider/proof timestamp. Redis loss cancels pending
-handshakes, not issued sessions. No permanent grant datastore/migration is added.
+管理员设备授权、索引及绑定会话的同意令牌哈希会在五分钟内过期。设备密钥只保存哈希；不会为了延迟交付而在其中存储访问令牌或刷新令牌。限流计数器在一或十分钟后过期。成功签发会使用现有 SQL 会话和管理员审计日志，保留原始 MFA 标记、服务商和证明时间戳。Redis 数据丢失会取消待完成握手，但不会取消已签发的会话。不会新增永久授权存储或数据库迁移。
 
-### Upgrade order and coverage
+### 升级顺序与覆盖范围 [#upgrade-order-and-coverage]
 
-Deploy the backend first, then upgrade node binaries/images. Existing nodes need
-authenticated re-enrollment to receive `NODE_LOG_TOKEN` in the protected join
-environment. The existing broker key is fleet-wide, not proof of ownership of
-one UUID; this release does not exchange it for per-node evidence authority or
-silently rotate another node's credential. Upgrading alone therefore leaves
-evidence unavailable when the node has no enrollment-issued log credential.
+先部署后端，再升级节点二进制文件或镜像。已有节点需要经过身份验证重新注册，才能在受保护的加入环境中获得 `NODE_LOG_TOKEN`。现有消息代理密钥由整个节点集群共享，不能证明对某个 UUID 的所有权；此版本不会用它换取单个节点的诊断证据权限，也不会静默轮换其他节点的凭据。因此，如果节点没有注册时签发的日志凭据，仅升级仍无法获得诊断证据。
 
-For a node installed with the normal join script, obtain a fresh join token
-through Fleet settings (or the existing administrator CLI) and rerun the
-instance's `/join.sh` with the same URL, role and `--config-dir`, retaining the
-original name, region and image-repository options. The script reads
-`WARMBLY_NODE_ID` from the existing `node.env` and sends that UUID in the join
-request. Keep that file and configuration directory in place: removing them
-would enroll a different identity. Do not delete/disconnect the fleet node or
-move its mailboxes. A rejoin does not revoke provider credentials or change
-mailbox assignments. The backend regenerates managed `node.env` from its
-current configuration; `node.local.env` is never truncated and is loaded last.
-Keep local overrides there, not in managed `node.env`, and do not override the
-new `NODE_LOG_TOKEN` with a stale local value. The script performs a normal
-service restart, not a zero-downtime refresh. Do not manually copy secrets.
+对于通过常规加入脚本安装的节点，请在节点集群设置（或现有管理员 CLI）中获取新的加入令牌，再以相同 URL、角色和 `--config-dir` 重新运行该实例的 `/join.sh`，同时保留原来的名称、区域及镜像仓库选项。脚本会从现有 `node.env` 读取 `WARMBLY_NODE_ID`，并在加入请求中发送该 UUID。请保留该文件及配置目录：删除它们会注册成另一个身份。不要删除或断开集群节点，也不要迁移其邮箱。重新加入不会撤销服务商凭据或改变邮箱分配。后端会根据当前配置重新生成受管理的 `node.env`；`node.local.env` 绝不会被截断，并且最后加载。本地覆盖项应写在该文件中，而不是受管理的 `node.env` 中；也不要用过期的本地值覆盖新的 `NODE_LOG_TOKEN`。脚本会执行正常的服务重启，并非零停机刷新。不要手动复制密钥。
 
-Normal first joins persist a random, nonsecret UUID in `node.pending-id` inside
-the same configuration directory before their first request. Failed enrollment
-or a lost successful response can then be retried with the same identity.
-An existing valid UUID in `node.env` takes precedence. A bounded `flock` lock
-(from Linux util-linux) serializes enrollment through configuration writes;
-the response and returned environment must match the chosen UUID before any
-managed configuration is written. Do not remove pending identity state while
-retrying. Dry-run and print-unit do not initialize pending state or take locks.
+正常首次加入时，脚本会在第一次请求前，将随机生成的非机密 UUID 持久化到同一配置目录中的 `node.pending-id`。这样，注册失败或成功响应丢失后，都能使用相同身份重试。现有 `node.env` 中的有效 UUID 优先使用。有界 `flock` 锁（来自 Linux util-linux）将注册至配置写入的过程串行化；在写入任何受管理配置之前，响应和返回的环境都必须与选定 UUID 一致。重试期间不要移除待完成身份状态。试运行和打印服务单元模式不会初始化待完成状态，也不会获取锁。
 
-Manually provisioned nodes must use the existing authenticated enrollment with
-their original UUID and protected configuration, not a newly generated ID.
-New joins receive the log credential automatically. Redis credential-hash loss
-requires the same authorized re-enrollment; no broker/internal-token fallback
-is accepted by log ingestion. Older binaries do not implement capture, and
-coverage remains unavailable until an upgraded process actually sends evidence.
-There is no import of old journal/container logs. Empty fresh capture is not
-proof of health. See [exact diagnostic contracts](/api/endpoints/#platform-node-diagnostics).
-Admin UI/CLI changes are a separate stage; backend endpoints alone do not
-provide the consent page or CLI command.
+手动部署的节点必须使用原有 UUID 和受保护配置，通过现有的身份验证注册流程重新注册，不能生成新 ID。新加入的节点会自动获得日志凭据。Redis 中凭据哈希丢失时，也必须执行相同的授权重新注册流程；日志接收不接受消息代理令牌或内部令牌作为后备。旧版二进制文件不实现采集，只有升级后的进程真正发送证据后，诊断覆盖才可用。不会导入旧 journal 或容器日志。刚启用时采集为空不能证明节点健康。参见[准确的诊断契约](/api/endpoints/#platform-node-diagnostics)。管理界面和 CLI 的变更属于单独阶段；只有后端端点并不会提供同意页面或 CLI 命令。
 
-## See also
+## 另请参阅 [#see-also]
 
-- [Install](/development/install/): the wizard that asks all of this up front
-- [Configuration](/development/configuration/): every variable and every database-backed setting
-- [warmblyctl](/development/warmblyctl/): `backup`, `restore`, and the operator commands
-- [Workspace export and import](/guides/workspace-export-import/): the per-workspace story
+- [安装](/development/install/)：在开始时一次询问上述所有设置的向导
+- [配置](/development/configuration/)：全部变量及存储在数据库中的设置
+- [warmblyctl](/development/warmblyctl/)：`backup`、`restore` 及运维命令
+- [工作区导出与导入](/guides/workspace-export-import/)：单个工作区的数据迁移方式

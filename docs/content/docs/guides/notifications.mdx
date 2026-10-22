@@ -1,153 +1,153 @@
 ---
-title: "Notifications"
-description: "In-app notification feed and per-category preferences."
+title: "通知"
+description: "应用内通知列表与各类别的通知偏好设置。"
 ---
 
-The bell in the dashboard shows your unread notifications, such as bounces, spam complaints, worker downtime and billing alerts. Each person chooses which ones they get and how.
+控制台中的铃铛显示未读通知，例如退信、垃圾邮件投诉、工作节点停机和账单提醒。每位成员可以自行选择接收哪些通知以及接收方式。
 
-## Choose your notifications
+## 选择要接收的通知 [#choose-your-notifications]
 
 <Steps>
 
 <Step>
 
-Open **Settings > Notifications**.
+打开**设置 > 通知**。
 
 </Step>
 
 <Step>
 
-Turn each category on or off. Changes save automatically.
+按类别开启或关闭通知，更改自动保存。
 
 </Step>
 
 <Step>
 
-Under Email delivery, pick how often unread notifications are emailed to you.
+在邮件投递设置中，选择未读通知发送到邮箱的频率。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Feeds are per user, not shared across the workspace.
-- Health alerts are on by default. **Reply received** is off by default, so a large campaign does not flood the feed.
-- Nothing is emailed the moment it happens: unread notifications go out as one bundled email, every 30 minutes by default.
-- Anything you read in the dashboard before the email goes out is never emailed.
-- Every reply still lands in the [Unibox](/guides/unibox/), even with reply notifications off.
+- 通知列表按用户独立，不在工作区内共享。
+- 健康提醒默认开启。**收到回复**默认关闭，避免大型营销活动产生大量通知。
+- 通知不会一发生就逐条发送邮件。未读通知会合并为一封邮件，默认每 30 分钟发送一次。
+- 邮件发出前已在控制台读过的通知，不会再通过邮件发送。
+- 即使关闭回复通知，所有回复仍会进入[统一收件箱](/guides/unibox/)。
 
 <Fold>
 
-## How the bell and feed work
+## 通知铃铛与通知列表的工作方式 [#how-the-bell-and-feed-work]
 
-The bell in the dashboard chrome shows your unread count. Every time you open it, it starts on **Unread**, showing only notifications you have not read, newest first. If there is nothing new, it shows "You're all caught up." Switch to **All** to see recent history, including items already read. Each notification has a title, optional detail, and a link to the thing it is about. Reading one clears it from **Unread** and the count.
+控制台框架中的铃铛显示未读数量。每次打开时，默认进入**未读**，只展示尚未阅读的通知，最新的排在前面。没有新通知时，显示“所有通知均已处理”。切换到**全部**可查看近期历史，包括已读项目。每条通知包含标题、可选详情和相关内容链接。读过后，会从**未读**列表和未读计数中移除。
 
-**Feeds are per user**, not shared across the workspace, so two teammates see different things depending on what they own and what they enabled.
+**通知按用户独立**，不在工作区共享，因此两位成员会根据各自负责的内容和已启用类别看到不同通知。
 
-The feed floats above the dashboard instead of being clipped by the header or page. It stays within the screen on narrow displays, with the list scrolling while its filters and settings link remain accessible. Press outside it, press Escape, or open another dashboard menu to close it.
+通知列表浮于控制台上方，不会被页眉或页面裁切。窄屏上也保持在屏幕内，列表滚动时筛选器和设置链接仍可使用。点击外部、按 Escape 或打开其他控制台菜单即可关闭。
 
-<Callout type="info" title="Realtime by default">
-The feed and the bell count update live, without refreshing.
+<Callout type="info" title="默认实时更新">
+通知列表和铃铛计数实时更新，无需刷新。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Categories and defaults
+## 类别与默认设置 [#categories-and-defaults]
 
-| Category | Group | Default | Raised when |
+| 类别 | 分组 | 默认状态 | 触发条件 |
 | --- | --- | --- | --- |
-| Bounce detected | Health | On | A campaign starts bouncing |
-| Spam complaint | Health | On | A complaint lands on a campaign |
-| Worker downtime | Health | On | A sender worker stops responding |
-| Mail that needs action | Health | On, including email | [Automatic inbox tagging](/guides/inbox-tagging/#mail-that-needs-your-action) found automated mail in a mailbox that needs someone to act, such as a failed payment, a suspended account or a suspicious sign-in |
-| Campaign auto-paused | Health | On, including email | An [auto-pause guardrail](/guides/campaigns/) stopped a campaign |
-| Placement monitor alert | Health | On, including email | A campaign's scheduled [placement test](/guides/placement-tests/#campaign-placement-monitors) landed less of its mail in the primary inbox than the monitor's threshold |
-| Placement test finished | Health | On | A [placement test](/guides/placement-tests/) you started has a verdict for every copy |
-| New sign-in | Security | On | Your account is accessed from a new device, with browser, OS, and rough location |
-| Billing alerts | Billing | On, including email | A trial expired or sending was paused for billing |
-| Teammate joined | Team | On | Someone accepted an invitation |
-| Reply received | Inbound | Off | A recipient replied to a cold email |
-| Out-of-office detected | Inbound | Off | An auto-responder hit one of your sends |
+| 检测到退信 | 健康 | 开启 | 营销活动开始发生退信 |
+| 垃圾邮件投诉 | 健康 | 开启 | 营销活动收到投诉 |
+| 工作节点停机 | 健康 | 开启 | 发件工作节点停止响应 |
+| 需要处理的邮件 | 健康 | 开启，包括邮件通知 | [收件箱自动标签](/guides/inbox-tagging/#mail-that-needs-your-action)发现需要人工处理的自动邮件，例如支付失败、账户暂停或可疑登录 |
+| 营销活动自动暂停 | 健康 | 开启，包括邮件通知 | [自动暂停保护机制](/guides/campaigns/)停止了营销活动 |
+| 投递位置监测提醒 | 健康 | 开启，包括邮件通知 | 活动定期执行的[投递位置测试](/guides/placement-tests/#campaign-placement-monitors)中，进入主收件箱的比例低于监测阈值 |
+| 投递位置测试完成 | 健康 | 开启 | 你启动的[投递位置测试](/guides/placement-tests/)已为每封副本得到结果 |
+| 新登录 | 安全 | 开启 | 新设备访问你的账户，包含浏览器、操作系统和大致位置 |
+| 账单提醒 | 账单 | 开启，包括邮件通知 | 试用过期或因账单原因暂停发送 |
+| 团队成员加入 | 团队 | 开启 | 有人接受邀请 |
+| 收到回复 | 收件 | 关闭 | 收件人回复冷邮件 |
+| 检测到外出自动回复 | 收件 | 关闭 | 某次发送收到自动回复 |
 
-Health defaults **on** because those alerts are operationally important and low volume. Inbound defaults **off** because a large campaign would generate one notification per recipient and flood the feed. Turn **Reply received** on only for smaller, higher-touch campaigns.
+健康类默认**开启**，因为这些提醒对运营重要且数量少。收件类默认**关闭**，因为大型营销活动可能为每位收件人产生一条通知，淹没通知列表。建议只为规模较小、需要重点跟进的活动开启**收到回复**。
 
-<Callout type="info" title="Who gets notified">
-Workspace events never fan out to everyone. Reply and bounce alerts go to the owner of the mailbox or campaign, worker downtime to members who can manage mailboxes, mailbox mail that needs action to members who can both manage mailboxes and use the inbox, a finished placement test to whoever started it, a placement monitor alert to members who can view campaigns, billing to those who can manage billing, and team changes to those who can manage the team. The person who joined is not notified about themselves.
+<Callout type="info" title="通知的接收人">
+工作区事件不会一律通知所有人。回复和退信提醒发给邮箱或营销活动负责人；工作节点停机通知可管理邮箱的成员；需要处理的邮箱邮件通知同时具有邮箱管理与收件箱使用权限的成员；测试完成通知发给启动测试的人；投递位置监测提醒发给可查看活动的成员；账单通知发给可管理账单的人；团队变更通知发给可管理团队的人。新加入者不会收到关于自己加入的通知。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Notifications about a message follow it
+## 邮件通知会随邮件状态更新 [#notifications-about-a-message-follow-it]
 
-A **Reply received**, **Out-of-office detected** or **Mail that needs action** notification is about one message in the [Unibox](/guides/unibox/), and it stays in step with it:
+**收到回复**、**检测到外出自动回复**和**需要处理的邮件**均对应[统一收件箱](/guides/unibox/)中的一封邮件，通知会随该邮件同步变化：
 
-- **Clicking it opens that conversation**, not the inbox in general.
-- **Reading the message reads the notification**, wherever you read it: in the Unibox, through the API, or in Gmail or Outlook, which Warmbly picks up on the next sync. A notification read this way is not emailed later either.
-- **Removing the message removes the notification.** Deleted mail, and mail later confirmed to be [warmup](/guides/warmup/), takes its notification out of the feed and the bell count. Warmup never raises one in the first place; this covers anything identified after it arrived. A push or Slack message already delivered cannot be recalled.
-- **Routine automated mail is not a reply.** DMARC aggregate reports, delivery failures and other system notices do not raise **Reply received** or **Out-of-office detected** alerts. If a message is identified as routine automated mail later, its false reply alert disappears from the feed and bell count, and its pending email is cancelled. Genuine out-of-office and automatic replies still use **Out-of-office detected** when enabled. Automated mail that needs your action keeps its separate **Mail that needs action** alert, and bounce and domain-authentication health alerts are unchanged.
+- **点击会打开对应会话**，而不是只打开收件箱主页。
+- **阅读邮件即将通知标为已读**，无论从统一收件箱、API，还是 Gmail 或 Outlook 阅读；后者会在下次同步时被 Warmbly 识别。这样标为已读的通知之后也不会再发邮件。
+- **移除邮件也会移除通知。** 已删除邮件，以及后来确认属于[预热](/guides/warmup/)的邮件，其通知会从列表和铃铛计数中移除。预热邮件本来就不会产生通知；这里处理的是到达后才被识别的情况。已发出的推送或 Slack 消息无法撤回。
+- **常规自动邮件不是回复。** DMARC 汇总报告、投递失败和其他系统通知不会触发 **收到回复** 或 **检测到外出自动回复** 。如果邮件后来才识别为常规自动邮件，错误的回复提醒会从通知列表和铃铛计数中消失，待发邮件通知也会取消。真实的外出回复及自动应答，在启用时仍归入 **检测到外出自动回复** 。需要人工处理的自动邮件保留单独的 **需要处理的邮件** 提醒，退信与域名验证健康提醒不受影响。
 
-<Callout type="info" title="Where to read replies">
-Even with reply notifications off you never miss anything: every reply still lands in the [Unibox](/guides/unibox/). The notification is only an optional ping.
+<Callout type="info" title="查看回复的位置">
+即使关闭回复通知，也不会遗漏回复：每封回复仍会进入[统一收件箱](/guides/unibox/)。通知只是可选提醒。
 </Callout>
 
-Toggle each category under **Settings > Notifications**. Changes save automatically.
+可在**设置 > 通知**中逐类切换，更改自动保存。
 
 </Fold>
 
 <Fold>
 
-## Channels
+## 通知渠道 [#channels]
 
-| Channel | Behavior |
+| 渠道 | 行为 |
 |---------|----------|
-| **In-app** | The bell. Always on, governed by the category toggles |
-| **Mobile push** | iOS app devices, registered automatically when you allow notifications. Batched: the first alert in a quiet stretch goes immediately, and anything inside the window (five hours by default) is held and sent as one summary like "3 new replies" |
-| **Email** | Your account email, batched by the digest rules below |
-| **Slack** | Posts to the workspace's connected Slack: the channel set for that category, else the default channel, both chosen under [Slack](/guides/slack/#notifications). A notification for several teammates is posted once. If you linked your Slack account and turned on personal DMs, you also get it as a DM from the bot. With no channel set the toggle still saves, and only personal DMs are delivered. To have every reply posted to a channel as a thread the team can answer from, use the [inbox channel](/guides/slack/#inbox-in-slack) instead |
+| **应用内** | 铃铛通知始终可用，由类别开关控制 |
+| **手机推送** | 允许通知后，iOS 应用设备会自动注册。采用合并发送：一段安静期后的首条提醒立即发出，后续在窗口内的通知暂缓，合并成“3 条新回复”之类的摘要。窗口默认五小时 |
+| **邮件** | 发往账户邮箱，按下述摘要规则合并 |
+| **Slack** | 发布到工作区已连接的 Slack：优先使用该类别指定的频道，否则使用默认频道，两者均在 [Slack](/guides/slack/#notifications) 中设置。面向多位成员的同一通知只发布一次。如果关联了 Slack 账户并开启个人私信，也会收到机器人私信。未设置频道时，开关仍会保存，但只发送个人私信。若希望每封回复都作为讨论串发送到频道，并允许团队直接回应，应使用[收件箱频道](/guides/slack/#inbox-in-slack) |
 
 </Fold>
 
 <Fold>
 
-## Email digest
+## 邮件摘要 [#email-digest]
 
-Nothing is emailed the moment it happens. Three rules govern what reaches your inbox:
+通知不会一发生就立即发送邮件。以下三条规则决定邮箱收到的内容：
 
-- **Read means no email.** Anything you read in the dashboard or mobile app before the hold expires is never emailed, so living in the dashboard keeps this channel almost silent.
-- **One email, not a stream.** When the hold expires, everything still unread goes out as one bundled email with links back into the app.
-- **Shared events share one email.** An event concerning several teammates (a worker outage, a trial expiring) sends one email with everyone in To, so each person sees who else was told.
+- **已读则不再发邮件。** 等待期结束前，已在控制台或手机应用读过的内容不会邮件发送，因此经常使用控制台时，该渠道通常很安静。
+- **合并为一封邮件。** 等待期结束时，所有仍未读的通知合并为一封邮件，并附带返回应用的链接。
+- **共享事件使用同一封邮件。** 工作节点停机、试用到期等涉及多位成员的事件，只发一封邮件，将所有人放在收件人栏中，使每个人都知道还有谁收到通知。
 
-Pick the window under **Settings > Notifications**, Email delivery: presets from every 30 minutes up to once a day, default 30 minutes. **There is deliberately no per-event option**, so the email channel can never become one email per alert.
+在**设置 > 通知**的邮件投递中选择窗口，预设范围从每 30 分钟到每天一次，默认为 30 分钟。**特意不提供逐事件发送选项**，避免邮件渠道变成每条提醒一封邮件。
 
-Security sign-in alerts ignore the window and always send immediately.
+安全登录提醒不受此窗口限制，始终立即发送。
 
-Notification emails carry only text Warmbly wrote or your workspace chose. A reply or auto-reply email names who wrote but leaves out the subject they gave it, which the dashboard and mobile feed still show, and a campaign name that reads as a web address or an email address appears as "A campaign".
+通知邮件只包含 Warmbly 编写或工作区选择的文字。回复或自动回复通知会说明发件人，但省略对方提供的邮件主题；控制台和手机通知仍显示主题。如果营销活动名称看起来像网址或邮箱地址，则在邮件中显示为“某个营销活动”。
 
-Each person also has a rolling 24-hour budget of notification emails (25 by default, configurable when self-hosting). Past it, alerts stay in the feed. With bundling, normal use never approaches this.
+每人还受到滚动 24 小时通知邮件额度限制，默认 25 封，自托管时可配置。超额后，提醒仍保留在应用内列表中。借助合并发送，正常使用通常远低于此上限。
 
-For event-specific routing with custom messages, branching, or multiple destinations, use [Automations](/guides/automations/) instead.
+如果需要按事件定制消息、设置分支或投递到多个目标，请使用[自动化流程](/guides/automations/)。
 
 </Fold>
 
 <Fold>
 
-## Tips
+## 实用提示 [#tips]
 
-- Leave the three health categories on. They stay quiet unless something is genuinely wrong.
-- A rising count of **Bounce** or **Spam complaint** entries is your cue to open [Deliverability](/guides/deliverability/) and find the campaign behind it.
-- Preferences are per user, so if a teammate is not seeing alerts you expect them to act on, check their own settings.
+- 保持三类健康通知开启。除非确实发生问题，否则它们通常不会打扰你。
+- **退信**或**垃圾邮件投诉**条目持续增加时，应打开[送达能力](/guides/deliverability/)页面，找到对应营销活动。
+- 偏好按用户独立保存。如果成员没有收到你期待其处理的提醒，请检查该成员自己的设置。
 
 </Fold>
 
-## Related guides
+## 相关指南 [#related-guides]
 
 <Cards>
-  <Card title="Deliverability" href="/guides/deliverability/" />
-  <Card title="Unibox" href="/guides/unibox/" />
-  <Card title="Automations" href="/guides/automations/" />
+  <Card title="邮件送达能力" href="/guides/deliverability/" />
+  <Card title="统一收件箱（Unibox）" href="/guides/unibox/" />
+  <Card title="自动化流程" href="/guides/automations/" />
 </Cards>

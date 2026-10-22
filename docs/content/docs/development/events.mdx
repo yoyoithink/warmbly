@@ -1,57 +1,57 @@
 ---
-title: Event system
-description: The event bus topics, envelopes, and realtime fanout that connect Warmbly's services.
+title: 事件系统
+description: 介绍连接 Warmbly 各服务的事件总线主题、消息封装和实时事件分发机制。
 ---
 
-Warmbly's services communicate asynchronously through a pluggable event bus. The default self-host build uses NATS JetStream with JSON encoding; Kafka with Avro and Confluent Schema Registry is an opt-in build for cloud deployments. The realtime dashboard fanout is a separate, simpler pub/sub channel described at the end of this page.
+Warmbly 各服务通过可插拔的事件总线异步通信。默认自托管构建使用 JSON 编码的 NATS JetStream；云部署可以选择使用 Kafka、Avro 和 Confluent Schema Registry 的构建。控制台的实时事件分发使用独立且更简单的发布/订阅渠道，本页末尾会介绍。
 
-## Transport and codec
+## 传输与编解码 [#transport-and-codec]
 
-The bus is an abstraction (`internal/infrastructure/eventbus/`) with two providers, selected by `EVENTBUS_PROVIDER`:
+事件总线是一个抽象层（`internal/infrastructure/eventbus/`），有两种提供程序，由 `EVENTBUS_PROVIDER` 选择：
 
-- `nats`: NATS JetStream. One durable stream (default name `warmbly`) holds every topic as a subject under a prefix: topic `jobs.worker-events` becomes subject `warmbly.jobs.worker-events`. Messages are retained for 7 days, consumer groups map to JetStream durable consumers, and failed handlers are redelivered up to 10 times. This is what `docker-compose.yml` runs.
-- `kafka`: Apache Kafka behind the `kafka` Go build tag. The default binaries do not include it (no librdkafka, no CGO), so `EVENTBUS_PROVIDER=kafka` on a default build fails at boot with a clear error. Every service that reads the bus publishes a second image for it, the same tag with a `-kafka` suffix: `ghcr.io/warmbly/warmbly/backend:prod-kafka`, and the same for `consumer`, `worker`, and `tracking`. Building your own needs `GO_TAGS=kafka` (Go) or `CARGO_FEATURES=kafka` (tracking).
+- `nats`：NATS JetStream。一个持久流（默认名为 `warmbly`）以带前缀的主题形式保存所有消息；例如主题 `jobs.worker-events` 会变为 subject `warmbly.jobs.worker-events`。消息保留 7 天，消费者组映射到 JetStream 持久消费者，处理失败时最多重新投递 10 次。`docker-compose.yml` 运行的就是这种配置。
+- `kafka`：Apache Kafka，受 Go 构建标签 `kafka` 控制。默认二进制不包含它，也没有 librdkafka 和 CGO，因此默认构建设置 `EVENTBUS_PROVIDER=kafka` 后会在启动时明确报错。每个读取总线的服务都为它发布第二种镜像，标签相同但带 `-kafka` 后缀，例如 `ghcr.io/warmbly/warmbly/backend:prod-kafka`；`consumer`、`worker` 和 `tracking` 也遵循相同规则。自行构建时，Go 需要 `GO_TAGS=kafka`，跟踪服务需要 `CARGO_FEATURES=kafka`。
 
-Message encoding is orthogonal to transport, selected by `CODEC_PROVIDER`:
+消息编码与传输方式相互独立，由 `CODEC_PROVIDER` 选择：
 
-Shared send reservations and action/diagnostic authority are SQL/control-plane capabilities, not new queue command shapes. Existing JSON and Avro SEND_EMAIL payloads remain readable. Protocol `warmup_send_protocol=2` gates the new executor checks; protocol 1 is only the previous lineage capability. Upgrade all control-plane/result consumers, pause/drain accepted old work, then upgrade workers. Unknown sends retain reservations and do not become blind queue retries. Result reconciliation writes bounce webhooks/notifications to a durable outbox before commit; consumers drain leased rows with stable downstream IDs. External integration/realtime delivery is not exactly once. See [send safety and rollout](/development/send-safety/).
+共享发送预留，以及操作和诊断授权，属于 SQL/控制平面能力，不是新的队列命令格式。现有 JSON 和 Avro SEND_EMAIL 载荷仍可读取。协议 `warmup_send_protocol=2` 控制新的执行器检查，协议 1 仅代表此前的来源链能力。先升级所有控制平面和结果消费者，暂停并处理完已接受的旧任务，再升级工作节点。结果未知的发送保留预留，不会变成盲目队列重试。结果核对会在提交前，将退信 Webhook 和通知写入持久化发件箱；消费者通过租约获取行，并使用稳定的下游 ID 投递。外部集成和实时投递不保证恰好一次。参见[发送安全与发布](/development/send-safety/)。
 
-- `json`: plain JSON, no external dependencies, and the default for the self-host stack.
-- `avro`: Avro with Confluent Schema Registry (`SCHEMA_REGISTRY_URL` plus optional key/secret), also behind the `kafka` build tag. The subject is the topic name plus `-value`, Confluent's default naming strategy, so `warmup-events` registers under `warmup-events-value`.
+- `json`：普通 JSON，无外部依赖，是自托管服务栈的默认值。
+- `avro`：Avro 与 Confluent Schema Registry，使用 `SCHEMA_REGISTRY_URL` 及可选的密钥/秘密，同样受 `kafka` 构建标签控制。subject 为主题名加 `-value`，采用 Confluent 默认命名策略，因此 `warmup-events` 注册为 `warmup-events-value`。
 
-<Callout type="warn" title="Every derived field carries a default">
-Schemas are derived from the Go structs (`internal/models/event_schema.go`), and each field is given the Avro default matching its zero value. This is what makes adding a field safe: a reader on the new schema can still decode data written under the schema registered before it, filling the field it did not carry from the default, so the registry accepts the new version. A newly added field with no default is rejected under `BACKWARD` compatibility, and because the publisher registers before it serializes, the rejection stops every publish on that topic rather than degrading one field.
+<Callout type="warn" title="每个派生字段都带有默认值">
+Schema 从 Go 结构体（`internal/models/event_schema.go`）派生，每个字段都会获得与其零值对应的 Avro 默认值。正因如此，新增字段才是安全的：使用新 Schema 的读取器仍可解码此前注册 Schema 写入的数据，并用默认值填补旧数据没有的字段，注册表也因此接受新版本。新增字段如果没有默认值，会在 `BACKWARD` 兼容性下被拒绝；而发布者在序列化之前注册 Schema，因此拒绝会阻止该主题的每一次发布，不只是影响某个字段。
 
-Two things follow. The registered document is the marshalled schema, not `Schema.String()`, which omits defaults and would throw the guarantee away. And the registry stays on `BACKWARD` rather than `FORWARD`: adding a field is safe under both, but adding a new event type adds a union branch, which `BACKWARD` accepts and `FORWARD` refuses. When a registration is refused and the subject's effective level is `FORWARD` or `FULL` (or their transitive forms), the publisher sets that subject to `BACKWARD` and registers again, so the registry key needs permission to change a subject's compatibility. Any other level, and any other refusal, is left as it is.
+由此有两点要求。注册的文档必须是序列化后的 Schema，而不是会省略默认值、破坏这一保证的 `Schema.String()`。注册表保持 `BACKWARD`，不使用 `FORWARD`：两者都允许新增字段，但新增事件类型会添加联合分支，`BACKWARD` 接受，`FORWARD` 则拒绝。当注册被拒绝，且 subject 的实际兼容级别为 `FORWARD` 或 `FULL`，或其传递形式时，发布者会把该 subject 设为 `BACKWARD` 并重新注册，因此注册表密钥需要修改 subject 兼容性的权限。其他级别及其他拒绝情况保持原样。
 
-Nothing in this reaches production untested. `internal/app/eventschemas` lists every schema a release publishes and keeps the one the registry last accepted under `testdata/`. CI decodes the recorded schema with the new one, which is the registry's own `BACKWARD` check, and fails a change the registry would refuse. It also fails a compatible change that has not been recorded, so a schema change is always in the diff: run `make schemas` and commit the result. On release the backend registers every listed schema when it boots, and the fleet does not move to the release until that has succeeded.
+这些改动必须经过测试才会进入生产。`internal/app/eventschemas` 列出每个版本发布的所有 Schema，并在 `testdata/` 下保留注册表最后接受的版本。CI 用新 Schema 解码已记录的旧 Schema，这与注册表自身的 `BACKWARD` 检查一致；注册表会拒绝的改动，CI 也会失败。即使改动兼容，但未更新记录，CI 同样会失败，因此 Schema 改动必然出现在差异中：运行 `make schemas` 并提交结果。发布时，后端在启动过程中注册所有列出的 Schema，成功后节点集群才会切换到该版本。
 
-The registry check covers the schema, not the rollout. Readers decode with the schema id each message carries, so a worker still on the previous release reads new fields fine, but a command type it has never heard of is logged and skipped. The backend rolls out before the fleet, so a new worker command type must be safe to lose while the fleet catches up: send it only to a worker whose reported version handles it, or have the backend retry it until one does.
+注册表检查覆盖 Schema，不覆盖发布过程。读取器使用每条消息携带的 Schema ID 解码，因此仍运行上一版本的工作节点可以读取新增字段；但从未见过的命令类型会被记录并跳过。后端先于节点集群发布，因此新增工作节点命令类型必须允许在集群追赶期间丢失：只向报告版本已支持该命令的节点发送，或让后端持续重试，直到节点支持为止。
 </Callout>
 
-The Rust tracking service follows both switches. It speaks Kafka only when compiled with its `kafka` cargo feature, which is what the `tracking:*-kafka` image is, and it encodes with `CODEC_PROVIDER` on either transport. So a Kafka deployment on `CODEC_PROVIDER=json` needs no Schema Registry at all, and `avro` there is refused at boot without `SCHEMA_REGISTRY_URL` rather than failing at the first published event.
+Rust 跟踪服务遵循这两个开关。只有启用 Cargo 特性 `kafka` 编译时才支持 Kafka，`tracking:*-kafka` 镜像就是这种构建；两种传输都通过 `CODEC_PROVIDER` 选择编码。因此，Kafka 部署使用 `CODEC_PROVIDER=json` 时完全不需要 Schema Registry；选择 `avro` 却没有 `SCHEMA_REGISTRY_URL` 时，会在启动时被拒绝，而不会等到发布第一个事件才失败。
 
-<Callout type="warn" title="One codec covers both topics">
-The consumer decodes `jobs.worker-events` and `tracking-events` with the same `CODEC_PROVIDER`, which is why the tracking publisher has to read the setting rather than always writing Avro: a JSON consumer handed Avro drops every open and click with nothing but a deserialize warning.
+<Callout type="warn" title="两个主题使用同一种编码">
+消费者解码 `jobs.worker-events` 和 `tracking-events` 时使用相同的 `CODEC_PROVIDER`。因此，跟踪发布者必须读取此设置，不能始终写 Avro：JSON 消费者收到 Avro 时，会丢弃所有打开和点击事件，只留下反序列化警告。
 </Callout>
 
-## Topics
+## 主题 [#topics]
 
-These are the real topic names. On NATS each is prefixed with the subject prefix (default `warmbly.`).
+以下为实际主题名。在 NATS 中，每个主题都会加上 subject 前缀，默认是 `warmbly.`。
 
-| Topic | Producer | Consumer | Purpose |
+| 主题 | 生产者 | 消费者 | 用途 |
 |-------|----------|----------|---------|
-| `w.<worker-uuid>` | Backend | The worker with that ID | Commands to one specific worker |
-| `jobs.worker-events` | Workers | Consumer service | Sync and send results, mailbox updates, health |
-| `tracking-events` | Tracking service | Consumer service | Email opens and link clicks |
-| `email-events` | Backend | None (write-only analytics stream) | Campaign send records |
-| `warmup-events` | Backend | None (write-only analytics stream) | Warmup send records |
+| `w.<worker-uuid>` | 后端 | 具有对应 ID 的工作节点 | 发给指定工作节点的命令 |
+| `jobs.worker-events` | 工作节点 | 消费者服务 | 同步及发送结果、邮箱更新、健康状态 |
+| `tracking-events` | 跟踪服务 | 消费者服务 | 邮件打开和链接点击 |
+| `email-events` | 后端 | 无，仅写分析流 | 营销活动发送记录 |
+| `warmup-events` | 后端 | 无，仅写分析流 | 预热发送记录 |
 
-Each worker subscribes only to its own `w.<worker-uuid>` topic; the UUID is the worker's identity (derived from its public IP at install time). The consumer service reads `jobs.worker-events` with the consumer group `consumer-group` and `tracking-events` with the group `tracking-consumer`.
+每个工作节点只订阅自己的 `w.<worker-uuid>` 主题；UUID 是工作节点身份，在安装时根据公网 IP 派生。消费者服务读取 `jobs.worker-events` 时使用消费者组 `consumer-group`，读取 `tracking-events` 时使用组 `tracking-consumer`。
 
-## Worker commands
+## 工作节点命令 [#worker-commands]
 
-The backend drives workers with a `{type, body}` envelope (`internal/models/event.go`):
+后端使用 `{type, body}` 消息封装驱动工作节点，定义见 `internal/models/event.go`：
 
 ```json
 {
@@ -60,23 +60,23 @@ The backend drives workers with a `{type, body}` envelope (`internal/models/even
 }
 ```
 
-Types: `SEND_EMAIL`, `ADD_EMAIL`, `REMOVE_EMAIL`, `EMAIL_VALIDATION`, `WARMUP_ACTION`, `MESSAGE_SEEN`, `MESSAGE_FOLDER`, `MAILBOX_IDENTITY`. Each has a typed body struct in `internal/models/` (for example `models.SendEmail` for `SEND_EMAIL`).
+类型包括：`SEND_EMAIL`、`ADD_EMAIL`、`REMOVE_EMAIL`、`EMAIL_VALIDATION`、`WARMUP_ACTION`、`MESSAGE_SEEN`、`MESSAGE_FOLDER` 和 `MAILBOX_IDENTITY`。每种类型都在 `internal/models/` 中有对应的类型化消息体结构，例如 `models.SendEmail` 对应 `SEND_EMAIL`。
 
-A worker reads its topic one command at a time, so nothing slow runs on that loop. `ADD_EMAIL` connects the mailbox in the background (a republish for a mailbox already loading is ignored, and a command for it waits for that load), and a mailbox that cannot be loaded raises the same `EMAIL_AUTH_ERROR` or `EMAIL_SERVER_ERROR` a failed sync would, so it shows the error instead of looking connected. On Kafka, a handled message's offset is stored and committed in the background rather than with a synchronous commit per message.
+工作节点逐条读取自己的主题，因此耗时操作不会直接运行在该循环中。`ADD_EMAIL` 在后台连接邮箱；邮箱已在加载时，重复发布会被忽略，针对它的命令则等待加载完成。无法加载的邮箱会产生与同步失败相同的 `EMAIL_AUTH_ERROR` 或 `EMAIL_SERVER_ERROR`，从而显示错误，而不是看起来已连接。在 Kafka 中，已处理消息的偏移量会保存并在后台提交，不会每条消息都同步提交。
 
-The backend's worker reconciler ships `ADD_EMAIL` at once for a mailbox with no worker, on a worker that stopped heartbeating, or moved to another worker. Every other active mailbox is re-shipped once every 30 minutes as a safety net, each at its own point in the interval.
+后端的工作节点协调器会立即为没有工作节点、所在节点停止心跳或已迁移到其他节点的邮箱发送 `ADD_EMAIL`。其余活跃邮箱每 30 分钟重新发送一次，作为安全兜底；各邮箱分散在该时间间隔内的不同时间点执行。
 
-`EMAIL_VALIDATION` is normally not sent on the topic at all. The backend publishes the same body to the worker's Redis channel `email_validation_request:<worker uuid>`, which a worker reads alongside its topic, so a check never waits behind queued sends. Redis reports how many subscribers took it; with none, the next healthy worker is tried, and only when no worker listens there does the check go on the topic.
+`EMAIL_VALIDATION` 通常完全不通过主题发送。后端把相同消息体发布到工作节点的 Redis 渠道 `email_validation_request:<worker uuid>`，工作节点并行读取该渠道和自己的主题，因此检查无需排在发送队列后。Redis 会报告接收到消息的订阅者数量；没有订阅者时尝试下一个健康工作节点，只有没有任何工作节点监听该渠道时，检查才会进入主题。
 
-`MESSAGE_SEEN` carries a read or unread change made in the unified inbox out to the mailbox provider, one event per mailbox and at most `models.SeenRelayChunk` messages each. It answers with nothing: the store was written before the event was published, so the provider's copy is the only thing it changes, and a failure is logged rather than retried because the next sync reports whatever the provider actually holds. Each message carries all three providers' handles and the worker takes the ones its client uses: a provider message id for Gmail and Graph, an IMAP folder plus UID, and the immutable RFC Message-ID, which Graph re-resolves the live id from because a Graph id changes whenever a message moves. The state relayed is the one the row holds when the relay reads it back, not the one the request asked for, so a conflicting toggle leaves the provider agreeing with the store rather than with whoever published last.
+`MESSAGE_SEEN` 将统一收件箱中的已读或未读更改传递给邮箱服务商；每个邮箱一个事件，每个事件最多包含 `models.SeenRelayChunk` 封邮件。它不返回响应：事件发布之前存储已更新，因此它只修改服务商侧副本。失败只记录日志，不重试，因为下一次同步会报告服务商实际保存的状态。每封邮件携带三类服务商所需的句柄，工作节点选择其客户端适用者：Gmail 和 Graph 的服务商邮件 ID、IMAP 文件夹及 UID，以及不可变的 RFC Message-ID。Graph 会根据后者重新解析实时 ID，因为邮件每次移动都会改变 Graph ID。转发的是再次读取该行时保存的状态，不是请求最初要求的状态，因此发生冲突切换时，服务商会与存储一致，而不是与最后发布消息的人一致。
 
-`MESSAGE_FOLDER` carries an Archive, Delete or Move to inbox made in the unified inbox out to the mailbox provider, for mailboxes with `email_accounts.relay_folder_moves` on: one event per mailbox and destination, at most `models.FolderRelayChunk` messages each, with the same handles as `MESSAGE_SEEN` plus the row id. Gmail files the batch with one `batchModify` of the system labels. Outlook moves each message to its well-known folder and re-keys the message map from the old Graph id to the new one around the move, because the delta reports the old id removed and would otherwise delete the row. IMAP finds each message by Message-ID before moving it, since the UID the store holds is stale while an earlier filing's answer is still in flight (Undo straight after Archive), then moves each folder's share with one `MOVE`. A message is relayed when the filing moved its row, or when `provider_folder` disagrees with its folder; sent copies stay put on Outlook and IMAP, and drafts and warmup receipts never move. Like `MESSAGE_SEEN` it is published after the response and never retried, so a worker still on the previous release drops it and the mailbox simply keeps its copy where it was until the next filing.
+`MESSAGE_FOLDER` 对启用了 `email_accounts.relay_folder_moves` 的邮箱，将统一收件箱中的归档、删除或移至收件箱操作传给服务商。每个邮箱和目标位置一个事件，每个事件最多 `models.FolderRelayChunk` 封邮件，携带与 `MESSAGE_SEEN` 相同的句柄，另加行 ID。Gmail 通过一次系统标签 `batchModify` 批量整理。Outlook 将每封邮件移到其标准文件夹，并在移动前后把邮件映射从旧 Graph ID 更新为新 ID，因为增量同步会报告旧 ID 已删除，否则会误删该行。IMAP 移动前通过 Message-ID 查找每封邮件，因为先前归档的响应仍在途中时，存储中的 UID 可能已经过期，例如归档后立刻撤销；随后对每个文件夹的邮件用一次 `MOVE` 移动。归档改变了行的位置，或 `provider_folder` 与其文件夹不一致时，邮件才会被转发；Outlook 和 IMAP 的已发送副本保持原位，草稿和预热回执绝不移动。与 `MESSAGE_SEEN` 一样，它在响应后发布且不重试，因此旧版工作节点会丢弃它，邮箱副本会保持原位，直到下一次整理。
 
-`MAILBOX_IDENTITY` asks the worker holding a mailbox to read its send-as addresses, and one signature, from the provider. It answers on a Redis channel named by the request's `process_id` rather than on the worker-events topic, the same round trip `EMAIL_VALIDATION` uses, because the caller is an HTTP request waiting for it. The control plane makes this call itself in exactly one place, the OAuth handshake, where the token came from the consent the customer just completed and the mailbox has no worker yet.
+`MAILBOX_IDENTITY` 请求持有邮箱的工作节点，从服务商读取其可用发件地址和一个签名。响应发送到以请求 `process_id` 命名的 Redis 渠道，不走 worker-events 主题，与 `EMAIL_VALIDATION` 使用相同往返方式，因为调用方是正在等待结果的 HTTP 请求。控制平面仅在一处自行执行此调用：OAuth 握手期间，此时令牌来自客户刚完成的同意流程，邮箱还没有工作节点。
 
-## Worker results
+## 工作节点结果 [#worker-results]
 
-Workers publish the same envelope shape back on `jobs.worker-events`:
+工作节点通过 `jobs.worker-events` 发布相同封装格式的结果：
 
 ```json
 {
@@ -85,21 +85,21 @@ Workers publish the same envelope shape back on `jobs.worker-events`:
 }
 ```
 
-Types: `NEW_EMAIL`, `INBOUND_BOUNCE`, `REMOVE_EMAIL`, `FLAGS_ADD`, `FLAGS_REMOVE`, `UPDATE_EMAIL`, `UPDATE_FOLDER`, `UPDATE_MAILBOX`, `DELETE_MAILBOX`, `TOKEN_UPDATE`, `HISTORY_ID_UPDATE`, `GRAPH_DELTA_UPDATE`, `SYNC_STATE`, `EMAIL_SENT`, `EMAIL_FAILED`, `EMAIL_AUTH_ERROR`, `EMAIL_DISABLED`, `EMAIL_RATE_LIMITED`, `EMAIL_SERVER_ERROR`, `WORKER_HEALTH`.
+类型包括：`NEW_EMAIL`、`INBOUND_BOUNCE`、`REMOVE_EMAIL`、`FLAGS_ADD`、`FLAGS_REMOVE`、`UPDATE_EMAIL`、`UPDATE_FOLDER`、`UPDATE_MAILBOX`、`DELETE_MAILBOX`、`TOKEN_UPDATE`、`HISTORY_ID_UPDATE`、`GRAPH_DELTA_UPDATE`、`SYNC_STATE`、`EMAIL_SENT`、`EMAIL_FAILED`、`EMAIL_AUTH_ERROR`、`EMAIL_DISABLED`、`EMAIL_RATE_LIMITED`、`EMAIL_SERVER_ERROR` 和 `WORKER_HEALTH`。
 
-The consumer registers one handler per type (`internal/app/consumer/events.go`); unregistered types are logged and acknowledged rather than redelivered.
+消费者为每个类型注册一个处理器，见 `internal/app/consumer/events.go`；未注册的类型会记录日志并确认，不再重新投递。
 
-Every `SEND_EMAIL` is answered with exactly one per-task result: `EMAIL_SENT` (the provider accepted the message; the consumer records the wire Message-ID on the task) or `EMAIL_FAILED` (a `SendEmailResult` carrying the error code and message). The control plane stamps a campaign step sent when it hands the send to the worker, so `EMAIL_FAILED` is what walks that back: the consumer marks the task failed, clears the step's `sent_at` and counts the attempt on `campaign_contact_progress`, gives the send back to the campaign's daily counters, writes the failure to the campaign activity log, and reopens a campaign that completed while the send was in flight. After `CampaignSendMaxAttempts` (5) the lead is marked failed and routing drops it; a `RECIPIENT_REJECTED` result (refused at RCPT) skips the retries and is ingested as a bounce instead. Account-level conditions (`EMAIL_AUTH_ERROR`, `EMAIL_DISABLED`, `EMAIL_RATE_LIMITED`, `EMAIL_SERVER_ERROR`) are raised in addition to, never instead of, the per-task result; they carry an `EmailErrorEvent` and act on the mailbox. A worker that does not hold the mailbox yet leaves the send for a few redeliveries before reporting it failed, and the backend never publishes a send to a worker that is not heartbeating.
+每个 `SEND_EMAIL` 都得到且只得到一个任务级结果：`EMAIL_SENT` 表示服务商接受了邮件，消费者将实际传输的 Message-ID 记录到任务；`EMAIL_FAILED` 则携带包含错误代码和消息的 `SendEmailResult`。控制平面在把发送交给工作节点时，就将营销活动步骤标为已发送，因此需要由 `EMAIL_FAILED` 撤销：消费者将任务标为失败，清除步骤的 `sent_at`，并在 `campaign_contact_progress` 中记录尝试次数，退还营销活动每日计数，将失败写入活动日志，并重新打开在该发送尚未完成时已经结束的营销活动。达到 `CampaignSendMaxAttempts`（5）后，潜在客户会被标为失败并退出路由；`RECIPIENT_REJECTED` 结果表示在 RCPT 阶段被拒绝，会跳过重试，直接作为退信处理。账户级情况 `EMAIL_AUTH_ERROR`、`EMAIL_DISABLED`、`EMAIL_RATE_LIMITED` 和 `EMAIL_SERVER_ERROR` 会在任务级结果之外额外产生，绝不代替任务结果；它们携带 `EmailErrorEvent` 并作用于邮箱。工作节点尚未持有邮箱时，会允许发送重投几次再报告失败；后端也不会向未发送心跳的节点发布发送命令。
 
-A worker gives a `SEND_EMAIL` 120 seconds, enough for the SMTP client's own 90-second conversation with a slow server plus the dispatch checks and body fetch before it; every other command keeps 30 seconds. Its command subscription runs under 195 seconds, which also covers recording the result, so the bus does not hand a send out again while the first delivery is still finishing. Commands run on ordered per-mailbox lanes (`WORKER_COMMAND_CONCURRENCY`) on both buses, so a stalled mail server holds only its own mailbox's commands.
+工作节点为 `SEND_EMAIL` 提供 120 秒，足以覆盖 SMTP 客户端与慢服务器之间最长 90 秒的会话，以及此前的派发检查和正文获取；其他命令仍为 30 秒。命令订阅的时限为 195 秒，也覆盖结果记录，避免第一次投递仍在完成时，总线再次分发发送命令。两种总线都按邮箱有序通道运行命令，由 `WORKER_COMMAND_CONCURRENCY` 控制，因此卡住的邮件服务器只会阻塞自己邮箱的命令。
 
-`UPDATE_FOLDER` reports the canonical folder a provider now has a message in, without the rest of the message. Gmail sends it when a history record adds or removes `INBOX`, `TRASH`, `SPAM`, `SENT` or `DRAFT`, with the folder recomputed from the message's labels, and from a reconciliation that runs every six hours and once per mailbox load: the worker lists the Gmail inbox and asks the backend (`GET /api/v1/internal/sync/provider-folder-messages`) which rows it believes are in inbox, archive, spam or trash, then reports the ones Gmail has elsewhere. The consumer resolves it like `UPDATE_EMAIL`: against the folder the provider last reported, so a message filed in Warmbly stays filed unless the provider itself moved it. The worker also sends it, with `relayed` set, for every message a `MESSAGE_FOLDER` left in its destination, plus the handles the move changed (the new Graph id in `provider_id`, or the IMAP `folder_path`, `mailbox` and `uid`). A relayed one writes `provider_folder` and those handles and never the folder, so the sync's own report of the same placement afterwards reads as no move, and a filing undone meanwhile stays undone.
+`UPDATE_FOLDER` 报告服务商当前保存邮件的标准文件夹，不包含邮件其他内容。Gmail 历史记录添加或移除 `INBOX`、`TRASH`、`SPAM`、`SENT` 或 `DRAFT` 时会发送它，并根据邮件标签重新计算文件夹；每六小时及每次邮箱加载时的核对也会发送。工作节点列出 Gmail 收件箱，并通过后端 `GET /api/v1/internal/sync/provider-folder-messages` 查询系统认为处于收件箱、归档、垃圾邮件或垃圾箱的行，再报告 Gmail 实际放在其他位置的邮件。消费者像处理 `UPDATE_EMAIL` 一样，以服务商上次报告的文件夹为基准，因此在 Warmbly 中已整理的邮件会保持原位，除非服务商自身移动了它。工作节点也会发送设置了 `relayed` 的该事件，覆盖每封被 `MESSAGE_FOLDER` 放到目标位置的邮件，同时带上移动改变的句柄：新的 Graph ID 放在 `provider_id`，或 IMAP 的 `folder_path`、`mailbox` 和 `uid`。转发产生的事件只写 `provider_folder` 和句柄，不修改文件夹，因此随后同步报告相同位置时不会被理解为移动；在此期间已撤销的整理仍保持撤销。
 
-`SYNC_STATE` is the worker's relay of a mailbox's sync state (backfill progress and cursor, fair-use throttle, last-synced time). It carries the full state rather than a delta, so a lost event is repaired by the next one; the consumer writes it to `email_sync_state` and the backend hands it back inside `ADD_EMAIL` on the next load, which is what lets a replaced worker resume an import instead of restarting it.
+`SYNC_STATE` 是工作节点转发的邮箱同步状态，包含历史回填进度和游标、合理使用限流以及最后同步时间。它携带完整状态而非增量，因此事件丢失可由下一次修复。消费者写入 `email_sync_state`，后端在下次加载的 `ADD_EMAIL` 中返回，使替换后的工作节点能够继续导入，而不是从头开始。
 
-## Tracking events
+## 跟踪事件 [#tracking-events]
 
-Produced by the Rust tracking service when a pixel loads or a tracked link is clicked, consumed into campaign stats and deliverability data:
+Rust 跟踪服务在像素加载或跟踪链接被点击时生成事件，消费者将其计入营销活动统计和送达能力数据：
 
 ```json
 {
@@ -116,30 +116,30 @@ Produced by the Rust tracking service when a pixel loads or a tracked link is cl
 }
 ```
 
-`event_type` is `EMAIL_OPENED` or `EMAIL_CLICKED`; `original_url` and `link_id` (the click ticket, which names the link's stored destination and anchor text) are set only for clicks; IPs are stored as hashes, never raw, and `client_ip` carries only the source network. `scanner` names the mail-filtering network the edge recognised, and `scanner_probable` says that network can also carry a person, which is what browser isolation makes true of the mail-security vendors. Both are absent from events written before those fields existed, and an absent `scanner_probable` reads as `false`, the conservative side. The struct is `events.TrackingEvent` in `internal/events/schemas.go`, mirrored in `tracking/src/events.rs`.
+`event_type` 为 `EMAIL_OPENED` 或 `EMAIL_CLICKED`；`original_url` 和 `link_id` 仅在点击时设置，后者是点击票据，指向链接存储的目标和锚文本。IP 仅以哈希保存，不保留原始值，`client_ip` 只携带来源网段。`scanner` 表示边缘识别出的邮件过滤网络；`scanner_probable` 表示该网络也可能承载真人访问，邮件安全服务商的浏览器隔离正会产生这种情况。这些字段出现之前写入的事件均不含它们；缺失的 `scanner_probable` 按 `false` 读取，采用保守判断。结构体为 `events.TrackingEvent`，定义在 `internal/events/schemas.go` 中，并在 `tracking/src/events.rs` 中有对应定义。
 
-The consumer classifies each event before it counts. An open is automated when the user agent is a mail privacy proxy or missing, or when it arrives within `tracking.machine_window_open_seconds` of the step's dispatch; it is recorded with `opened_machine` and upgraded by a later human open. A click is automated for a missing user agent, for arriving inside `tracking.machine_window_click_seconds` of the same dispatch (`30` by default, set independently of the open window and accepting the same 1 to 900 seconds; it ships shorter because a misjudged click costs an automation rather than a metric), or when the same source clicked another link of the same email within `TrackingClickBurstSeconds`; every click is logged per link in `email_link_clicks` with its reason, and only a human click stamps `clicked_at`, fires instant actions, or emits a webhook. A burst is only recognisable from its second click, so a human click's stamp and log row are written at once but its effects (evidence, instant actions, webhook, realtime event) run after the burst window plus a second, on the classification the click has by then; a burst recognised meanwhile relabels the earlier click and withdraws the stamp when no human click remains. A consumer restart inside the window loses only those deferred effects, and routing still follows the clicked branch at the next step boundary.
+消费者先分类，再计数。如果用户代理是邮件隐私代理或缺失，或事件在步骤派发后的 `tracking.machine_window_open_seconds` 内到达，打开会被判为自动行为；它以 `opened_machine` 记录，后续真人打开可以升级该记录。点击在以下情况下判为自动行为：缺少用户代理；在同一派发后的 `tracking.machine_window_click_seconds` 内到达，默认 `30` 秒，与打开窗口独立设置，同样接受 1 至 900 秒，默认较短是因为误判点击影响的是自动化操作，而不只是指标；或者同一来源在 `TrackingClickBurstSeconds` 内点击了同一邮件的另一链接。每次点击都在 `email_link_clicks` 中按链接记录原因，只有真人点击才写入 `clicked_at`、触发即时操作或发出 Webhook。突发点击必须从第二次点击起才能识别，因此真人点击的时间戳和日志行会立即写入，但其效果，包括证据、即时操作、Webhook 和实时事件，会延迟到突发窗口结束再加一秒后，按届时的分类执行。如果期间识别出突发行为，先前点击会重新标记；没有真人点击剩余时，时间戳会撤销。消费者在该窗口内重启只会丢失这些延迟效果，路由仍会在下一个步骤边界走已点击分支。
 
-`scanner` overrides all of that: a request from a recognised mail-filtering network is automated whatever its user agent claims and however late it arrives, because a security gateway walks a message with an ordinary browser. `scanner_probable` qualifies it. A probable source is measured against `tracking.machine_window_probable_seconds` instead of the window for its event kind (whichever is wider), and outside that window it is judged exactly as an unrecognised source would be. That is what lets the vendor ASNs ship enabled: the delivery-time scan is classified automated, and the recipient who clicks through browser isolation an hour later still counts. A recipient who genuinely clicks inside the window is classified automated too, which is the cost of the widening.
+`scanner` 会覆盖上述判断：来自已识别邮件过滤网络的请求，无论用户代理如何声明、到达多晚，都属于自动行为，因为安全网关会用普通浏览器遍历邮件。`scanner_probable` 对此作进一步限定。可能承载真人的来源会使用 `tracking.machine_window_probable_seconds` 与该事件类型窗口中较宽的那个；窗口之外，则与未识别来源完全相同地判断。这使服务商 ASN 可以默认启用：投递时的扫描判为自动行为，一小时后通过浏览器隔离点击的收件人仍能计入。真实收件人若恰在该窗口内点击，也会被判为自动行为，这是扩大窗口的代价。
 
-The label carries one effect the consumer does not decide. The tracking service withholds the click's identification ticket from **any** recognised network, probable included, because the edge has no dispatch time and so cannot separate the delivery-time scan from the isolated human click. A probable click the consumer later counts as a person's is therefore still a click with no website-visit attribution behind it.
+这一标签还有一个不由消费者决定的效果。跟踪服务不会向**任何**已识别网络提供点击身份识别票据，包括可能承载真人的网络，因为边缘没有派发时间，无法区分投递时扫描和隔离浏览器中的真人点击。因此，即使消费者后来将某个可疑来源点击计为真人，它仍然没有后续网站访问归因。
 
-Website page views do not ride this topic. The tracking service forwards each accepted view to the backend's internal API (`POST /api/v1/internal/page-hits`) instead, because the backend is where the user agent and IP are turned into device and location, and the IP must not sit in a durable stream on the way there.
+网站页面浏览不经过此主题。跟踪服务会将每个接受的访问直接转发到后端内部 API `POST /api/v1/internal/page-hits`，因为用户代理和 IP 在后端才会转换为设备及位置，IP 不应在传输途中存入持久流。
 
-## Analytics events
+## 分析事件 [#analytics-events]
 
-The backend records sends on two write-only streams for downstream analytics: `email-events` carries `EMAIL_SENT` records (task, account, campaign, contact, message ID, recipient), and `warmup-events` carries `WARMUP_EMAIL_SENT` records (sender and target accounts, whether it was a reply). Nothing in the repo consumes them today; they exist so an external pipeline can tap the stream.
+后端将发送记录写入两个只写流，供下游分析：`email-events` 携带 `EMAIL_SENT` 记录，包括任务、账户、营销活动、联系人、邮件 ID 和收件人；`warmup-events` 携带 `WARMUP_EMAIL_SENT` 记录，包括发件与目标账户，以及是否为回复。目前仓库中没有服务消费它们，保留这些流是为了让外部管道可以接入。
 
-## Realtime fanout
+## 实时事件分发 [#realtime-fanout]
 
-Dashboard realtime does not ride the event bus. Backend and consumer publish JSON events on a dedicated pub/sub transport (`internal/infrastructure/pubsub/`), and the Elixir realtime service subscribes and pushes to WebSocket clients:
+控制台实时功能不通过事件总线。后端和消费者在专用发布/订阅传输层 `internal/infrastructure/pubsub/` 上发布 JSON 事件，Elixir 实时服务订阅并推送到 WebSocket 客户端：
 
-- Default: Redis pub/sub on the channel `realtime:events`. No configuration beyond a shared Redis.
-- `PUBSUB_ENABLED=true`: Google Cloud Pub/Sub instead (requires `GCP_PROJECT_ID`); the backend creates a fixed set of topics and matching `-sub` subscriptions on boot.
+- 默认使用 Redis 发布/订阅渠道 `realtime:events`，除了共享 Redis 外无需其他配置。
+- `PUBSUB_ENABLED=true` 时，改用 Google Cloud Pub/Sub，需要 `GCP_PROJECT_ID`；后端在启动时创建固定的一组主题和对应的 `-sub` 订阅。
 
-Events embed a `BaseEvent` (`event_type`, `user_id`, `timestamp`) plus routing fields on the concrete payload (`org_id`, `campaign_id`, `email_account_id`, `operation_id`). The Elixir broadcaster routes purely on those body fields to the `user:`, `org:`, `campaign:`, `account:`, and `bulk:` channel topics. The event type list and permission gating are documented in the [realtime API reference](/api/realtime/).
+事件嵌入 `BaseEvent`，包含 `event_type`、`user_id` 和 `timestamp`，具体载荷再带路由字段 `org_id`、`campaign_id`、`email_account_id` 和 `operation_id`。Elixir 广播器只根据这些消息体字段，将事件路由到 `user:`、`org:`、`campaign:`、`account:` 和 `bulk:` 渠道主题。事件类型列表和权限控制见[实时 API 参考](/api/realtime/)。
 
-## Configuration
+## 配置 [#configuration]
 
 ```bash
 # Transport
@@ -165,12 +165,12 @@ KAFKA_TRACKING_TOPIC=tracking-events   # optional, default tracking-events
 PUBSUB_ENABLED=false              # true switches Redis pub/sub to Google Cloud Pub/Sub
 ```
 
-## Code references
+## 代码参考 [#code-references]
 
-- Bus abstraction and providers: `internal/infrastructure/eventbus/`
-- Codec selection: `internal/infrastructure/codec/`
-- Topic names: `internal/infrastructure/kafka/topics.go`, `internal/events/schemas.go`
-- Envelopes: `internal/models/event.go`
-- Consumer dispatch: `internal/app/consumer/events.go`
-- Tracking producer: `tracking/src/nats.rs`, `tracking/src/kafka.rs`
-- Realtime fanout: `internal/infrastructure/pubsub/`, `realtime/lib/realtime/redis/event_subscriber.ex`
+- 总线抽象及提供程序：`internal/infrastructure/eventbus/`
+- 编码选择：`internal/infrastructure/codec/`
+- 主题名称：`internal/infrastructure/kafka/topics.go`、`internal/events/schemas.go`
+- 消息封装：`internal/models/event.go`
+- 消费者分发：`internal/app/consumer/events.go`
+- 跟踪生产者：`tracking/src/nats.rs`、`tracking/src/kafka.rs`
+- 实时分发：`internal/infrastructure/pubsub/`、`realtime/lib/realtime/redis/event_subscriber.ex`

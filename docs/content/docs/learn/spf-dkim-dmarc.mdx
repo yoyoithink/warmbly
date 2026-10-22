@@ -1,119 +1,119 @@
 ---
-title: SPF, DKIM, and DMARC
-description: The three authentication records every cold-email sender needs, the alignment rules nobody explains, and the practical step-by-step setup.
+title: SPF、DKIM 和 DMARC
+description: 冷邮件发件人需要配置的三类身份验证记录、容易被忽略的对齐规则，以及具体的分步设置方法。
 ---
 
 <ShortVersion>
 
-- SPF lists the servers allowed to send mail for your domain.
-- DKIM signs each message so the receiver can tell it was not changed in flight.
-- DMARC passes when SPF or DKIM passes and matches the From domain, and tells receivers what to do when neither does.
-- Roll DMARC out in steps, from `p=none` to `p=reject`.
+- SPF 列出获准代表你的域名发送邮件的服务器。
+- DKIM 为每封邮件签名，使收件方能够确认邮件在传输中没有被修改。
+- SPF 或 DKIM 验证通过且与 From 域名匹配时，DMARC 才会通过；两者都不满足时，DMARC 会告知收件方如何处理。
+- 分阶段部署 DMARC，从 `p=none` 逐步过渡到 `p=reject`。
 
 </ShortVersion>
 
-## Why these three records exist
+## 为什么需要这三类记录 [#why-these-three-records-exist]
 
-Mailbox providers receive a message and need to answer two questions:
+邮箱服务商收到邮件后，需要回答两个问题：
 
-1. Did this message actually come from a server that's allowed to send for this domain?
-2. Was the message changed in flight?
+1. 这封邮件是否确实来自获准代表该域名发信的服务器？
+2. 邮件在传输途中是否被修改？
 
-SPF answers the first. DKIM answers both. DMARC ties the answers to the visible "From" address and tells the receiver what to do if anything is off.
+SPF 回答第一个问题，DKIM 回答这两个问题。DMARC 将验证结果与可见的“From”地址关联起来，并告诉收件方出现异常时如何处理。
 
 <AuthChecks />
 
-## SPF: Sender Policy Framework
+## SPF：发件人策略框架 [#spf-sender-policy-framework]
 
-SPF is a TXT record on your sending domain that lists the servers and services allowed to send mail "on behalf" of you. Receivers check the SMTP envelope sender ("MAIL FROM") domain against your SPF record.
+SPF 是发信域名上的 TXT 记录，列出获准“代表你”发送邮件的服务器和服务。收件方会依据 SMTP 信封发件人（“MAIL FROM”）的域名检查 SPF 记录。
 
-An example for a domain that sends through Google Workspace and Warmbly:
+下面是通过 Google Workspace 和 Warmbly 发信的域名示例：
 
 ```
 v=spf1 include:_spf.google.com include:spf.warmbly.com ~all
 ```
 
-- `v=spf1` is the version.
-- `include:` defers to another SPF record (Google's, ours).
-- `~all` softfails anything not listed. Receivers downgrade reputation but may still deliver.
+- `v=spf1` 表示版本。
+- `include:` 引用另一条 SPF 记录，例如 Google 或我们的记录。
+- `~all` 将未列出的来源判为软失败。收件方会降低信誉评价，但仍可能投递。
 
-<Callout type="warn" title="The 10 DNS lookup limit">
-  Every `include:` counts toward SPF's 10 DNS lookup limit. Stack too many and SPF returns PermError, which DMARC treats as fail.
+<Callout type="warn" title="最多 10 次 DNS 查询">
+  每个 `include:` 都会计入 SPF 的 10 次 DNS 查询限制。堆叠过多时，SPF 会返回 PermError，而 DMARC 会将其视为失败。
 </Callout>
 
-## DKIM: DomainKeys Identified Mail
+## DKIM：域名密钥识别邮件 [#dkim-domainkeys-identified-mail]
 
-DKIM signs outgoing mail with a cryptographic signature. The signature lives in a header; the public key lives in DNS under a "selector". When a receiver gets your message, it fetches your public key, verifies the signature, and confirms the message wasn't altered in flight.
+DKIM 使用加密签名为外发邮件签名。签名放在邮件头中，公钥则通过“选择器”存放在 DNS 中。收件方收到邮件后，会获取公钥、验证签名，并确认邮件没有在传输过程中被修改。
 
-A typical Google Workspace DKIM record looks like:
+典型的 Google Workspace DKIM 记录如下：
 
 ```
 google._domainkey.acme.com TXT "v=DKIM1; k=rsa; p=MIIBIjANBgkqh..."
 ```
 
-The `google._` part is the selector. You'll have one per sending service, so different providers don't trample each other's keys. Use 2048-bit keys when the provider supports them; 1024 is the minimum.
+`google._` 这一部分是选择器。每个发信服务各用一个选择器，避免不同服务商相互覆盖密钥。服务商支持时应使用 2048 位密钥，最低为 1024 位。
 
-## DMARC: the policy that ties it together
+## DMARC：将验证机制关联起来的策略 [#dmarc-the-policy-that-ties-it-together]
 
-DMARC sits on top of SPF and DKIM. It does three things:
+DMARC 建立在 SPF 和 DKIM 之上，负责三件事：
 
-1. Tells receivers what to do if a message fails SPF and DKIM (none / quarantine / reject).
-2. Requires the authenticated domain to *align* with the visible From: domain.
-3. Lets you collect aggregate reports so you can see who is sending as you.
+1. 告诉收件方，在邮件的 SPF 和 DKIM 均验证失败时如何处理（none / quarantine / reject）。
+2. 要求通过验证的域名与可见的 From: 域名*对齐*。
+3. 允许你收集汇总报告，了解哪些服务正在以你的身份发信。
 
-A starter DMARC record at `_dmarc.acme.com`:
+在 `_dmarc.acme.com` 上配置的初始 DMARC 记录示例：
 
 ```
 v=DMARC1; p=none; rua=mailto:dmarc-reports@acme.com; ruf=mailto:dmarc-reports@acme.com; pct=100; aspf=r; adkim=r
 ```
 
-- `p=none` means monitor only. Start here.
-- `rua` is the aggregate report mailbox.
-- `ruf` is the forensic report mailbox.
-- `aspf=r` and `adkim=r` set relaxed alignment; `s` is strict.
+- `p=none` 表示仅监测，应从这里开始。
+- `rua` 指定汇总报告邮箱。
+- `ruf` 指定取证报告邮箱。
+- `aspf=r` 和 `adkim=r` 设置宽松对齐，`s` 表示严格对齐。
 
-### Alignment in plain English
+### 用通俗语言理解对齐 [#alignment-in-plain-english]
 
-"Alignment" means the domain that passed SPF (or signed with DKIM) must match the domain in the From: header.
+“对齐”是指通过 SPF 验证的域名，或用于 DKIM 签名的域名，必须与 From: 邮件头中的域名匹配。
 
-- **Strict SPF alignment:** the MAIL FROM domain must equal the From: domain.
-- **Relaxed SPF alignment:** the organisational domain must match. `bounce.outreach.acme.com` aligns relaxed with `outreach@acme.com`.
-- **Strict DKIM alignment:** the DKIM `d=` domain must equal the From: domain.
-- **Relaxed DKIM alignment:** the organisational domain must match.
+- **严格 SPF 对齐：** MAIL FROM 域名必须与 From: 域名完全一致。
+- **宽松 SPF 对齐：** 组织域名必须一致。`bounce.outreach.acme.com` 与 `outreach@acme.com` 满足宽松对齐。
+- **严格 DKIM 对齐：** DKIM 的 `d=` 域名必须与 From: 域名完全一致。
+- **宽松 DKIM 对齐：** 组织域名必须一致。
 
-Most senders should use relaxed alignment. Strict only matters when you're trying to prevent specific sub-domain spoofing.
+大多数发件人应使用宽松对齐。只有需要防止特定子域名冒用时，严格对齐才有意义。
 
-## The right way to roll out DMARC
+## 正确部署 DMARC 的方法 [#the-right-way-to-roll-out-dmarc]
 
-1. Publish SPF and DKIM for every sending service. Verify with `mail-tester.com` or your provider's tool.
-2. Publish DMARC with `p=none; pct=100; rua=mailto:...`. Don't change anything else for two weeks.
-3. Read the aggregate reports. You'll discover services sending as you that you forgot about (the payroll provider, the newsletter from 2019).
-4. Bring every legitimate sender into SPF and DKIM alignment.
-5. Move to `p=quarantine; pct=25`. Ramp `pct` to 100 over a month while watching reports.
-6. When clean, move to `p=reject`. This is the strongest spoof protection.
+1. 为每个发信服务发布 SPF 和 DKIM 记录。使用 `mail-tester.com` 或服务商的工具验证。
+2. 发布使用 `p=none; pct=100; rua=mailto:...` 的 DMARC 记录，两周内不要再变更其他设置。
+3. 阅读汇总报告。你可能会发现自己已经忘记、却仍在代表你发信的服务，例如薪资服务商，或 2019 年设置的电子通讯。
+4. 让所有合法发件来源都满足 SPF 和 DKIM 对齐要求。
+5. 改为 `p=quarantine; pct=25`。持续观察报告，并在一个月内将 `pct` 逐步提高到 100。
+6. 确认没有异常后，改为 `p=reject`，提供最强的防冒用保护。
 
 <DmarcRollout />
 
-## Common mistakes
+## 常见错误 [#common-mistakes]
 
-- Multiple SPF records on the same domain: receivers treat that as PermError. There must be exactly one SPF record.
-- Forgetting `include:` for a new sending service. Mail still leaves; reputation slowly tanks.
-- 1024-bit DKIM keys never rotated. Mailbox providers are starting to penalise stale keys.
-- DMARC `p=reject` on a domain with services you forgot about, which makes legitimate mail start disappearing.
-- Cold mail from your transactional domain. Reputation issues bleed across.
+- 同一域名存在多条 SPF 记录：收件方会视为 PermError。SPF 记录必须且只能有一条。
+- 新增发信服务后忘记添加 `include:`。邮件仍会发出，但信誉会慢慢下降。
+- 长期不轮换 1024 位 DKIM 密钥。邮箱服务商开始对陈旧密钥作负面处理。
+- 在某些发信服务已被遗忘的域名上直接启用 DMARC `p=reject`，导致正常邮件开始消失。
+- 使用事务性邮件域名发送冷邮件，导致信誉问题相互影响。
 
-## Recommended sub-domain pattern
+## 推荐的子域名分工 [#recommended-sub-domain-pattern]
 
-For a company at `acme.com`:
+以使用 `acme.com` 的公司为例：
 
-- `acme.com` carries transactional and human mail. DMARC reject after rollout.
-- `outreach.acme.com` carries cold campaigns, with its own SPF, DKIM, and DMARC.
-- `news.acme.com` carries newsletters, with separate authentication and reputation.
+- `acme.com` 用于事务性邮件和人工往来邮件。完成部署后启用 DMARC 拒绝策略。
+- `outreach.acme.com` 用于冷邮件营销活动，拥有独立的 SPF、DKIM 和 DMARC。
+- `news.acme.com` 用于电子通讯，单独维护身份验证和信誉。
 
 <SubdomainPattern />
 
-The sub-domain pattern keeps cold reputation issues from contaminating the inboxes you use to run the company. It also lets you change cold-email providers without disturbing transactional mail.
+这种子域名分工可以避免冷邮件的信誉问题污染公司日常经营使用的邮箱，也便于更换冷邮件服务商而不影响事务性邮件。
 
-<Callout type="info" title="Authentication isn't a one-time setup">
-  Audit it quarterly. Rotate DKIM keys yearly. Watch DMARC reports. The cost of doing it once is hours; the cost of skipping it is months of bad placement.
+<Callout type="info" title="身份验证不是一次性设置">
+  每季度检查一次，每年轮换 DKIM 密钥，并持续关注 DMARC 报告。完成配置只需数小时；忽略它，却可能换来数月糟糕的收件箱到达率。
 </Callout>

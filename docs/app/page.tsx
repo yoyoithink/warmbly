@@ -4,7 +4,7 @@ import { Redirect } from '@/components/shared/redirect';
 const TARGET = '/guides/';
 
 export const metadata: Metadata = {
-  title: 'Warmbly Documentation',
+  title: 'Warmbly 文档',
   robots: { index: false },
 };
 
@@ -17,7 +17,7 @@ export default function Home() {
       <Redirect to={TARGET} />
       <main className="flex min-h-screen items-center justify-center text-sm text-fd-muted-foreground">
         <a href={TARGET} className="underline underline-offset-4">
-          Continue to the Warmbly docs
+          进入 Warmbly 文档
         </a>
       </main>
     </>

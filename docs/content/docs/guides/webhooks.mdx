@@ -1,88 +1,88 @@
 ---
-title: Webhooks
-description: Receive real-time HTTP callbacks when things happen in your Warmbly workspace.
+title: "Webhook"
+description: "Warmbly 工作区发生事件时，实时接收 HTTP 回调。"
 ---
 
-Webhooks send a signed HTTP POST to your own URL when something happens in your workspace, such as a reply landing or a campaign completing. Use them to update your CRM or trigger other tools without polling the API.
+工作区发生事件，例如收到回复或营销活动完成时，Webhook 会向你自己的 URL 发送带签名的 HTTP POST。可据此更新 CRM 或触发其他工具，无需轮询 API。
 
-## Add a webhook
+## 添加 Webhook [#add-a-webhook]
 
 <Steps>
 
 <Step>
 
-Open **Settings -> Webhooks** and click **Add endpoint**.
+打开**设置 -> Webhook**，点击**添加端点**。
 
 </Step>
 
 <Step>
 
-Enter the public HTTPS URL where Warmbly should POST events.
+输入 Warmbly 应通过 POST 投递事件的公开 HTTPS URL。
 
 </Step>
 
 <Step>
 
-Choose the events to subscribe to, or leave the list empty to receive all standard events.
+选择要订阅的事件；留空则接收所有标准事件。
 
 </Step>
 
 <Step>
 
-Click **Create** and copy the signing secret right away. It is shown only once.
+点击**创建**并立即复制签名密钥，它只显示一次。
 
 </Step>
 
 <Step>
 
-Answer Warmbly's test request with any `2xx` to verify the endpoint, and real events start.
+向 Warmbly 的测试请求返回任意 `2xx` 状态以验证端点，随后开始接收真实事件。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- An unverified endpoint receives only a challenge request, not real events.
-- High-volume **firehose** events (campaign sends, opens, clicks, inbox syncs) must be added explicitly.
-- Check the `X-Warmbly-Signature` header on every delivery against the raw request body.
-- A failed delivery is retried for up to 8 attempts, then marked abandoned.
-- Every attempt is logged on the endpoint's **Deliveries** tab, where a failed one can be redelivered.
+- 未验证端点只会收到验证挑战请求，不会收到真实事件。
+- 高流量 **firehose** 事件，包括营销活动发送、打开、点击和收件箱同步，必须明确添加。
+- 每次投递都应基于原始请求体验证 `X-Warmbly-Signature` 请求头。
+- 投递失败会重试，最多尝试 8 次，随后标记为已放弃。
+- 每次尝试均记录在端点的**投递记录**标签页，可从中重新投递失败事件。
 
 <Fold>
 
-## What webhooks are for
+## Webhook 的用途 [#what-webhooks-are-for]
 
-Browsing filters, searches and view choices are [remembered in your browser tab](/guides/browsing/) across refreshes and navigation, separately for each user and workspace.
+浏览筛选、搜索和视图选择会[保存在浏览器标签页中](/guides/browsing/)，刷新或导航后可恢复，并按用户和工作区分别记录。
 
-Webhooks let external systems react to Warmbly activity without polling the API. When an event fires (a reply lands, a campaign completes, a meeting is booked), Warmbly sends a signed HTTP POST to every matching endpoint your workspace has registered. From there you can update your CRM, trigger a Slack message, or hand off to any other tool.
+Webhook 使外部系统无需轮询 API 即可响应 Warmbly 中的活动。事件触发时，例如收到回复、营销活动完成或会议被预约，Warmbly 向工作区注册的每个匹配端点发送带签名的 HTTP POST。随后可更新 CRM、触发 Slack 消息，或交给其他工具处理。
 
-If you prefer an in-product alternative that works behind a firewall (no public URL required), the [automations](/guides/automations/) Fire Event step publishes custom events to the realtime socket instead.
+如果需要能够在防火墙后运行、无需公开 URL 的产品内替代方式，[自动化流程](/guides/automations/)的触发事件步骤可以将自定义事件发布到实时套接字。
 
 </Fold>
 
 <Fold>
 
-## Setting up a webhook
+## 配置 Webhook [#setting-up-a-webhook]
 
-Open **Settings -> Webhooks** in the dashboard and click **Add endpoint**.
+在控制台打开**设置 -> Webhook**，点击**添加端点**。
 
-1. Enter the HTTPS URL where Warmbly should POST events. The URL must be publicly routable. Private, loopback, and link-local addresses are rejected.
-2. Optionally add a description so you can tell endpoints apart later.
-3. Choose which events to subscribe to. Leave the list empty to receive all standard events (high-volume firehose events are opt-in separately, see below).
-4. Click **Create**. The signing secret is shown exactly once. Copy it now and store it somewhere safe (a secrets manager or environment variable). It is never shown again. Use **Rotate secret** if you need a new one later.
+1. 输入 Warmbly 应通过 POST 投递事件的 HTTPS URL，必须可从公网路由访问。私有地址、回环地址和链路本地地址会被拒绝。
+2. 可添加描述，便于日后区分端点。
+3. 选择订阅事件。留空表示所有标准事件；高流量 firehose 事件需另行启用，详见下文。
+4. 点击**创建**。签名密钥只显示一次，请立即复制并妥善保存在密钥管理器或环境变量中，之后不会再次显示。日后需要新密钥时可使用**轮换密钥**。
 
-The secret is encrypted at rest with the instance's credential key, the same one that protects mailbox passwords, and is decrypted only when a delivery is signed. It is never returned by the API after creation, and never shown in the admin panel.
+密钥静态存储时使用实例凭据密钥加密，与保护邮箱密码的是同一密钥；仅在对投递签名时解密。创建后，API 不会再返回该密钥，管理员面板也不会显示。
 
-After creation the endpoint is **unverified** and will receive only a challenge request, not real events.
+创建后，端点处于**未验证**状态，只接收挑战请求，不接收真实事件。
 
 </Fold>
 
 <Fold>
 
-## Verifying your endpoint
+## 验证端点 [#verifying-your-endpoint]
 
-Warmbly sends a `POST` to your URL with `X-Warmbly-Event: webhook.test` immediately after creation (and whenever you click **Send test** in the dashboard or call `POST /webhooks/{id}/verify`). The body is:
+创建后，Warmbly 立即向 URL 发送 `POST`，并携带 `X-Warmbly-Event: webhook.test`。在控制台点击**发送测试**或调用 `POST /webhooks/{id}/verify` 时也会发送。请求体为：
 
 ```json
 {
@@ -95,58 +95,58 @@ Warmbly sends a `POST` to your URL with `X-Warmbly-Event: webhook.test` immediat
 }
 ```
 
-Respond with any `2xx` to confirm reachability. That is all that is required for standard dashboard-registered endpoints: Warmbly marks the endpoint verified and begins delivering real events.
+返回任意 `2xx` 即可确认端点可达。对于在常规控制台中注册的端点，只需完成这一步，Warmbly 就会将其标记为已验证，并开始投递真实事件。
 
-If you are building an OAuth app that registers endpoints on behalf of users, you must also prove URL ownership by echoing the `challenge` value back, either in the response body (`{ "challenge": "whcg_..." }`) or in a `X-Warmbly-Webhook-Challenge` response header.
+如果开发的 OAuth 应用代表用户注册端点，还必须回传 `challenge` 值来证明对 URL 的控制权，可放在响应体（`{ "challenge": "whcg_..." }`）或 `X-Warmbly-Webhook-Challenge` 响应头中。
 
-**Changing an endpoint's URL host re-arms verification.** The endpoint goes back to unverified and must pass the challenge again.
-
-</Fold>
-
-<Fold>
-
-## Selecting events
-
-The event picker in Settings shows the full catalog grouped by category. A few things to keep in mind:
-
-- Leaving the list empty subscribes to all standard (non-firehose) events.
-- High-volume events (campaign sends, opens, clicks, inbox syncs) are marked **firehose** and must be added explicitly. Subscribe to them only if your receiver can handle the sustained volume.
-- You can update the event list at any time without affecting the signing secret or verification state.
-
-The complete event catalog is available programmatically at `GET /webhooks/event-types`. See the [webhooks API reference](/api/reference/webhooks/) for the full list.
+**更改端点 URL 的主机名会重新要求验证。** 端点恢复未验证状态，必须再次通过挑战。
 
 </Fold>
 
 <Fold>
 
-## Reading the delivery log
+## 选择事件 [#selecting-events]
 
-Every delivery attempt is logged. Open an endpoint in Settings -> Webhooks and go to the **Deliveries** tab to see:
+设置中的事件选择器按类别显示完整目录，需要注意：
 
-- status (`delivered`, `failed`, `abandoned`, `pending`)
-- the event type and the timestamp
-- the HTTP response code and a snippet of the response body
-- how many attempts have been made
+- 留空会订阅所有标准事件，即非 firehose 事件。
+- 高流量事件，例如营销活动发送、打开、点击和收件箱同步，标记为 **firehose**，必须明确添加。仅在接收端能承受持续流量时订阅。
+- 可随时更新事件列表，不影响签名密钥或验证状态。
 
-You can also query deliveries across all endpoints with `GET /webhooks/deliveries`, or scope it to one endpoint with `GET /webhooks/{id}/deliveries`. Both support filtering by status and event type, and return opaque cursor pagination.
-
-If an event was throttled rather than delivered, it appears in `GET /webhooks/throttle-drops` instead of the delivery log.
+完整事件目录可通过 `GET /webhooks/event-types` 获取。完整列表参见 [Webhook API 参考](/api/reference/webhooks/)。
 
 </Fold>
 
 <Fold>
 
-## Redelivering a failed event
+## 查看投递日志 [#reading-the-delivery-log]
 
-In the dashboard, open any failed delivery and click **Redeliver**. Programmatically, call `POST /webhooks/deliveries/{deliveryId}/redeliver`. Redelivery re-enqueues the event with its original payload, and the same `X-Warmbly-Event-Id` value, so your idempotency logic will dedupe it correctly if the original delivery eventually arrived.
+每次投递尝试都会记录。在设置 -> Webhook 中打开端点，进入**投递记录**标签页，可查看：
+
+- 状态（`delivered`、`failed`、`abandoned`、`pending`）；
+- 事件类型与时间戳；
+- HTTP 响应码与响应体片段；
+- 已尝试次数。
+
+也可使用 `GET /webhooks/deliveries` 查询所有端点的投递，或用 `GET /webhooks/{id}/deliveries` 限定一个端点。两者均支持按状态和事件类型筛选，并返回不透明游标分页。
+
+如果事件因限流而未投递，它会出现在 `GET /webhooks/throttle-drops` 中，而非投递日志。
 
 </Fold>
 
 <Fold>
 
-## Verifying signatures in your receiver
+## 重新投递失败的事件 [#redelivering-a-failed-event]
 
-Every delivery carries an `X-Warmbly-Signature` header in the form `t=<unix>,v1=<hex>`. Verify it against the **raw request body** (before any JSON parsing):
+在控制台打开失败的投递并点击**重新投递**。也可调用 `POST /webhooks/deliveries/{deliveryId}/redeliver`。重新投递会使用原始载荷和相同的 `X-Warmbly-Event-Id` 值再次入队；即使原投递最终也已到达，接收端的幂等逻辑仍可正确去重。
+
+</Fold>
+
+<Fold>
+
+## 在接收端验证签名 [#verifying-signatures-in-your-receiver]
+
+每次投递都携带 `X-Warmbly-Signature` 请求头，格式为 `t=<unix>,v1=<hex>`。必须在任何 JSON 解析之前，基于**原始请求体**进行验证：
 
 ```python
 import hashlib, hmac, time
@@ -164,39 +164,39 @@ def verify(secret: str, header: str, raw_body: bytes) -> bool:
     return hmac.compare_digest(expected, v1)
 ```
 
-Key points:
+要点：
 
-- Use constant-time comparison (`hmac.compare_digest` or equivalent) to avoid timing attacks.
-- Reject deliveries whose timestamp is more than 5 minutes from now to limit replay windows.
-- Only accept schemes you recognize (`v1`). Ignore any unknown scheme prefix.
-- Use `X-Warmbly-Event-Id` (or the payload `id` field) as an idempotency key. The same event id may arrive more than once if a retry fires before Warmbly receives your `2xx`.
-
-</Fold>
-
-<Fold>
-
-## Retries and auto-disable
-
-If your endpoint returns a non-`2xx` response (or times out), Warmbly retries with exponential backoff: 30 seconds, 1 minute, 2 minutes, 4 minutes, and so on, capped at 1 hour between attempts, for up to 8 attempts. After 8 failed attempts the delivery is marked abandoned.
-
-Redirects are never followed. `3xx` responses are treated as failures.
-
-If an endpoint fails continuously over a sustained window, Warmbly auto-disables it to protect both your downstream systems and any third-party receiving infrastructure. Re-enable it in Settings once the receiver is healthy, then use the delivery log to redeliver any abandoned events you need to recover.
+- 使用常量时间比较（`hmac.compare_digest` 或同类方法），防止时序攻击。
+- 拒绝时间戳与当前时间相差超过 5 分钟的投递，限制重放窗口。
+- 只接受可识别的方案（`v1`），忽略未知方案前缀。
+- 使用 `X-Warmbly-Event-Id`（或载荷中的 `id` 字段）作为幂等键。如果 Warmbly 收到 `2xx` 前已触发重试，同一事件 ID 可能到达多次。
 
 </Fold>
 
 <Fold>
 
-## OAuth app allowed domains
+## 重试与自动禁用 [#retries-and-auto-disable]
 
-If your OAuth app registers webhook endpoints on behalf of its users, it must declare the allowed domains in `allowed_webhook_domains` when creating or updating the app (see [OAuth](/api/oauth/)). Any endpoint URL your app registers must have a host within that list. An empty list means webhook registration is blocked for the app.
+端点返回非 `2xx` 响应或超时时，Warmbly 会采用指数退避重试：30 秒、1 分钟、2 分钟、4 分钟，依此类推，两次尝试间隔最长 1 小时，总计最多尝试 8 次。8 次均失败后，投递标记为已放弃。
 
-Domain matching is subdomain-inclusive when you prefix the entry with a dot: `.acme.com` matches `acme.com`, `hooks.acme.com`, and any deeper subdomain. A bare entry like `acme.com` matches that exact host only.
+不会跟随重定向。`3xx` 响应被视为失败。
+
+如果端点在一段持续时间内不断失败，Warmbly 会自动禁用它，以保护下游系统及第三方接收基础设施。接收端恢复后，在设置中重新启用，再从投递日志重新发送需要恢复的已放弃事件。
 
 </Fold>
 
-## What comes next
+<Fold>
 
-- [Webhooks API reference](/api/reference/webhooks/) for the full endpoint, payload, and delivery log spec.
-- [Automations](/guides/automations/) if you want to react to events inside Warmbly without a public URL.
-- [Integrations](/guides/integrations/) for connecting third-party CRM, Slack, and automation tools.
+## OAuth 应用允许的域名 [#oauth-app-allowed-domains]
+
+OAuth 应用代表用户注册 Webhook 端点时，必须在创建或更新应用时通过 `allowed_webhook_domains` 声明允许的域名，参见 [OAuth](/api/oauth/)。应用注册的任何端点 URL，其主机名都必须位于该列表内。列表为空表示该应用不得注册 Webhook。
+
+条目前加点号时，域名匹配包含子域名：`.acme.com` 匹配 `acme.com`、`hooks.acme.com` 和任意更深层子域名。`acme.com` 这样的裸条目只精确匹配该主机名。
+
+</Fold>
+
+## 后续内容 [#what-comes-next]
+
+- [Webhook API 参考](/api/reference/webhooks/)：完整的端点、载荷和投递日志规范。
+- [自动化流程](/guides/automations/)：无需公开 URL，在 Warmbly 内响应事件。
+- [集成](/guides/integrations/)：连接第三方 CRM、Slack 和自动化工具。

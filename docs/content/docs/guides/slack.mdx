@@ -1,281 +1,281 @@
 ---
-title: Slack
-description: "Ask the Warmbly assistant from Slack, work inbox replies in a Slack channel, and route notifications to the right channels."
+title: "Slack"
+description: "在 Slack 中使用 Warmbly 助手，在频道内处理收件箱回复，并将通知发送到合适的频道。"
 ---
 
-Warmbly for Slack brings the AI assistant, your inbox replies and Warmbly notifications into the Slack workspace your team already uses.
+Warmbly for Slack 将 AI 助手、收件箱回复和 Warmbly 通知带入团队已经在使用的 Slack 工作区。
 
-## Connect Slack
+## 连接 Slack [#connect-slack]
 
 <Steps>
 
 <Step>
 
-Open **Integrations > Slack** and select **Connect**.
+打开**集成 > Slack**，选择**连接**。
 
 </Step>
 
 <Step>
 
-Pick the Slack workspace and approve the app's permissions.
+选择 Slack 工作区，并批准应用请求的权限。
 
 </Step>
 
 <Step>
 
-Mention `@Warmbly` or message it to link your Slack account. When your Slack email matches your Warmbly account, it links you automatically.
+提及 `@Warmbly` 或向它发送消息，以关联你的 Slack 账户。如果 Slack 邮箱与 Warmbly 账户邮箱一致，系统会自动关联。
 
 </Step>
 
 <Step>
 
-Under **Integrations > Slack**, pick a **Default channel** for notifications and, if you want, an **Inbox channel**.
+在**集成 > Slack**中，为通知选择**默认频道**，并按需选择**收件箱频道**。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Connecting and changing Slack settings need the **Manage settings** permission.
-- The assistant acts as you, with your permissions, and asks before changing anything. In a DM, an action your workspace has set to **Always allow** can go ahead without asking again.
-- Anything that sends mail to a real recipient needs your approval every time.
-- Every member of the inbox channel can read the mail posted there.
-- On a self-hosted instance, the operator has to create a Slack app first.
+- 连接 Slack 和修改 Slack 设置均需要**管理设置**权限。
+- 助手以你的身份、使用你的权限执行操作，并在修改任何内容之前征求同意。在私信中，工作区已设为**始终允许**的操作可以直接执行，无需再次询问。
+- 任何向真实收件人发送邮件的操作，每次都需要你批准。
+- 收件箱频道的每位成员都可以阅读发布到其中的邮件。
+- 自托管实例的运维人员必须先创建 Slack 应用。
 
 <Fold>
 
-## What Warmbly for Slack does
+## Warmbly for Slack 的功能 [#what-warmbly-for-slack-does]
 
-Warmbly for Slack brings three things into the Slack workspace your team already lives in:
+Warmbly for Slack 将三项功能带入团队日常使用的 Slack 工作区：
 
-- **The assistant.** Ask the same [AI assistant](/guides/ai-assistant/) you use in the dashboard by mentioning `@Warmbly` or messaging it, the way you would ask a teammate. It is the same assistant, with the same tools and the same answers, and it acts as you, with your permissions, and asks before changing anything.
-- **Inbox in Slack.** Replies from the [Unibox](/guides/unibox/) land in a channel of your choice, one thread per conversation, where the team can discuss, label, draft and reply.
-- **Notifications.** Post Warmbly [notifications](/guides/notifications/) to a default channel, route each category to its own channel, and optionally get your own as DMs.
+- **助手。** 通过提及 `@Warmbly` 或给它发消息，就能像询问同事一样，使用与控制台中相同的 [AI 助手](/guides/ai-assistant/)。它拥有相同的工具，提供相同的回答，并以你的身份和权限执行操作，在修改任何内容之前征求同意。
+- **Slack 中的收件箱。** [统一收件箱](/guides/unibox/)中的回复会发布到指定频道，每个邮件会话对应一个 Slack 讨论串，团队可以在其中讨论、添加标签、起草和回复邮件。
+- **通知。** 将 Warmbly [通知](/guides/notifications/)发布到默认频道，为各个分类指定独立频道，也可以选择通过私信接收自己的通知。
 
-The app's **Home** tab shows whether your Slack account is linked, with buttons to link or unlink, ask Warmbly, and open Warmbly.
+应用的**主页**标签页显示 Slack 账户是否已关联，并提供关联或解除关联、向 Warmbly 提问和打开 Warmbly 的按钮。
 
 </Fold>
 
 <Fold>
 
-## Connect Slack
+## 连接 Slack [#connect-slack-1]
 
-Open **Integrations > Slack** and select **Connect**. Slack asks you to pick the Slack workspace and approve the app's permissions, then returns you to Warmbly. Connecting and changing Slack settings need the **Manage settings** permission.
+打开**集成 > Slack**并选择**连接**。Slack 会要求选择工作区并批准应用权限，随后返回 Warmbly。连接和修改 Slack 设置均需要**管理设置**权限。
 
-When the connection was made before Warmbly asked for a permission it now uses, the Slack panel lists the missing permissions and a **Reconnect** button. Reconnecting grants them and keeps your settings and linked accounts.
+如果最初连接时 Warmbly 尚未请求某项如今需要使用的权限，Slack 面板会列出缺少的权限，并显示**重新连接**按钮。重新连接会补充这些权限，同时保留设置和已关联账户。
 
-<Callout type="info" title="Self-hosted instances need a Slack app first">
-On a self-hosted instance the Slack card stays unavailable until the operator creates the instance's own Slack app. See [Slack app](/development/slack-app/).
+<Callout type="info" title="自托管实例需先创建 Slack 应用">
+在自托管实例中，Slack 卡片会保持不可用，直到运维人员创建该实例自己的 Slack 应用。参见 [Slack 应用](/development/slack-app/)。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Link your Slack account
+## 关联 Slack 账户 [#link-your-slack-account]
 
-The assistant and the inbox buttons do things in Warmbly on your behalf, so Warmbly has to know which Warmbly member you are. Linking ties your Slack account to your Warmbly account in this workspace. Until you link, the bot can post notifications and inbox replies but will not act for you.
+助手和收件箱按钮会代表你在 Warmbly 中执行操作，因此 Warmbly 必须知道你对应哪位成员。关联操作会将 Slack 账户与该工作区中的 Warmbly 账户绑定。关联之前，机器人可以发布通知和收件箱回复，但不会代表你采取行动。
 
-Most members never see a link step. When the email on your Slack profile is the email of a Warmbly account that is a member of the connected workspace, Warmbly links the two the first time you mention `@Warmbly`, message it, press one of its buttons or open its Home tab. It answers straight away and sends you a DM saying it linked you. The member who connects Slack is linked the same way to the Slack account that approved the install.
+大多数成员无需手动关联。如果 Slack 个人资料中的邮箱与已连接工作区内某个 Warmbly 成员账户的邮箱一致，那么在你首次提及 `@Warmbly`、给它发消息、点击其按钮或打开其主页标签页时，Warmbly 就会自动关联两者。机器人会立即回答，并通过私信告知关联完成。负责连接 Slack 的成员也会以同样方式，与批准安装的 Slack 账户关联。
 
-When the emails differ, or Slack does not share yours, you link once:
+如果邮箱不同，或 Slack 不提供你的邮箱，需要完成一次手动关联：
 
-1. Ask the bot something: mention `@Warmbly` or message it. The bot sends you a **Link your Warmbly account** button in a DM. In a channel it also replies in the thread to say it is waiting for you, and the button itself is only ever sent to you.
-2. The button opens Warmbly. Sign in if you need to, and check the Slack account and the Warmbly account it shows.
-3. Select **Continue with Slack**. Slack asks you to sign in to the Slack account the button was made for, which proves the account is yours whatever email it uses. When your Slack and Warmbly emails already match, the button is **Connect account** instead and needs no Slack sign-in.
-4. The bot confirms in that account's DM and answers the question you asked, where you asked it. You do not have to ask again.
+1. 向机器人提问：提及 `@Warmbly` 或发送私信。机器人会在私信中向你发送**关联 Warmbly 账户**按钮。在频道中，它也会在讨论串里说明正在等待你操作，但按钮本身只会发送给你。
+2. 按钮会打开 Warmbly。必要时先登录，并检查页面显示的 Slack 账户和 Warmbly 账户。
+3. 选择**通过 Slack 继续**。Slack 会要求你登录按钮所对应的 Slack 账户，无论该账户使用什么邮箱，这都能证明账户属于你。如果 Slack 与 Warmbly 邮箱已经一致，按钮则显示**连接账户**，无需再登录 Slack。
+4. 机器人会在该账户的私信中确认，并在原提问位置回答之前的问题。你不需要重新提问。
 
-The link button works once and expires after 15 minutes; ask the bot for a new one if it lapses. A question waiting for the link is dropped with it. You can only link to a Warmbly workspace you are a member of.
+关联按钮只能使用一次，15 分钟后过期；过期后请让机器人生成新的按钮。等待关联的问题也会随之丢弃。你只能关联自己所属的 Warmbly 工作区。
 
-A link button only ever links the Slack account it was made for: either its Slack email is your Warmbly email (capitalization does not matter), or you signed in to that Slack account with **Continue with Slack**. Signing in to a different Slack account is refused.
+关联按钮只能关联签发时指定的 Slack 账户：要么该账户的 Slack 邮箱与 Warmbly 邮箱一致，不区分大小写；要么你已经通过**通过 Slack 继续**登录了该 Slack 账户。登录其他 Slack 账户会被拒绝。
 
-<Callout type="info" title="Automatic linking needs Slack emails">
-Matching by email needs the `users:read` and `users:read.email` permissions. A connection made before Warmbly asked for them lists them as missing under **Integrations > Slack**. Until someone with **Manage settings** selects **Reconnect**, members link with **Continue with Slack**. Links made before then keep working.
+<Callout type="info" title="自动关联需要获取 Slack 邮箱地址">
+按邮箱匹配需要 `users:read` 和 `users:read.email` 权限。在 Warmbly 开始请求这些权限之前建立的连接，会在**集成 > Slack**中将其列为缺失权限。在具有**管理设置**权限的成员选择**重新连接**之前，其他成员需要使用**通过 Slack 继续**完成关联。此前已经建立的关联继续有效。
 </Callout>
 
-A Slack account links to one Warmbly account at a time. Linking again replaces the previous link. Unlink from the app's Home tab or from **Integrations > Slack** in Warmbly. If your membership in the workspace ends, the link stops working and the bot asks you to link again.
+一个 Slack 账户同一时间只能关联一个 Warmbly 账户。再次关联会替换之前的关联。可以在应用主页标签页，或 Warmbly 的**集成 > Slack**中解除关联。如果你不再是该工作区成员，关联将停止生效，机器人会要求重新关联。
 
 </Fold>
 
 <Fold>
 
-## The assistant
+## 助手 [#the-assistant]
 
-### Where to ask
+### 提问位置 [#where-to-ask]
 
-| Where | How |
+| 位置 | 使用方式 |
 |---|---|
-| Direct message | Open the Warmbly app in Slack and write in its **Messages** tab |
-| Assistant pane | Open Warmbly from Slack's AI apps entry to chat in a side pane next to whatever you are reading. It offers a few suggested prompts to start from |
-| A channel | Mention `@Warmbly` with your question. It answers in a thread, and you continue by replying in that thread |
-| On a message | Choose **Ask Warmbly about this** from the message's **More actions** menu. The assistant starts a thread with that message as context |
+| 私信 | 在 Slack 中打开 Warmbly 应用，在其**消息**标签页输入 |
+| 助手面板 | 从 Slack 的 AI 应用入口打开 Warmbly，在当前阅读内容旁边的侧面板聊天。面板提供一些建议提示词，方便开始 |
+| 频道 | 在问题中提及 `@Warmbly`。它会在讨论串中回答，你可以继续在该讨论串回复 |
+| 某条消息 | 在消息的**更多操作**菜单中选择**让 Warmbly 分析这条消息**。助手会以该消息作为上下文开启讨论串 |
 
-To use it in a channel, the bot has to be a member: invite it with `/invite @Warmbly`. Slack offers to add it when you mention it in a channel it is not in.
+要在频道中使用，机器人必须是频道成员：使用 `/invite @Warmbly` 邀请。如果你在它尚未加入的频道中提及它，Slack 会提示添加。
 
-Each Slack thread is one conversation. Follow-ups in the thread continue it, with everything said before, and you do not need to mention the bot again. When you mention it inside an existing thread, it reads the thread first, so you can ask about a discussion that is already under way.
+每个 Slack 讨论串对应一段助手对话。讨论串中的后续提问会沿用之前的全部内容，无需再次提及机器人。如果在已有讨论串中提及它，它会先读取讨论串，因此你可以询问正在进行的讨论。
 
-The bot reacts with 👀 to the message it is working on and swaps it for ✅ when the answer is done. A workspace connected before Warmbly asked for the reactions permission shows no reactions until it is reconnected.
+机器人处理消息时会添加 👀 表情反应，完成回答后替换为 ✅。如果工作区建立连接时 Warmbly 尚未请求表情反应权限，则在重新连接之前不会显示这些反应。
 
-### Working a thread together
+### 在同一会话中协作 [#working-a-thread-together]
 
-A thread belongs to whoever is talking to the assistant in it, and only they continue it without a mention. A teammate who mentions `@Warmbly` in that thread takes it over: from then on the assistant acts as them, with their permissions, and starts from what the thread already says. Anyone outside your Warmbly workspace who mentions it is turned away.
+讨论串归属于当前在其中与助手交谈的人，只有该成员可以不提及机器人就继续对话。如果队友在同一个讨论串中提及 `@Warmbly`，便会接管对话：此后助手以该队友的身份和权限执行操作，并以前面的讨论串内容为起点。Warmbly 工作区以外的人提及它时，会被拒绝。
 
-### What it can do
+### 功能范围 [#what-it-can-do]
 
-Everything the dashboard assistant can: find and edit contacts, read campaign stats, pause a campaign, turn warmup off on a mailbox, draft replies, and the rest of the list in [What you can ask](/guides/ai-assistant/#what-you-can-ask). The reply appears as one message that updates while the assistant works, with a line for each step it takes.
+控制台助手能做的事情，它都能做：查找和编辑联系人、读取营销活动统计、暂停营销活动、关闭邮箱预热、起草回复，以及[可以询问的内容](/guides/ai-assistant/#what-you-can-ask)中列出的其他任务。回答以一条持续更新的消息显示，助手执行的每个步骤各占一行。
 
-It can also set up Slack itself. Ask `@Warmbly send reply notifications here` or `@Warmbly use this channel for the inbox` in the channel you mean, or `@Warmbly only answer in DMs`. For an integration that is not connected yet, it gives you a link that opens the connect window in Warmbly, because connecting needs you signed in to the other service.
+它也能配置 Slack 本身。例如，在目标频道中输入 `@Warmbly send reply notifications here`，要求把回复通知发送到这里；输入 `@Warmbly use this channel for the inbox`，将当前频道设为收件箱频道；或输入 `@Warmbly only answer in DMs`，要求只在私信中回答。对于尚未连接的集成，它会提供一个在 Warmbly 中打开连接窗口的链接，因为连接需要你登录另一项服务。
 
-It can do exactly what your role can do in the dashboard and nothing more: changing Slack setup needs **Manage settings**, as it does under **Integrations > Slack**.
+它可以执行的操作严格受你在控制台中的角色权限约束：修改 Slack 配置需要**管理设置**权限，与**集成 > Slack**页面的要求相同。
 
-It runs as your linked Warmbly account with the permissions your role has at that moment. If your role cannot do something in the dashboard, the assistant cannot do it from Slack either, and a permission removed from your role takes effect on the next message.
+它以已关联的 Warmbly 账户运行，使用当前角色在该时刻拥有的权限。如果你的角色无法在控制台中执行某项操作，助手也无法从 Slack 执行；从角色中移除的权限会在下一条消息时生效。
 
-### Approvals
+### 操作审批 [#approvals]
 
-Reading runs straight away. A change shows an approval card in the thread with the action, every argument the assistant passed, and these buttons:
+读取操作会立即执行。修改操作会在讨论串中显示批准卡片，列出操作、助手传入的每个参数，以及以下按钮：
 
-- **Approve** runs that one action.
-- **Deny** skips it.
-- **Always allow** approves it and every later action of that kind, as in the dashboard. It is offered only to a member with **Manage settings**, and never for the actions that [always ask](/guides/ai-assistant/#approvals).
+- **批准**：执行这一次操作。
+- **拒绝**：跳过这次操作。
+- **始终允许**：批准本次及以后同类操作，与控制台一致。只有拥有**管理设置**权限的成员才能看到此选项；对于[始终要求批准](/guides/ai-assistant/#approvals)的操作，绝不会提供该选项。
 
-In a channel, every change asks, even one your workspace always allows, because anyone in the channel can post there. The same holds in a DM when the assistant is reading text someone else wrote (a thread, a message you asked about, or an email), and for changes that follow an approval in the same request. **Always allow** applies in a DM with only your own messages, and in the dashboard.
+在频道中，每次修改都会要求批准，即使工作区已设为始终允许，因为频道内任何人都可以发布内容。如果助手在私信中读取其他人写的文字，例如讨论串、你要求分析的消息或邮件，也同样如此；同一次请求中，在已经批准的操作之后继续进行的修改也会再次询问。**始终允许**仅适用于只含你自己消息的私信，以及控制台。
 
-Only the person whose conversation it is can press them. Anyone else in the channel sees the card but cannot act on it. Each card decides the one action it shows: once it is decided, here or in the dashboard, its buttons do nothing. A teammate who takes the thread over skips any card still waiting.
+只有当前对话的发起人可以点击批准按钮。频道中的其他人能够看到卡片，但不能操作。每张卡片只决定其显示的那一个操作：一旦在这里或控制台中作出决定，按钮便不再生效。队友接管讨论串时，仍在等待的卡片会被跳过。
 
-When the details do not fit in a Slack message, the card says so and carries **Open in Warmbly**, so you can read all of it before you decide. Secrets a step returns, such as a webhook signing secret, are never shown in Slack.
+如果详情无法完整放入 Slack 消息，卡片会明确提示，并提供**在 Warmbly 中打开**，方便阅读全部内容后再决定。步骤返回的机密，例如 Webhook 签名密钥，绝不会在 Slack 中展示。
 
-<Callout type="warn" title="Sending always asks">
-Anything that sends mail to a real recipient needs your approval every time, and **Always allow** is never offered for it. The card shows the sending mailbox, the recipient, the subject and the message, and only that exact message goes out.
+<Callout type="warn" title="发送前始终请求确认">
+任何向真实收件人发送邮件的操作，每次都需要你的批准，且绝不会提供**始终允许**。卡片会显示发件邮箱、收件人、主题和正文；实际发送的只能是这封经过确认的具体邮件。
 </Callout>
 
-### Credits and history
+### 积分与历史记录 [#credits-and-history]
 
-A conversation in Slack costs [AI credits](/guides/ai-credits/) exactly like the same conversation in the dashboard, and needs the same things: a paid plan and the **Use AI** permission.
+Slack 对话消耗的 [AI 积分](/guides/ai-credits/)与控制台中的同等对话完全相同，使用条件也相同：付费套餐和**使用 AI**权限。
 
-Every Slack conversation is also in your assistant history in the dashboard, and the bot's reply carries an **Open in Warmbly** link to it. It follows the same privacy rules as any other conversation: private to you unless the workspace turned on shared history.
+每段 Slack 对话也会出现在控制台的助手历史中，机器人回复附带**在 Warmbly 中打开**链接。它遵循与其他对话相同的隐私规则：默认仅你可见，除非工作区开启了共享历史。
 
-### Where it does not answer
+### 不会回复的场景 [#where-it-does-not-answer]
 
-- **Slack Connect channels.** In a channel shared with another organization the assistant declines, because people outside your company would read what it says about your workspace.
-- **When the workspace limits it.** Under **Integrations > Slack**, a member with **Manage settings** can set the assistant to **On**, **DMs only** (it answers in DMs and the assistant pane, never in channels) or **Off**.
+- **Slack Connect 频道。** 在与其他组织共享的频道中，助手会拒绝回答，因为公司之外的人也能读取它提供的工作区信息。
+- **工作区设置了限制。** 在**集成 > Slack**中，具有**管理设置**权限的成员可将助手设为**开启**、**仅私信**（只在私信和助手面板回答，不在频道回答）或**关闭**。
 
 </Fold>
 
 <Fold>
 
-## Inbox in Slack
+## Slack 中的收件箱 [#inbox-in-slack]
 
-Pick an **Inbox channel** under **Integrations > Slack** and incoming mail from the [Unibox](/guides/unibox/) is posted there, so the team can work replies without leaving Slack. Leave it empty and nothing is posted.
+在**集成 > Slack**中选择**收件箱频道**后，[统一收件箱](/guides/unibox/)收到的邮件会发布到该频道，团队无需离开 Slack 即可处理回复。留空则不发布任何邮件。
 
-<Callout type="warn" title="Everyone in the channel reads these emails">
-Every member of the inbox channel can read the mail posted there, including people who have no Warmbly account or no inbox access. Pick a channel whose members you would let read your inbox.
+<Callout type="warn" title="频道中的所有人都能阅读这些邮件">
+收件箱频道的每位成员都能阅读其中发布的邮件，包括没有 Warmbly 账户或没有收件箱权限的人。请选择一个所有成员都可以获准阅读你收件箱的频道。
 </Callout>
 
-| Setting | What it does |
+| 设置 | 作用 |
 |---|---|
-| **Inbox channel** | The channel conversations are posted to, picked from the list. Empty turns the inbox off |
-| **What to post** | **Replies** (the default) posts human replies only: messages that answer something and are not bounces or auto-replies such as out-of-office notices. **All** posts every inbound message |
+| **收件箱频道** | 从列表中选择发布会话的频道。留空会关闭此收件箱功能 |
+| **发布内容** | **回复**（默认）只发布人工回复：必须是对某封邮件的回应，并且不是退信或休假通知等自动回复。**全部**会发布每一封入站邮件 |
 
-The inbox channel cannot be a Slack Connect channel. For a private channel, invite the Warmbly app to it first, then pick it.
+收件箱频道不能是 Slack Connect 频道。如果选择私有频道，请先邀请 Warmbly 应用加入，再进行选择。
 
-### One thread per conversation
+### 每个邮件会话对应一个讨论串 [#one-thread-per-conversation]
 
-Each conversation gets one Slack thread. The first message opens it with the sender, subject and, when it answers a campaign, the campaign's name. Later messages in the same conversation land in that thread, and so do replies a teammate sends from Warmbly, shown as **Sent by** (or **Scheduled by** for a scheduled send) with their name.
+每个邮件会话对应一个 Slack 讨论串。第一条消息会开启讨论串，显示发件人、主题；如果是对营销活动的回复，还会显示活动名称。同一会话中的后续邮件都进入该讨论串，团队成员从 Warmbly 发出的回复也一样，并显示**发送者**及其姓名；定时发送则显示**安排发送者**。
 
-The posted text has quoted history removed and is cut at 1,500 characters. **Open in Warmbly** shows the whole message.
+发布的文字会移除引用的历史内容，并截断到 1,500 个字符。点击**在 Warmbly 中打开**可查看完整邮件。
 
-### Buttons
+### 按钮 [#buttons]
 
-| Button | What it does |
+| 按钮 | 作用 |
 |---|---|
-| **Reply** | Opens a form with the recipient and subject fixed and the body editable, filled with the latest draft for the conversation. Sending goes out from the conversation's mailbox, as you, with the same permission, plan and suppression checks as replying in the dashboard |
-| **Draft with AI** | The assistant writes a draft in the thread, as you. Review it, then use **Review and send** to send it through the reply form |
-| **Interested**, **Not interested** | Apply the inbox labels of those names to the conversation |
-| **Assign to me** | Marks the Slack card **Handled by** you, so teammates know who has it. It shows on the Slack card only; the inbox itself has no assignee |
-| **Open in Warmbly** | Opens the conversation in the Unibox |
+| **回复** | 打开表单，收件人和主题固定，正文可编辑，并填入该会话最新的草稿。邮件以你的身份从该会话的邮箱发出，执行与控制台回复相同的权限、套餐和禁止发送检查 |
+| **使用 AI 起草** | 助手以你的身份在讨论串中撰写草稿。检查后，使用**审阅并发送**进入回复表单发送 |
+| **感兴趣**、**不感兴趣** | 为会话应用同名收件箱标签 |
+| **分配给我** | 在 Slack 卡片上标记由你**负责处理**，让队友知道谁在跟进。该标记只显示在 Slack 卡片上，收件箱本身没有负责人字段 |
+| **在 Warmbly 中打开** | 在统一收件箱中打开该会话 |
 
-Every button except **Open in Warmbly** needs a linked Slack account and the **Use unified inbox** permission.
+除**在 Warmbly 中打开**外，所有按钮都要求 Slack 账户已关联，并具有**使用统一收件箱**权限。
 
-### Talking in the thread
+### 在讨论串中交流 [#talking-in-the-thread]
 
-Typing in a conversation's thread is team discussion. It never sends email, and the assistant does not read it. Mention `@Warmbly` in the thread to ask the assistant about the conversation: it starts with that conversation as context, and still asks before sending anything.
+在邮件会话的讨论串中直接输入内容属于团队讨论。它绝不会发送邮件，助手也不会读取。要让助手分析该会话，请在讨论串中提及 `@Warmbly`：它会以该邮件会话作为上下文，并且仍会在发送任何内容之前征求批准。
 
 </Fold>
 
 <Fold>
 
-## Notifications
+## 通知 [#notifications]
 
-Warmbly posts a notification to Slack when the category is enabled for Slack in the recipient's **Settings > Notifications**. A notification meant for several teammates is posted once, not once per person.
+如果接收人在**设置 > 通知**中为某个分类开启了 Slack 渠道，Warmbly 就会将该类通知发布到 Slack。面向多位队友的同一通知只发布一次，不会每人各发一次。
 
-| Setting | What it does |
+| 设置 | 作用 |
 |---|---|
-| **Default channel** | Where every notification goes unless its category has its own channel |
-| **Per-category channels** | Send a category to a different channel, for example replies to `#sales` and health alerts to `#deliverability` |
-| **Personal DMs** | Each member can also get their own notifications as DMs from the bot |
+| **默认频道** | 所有通知的默认目的地，除非该分类设置了独立频道 |
+| **按分类指定频道** | 将某类通知发送到其他频道，例如将回复发送到 `#sales`，将健康度提醒发送到 `#deliverability` |
+| **个人私信** | 每位成员还可以通过机器人私信接收属于自己的通知 |
 
-The channel picker lists public channels and the private channels the bot has been invited to. To post to a private channel, invite the bot there first.
+频道选择器列出公开频道，以及已邀请机器人加入的私有频道。要向私有频道发布，请先邀请机器人加入。
 
-Each post carries an **Open in Warmbly** button. A **Reply received** notification also has **Draft a reply**, which starts the assistant in a thread on that post, for whoever pressed it, with the reply already in front of it. The draft is never sent without your approval. Pressing it needs a linked account.
+每条通知都附带**在 Warmbly 中打开**按钮。**收到回复**通知还带有**起草回复**按钮，点击后会以操作者的身份，在该通知下的讨论串中启动助手，并已将回复内容作为上下文。未经你批准，草稿绝不会发送。点击此按钮需要已关联账户。
 
-**Personal DMs** are off until you turn them on, from **Integrations > Slack** in Warmbly (they need a linked account). You then get a DM for every category you have enabled for Slack in **Settings > Notifications**.
+**个人私信**默认关闭，需在 Warmbly 的**集成 > Slack**中开启，并要求已关联账户。开启后，你会通过私信收到在**设置 > 通知**中启用了 Slack 渠道的每类个人通知。
 
-To work every reply in Slack rather than be pinged about it, use the [inbox channel](#inbox-in-slack) instead.
+如果希望在 Slack 中直接处理每条回复，而不只是收到提醒，请使用[收件箱频道](#inbox-in-slack)。
 
 </Fold>
 
 <Fold>
 
-## Permissions
+## 权限 [#permissions]
 
-| Action | Who |
+| 操作 | 所需权限或身份 |
 |---|---|
-| Connect, reconnect or disconnect Slack | **Manage settings** |
-| Choose channels, per-category routing, the inbox channel, and the assistant setting | **Manage settings** |
-| See the Slack connection, its settings and any missing permissions | **Manage settings** or **Use integrations** |
-| See every member's linked Slack account, and remove anyone's link | **Manage settings** |
-| Link or unlink your own Slack account, and turn your personal DMs on or off | Any member |
-| Use the assistant from Slack | Any linked member with **Use AI** |
-| Reply, draft, label or assign from the inbox channel | Any linked member with **Use unified inbox** |
+| 连接、重新连接或断开 Slack | **管理设置** |
+| 选择频道、按分类路由、收件箱频道及助手设置 | **管理设置** |
+| 查看 Slack 连接、设置及缺失权限 | **管理设置**或**使用集成** |
+| 查看每位成员关联的 Slack 账户，并移除任意关联 | **管理设置** |
+| 关联或解除自己的 Slack 账户，开启或关闭个人私信 | 任意成员 |
+| 从 Slack 使用助手 | 任何已关联且具有**使用 AI**权限的成员 |
+| 从收件箱频道回复、起草、添加标签或分配 | 任何已关联且具有**使用统一收件箱**权限的成员 |
 
-Removing a member from the workspace ends what their Slack account can do here, because everything runs as their Warmbly membership at the time.
+从工作区移除成员后，其 Slack 账户在这里可执行的操作也会终止，因为一切都以执行时的 Warmbly 成员身份为依据。
 
 </Fold>
 
 <Fold>
 
-## What the bot reads
+## 机器人读取的内容 [#what-the-bot-reads]
 
-The bot acts only on messages addressed to it:
+机器人只处理明确发给它的消息：
 
-- direct messages to the bot and messages in its assistant pane
-- messages that mention `@Warmbly`
-- replies in a thread the assistant is answering for you
-- a message you run **Ask Warmbly about this** on
+- 发给机器人的私信，以及助手面板中的消息
+- 提及 `@Warmbly` 的消息
+- 在助手正在为你回答的讨论串中的回复
+- 你执行了**让 Warmbly 分析这条消息**操作的消息
 
-Slack delivers other messages from channels the bot is in, including the team's discussion in inbox threads, and Warmbly ignores them. When you mention the bot inside an existing thread, or use the message shortcut, it also reads that thread's earlier messages so it knows what you are asking about. Those messages are passed to the assistant as quoted material, never as instructions, so text in a thread cannot tell the assistant to do something. The same holds for email text in the inbox channel.
+Slack 也会投递机器人所在频道的其他消息，包括收件箱讨论串中的团队讨论，但 Warmbly 会忽略它们。在已有讨论串中提及机器人，或使用消息快捷操作时，它还会读取该讨论串更早的消息，以理解问题背景。这些消息作为引用材料传给助手，绝不会作为指令，因此讨论串中的文字不能命令助手执行操作。收件箱频道中的邮件正文同样如此。
 
 </Fold>
 
 <Fold>
 
-## Troubleshooting
+## 故障排查 [#troubleshooting]
 
-| What you see | What to do |
+| 现象 | 处理方式 |
 |---|---|
-| The Slack card says Slack is not available | The instance has no Slack app. On a self-hosted instance, ask the operator to follow [Slack app](/development/slack-app/) |
-| Notifications post, but the bot never answers and buttons do nothing | The Slack app is only partly configured: posting works but Slack cannot reach Warmbly. On a self-hosted instance the operator needs to set the signing secret ([Slack app](/development/slack-app/#environment-variables)) |
-| The Slack panel lists missing permissions | Select **Reconnect**. A feature needing a permission the connection lacks stays off until then |
-| The bot says it sent you a link, or replies with a **Link your Warmbly account** button | Your Slack account is not linked yet, or the link was removed. Follow the button in your DM with Warmbly; the bot then answers what you asked |
-| Warmbly did not link you automatically | Your Slack email is not the email of a Warmbly member of the workspace, or the connection predates email matching. Follow the link button and select **Continue with Slack** |
-| **Continue with Slack** says you signed in as someone else | Slack signed you in to a different account than the one the button was made for. Sign in to Slack with that account, or ask the bot for a new link from the account you want to link |
-| The bot says the thread is someone else's conversation | The thread belongs to a member of a different Warmbly workspace. Start a new thread |
-| The bot does not answer in a channel | Check that it is a member of the channel, that the channel is not a Slack Connect channel, and that the assistant is not set to **DMs only** or **Off** |
-| An inbox button says you need inbox access | Your role lacks **Use unified inbox**. Ask a workspace admin |
-| The inbox channel cannot be saved | Pick it from the list. A private channel needs the Warmbly app invited first, and a Slack Connect channel is refused |
-| A reply you expected is not in the inbox channel | With **Replies** selected, auto-replies, bounces and mail that answers nothing are left out. Switch to **All** to post every inbound message |
-| The bot answers without the thread's earlier messages | Slack limited how often the app may read message history, so it answered with only your message. Paste the relevant text into your question, or try again in a minute |
-| A notification did not reach a private channel | Invite the bot to that channel |
+| Slack 卡片提示 Slack 不可用 | 实例尚未配置 Slack 应用。对于自托管实例，请让运维人员按照 [Slack 应用](/development/slack-app/)指南配置 |
+| 通知可以发布，但机器人从不回答，按钮也无反应 | Slack 应用只配置了一部分：发布正常，但 Slack 无法访问 Warmbly。自托管实例的运维人员需要设置签名密钥（[Slack 应用](/development/slack-app/#environment-variables)） |
+| Slack 面板列出缺失权限 | 选择**重新连接**。依赖缺失权限的功能在此之前保持关闭 |
+| 机器人说已发送链接，或回复**关联 Warmbly 账户**按钮 | Slack 账户尚未关联，或关联已被移除。点击 Warmbly 私信中的按钮完成关联，机器人随后会回答原问题 |
+| Warmbly 没有自动关联账户 | Slack 邮箱与该工作区任何 Warmbly 成员的邮箱不一致，或连接建立于邮箱匹配功能推出之前。点击关联按钮并选择**通过 Slack 继续** |
+| **通过 Slack 继续**提示登录了其他人的账户 | Slack 登录的账户不是按钮所对应的账户。请用正确账户登录 Slack，或从希望关联的账户向机器人申请新链接 |
+| 机器人提示该讨论串是其他人的对话 | 讨论串属于另一个 Warmbly 工作区的成员。请开启新的讨论串 |
+| 机器人不在频道中回答 | 检查它是否已加入频道、频道是否为 Slack Connect 频道，以及助手是否被设为**仅私信**或**关闭** |
+| 收件箱按钮提示需要收件箱访问权限 | 你的角色缺少**使用统一收件箱**权限。请联系工作区管理员 |
+| 无法保存收件箱频道 | 请从列表中选择。私有频道必须先邀请 Warmbly 应用加入，Slack Connect 频道不予接受 |
+| 预期的回复没有出现在收件箱频道 | 选择**回复**时，会排除自动回复、退信以及不是对任何邮件作答的邮件。切换为**全部**可发布所有入站邮件 |
+| 机器人回答时没有参考讨论串之前的消息 | Slack 限制了应用读取历史消息的频率，因此它只根据当前消息回答。请将相关文字粘贴到问题中，或一分钟后重试 |
+| 通知未送达私有频道 | 邀请机器人加入该频道 |
 
 </Fold>

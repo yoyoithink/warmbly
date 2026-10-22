@@ -20,7 +20,7 @@ export function baseOptions(): BaseLayoutProps {
         <div className="flex items-center gap-2">
           <Mark />
           <span className="font-extrabold tracking-tight text-[15px]">Warmbly</span>
-          <span className="text-[15px] font-normal text-fd-muted-foreground">Docs</span>
+          <span className="text-[15px] font-normal text-fd-muted-foreground">文档</span>
         </div>
       ),
     },
@@ -40,7 +40,7 @@ export function baseOptions(): BaseLayoutProps {
             href="https://app.warmbly.com"
             className="inline-flex h-8 items-center whitespace-nowrap rounded-full bg-fd-foreground px-3.5 text-[13px] font-medium text-fd-background transition-opacity hover:opacity-85"
           >
-            Open dashboard
+            打开控制台
           </a>
         ),
       },

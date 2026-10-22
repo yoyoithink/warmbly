@@ -1,627 +1,627 @@
 ---
-title: Mailboxes
-description: "Connect sender accounts, providers, and how they are assigned to workers."
+title: "邮箱"
+description: "了解如何连接发件账户、支持的服务商，以及邮箱如何分配到工作节点。"
 ---
 
-A mailbox is a sender account you connect to Warmbly. Every warmup message and campaign email goes out through one you own.
+邮箱是你连接到 Warmbly 的发件账户。每封预热邮件和营销活动邮件都通过你自己的某个邮箱发送。
 
-![The Accounts page: every connected mailbox with its status, cold sends today, warmup progress, inbox rate and health](/guides/accounts.webp)
+![账户页面：列出所有已连接邮箱及其状态、今日冷邮件发送量、预热进度、收件箱到达率和健康状况](/guides/accounts.webp)
 
-## Connect a mailbox
+## 连接邮箱 [#connect-a-mailbox]
 
 <Steps>
 
 <Step>
 
-Open **Accounts** and choose **Add account**.
+打开**账户**，选择**添加账户**。
 
 </Step>
 
 <Step>
 
-Pick **Google**, **Microsoft**, or **Other (SMTP / IMAP)** for any other host.
+选择 **Google**、**Microsoft**，或选择 **其他（SMTP / IMAP）** 连接其他邮件服务商。
 
 </Step>
 
 <Step>
 
-On Google Workspace or Microsoft 365, choose the administrator's grant: it connects every mailbox on the domain at once, with no password and no sign-in each.
+对于 Google Workspace 或 Microsoft 365，请选择管理员授权：一次即可连接域名下的所有邮箱，无需密码，也无需逐个登录。
 
 </Step>
 
 </Steps>
 
-![Add account: Google, Microsoft, any SMTP and IMAP host, a file import, or an inbox vendor](/guides/add-account.webp)
+![添加账户：支持 Google、Microsoft、任意 SMTP 和 IMAP 服务器、文件导入或邮箱供应商](/guides/add-account.webp)
 
-To bring in many at once, choose **Import mailboxes**: up to 5,000 from a CSV, TSV or XLSX file, or a pasted list.
+要一次添加多个邮箱，请选择**导入邮箱**：可通过 CSV、TSV 或 XLSX 文件或粘贴的列表导入，最多 5,000 个。
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- A mailbox sends at most `50` cold emails a day by default. New mailboxes start on a sending plan of about `30` a day.
-- Mailboxes are unlimited on every paid plan, with a fair-use allowance of one mailbox for every send a day the plan includes.
-- When a provider stops accepting a mailbox's sign-in, the mailbox stops sending and its drawer shows the fix.
-- You never pick a sending worker. Warmbly assigns one.
+- 默认情况下，每个邮箱每天最多发送 `50` 封冷邮件。新邮箱的初始发送计划为每天约 `30` 封。
+- 所有付费套餐均提供不限量邮箱，合理使用额度按套餐包含的每日发送量计算：每天每允许发送一封邮件，对应一个邮箱名额。
+- 当服务商不再接受邮箱的登录凭据时，该邮箱会停止发送，其详情抽屉会显示解决方法。
+- 无需自行选择发送工作节点，Warmbly 会自动分配。
 
 <Fold>
 
-## How the list reports health
+## 列表如何显示健康状态 [#how-the-list-reports-health]
 
-Browsing filters, searches and view choices are [remembered in your browser tab](/guides/browsing/) across refreshes and navigation, separately for each user and workspace.
+浏览筛选、搜索和视图选择会[在浏览器标签页中记住](/guides/browsing/)，刷新或导航后仍保留，并按用户和工作区分别保存。
 
-A mailbox is a sender account you connect to Warmbly. Every warmup message and campaign email goes out through one you own.
+邮箱是你连接到 Warmbly 的发件账户。每封预热邮件和营销活动邮件都通过你自己的某个邮箱发送。
 
-The Accounts list checks mailbox health and, on linked self-hosted instances, Cloud warmup standing separately from the mailbox inventory. While those checks are loading or refreshing, it shows **Checking…** rather than treating missing results as Idle, Healthy, or zero sent. A failed or incomplete check shows **Unavailable**, not a measured zero or a claim that the mailbox recovered. If the mailbox list itself cannot be loaded, or only part of it loaded, the summary counts show **Unavailable** too, rather than an empty account list. A previously reported issue may remain marked **Last observed** for up to five minutes during a refresh; this is historical evidence, not a claim that it is still failing. A newly measured healthy result replaces it. A displayed health score is an account-health assessment, not proof that the provider confirmed a send; check send records and the mailbox's error details when investigating a stopped mailbox.
+账户列表会分别获取邮箱清单、检查邮箱健康状况，以及在已关联的自托管实例上检查 Cloud 预热状态。检查正在加载或刷新时，页面显示**正在检查…**，不会把缺失的结果当作空闲、健康或发送量为零。检查失败或未完成时显示**不可用**，而不是实测的零值，也不会宣称邮箱已恢复。如果邮箱列表本身无法加载或仅加载了一部分，汇总数量也会显示**不可用**，不会显示为空账户列表。刷新期间，之前报告的问题可能继续保留最多五分钟，并标注**上次观测到的状态**；这只是历史观测依据，不代表故障仍然存在。新测得的健康结果会将其替换。页面显示的健康评分是对账户健康状况的评估，不能证明服务商已确认某次发送；排查停止运行的邮箱时，请检查发送记录和邮箱错误详情。
 
-### Diagnostic participation and stopping
+### 诊断参与与停止 [#diagnostic-participation-and-stopping]
 
-New mailboxes default to participation **off**. The organization-authorized mailbox PATCH exposes `test_mode` (`off`, `diagnostic`; historical `legacy` remains readable), separate `test_send_enabled` and `test_receive_enabled` flags, and optional positive `shared_daily_limit`/`rolling_recipient_limit`. The Warmup tab exposes the directional controls. Receiving participation also authorizes probabilistic spam rescue, reads, importance and stars or flags on verified warmup messages where supported, including existing receive-enabled diagnostic mailboxes. These actions are disclosed automation, not human engagement or a guaranteed reputation improvement. Existing upgraded mailboxes with NULL participation retain legacy behavior until explicitly changed. Set `test_mode=off` to stop future warmup send/receive admission; current protocol-2 workers also recheck queued sends/actions. Already accepted old-worker commands or a provider send underway cannot be recalled. Individually removing a Cloud-managed mailbox from a linked instance stops both directions on Cloud before releasing its link, without deleting the Cloud mailbox or its provider grant. Disconnecting the entire instance only releases managed links and preserves their Cloud warmup settings. See [send safety, repair evidence and rollout](/development/send-safety/).
+新邮箱默认**关闭**参与预热。经过组织权限授权的邮箱 PATCH 接口提供 `test_mode`（`off`、`diagnostic`；历史值 `legacy` 仍可读取）、独立的 `test_send_enabled` 和 `test_receive_enabled` 开关，以及可选的正数 `shared_daily_limit`/`rolling_recipient_limit`。预热选项卡提供按收发方向控制的设置。启用接收参与，也意味着授权系统在服务商支持时，对已验证的预热邮件按概率执行移出垃圾邮件、标记已读、标记重要以及加星或旗标等操作；现有已启用接收的诊断邮箱也包括在内。这些操作是已披露的自动化行为，不是人工互动，也不保证提升信誉。升级后参与设置仍为 NULL 的现有邮箱，会保留旧行为，直到明确更改。设置 `test_mode=off` 可停止后续预热收发任务的准入；当前 protocol-2 工作节点还会重新检查已排队的发送与操作。旧工作节点已经接受的命令或服务商正在执行的发送无法撤回。从已关联实例中单独移除一个 Cloud 托管邮箱时，会先在 Cloud 中停止该邮箱的收发双向参与，再解除关联，不会删除 Cloud 邮箱或其服务商授权。断开整个实例只会解除托管关联，保留各邮箱在 Cloud 中的预热设置。参见[发送安全、修复依据与分阶段上线](/development/send-safety/)。
 
 </Fold>
 
 <Fold>
 
-## Filtering accounts
+## 筛选账户 [#filtering-accounts]
 
-Use the **Tags** dropdown above the mailbox list to show accounts with a particular tag. The selection is kept in the page URL and remembered for your user and workspace in the browser tab, so refreshing, opening a bookmark, or visiting another page and returning keeps the filter. Choose **All accounts** to clear it. A tag that no longer exists in the current workspace falls back to **All accounts**.
+使用邮箱列表上方的**邮箱标签**下拉框，可只显示带有特定标签的账户。所选项会保存在页面 URL 中，并在当前浏览器标签页内按用户和工作区记忆，因此刷新、打开书签，或访问其他页面后返回，都会保留该筛选。选择**所有账户**可清除筛选。如果所选标签在当前工作区已不存在，则自动回到**所有账户**。
 
-Without an explicit column sort, the Accounts list groups the loaded mailboxes by their complete set of tags, both in **All accounts** and when filtering by a specific tag. Mailboxes with **Tag A + Tag B** stay together even when those tags were assigned in a different order, separately from mailboxes with only **Tag A**. Groups follow the workspace's tag order, with untagged mailboxes last; mailboxes within a group are ordered by email address. Selecting a tag narrows the list without changing this order. Each mailbox appears only once. Selecting a column sort takes priority over grouping and remains selected when changing the tag filter.
+未明确选择列排序时，账户列表会按每个邮箱拥有的完整标签组合对已加载邮箱分组；无论查看**所有账户**还是按特定标签筛选，都是如此。带有**标签 A + 标签 B**的邮箱会归为一组，即使标签的添加顺序不同，也不会与仅带有**标签 A**的邮箱混在一起。各组按工作区标签顺序排列，无标签邮箱位于最后；组内按邮箱地址排序。选择标签只会缩小列表范围，不会改变此顺序。每个邮箱只出现一次。选择列排序后，该排序优先于分组，并会在切换标签筛选时保留。
 
 </Fold>
 
 <Fold>
 
-## Connecting an account
+## 连接账户 [#connecting-an-account]
 
-Open **Accounts** and choose **Add account**. Google and Microsoft each have one entry, and choosing it asks how to connect:
+打开**账户**，选择**添加账户**。Google 和 Microsoft 各有一个入口，选择后会询问连接方式：
 
-| Provider | Method | Notes |
+| 服务商 | 方法 | 说明 |
 |----------|--------|-------|
-| Google | **Whole Workspace domain**: an administrator's grant (`gmail`, sign-in method `delegated`) | Recommended for Google Workspace. A super admin authorizes Warmbly once, and every mailbox on the domain connects with no password and no sign-in each. Runs on the Gmail API. See [connect a whole Google Workspace domain](/guides/mailbox-import/#connect-a-whole-google-workspace-domain) |
-| Google | **App password** over IMAP + SMTP (`smtp_imap`, sign-in method `app_password`) | Works for personal Gmail and for Workspace. The dialog walks you through it in three steps, see [Gmail and Google Workspace](#gmail-and-google-workspace) below |
-| Google | **Sign in with Google**: OAuth for one mailbox (`gmail`, sign-in method `oauth`) | Offered where the dashboard deployment enables it and the backend supports it. No app password needed |
-| Microsoft | **Whole organization**: an administrator's grant (`outlook`, sign-in method `delegated`) | Recommended for Microsoft 365. A Global Administrator approves Warmbly once, and every licensed mailbox connects with no sign-in each. Runs on Microsoft Graph. See [connect a whole Microsoft 365 organization](/guides/mailbox-import/#connect-a-whole-microsoft-365-organization) |
-| Microsoft | **Sign in one mailbox**: OAuth (`outlook`, sign-in method `oauth`) | No password stored. Runs on Microsoft Graph. The way to connect Outlook.com and a single Microsoft 365 mailbox |
-| Any other server | IMAP + SMTP (`smtp_imap`) | Custom domains, self-hosted, or providers without OAuth. Any IMAP server that accepts a password works, including Yahoo, Fastmail, Zoho, Seznam.cz, cPanel and self-hosted Dovecot. Exchange Online (Microsoft 365 and Outlook.com) no longer accepts passwords over IMAP, so connect those with Microsoft |
+| Google | **整个 Workspace 域名**：管理员授权（`gmail`，登录方式为 `delegated`） | Google Workspace 的推荐方式。超级管理员只需授权 Warmbly 一次，即可连接域名下的所有邮箱，无需密码，也无需逐个登录。通过 Gmail API 运行。参见[连接整个 Google Workspace 域名](/guides/mailbox-import/#connect-a-whole-google-workspace-domain) |
+| Google | 通过 IMAP + SMTP 使用**应用专用密码**（`smtp_imap`，登录方式为 `app_password`） | 适用于个人 Gmail 和 Workspace。对话框会引导你完成三个步骤，参见下文的 [Gmail 与 Google Workspace](#gmail-and-google-workspace) |
+| Google | **使用 Google 登录**：为单个邮箱使用 OAuth（`gmail`，登录方式为 `oauth`） | 仅在控制台部署已启用且后端支持时提供。无需应用专用密码 |
+| Microsoft | **整个组织**：管理员授权（`outlook`，登录方式为 `delegated`） | Microsoft 365 的推荐方式。全局管理员只需批准 Warmbly 一次，即可连接所有已分配许可证的邮箱，无需逐个登录。通过 Microsoft Graph 运行。参见[连接整个 Microsoft 365 组织](/guides/mailbox-import/#connect-a-whole-microsoft-365-organization) |
+| Microsoft | **登录单个邮箱**：OAuth（`outlook`，登录方式为 `oauth`） | 不存储密码。通过 Microsoft Graph 运行。用于连接 Outlook.com 和单个 Microsoft 365 邮箱 |
+| 其他任意服务器 | IMAP + SMTP（`smtp_imap`） | 自定义域名、自托管服务，或不提供 OAuth 的服务商。任何接受密码的 IMAP 服务器都可使用，包括 Yahoo、Fastmail、Zoho、Seznam.cz、cPanel 和自托管 Dovecot。Exchange Online（Microsoft 365 和 Outlook.com）已不再接受通过 IMAP 使用密码登录，请通过 Microsoft 连接这些邮箱 |
 
-On a self-hosted instance the two whole-domain methods are shown switched off until the operator sets them up; see [whole-domain mailbox connects](/development/whole-domain-connect/).
+在自托管实例上，这两种覆盖整个域名的连接方式会显示为禁用，直到运维人员完成配置；参见[整个域名的邮箱连接](/development/whole-domain-connect/)。
 
-Once you press **Connect**, the connect finishes on the server even if you refresh or close the page: the credentials are checked, and the mailbox is either saved, placed on a worker and added to your list, or not saved at all. It appears in the list on its own when it is done. Pressing **Connect** again meanwhile cannot add the address twice.
+点击**连接**后，即使刷新或关闭页面，连接流程也会在服务器上继续完成：系统会检查凭据，然后保存邮箱、分配工作节点并将其加入列表；如果流程失败，则完全不保存。完成后，邮箱会自动出现在列表中。在此期间再次点击**连接**，不会重复添加同一地址。
 
-<Callout title="Existing Google sign-in mailboxes stay connected">
-  A mailbox connected with **Sign in with Google** keeps sending and syncing even when a deployment hides that option for new mailboxes. If Google invalidates its token, the **Re-authorize** button in its drawer still works. You can optionally switch to a domain grant (Google Workspace) or an app password without losing history. See [moving off per-mailbox Google sign-in](#moving-off-per-mailbox-google-sign-in).
+<Callout title="现有通过 Google 登录的邮箱保持连接">
+  通过**使用 Google 登录**连接的邮箱，即使部署已对新邮箱隐藏该选项，也会继续发送和同步。如果 Google 使其令牌失效，详情抽屉中的**重新授权**按钮仍可使用。你也可以选择改为域名授权（Google Workspace）或应用专用密码，且不会丢失历史记录。参见[从逐邮箱 Google 登录方式迁移](#moving-off-per-mailbox-google-sign-in)。
 </Callout>
 
-**OAuth** sends you to your provider's consent screen and returns a token instead of a password. Both OAuth providers use the provider's native API, never IMAP or SMTP, so consent asks to send mail and to read and organize your mailbox. Google additionally asks to read your mail settings, which is what lets Warmbly offer the addresses Google has verified you to send as and import the signature you already wrote there. It needs no app passwords or server settings. Note that Google revokes Gmail tokens when the account's password changes, so a password change there means [re-authorizing the mailbox](#reconnecting-an-account) once.
+**OAuth** 会将你带到服务商的授权页面，并返回令牌而不是密码。两种 OAuth 服务商连接都使用服务商原生 API，不使用 IMAP 或 SMTP，因此会请求发送邮件以及读取和整理邮箱的权限。Google 还会请求读取邮件设置，以便 Warmbly 提供 Google 已验证允许你用作发件人的地址，并导入你已在其中编写的签名。此方式不需要应用专用密码或服务器设置。请注意，Google 会在账户密码更改时撤销 Gmail 令牌，因此更改 Google 密码后需要[重新授权邮箱](#reconnecting-an-account)一次。
 
-#### What each provider is asked for
+#### 向各服务商申请的权限 [#what-each-provider-is-asked-for]
 
-Exactly these, and nothing beyond them:
+仅请求以下权限，不会超出此范围：
 
-| Provider | Scope | What it is for |
+| 服务商 | 权限范围 | 用途 |
 |----------|-------|----------------|
-| Google | `https://www.googleapis.com/auth/gmail.modify` | Send campaign and warmup mail, read replies, and move messages between folders |
-| Google | `https://www.googleapis.com/auth/gmail.settings.basic` | Read the send-as addresses Google has verified for the account, and the signature already set there |
-| Microsoft | `https://graph.microsoft.com/Mail.Send` | Send mail |
-| Microsoft | `https://graph.microsoft.com/Mail.ReadWrite` | Read replies and move messages |
-| Microsoft | `https://graph.microsoft.com/User.Read` | Read the signed-in address, so the mailbox is filed under the right one |
-| Microsoft | `offline_access` | Keep the connection alive without asking again |
+| Google | `https://www.googleapis.com/auth/gmail.modify` | 发送营销活动和预热邮件、读取回复，以及在文件夹间移动邮件 |
+| Google | `https://www.googleapis.com/auth/gmail.settings.basic` | 读取 Google 为该账户验证过的发件地址，以及其中已设置的签名 |
+| Microsoft | `https://graph.microsoft.com/Mail.Send` | 发送邮件 |
+| Microsoft | `https://graph.microsoft.com/Mail.ReadWrite` | 读取回复和移动邮件 |
+| Microsoft | `https://graph.microsoft.com/User.Read` | 读取当前登录的地址，以便将邮箱归到正确的地址下 |
+| Microsoft | `offline_access` | 保持连接，无需反复请求授权 |
 
-Google's scopes nest, so `gmail.modify` already covers reading, sending, composing and metadata. Warmbly used to ask for those four by name as well, which widened the consent screen without granting anything extra; it no longer does. A mailbox connected under the older, broader consent keeps working and does not need reconnecting.
+Google 的权限范围存在包含关系，因此 `gmail.modify` 已涵盖读取、发送、撰写邮件和读取元数据。Warmbly 过去还会单独请求这四项权限，这只是增加了授权页面上的项目，并未获得额外能力；现在已不再这样做。使用旧版、更宽泛授权连接的邮箱仍可正常工作，无需重新连接。
 
-A consent screen lets you untick individual permissions. Warmbly checks what was actually granted and refuses a half-granted mailbox at connect time, naming the missing permission, rather than storing one that looks connected and fails on its first send days later.
+授权页面允许取消勾选个别权限。Warmbly 会检查实际获得的授权，如果权限不完整，会在连接时拒绝添加并指出缺失的权限，而不会先保存一个看似连接成功、几天后首次发送才失败的邮箱。
 
-#### When Microsoft asks for admin approval
+#### Microsoft 要求管理员批准时 [#when-microsoft-asks-for-admin-approval]
 
-Many Microsoft 365 organizations let only an administrator approve a new app, and then Microsoft answers the sign-in with **Need admin approval** instead of its consent screen. Mailboxes bought from an inbox provider are usually in such an organization, run by the provider. Nothing you choose in Warmbly changes that, but one approval fixes it for everyone: after a first try, the **Sign in one mailbox** panel shows an approval link. Send it to the organization's administrator (for a provider's mailboxes, the provider). It approves exactly the four permissions above for the whole organization, and afterwards every mailbox in it signs in on its own, with no administrator involved. On a self-hosted instance, the operator verifying the publisher of their Microsoft app removes this step for most organizations; see [Outlook and Microsoft 365](/development/deployment-guide/#outlook-and-microsoft-365).
+许多 Microsoft 365 组织只允许管理员批准新应用，此时 Microsoft 会显示**需要管理员批准**，而不是授权页面。从邮箱供应商购买的邮箱通常属于这种由供应商管理的组织。Warmbly 中的选项无法改变这一限制，但一次批准即可解决整个组织的问题：首次尝试后，**登录单个邮箱**面板会显示批准链接。请将链接发给组织管理员；如果是供应商提供的邮箱，就发给该供应商。该链接只会为整个组织批准上面列出的四项权限，此后每个邮箱都可以自行登录，无需管理员参与。在自托管实例上，运维人员为自己的 Microsoft 应用完成发布者验证后，大多数组织都可省去这一步；参见 [Outlook 与 Microsoft 365](/development/deployment-guide/#outlook-and-microsoft-365)。
 
-**IMAP / SMTP** needs host, port, username, and password for each direction:
+**IMAP / SMTP** 需要分别为收件和发件提供主机、端口、用户名和密码：
 
 ```text
 SMTP   host: smtp.yourprovider.com   port: 465   username: you@yourdomain.com
 IMAP   host: imap.yourprovider.com   port: 993   username: you@yourdomain.com
 ```
 
-Each side also has a **security** setting, which is what decides how the connection is encrypted:
+收发两侧还各有一项**连接安全性**设置，用来决定连接如何加密：
 
-| Security | What happens | Usual ports |
+| 安全 | 工作方式 | 常用端口 |
 | --- | --- | --- |
-| SSL / TLS | Encrypted from the first byte | SMTP `465`, IMAP `993` |
-| STARTTLS | Connects in the clear, then upgrades in place before anything sensitive is sent | SMTP `587` or `2525`, IMAP `143` |
-| None | No encryption. Only offered for a mail server on the same machine as the worker | SMTP `1025`, IMAP `1143` |
+| SSL / TLS | 从第一个字节开始加密 | SMTP `465`，IMAP `993` |
+| STARTTLS | 先建立明文连接，再在发送任何敏感内容前将连接升级为加密连接 | SMTP `587` 或 `2525`，IMAP `143` |
+| 无 | 不加密。仅适用于与工作节点运行在同一台机器上的邮件服务器 | SMTP `1025`，IMAP `1143` |
 
-If port 465 never answers (many hosting networks block outbound 465 while 587 stays open), the worker dials 587 with STARTTLS on the same server alongside it and uses whichever connects first. A connect that succeeds that way is stored with port 587 and STARTTLS, and the mailbox settings show that. A refusal or a name that does not resolve is an answer from the network, not silence: one that arrives before 587 has been dialled is reported as is, and the fallback is only for a port that never answers.
+如果端口 465 始终没有响应（许多托管网络会阻止出站 465，而 587 仍可用），工作节点会同时尝试通过 STARTTLS 连接同一服务器的 587 端口，并使用先成功的连接。以此方式成功建立的连接会保存为端口 587 和 STARTTLS，邮箱设置也会显示这一结果。连接被拒绝或域名无法解析，属于网络给出的明确响应，而不是无响应：如果这类结果在开始连接 587 之前返回，就会直接报告。备用连接只用于端口始终不响应的情况。
 
-A server that accepts submission only on 465 has no 587 to fall back to. When the worker's own network is the one blocking 465 (it learns that from several servers leaving 465 silent while answering on 587), the mailbox's error says so: the block is on the sending side, your server needs no change, and sending resumes on its own once the port is open. Turning on submission on 587 with STARTTLS at your server gets the mailbox sending sooner.
+如果服务器只在 465 端口接受邮件提交，就没有 587 可供备用。当工作节点判断是其自身网络阻止了 465（依据是多台服务器的 465 都不响应，而 587 可以响应）时，邮箱错误会明确说明：阻断发生在发送端，你的服务器无需更改，端口恢复可用后发送会自动恢复。在你的服务器上启用 587 端口的 STARTTLS 邮件提交，可以让邮箱更早恢复发送。
 
-The form picks TLS or STARTTLS from the port as you type, so standard setups need no thought. It never picks **None**, on any port: dropping encryption is always something you ask for. Change the mode yourself when your server is unusual: any port from 1 to 65535 works, so a submission relay on `2525` or IMAP on a custom port is fine as long as the security setting matches what the server actually speaks.
+输入端口时，表单会自动选择 TLS 或 STARTTLS，标准配置无需额外考虑。无论哪个端口，系统都不会自动选择**无**；关闭加密必须由你主动设置。如果服务器使用非标准配置，请手动调整模式：1 到 65535 的任意端口都可使用，因此 `2525` 上的邮件提交中继或自定义端口上的 IMAP 都没有问题，只要安全设置与服务器实际使用的方式一致。
 
-Encryption is not optional over a network. Warmbly will not send credentials over an unencrypted connection to anything but this machine, which is why **None** only appears once the host is `localhost`, an address in `127.0.0.0/8`, or `::1`, and only on a [self-hosted instance](/development/install/). See [local mail relays](#local-mail-relays-proton-bridge) below.
+通过网络连接时必须加密。除本机外，Warmbly 不会通过未加密的连接发送凭据，因此只有主机为 `localhost`、`127.0.0.0/8` 范围内的地址或 `::1`，且运行在[自托管实例](/development/install/)上时，才会出现**无**选项。参见下文的[本地邮件中继](#local-mail-relays-proton-bridge)。
 
-If a mailbox fails to connect with a server-unreachable error and the host and port are definitely right, the security setting is the first thing to check. A server expecting STARTTLS looks unreachable to a client attempting implicit TLS, and vice versa.
+如果邮箱因服务器无法访问而连接失败，且主机和端口确定无误，请先检查连接安全性设置。客户端尝试隐式 TLS 时，期望 STARTTLS 的服务器会表现为无法访问，反之亦然。
 
-The error says which step failed and what the server or the network answered, so the two cases read differently: `dial smtp.example.com:465: connect: connection refused` never reached the server, `dial smtp.example.com:465: tls: first record does not look like a TLS handshake` reached a server that does not speak implicit TLS on that port, and `mail from: 451 4.7.1 try again later` is the server deferring a message. A connection that is refused or times out on `465` while `587` works is a network between the sender and the server that does not allow implicit TLS submission; switching that mailbox to `587` with STARTTLS is the fix. An error that starts with "Warmbly's sending network currently blocks outbound port 465" is that block on the worker's side, not a fault on your server.
+错误信息会说明失败发生在哪一步，以及服务器或网络返回了什么，因此不同情形可以区分：`dial smtp.example.com:465: connect: connection refused` 表示未能连接到服务器，`dial smtp.example.com:465: tls: first record does not look like a TLS handshake` 表示已连接的服务器在该端口不使用隐式 TLS，`mail from: 451 4.7.1 try again later` 则表示服务器暂缓接收邮件。如果 `465` 上的连接被拒绝或超时，而 `587` 可用，说明发送方与服务器之间的网络不允许隐式 TLS 邮件提交；将该邮箱改为 `587` 并使用 STARTTLS 即可解决。以“Warmbly's sending network currently blocks outbound port 465”开头的错误，表示阻断发生在工作节点侧，并非你的服务器故障。
 
-Worker-side IMAP connection warnings identify `IMAP dial`, `IMAP TLS` or `IMAP STARTTLS` and a broad, sanitized reason such as a DNS failure, timeout, refused connection or certificate validation failure. Those details omit hostnames, credentials and raw server replies. A specific reason requires a valid worker observation for the current mailbox record, including when the warning is first saved and notified. An existing warning takes a recognized fixed reason only from a strictly later observation. Older or equal-time reports cannot replace it; a newer unrecognized or unverified observation returns to a general warning rather than presenting an earlier specific cause as fresh. Automatic retries are unchanged, and the warning neither proves recovery nor clears a protected uncertain send.
+工作节点侧的 IMAP 连接警告会标明 `IMAP dial`、`IMAP TLS` 或 `IMAP STARTTLS`，并提供经过脱敏的概括性原因，例如 DNS 失败、超时、连接被拒绝或证书验证失败。详情不会包含主机名、凭据或原始服务器回复。只有针对当前邮箱记录的有效工作节点观测，才能支持具体原因，包括首次保存警告和发送通知时。现有警告只能依据时间严格更晚的观测，更新为系统识别的标准原因。更早或同一时间的报告无法替换它；如果较新的观测无法识别或尚未验证，则退回一般性警告，不会把较早的具体原因当作最新情况展示。自动重试行为不变，警告本身既不能证明已恢复，也不会解除对结果不确定发送的保护。
 
-When the saved warning is general but its user-facing text is missing, the notification uses that general warning rather than a blank message. Other historical transport details are not substituted into notifications.
+如果保存的是一般性警告，但缺少面向用户的说明文字，通知会使用该一般性警告，避免出现空白消息。不会用其他历史传输详情替代通知内容。
 
-When a mail server goes down or stops answering, the mailbox is not deactivated. Warmbly says so once in the drawer, retries on a widening interval, and picks up where it left off when the server comes back. Nothing that arrived meanwhile is skipped, and the error clears itself on the first pass that reaches the server again.
+邮件服务器宕机或停止响应时，邮箱不会被停用。Warmbly 会在详情抽屉中显示一条提示，以逐渐延长的间隔重试，并在服务器恢复后从中断处继续。在此期间到达的邮件不会被跳过，首次重新连上服务器的同步轮次会自动清除错误。
 
-The same holds for a server that answers but refuses what Warmbly asked. The drawer shows one row carrying the server's own wording, not one row per retry, and it clears on the first pass that completes.
+服务器有响应但拒绝 Warmbly 请求时也同样如此。详情抽屉只显示一条包含服务器原文的错误，不会每次重试都新增一条；首次成功完成处理后，该错误会被清除。
 
-With two-factor authentication on, generate an app password in your provider's security settings and use that.
+如果已启用双重身份验证，请在服务商的安全设置中生成应用专用密码，并使用该密码。
 
-Warmbly signs in with whichever method your server offers, preferring CRAM-MD5, then LOGIN, then PLAIN. Servers that accept only one of these, which includes Microsoft 365 relays and most appliance relays, work without any setting to change.
+Warmbly 会使用服务器提供的登录方式，优先顺序为 CRAM-MD5、LOGIN、PLAIN。只接受其中一种方式的服务器也无需调整设置即可使用，包括 Microsoft 365 中继和大多数设备中继。
 
-### Gmail and Google Workspace
+### Gmail 与 Google Workspace [#gmail-and-google-workspace]
 
-Where your deployment enables it, choose **Add account > Google > Sign in with Google** to connect one mailbox through Google's consent screen. This option is deployment-dependent; an administrator can enable it with the [dashboard configuration flag](/development/configuration/#google-sign-in-per-dashboard-deployment). If it is hidden, use an app password or a Workspace whole-domain grant instead. Existing Google sign-in mailboxes keep working and can re-authorize even when new Google sign-in connects are disabled.
+如果当前部署已启用此功能，选择**添加账户 > Google > 使用 Google 登录**，即可通过 Google 授权页面连接单个邮箱。该选项取决于部署配置；管理员可通过[控制台配置开关](/development/configuration/#google-sign-in-per-dashboard-deployment)启用。如果该选项被隐藏，请改用应用专用密码或 Workspace 整个域名授权。即使已禁用新的 Google 登录连接，现有通过 Google 登录连接的邮箱仍会继续工作，并可重新授权。
 
-Choose **Add account**, then **Google**, then **App password**. The dialog walks through three steps, and the only things you type are the address and the app password; the server settings are Gmail's own and are filled in for you.
+依次选择**添加账户**、**Google**、**应用专用密码**。对话框会引导你完成三个步骤；你只需输入地址和应用专用密码，系统会自动填入 Gmail 的服务器设置。
 
-1. **Turn on 2-Step Verification** on the Google account, under [Google Account, Security](https://myaccount.google.com/security). Google only offers app passwords once it is on, and only alongside a second-step method other than a security key (a phone prompt, an authenticator app or a text message). Already on? Continue.
-2. **Create an app password** at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords): name it Warmbly, press **Create**, and copy the 16 characters. Google shows them once; the spaces between the groups do not matter, Warmbly drops them wherever the password arrives (the dialog, the [mailbox import](/guides/mailbox-import/), the API).
-3. **Connect**: enter your name, the full address (including `@gmail.com` or your Workspace domain) and the app password. Warmbly checks it against Google before saving anything. The address has to be the one the Google account signs in with: Google refuses an app password presented with an alias or a group address, and one created while signed in to a different account.
+1. 在 [Google 账户的“安全性”页面](https://myaccount.google.com/security)中，为 Google 账户**开启两步验证**。Google 只会在开启后提供应用专用密码，而且必须具备安全密钥以外的第二步验证方式，例如手机提示、身份验证器应用或短信。如果已经开启，继续下一步即可。
+2. 在 [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) 中**创建应用专用密码**：将其命名为 Warmbly，点击**创建**，然后复制这 16 个字符。Google 只会展示一次；字符分组之间的空格不影响使用，无论密码来自对话框、[邮箱导入](/guides/mailbox-import/)还是 API，Warmbly 都会移除这些空格。
+3. **连接**：输入你的姓名、完整邮箱地址（包括 `@gmail.com` 或 Workspace 域名）和应用专用密码。Warmbly 会先向 Google 验证，再保存信息。地址必须是该 Google 账户用于登录的地址：如果使用别名或群组地址，或密码是在登录另一个账户时创建的，Google 都会拒绝该应用专用密码。
 
-The settings the dialog uses, in case you connect the same mailbox through **Other (SMTP / IMAP)** or the [mailbox import](/guides/mailbox-import/):
+如果通过 **其他（SMTP / IMAP）** 或[邮箱导入](/guides/mailbox-import/)连接同一邮箱，可参考对话框使用的以下设置：
 
 ```text
 SMTP   host: smtp.gmail.com   port: 587   security: STARTTLS
 IMAP   host: imap.gmail.com   port: 993   security: SSL / TLS
 ```
 
-The username is the full address on both. The password is the app password, never the account password. There is nothing to turn on for IMAP: Google removed that setting in January 2025 and personal Gmail accounts have it on permanently. Deleting the app password in the Google account disconnects the mailbox, which is the same revocation an OAuth token gives you.
+两侧的用户名都是完整邮箱地址。密码必须是应用专用密码，而不是账户密码。无需启用 IMAP：Google 已于 2025 年 1 月移除该设置，个人 Gmail 账户始终启用 IMAP。在 Google 账户中删除应用专用密码会断开邮箱连接，与撤销 OAuth 令牌的效果相同。
 
-On Google Workspace the administrator decides. They can switch IMAP off for the organization under **Apps**, **Google Workspace**, **Gmail**, **End user access**, and control app passwords under **Security**, **Authentication**, **2-Step Verification**, where **Allow users to generate app passwords** is the setting and enforcing security keys as the only second step removes them regardless. Some accounts cannot have an app password at all: enrolling in Google's [Advanced Protection Program](https://landing.google.com/advancedprotection/) revokes them and hides the page. Ask the administrator to allow app passwords for the mailboxes you send from.
+对于 Google Workspace，这由管理员决定。管理员可以在**应用**、**Google Workspace**、**Gmail**、**最终用户访问权限**下为组织关闭 IMAP，也可以在**安全**、**身份验证**、**两步验证**下控制应用专用密码，其中对应的设置为**允许用户生成应用专用密码**；如果强制要求只能使用安全密钥作为第二步验证方式，则无论该设置如何，应用专用密码都会被移除。有些账户完全无法使用应用专用密码：加入 Google 的[高级保护计划](https://landing.google.com/advancedprotection/)会撤销这些密码并隐藏创建页面。请管理员允许你用于发件的邮箱使用应用专用密码。
 
-<Callout type="warn" title="Authentication runs on connect">
-  Credentials and both connections are validated when you add the account, so wrong settings fail immediately rather than silently at send time. When the check fails, the message says which server (SMTP or IMAP) failed and why, quoting the server's reply when there is one, so a refused password, an unreachable host and a failed secure connection each read differently. Tokens and credentials are sealed with envelope encryption before they touch storage.
+<Callout type="warn" title="连接时执行身份验证">
+  添加账户时会验证凭据以及收发两侧的连接，因此设置错误会立即报错，不会等到发送时才悄然失败。检查失败时，消息会说明是 SMTP 还是 IMAP 服务器失败，以及具体原因；如果服务器返回了回复，也会引用该回复，因此密码被拒绝、主机无法访问和安全连接失败会有不同的说明。令牌和凭据在写入存储前都会采用信封加密封装。
 </Callout>
 
-### Moving off per-mailbox Google sign-in
+### 从逐个邮箱的 Google 登录方式迁移 [#moving-off-per-mailbox-google-sign-in]
 
-Switching from per-mailbox **Sign in with Google** is optional. A mailbox on it keeps sending, syncing and warming, and re-authorizing it still works. The alternatives need no per-mailbox Google token: a whole-domain grant is authorized once by a Workspace administrator and survives password changes, and an app password works for Google accounts where app passwords are available.
+从逐邮箱**使用 Google 登录**方式迁移是可选操作。现有邮箱仍可继续发送、同步和预热，也仍可重新授权。其他方式不需要为每个邮箱保存 Google 令牌：整个域名授权由 Workspace 管理员一次完成，并且不受密码更改影响；应用专用密码则适用于允许使用这类密码的 Google 账户。
 
-The **Accounts** page shows a banner while any mailbox is still on per-mailbox Google sign-in, each such mailbox carries a chip in the list, and its drawer shows a notice with the move for it. Mailboxes whose sign-in is held by [Warmbly Cloud](/guides/warmbly-cloud/) are not included; the cloud keeps their sign-in.
+只要仍有邮箱采用逐邮箱 Google 登录方式，**账户**页面就会显示横幅；这些邮箱在列表中各有一个标记，详情抽屉也会提示适用的迁移方式。登录凭据由 [Warmbly Cloud](/guides/warmbly-cloud/) 持有的邮箱不包括在内；其登录仍由云端管理。
 
-**A Google Workspace mailbox moves onto its domain's grant.**
+**Google Workspace 邮箱可迁移到所属域名的授权。**
 
-1. Choose **Add account > Google > Whole Workspace domain** and set up the grant for the domain, as in [connect a whole Google Workspace domain](/guides/mailbox-import/#connect-a-whole-google-workspace-domain). Skip this when the domain already has an active grant.
-2. In the grant's user list, the mailboxes still on their own sign-in are marked as ones to move. Pick them, or connect everyone, which includes them.
+1. 选择**添加账户 > Google > 整个 Workspace 域名**，并按照[连接整个 Google Workspace 域名](/guides/mailbox-import/#connect-a-whole-google-workspace-domain)中的说明为域名配置授权。如果域名已有有效授权，可跳过此步骤。
+2. 在该授权的用户列表中，仍使用独立登录的邮箱会标记为待迁移。选择这些邮箱，或连接全部用户，后者也会包含它们。
 
-Connecting the address converts the existing mailbox in place: it is the same mailbox, with the same history, campaigns, warmup progress and settings, and the stored Google token is deleted. Converting does not add a mailbox, so it never counts against the [mailbox allowance](#mailbox-allowance). The same optional switch works for a mailbox on per-mailbox Microsoft sign-in under a Microsoft 365 organization grant.
+连接该地址会原位转换现有邮箱：邮箱仍是同一个，历史记录、营销活动、预热进度和设置全部保留，已存储的 Google 令牌会被删除。转换不会新增邮箱，因此不占用[邮箱额度](#mailbox-allowance)。通过逐邮箱 Microsoft 登录连接的邮箱，也可选择以同样方式迁移到 Microsoft 365 组织授权。
 
-**A personal Gmail mailbox moves to an app password.** This works for a Workspace mailbox too, when a grant is not an option.
+**个人 Gmail 邮箱可迁移到应用专用密码。** 如果无法使用域名授权，Workspace 邮箱也可采用此方式。
 
-1. Turn on 2-Step Verification for the Google account and create an app password at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords), as in [Gmail and Google Workspace](#gmail-and-google-workspace).
-2. In the notice in the mailbox's drawer, choose to switch to an app password and paste the 16 letters. Spaces do not matter.
+1. 为 Google 账户开启两步验证，然后在 [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) 创建应用专用密码，具体参见 [Gmail 与 Google Workspace](#gmail-and-google-workspace)。
+2. 在邮箱详情抽屉的提示中，选择切换到应用专用密码，并粘贴那 16 个字母。空格不影响使用。
 
-Warmbly checks the app password against Gmail's IMAP and SMTP servers before anything is stored. A refusal changes nothing, and the message says which server refused and why. Once it passes, the mailbox becomes an IMAP and SMTP mailbox in place (`smtp_imap`, sign-in method `app_password`) and its Google token is deleted. Mail already imported stays, and sync carries on with new mail from that point; the history is not imported a second time. The mailbox keeps its campaigns, warmup and settings. The **Sending identity** list is read from Gmail's API, so it is not offered on an app password, as for any IMAP mailbox.
+Warmbly 会先向 Gmail 的 IMAP 和 SMTP 服务器验证应用专用密码，再保存任何信息。验证被拒绝时不会更改任何内容，消息会说明哪个服务器拒绝了请求以及原因。验证通过后，邮箱会原位转为 IMAP 和 SMTP 邮箱（`smtp_imap`，登录方式为 `app_password`），并删除其 Google 令牌。已导入的邮件会保留，同步会从该时点继续接收新邮件，不会再次导入历史记录。邮箱的营销活动、预热和设置都保持不变。**发件身份**列表需要从 Gmail API 读取，因此与其他 IMAP 邮箱一样，使用应用专用密码后将不再提供此列表。
 
-### Local mail relays (Proton Bridge)
+### 本地邮件中继（Proton Bridge） [#local-mail-relays-proton-bridge]
 
-Some mail is only reachable through a program running on your own machine. [Proton Bridge](https://proton.me/mail/bridge) is the common one: it signs in to Proton Mail for you and re-serves the account as ordinary IMAP on `127.0.0.1:1143` and SMTP on `127.0.0.1:1025`. It speaks no TLS a client can verify, because it never listens on a network interface in the first place.
+有些邮件只能通过运行在你自己机器上的程序访问。[Proton Bridge](https://proton.me/mail/bridge) 是常见例子：它代你登录 Proton Mail，再将账户作为普通 IMAP（`127.0.0.1:1143`）和 SMTP（`127.0.0.1:1025`）服务提供。它不提供客户端可验证的 TLS，因为它本来就不监听对外网络接口。
 
-Warmbly connects to one of these with the **None** security mode, under two conditions that are checked when you save the mailbox and again every time the worker dials it:
+Warmbly 使用**无**安全模式连接此类服务，但必须同时满足两个条件；保存邮箱时以及工作节点每次连接时都会检查：
 
-- the host is a loopback literal: `localhost`, an address in `127.0.0.0/8`, or `::1`. A hostname that merely resolves to one is refused, because what a name resolves to can change after it is checked
-- the instance is self-hosted, and the [worker](/development/architecture/) runs on the same machine as the relay
+- 主机必须直接指定为回环地址：`localhost`、`127.0.0.0/8` 范围内的地址或 `::1`。仅解析到回环地址的普通主机名会被拒绝，因为检查后其解析结果仍可能变化
+- 实例必须为自托管实例，且[工作节点](/development/architecture/)与中继运行在同一台机器上
 
-Both are about the same thing: the credentials never leave the machine, so there is no wire to intercept them on. On hosted Warmbly the worker is in our infrastructure, never on your computer, so a local relay is not reachable from it and the mode is not offered. Run a [self-hosted instance](/development/install/) on the machine the Bridge is on if you need it.
+这两个条件都是为了确保凭据不离开机器，因此不存在可被截获的网络传输。在 Warmbly 托管服务中，工作节点位于我们的基础设施内，不在你的电脑上，因而无法访问本地中继，也不会提供此模式。如需使用，请在 Bridge 所在机器上运行[自托管实例](/development/install/)。
 
-Set the Bridge's own username and password, which it shows in its interface, not your Proton account password. The same applies to any relay on the machine: a Dovecot sharing a host with its worker, or a local sink used for testing.
+请使用 Bridge 界面中显示的专用用户名和密码，而不是 Proton 账户密码。机器上的其他中继也遵循同样原则，例如与工作节点部署在同一主机的 Dovecot，或用于测试的本地邮件接收服务。
 
 </Fold>
 
 <Fold>
 
-## Mailbox allowance
+## 邮箱数量额度 [#mailbox-allowance]
 
-Mailboxes are unlimited on every paid plan. What keeps that honest is a fair-use allowance derived from the plan's sending volume: one mailbox for every send a day the plan includes.
+所有付费套餐均提供不限量邮箱。为确保合理使用，邮箱额度按套餐发送量计算：套餐每天每包含一次发送，就对应一个邮箱名额。
 
-| Plan | Sends per day | Mailboxes |
+| 套餐 | 每日发送量 | 邮箱 |
 | --- | --- | --- |
-| Free workspace | none | `10` |
+| 免费工作区 | 无 | `10` |
 | Starter | `150` | `150` |
 | Grow | `3,000` | `3,000` |
 | Business | `15,000` | `15,000` |
-| Enterprise | custom | as many as the volume needs |
+| Enterprise | 自定义 | 按发送量需要提供相应数量 |
 
-That is deliberately far more than safe sending ever needs: at the recommended `30` to `50` sends a day per mailbox, a Business workspace fills its volume with a few hundred mailboxes and still has room for tens of thousands. The allowance exists so that it is never the reason to run a mailbox hotter. A plan whose daily sends are uncapped holds unlimited mailboxes, and a self-hosted instance without billing never counts.
+该额度特意设置得远高于安全发送所需：按建议的每邮箱每天 `30` 至 `50` 封计算，Business 工作区只需几百个邮箱就能用满发送量，仍可再容纳数万个邮箱。设置这一额度，是为了避免邮箱名额不足成为提高单邮箱发送强度的理由。每日发送量不限的套餐可容纳不限量邮箱；未启用计费的自托管实例也不会统计此额度。
 
-**A free workspace.** Two ways past the `10`: subscribe to any plan and keep every mailbox here, or [self-host Warmbly for free](/guides/warmbly-cloud/) and link that instance so its mailboxes warm in the same pool. Both are offered on the Accounts page while the workspace is free, and neither is required over the other.
+**免费工作区。** 超过 `10` 个邮箱有两种方式：订阅任意套餐，把所有邮箱留在这里；或[免费自托管 Warmbly](/guides/warmbly-cloud/)并关联该实例，让其邮箱在同一个池中预热。工作区处于免费状态时，账户页面会提供这两种方式，可自由选择。
 
-The connect dialog shows the allowance up front: a quiet count while there is room, a warning near the cap, and a clear full state that leads to the request flow instead of letting you type credentials that would be refused. When a connect is refused the answer is the same dialog, not an error toast.
+连接对话框会提前显示额度：名额充足时显示当前数量，接近上限时给出警告，额度已满时则明确提示并引导进入申请流程，避免让你先输入最终会被拒绝的凭据。连接因额度不足而被拒绝时，也会返回该对话框，而不是仅弹出错误提示。
 
-**Getting more.** Two paths, both in the dialog:
+**增加额度。** 对话框中提供两种方式：
 
-- **Move to a bigger plan.** The dialog names the next plan and how many mailboxes it holds; the change is prorated and takes effect immediately.
-- **Request an increase.** Keep your plan and ask for a higher allowance with a sentence on what you are sending. An operator reviews it, usually within a business day, and the new allowance applies to the workspace straight away. The dialog shows the open request while it is pending and lets you withdraw it. History lives under **Settings > Limits**.
+- **升级到更高套餐。** 对话框会列出下一级套餐及其邮箱容量；变更按比例计费并立即生效。
+- **申请提高额度。** 保持现有套餐，并用一句话说明你要发送的内容，申请更高额度。运维人员通常会在一个工作日内审核，新额度会立即应用到工作区。申请待处理时，对话框会显示当前申请，并允许撤回。历史记录位于**设置 > 限额**。
 
-Nothing is ever removed for being over the allowance. A workspace that moves to a smaller plan keeps every mailbox sending and warming; it simply cannot add more until it is back under, or the allowance is raised.
+超出额度不会导致任何邮箱被删除。工作区降级到较低套餐后，所有邮箱仍可继续发送和预热；只是无法添加新邮箱，直到数量降到额度以下或额度获准提高。
 
-There is no daily cap on how many mailboxes you connect: a Business workspace can connect thousands in one afternoon, and the [mailbox import](/guides/mailbox-import/) exists for exactly that.
-
-</Fold>
-
-<Fold>
-
-## Connecting many mailboxes at once
-
-Choose **Import mailboxes** in the connect dialog to connect up to 5,000 mailboxes from a CSV, TSV or XLSX file, a vendor export, or a pasted list of `address:password` pairs. Only an address and a password are needed: the columns are recognised and each domain's servers are found from DNS. Microsoft 365 and Outlook.com rows wait for a Microsoft sign-in each. Google rows use an app password, an admin grant, or Google sign-in where enabled. The import runs on the server, verifies every credential before saving it, and groups whatever fails by cause with the fix.
-
-The same dialog imports straight from an [inbox vendor](/guides/mailbox-import/#import-from-an-inbox-vendor) with an API key, and connects a whole [Google Workspace domain](/guides/mailbox-import/#connect-a-whole-google-workspace-domain) (**Google > Whole Workspace domain**) or [Microsoft 365 organization](/guides/mailbox-import/#connect-a-whole-microsoft-365-organization) (**Microsoft > Whole organization**) through one administrator's grant.
-
-See [Import mailboxes](/guides/mailbox-import/) for the columns, what each provider needs, and what is kept, and [sending domains](/guides/sending-domains/) for setting a tracking host and a root redirect per domain.
+每天可以连接的邮箱数量没有上限：Business 工作区可以在一个下午连接数千个邮箱，[邮箱导入](/guides/mailbox-import/)正是为此提供的。
 
 </Fold>
 
 <Fold>
 
-## Reconnecting an account
+## 批量连接邮箱 [#connecting-many-mailboxes-at-once]
 
-When the provider stops accepting a mailbox's stored credential (a password change, a revoked grant, an expired app password), the mailbox is taken out of sending and syncing and its drawer shows the reason under **Needs attention**, with the fix right on the error:
+在连接对话框中选择**导入邮箱**，即可从 CSV、TSV、XLSX 文件、供应商导出文件，或粘贴的 `address:password` 列表中连接最多 5,000 个邮箱。只需地址和密码：系统会识别列，并通过 DNS 查找各域名的服务器。Microsoft 365 和 Outlook.com 的每一行都需要等待一次 Microsoft 登录。Google 行可使用应用专用密码、管理员授权，或在已启用时使用 Google 登录。导入在服务器端运行，保存前会验证每份凭据，并按原因归类失败项、给出解决方法。
 
-- **Gmail (connected with Google sign-in) and Outlook**: a **Re-authorize** button re-runs the provider consent in a popup, preselecting the mailbox's own address. This works for an existing Gmail mailbox even where per-mailbox Google sign-in is no longer offered for new ones. The consent must be for that same address; signing in with a different account is refused instead of quietly connecting the wrong mailbox.
-- **SMTP / IMAP**: an **Update credentials** button opens a form for the new password (or new host and port). The replacement is validated against your server before it is saved, the same as at connect time.
-- **Connected through an admin grant** (sign-in method `delegated`, shown as **Admin grant**): there is no **Re-authorize** action, because the mailbox holds no credential of its own; asking to re-authorize one answers `mailbox_reauth_delegated`. It follows its grant: when the grant stops working, every mailbox under it stops, and when the grant's hourly check (or **Check again**) succeeds again, the mailboxes that stopped because of it restart on their own. One you switched off yourself stays off. Check the grant from **Add account > Google or Microsoft > Whole domain**, and fix it in the Google Admin console or with a Microsoft 365 Global Administrator, as described in [Import mailboxes](/guides/mailbox-import/#connect-a-whole-google-workspace-domain).
+同一对话框还可以使用 API 密钥直接从[邮箱供应商](/guides/mailbox-import/#import-from-an-inbox-vendor)导入，或通过管理员的一次授权连接整个 [Google Workspace 域名](/guides/mailbox-import/#connect-a-whole-google-workspace-domain)（**Google > 整个 Workspace 域名**）或 [Microsoft 365 组织](/guides/mailbox-import/#connect-a-whole-microsoft-365-organization)（**Microsoft > 整个组织**）。
 
-A successful reconnect stores the new credential, clears the authentication error, reactivates the mailbox on its existing worker, and it resumes syncing from where it stopped. Nothing else changes: settings, history, warmup progress, and campaign membership all stay.
-
-A server can also refuse the login only when the mailbox sends, while sync keeps working. Sending (cold and warmup) is then paused, the drawer's **Health** says so, and the same reconnect button sits under it. Entering the current password or app password again is enough when it has not changed. The reconnect checks both the SMTP and IMAP login against your server, and once they pass, the login hold is lifted. Sending resumes unless another send safety hold is still pending, such as a send whose outcome is unconfirmed, which keeps its own hold until it is resolved.
-
-Reconnecting never counts against the mailbox allowance, so a workspace at its cap can still fix a broken mailbox. A mailbox whose sign-in is held by Warmbly Cloud is reconnected from your cloud workspace instead; the button says so if you try locally.
+有关列格式、各服务商的要求以及保留哪些数据，请参见[导入邮箱](/guides/mailbox-import/)；有关为每个域名设置跟踪主机和根域名重定向，请参见[发件域名](/guides/sending-domains/)。
 
 </Fold>
 
 <Fold>
 
-## What gets synced
+## 重新连接账户 [#reconnecting-an-account]
 
-Connecting a mailbox does two things: it imports the mailbox's recent history, and from then on it follows new mail as it arrives. Both are the same on every provider.
+当服务商不再接受邮箱已存储的凭据时，例如密码更改、授权撤销或应用专用密码过期，邮箱会停止参与发送和同步，详情抽屉会在**需要处理**下显示原因，并在错误旁提供解决方法：
 
-**The import** brings in the last `90` days, newest first, up to `5,000` messages per mailbox (the defaults; a self-hosted instance can change both under Instance settings). It reads the inbox, sent mail and archive (plus your own folders on Gmail and IMAP), and skips trash, drafts, spam and Gmail's "All Mail". You can watch it in the mailbox drawer's **Sync** card: a progress bar with a running count while it works, then "Up to date" with what was imported. Because it runs newest first, the mail you would look for is there within the first minute; a large mailbox finishes over the next while at a steady pace. A few IMAP servers (Seznam.cz, for one) refuse to search a folder by date; on those the import reads each message's arrival date instead, which makes the first pass over a large folder a little slower and changes nothing else.
+- **Gmail（通过 Google 登录连接）和 Outlook**：**重新授权**按钮会在弹窗中重新运行服务商授权流程，并预选该邮箱自己的地址。即使不再为新邮箱提供逐邮箱 Google 登录，此操作仍适用于现有 Gmail 邮箱。必须为同一地址授权；使用其他账户登录会被拒绝，不会悄然连接到错误的邮箱。
+- **SMTP / IMAP**：**更新凭据**按钮会打开表单，供你输入新密码，或新的主机和端口。与首次连接时一样，新凭据会先向你的服务器验证，再保存。
+- **通过管理员授权连接**（登录方式为 `delegated`，显示为**管理员授权**）：此类邮箱不持有自己的凭据，因此没有**重新授权**操作；请求单独重新授权会返回 `mailbox_reauth_delegated`。它的状态跟随所属授权：授权失效时，其下所有邮箱都会停止；每小时的授权检查或**重新检查**再次成功后，因该授权失效而停止的邮箱会自动恢复。你手动关闭的邮箱仍保持关闭。请从**添加账户 > Google 或 Microsoft > 整个域名**检查授权，并按[导入邮箱](/guides/mailbox-import/#connect-a-whole-google-workspace-domain)中的说明，在 Google 管理控制台或由 Microsoft 365 全局管理员修复。
 
-**Live sync** follows the provider's supported folders, including junk (so placement problems are visible) and sent mail (so a conversation shows both sides). Outlook follows Inbox, Sent, Junk, Drafts and Archive where Archive is available; it does not follow every custom Graph folder. Read state, flags, deletions and moves are mirrored too.
+重新连接成功后，系统会保存新凭据、清除身份验证错误，并在原工作节点上重新激活邮箱，从中断位置继续同步。其他内容不变：设置、历史记录、预热进度以及所属营销活动都会保留。
 
-The Sync card distinguishes a completed history import from a recent successful live check. An unfinished pass, provider failure, recovery scan or budget hold does not refresh the last successful check or erase the last observed deferred count. That count is an observation from sync, not a measurement of all mail still on the provider. A worker heartbeat alone is not evidence that a mailbox is current. Repeated connection failures refresh the warning's observation time without generating a new notification each pass; no later successful check means recovery is unverified.
+服务器也可能只在邮箱发件时拒绝登录，而同步仍正常运行。此时会暂停发送，包括冷邮件和预热邮件；详情抽屉中的**健康状态**会说明情况，下方提供同一个重新连接按钮。如果密码或应用专用密码没有更改，重新输入当前值即可。重新连接会同时向服务器检查 SMTP 和 IMAP 登录，通过后解除登录限制。如果没有其他尚未解决的发送安全限制，发送就会恢复；例如某次发送结果尚未确认时，其独立限制仍会保留，直到问题解决。
 
-Sync respects an explicit provider retry window for temporary service failures as well as rate limits. On IMAP, an incomplete folder-status response or a temporary status failure keeps the existing folders and their sync positions for the next pass. Missing status metadata is requested separately, not treated as proof that a folder was deleted.
+重新连接不会占用邮箱额度，因此即使工作区已满额，也仍可修复故障邮箱。如果邮箱的登录凭据由 Warmbly Cloud 持有，则应从云端工作区重新连接；在本地尝试时，按钮会明确提示这一点。
 
-The IMAP folder cap limits which folders are opened, not which folders exist. Folders outside the cap keep their saved sync positions. A capped pass cannot establish a rename or refresh the last successful live check. Folder retirement requires a complete name listing showing absence, an explicit provider not-found response, or your folder exclusion setting. On Outlook, an explicit retry window stops the remaining folder requests in that pass, even if an earlier folder failed without a retry window.
+</Fold>
 
-If Gmail rejects an ordinary import continuation token, the import restarts inside its original fixed date window. Already mapped mail is deduplicated, and the existing message cap and sync budgets still apply. Outlook recovers an expired delta checkpoint by replaying the configured recent-history window, reconciling known messages and following changes from a fresh checkpoint only after recovery completes. Older messages never imported are outside that recovery window. Authentication failures, throttles and transport errors are not treated as expired checkpoints.
+<Fold>
 
-On IMAP, discovering a new folder or a changed UIDVALIDITY generation during or after the initial import schedules a bounded recent-history scan. Generation recovery reconciles known message handles and read state without restarting the global import count. In folders excluded from history imports, such as Junk and Trash, recovery updates only known messages and does not import unseen history. An unreadable or incomplete message body remains retryable rather than being stored as a successful empty message. A folder without usable modification sequences falls back to UIDNEXT checks and periodic flags even if the server advertises CONDSTORE. Changes are read with the standard CONDSTORE fetch. If a server answers that in a form Warmbly cannot read, the worker asks the other supported ways, and when none can be read it uses the same UIDNEXT checks. The mailbox keeps syncing either way. When a server marks a whole folder as changed at once, only mail that arrived since the last pass is imported; older messages it reports again keep their read state in sync but are not imported, and they do not count toward the sync budget. Failed flag publication keeps the previous baseline so it can retry. Background lookups do not mark unread messages as seen.
+## 同步范围 [#what-gets-synced]
 
-On upgraded instances, a newly admitted provider message is recorded together with an encrypted pending arrival before sync advances. The consumer replays that arrival under its original identity after a restart, including related bounce or complaint processing, and provider updates wait for an unresolved arrival. This is an at-least-once recovery path, not a promise that all historical mail can be reconstructed. Old map-only records have no replay payload, and mixed-version instances retain their legacy behavior. See the [self-host upgrade order and limits](/development/install/#mailbox-sync-upgrade-order).
+连接邮箱会完成两件事：导入邮箱近期的历史邮件，并从此持续跟进新到达的邮件。所有服务商上的行为都一致。
 
-If Gmail expires its history checkpoint after a mailbox has been offline, Warmbly automatically scans the configured recent-history window for missed messages and checks every stored Gmail message for deletions, moves and read-state changes. Recovery resumes across worker restarts and respects the normal sync budget. Messages older than the configured import window that were never stored are not imported by recovery. Once the scan completes, changes made during recovery are followed from a fresh history checkpoint; no reconnection is needed.
+**历史导入**会从新到旧读取最近 `90` 天的邮件，每个邮箱最多 `5,000` 封。这是默认值，自托管实例可在实例设置中修改两项值。系统会读取收件箱、已发送和归档邮件，以及 Gmail 和 IMAP 中的自定义文件夹，并跳过垃圾箱、草稿、垃圾邮件和 Gmail 的“所有邮件”。你可以在邮箱详情抽屉的**同步**卡片中查看进度：运行时显示进度条和实时数量，完成后显示“已是最新”以及导入结果。由于按从新到旧的顺序处理，通常最先要找的邮件在第一分钟内就会出现；大型邮箱会在随后一段时间内以稳定速度完成。少数 IMAP 服务器，例如 Seznam.cz，不允许按日期搜索文件夹；此时导入会改为读取每封邮件的到达日期，仅使大型文件夹的首次扫描略慢，其他行为不变。
 
-Nested folders are followed as well, so mail in a subfolder of the inbox or under a label group arrives like anything else. Up to `100` folders per mailbox are synced. Past that the inbox, sent, drafts, spam, trash and archive are always kept and the rest are taken in the order the server lists them, with a note in the mailbox drawer's **Sync** card saying how many were left out. The note goes away by itself once the mailbox is back under the limit.
+**实时同步**会跟进服务商支持的文件夹，包括垃圾邮件，以便发现投递位置问题，以及已发送邮件，以便会话展示双方内容。Outlook 会同步收件箱、已发送、垃圾邮件、草稿，以及可用时的归档文件夹；不会同步所有自定义 Graph 文件夹。已读状态、旗标、删除和移动操作也会同步。
 
-On IMAP, folders are identified by the standard attributes a server publishes, and by name when it publishes none. The common names are recognized in a dozen languages, so a mailbox whose Sent folder is called "Gesendete Elemente" or "Éléments envoyés" still files sent mail as sent rather than as inbox.
+同步卡片会区分历史导入已完成和最近一次实时检查成功。未完成的处理轮次、服务商故障、恢复扫描或额度暂停，都不会刷新最后成功检查时间，也不会清除上次观测到的延后处理数量。这个数量是同步过程的观测结果，并非对服务商端所有剩余邮件的总量测量。仅有工作节点心跳不能证明邮箱已同步到最新。反复连接失败会刷新警告的观测时间，但不会每轮都生成新通知；如果没有更晚的成功检查，就无法确认恢复。
 
-### Folders you do not want synced
+同步不仅遵守速率限制，也遵守服务商针对临时服务故障明确给出的重试等待窗口。在 IMAP 中，如果文件夹状态响应不完整或状态查询暂时失败，系统会保留现有文件夹及其同步位置，供下一轮继续。缺失的状态元数据会单独请求，不会据此认定文件夹已删除。
 
-A folder the sync does not recognize files as inbox, so its mail shows up in the [unified inbox](/guides/unibox/). That is right for a folder you sort real mail into and wrong for one another tool fills: a second warmup service running out of its own folder, for example, puts machine mail in your inbox, spends the mailbox's sync budget on it, and has it classified like a reply.
+IMAP 文件夹数量上限限制的是要打开哪些文件夹，而不是哪些文件夹存在。超过上限的文件夹会保留已保存的同步位置。受上限限制的一轮处理不能据此确认重命名，也不能刷新最后成功实时检查时间。只有完整名称列表确认文件夹缺失、服务商明确返回不存在，或你的文件夹排除设置，才能终止对该文件夹的同步。在 Outlook 中，只要服务商给出明确的重试等待窗口，该轮剩余的文件夹请求就会停止，即使更早有其他文件夹失败时并未给出等待窗口。
 
-On an IMAP mailbox, the drawer's **Sync** card lists the folders the worker has seen under **Folders not synced**. Tick one and the sync stops opening it on its next pass, within a minute; mail already imported from it is removed from Warmbly, and mail that later moves into it from a synced folder is removed too. The mail itself is never touched at the provider. A folder that is not listed yet, because the mailbox has not synced or the folder was just created, can be typed in by name, exactly as your mail server lists it (`Warmer`, or `INBOX/Warmer` on a server that nests everything under the inbox). Case does not matter, and a skipped folder covers its subfolders.
+如果 Gmail 拒绝普通导入续传令牌，导入会在最初固定的日期窗口内重新开始。已映射邮件会去重，现有邮件数量上限和同步额度继续生效。Outlook 会通过重放所配置的近期历史窗口来恢复过期的 delta 检查点，核对已知邮件，并仅在恢复完成后从新的检查点继续跟踪变化。更早且从未导入的邮件不在该恢复窗口内。身份验证失败、限流和传输错误不会被当作检查点过期。
 
-The inbox, sent, drafts, spam, trash and archive folders cannot be skipped: a sync without them is a broken mailbox, not a quieter one. Un-ticking a folder brings it back with a bounded scan of the configured recent-history window; older mail outside that window is not imported. Up to `50` folders can be skipped per mailbox. Gmail and Outlook mailboxes have no such list.
+在 IMAP 中，无论是在初始导入期间还是之后，发现新文件夹或 UIDVALIDITY 代次变化时，都会安排一次有范围限制的近期历史扫描。代次恢复会核对已知邮件标识和已读状态，不会重置全局导入计数。对于不参与历史导入的文件夹，例如垃圾邮件和垃圾箱，恢复只更新已知邮件，不导入之前未见的历史邮件。无法读取或不完整的邮件正文会保留为可重试状态，不会作为成功的空邮件存储。即使服务器声明支持 CONDSTORE，只要文件夹没有可用的修改序列，也会退回 UIDNEXT 检查和定期旗标检查。变更通过标准 CONDSTORE fetch 读取。如果服务器的响应格式无法被 Warmbly 读取，工作节点会尝试其他支持的方式；如果都无法读取，就使用相同的 UIDNEXT 检查。无论采用哪种方式，邮箱都会继续同步。如果服务器一次将整个文件夹标记为已变更，系统只导入上次处理后新到达的邮件；被再次报告的旧邮件只同步已读状态，不会重新导入，也不占用同步额度。旗标发布失败时会保留之前的基线，以便重试。后台查询不会把未读邮件标记为已读。
 
-The same setting is `PUT /emails/:id/sync` in the [API](/api/endpoints/) and `warmbly mailbox skip-folders` in the CLI.
+在已升级的实例上，新获准接收的服务商邮件会连同一份加密的待处理到达记录一起保存，然后同步才会推进。消费端重启后会使用原始标识重放该到达记录，包括相关退信或投诉处理；如果某次到达尚未处理完，服务商更新会等待。这是至少一次处理语义下的恢复机制，并不保证能重建全部历史邮件。仅保留映射的旧记录没有可重放的载荷，混合版本实例仍保持旧行为。参见[自托管升级顺序与限制](/development/install/#mailbox-sync-upgrade-order)。
 
-<Callout type="info" title="Read state on older IMAP servers">
-  Some IMAP servers, including Outlook.com, Microsoft 365 over IMAP and Yahoo, cannot tell a client what changed since it last looked. Warmbly checks for new mail on each sync pass and scans read state and flags about every ten minutes. Those changes may take longer to appear than on a provider with usable modification sequences. Provider availability and sync budgets still apply.
+如果邮箱离线后 Gmail 使其历史检查点过期，Warmbly 会自动扫描所配置的近期历史窗口，查找遗漏的邮件，并检查每封已保存的 Gmail 邮件是否被删除、移动或更改已读状态。恢复可在工作节点重启后继续，并遵守正常同步额度。早于所配置导入窗口、且从未保存的邮件不会由恢复过程导入。扫描完成后，系统会从新的历史检查点跟进恢复期间发生的变化，无需重新连接。
+
+系统也会同步嵌套文件夹，因此收件箱子文件夹或标签组下的邮件会与其他邮件一样进入系统。每个邮箱最多同步 `100` 个文件夹。超过上限时，收件箱、已发送、草稿、垃圾邮件、垃圾箱和归档始终保留，其余按服务器列出的顺序选取；邮箱详情抽屉的**同步**卡片会提示有多少文件夹未被同步。邮箱文件夹数量回到上限以内后，该提示会自动消失。
+
+对于 IMAP，系统优先通过服务器发布的标准属性识别文件夹；服务器未提供属性时，才根据名称识别。系统可识别十余种语言的常见名称，因此已发送文件夹即使名为“Gesendete Elemente”或“Éléments envoyés”，其中邮件仍会归为已发送，而不会归入收件箱。
+
+### 排除不想同步的文件夹 [#folders-you-do-not-want-synced]
+
+同步无法识别的文件夹会归为收件箱，因此其中邮件会出现在[统一收件箱](/guides/unibox/)中。对于你用来整理真实邮件的文件夹，这是合适的；对于由其他工具填充的文件夹，则可能不合适。例如，第二个预热服务使用自己的文件夹时，会让自动生成的邮件进入收件箱、消耗该邮箱的同步额度，并像回复一样被分类。
+
+在 IMAP 邮箱的详情抽屉中，**同步**卡片会在**不同步的文件夹**下列出工作节点见过的文件夹。勾选某个文件夹后，同步会在下一轮停止打开它，通常在一分钟内生效；已从该文件夹导入的邮件会从 Warmbly 中移除，之后从其他已同步文件夹移入其中的邮件也会移除。服务商端的邮件本身不会被更改。如果某个文件夹尚未列出，例如邮箱还未同步或文件夹刚创建，可以按邮件服务器显示的准确名称手动输入，例如 `Warmer`；如果服务器把所有内容嵌套在收件箱下，则可能是 `INBOX/Warmer`。名称不区分大小写，跳过一个文件夹也会跳过其所有子文件夹。
+
+收件箱、已发送、草稿、垃圾邮件、垃圾箱和归档不能跳过；缺少这些文件夹的同步会使邮箱功能不完整。取消勾选后，系统会在所配置的近期历史窗口内进行有限扫描，重新纳入该文件夹；窗口外更早的邮件不会导入。每个邮箱最多可跳过 `50` 个文件夹。Gmail 和 Outlook 邮箱不提供此列表。
+
+同一设置在 [API](/api/endpoints/) 中对应 `PUT /emails/:id/sync`，在 CLI 中对应 `warmbly mailbox skip-folders`。
+
+<Callout type="info" title="旧版 IMAP 服务器的已读状态">
+  某些 IMAP 服务器无法告诉客户端自上次检查以来发生了什么变化，包括 Outlook.com、通过 IMAP 使用的 Microsoft 365 和 Yahoo。Warmbly 会在每轮同步中检查新邮件，并约每十分钟扫描一次已读状态和旗标。因此，与支持可用修改序列的服务商相比，这些变化可能需要更长时间才能显示。服务商可用性和同步额度仍会影响处理。
 </Callout>
 
-<Callout type="info" title="Fair use, not a hard cap">
-  There is a budget on how much new mail one mailbox stores per day (`2,000` by default) and how much a whole workspace stores per day (`25,000`), plus a short burst limit so a mailing-list storm cannot swamp the workers. Mail over a budget is not dropped: it waits on the server with the sync cursor held, and comes in when the window rolls. Replies to your own outreach have their own budget and are never held behind ordinary inbound mail. The drawer says "Waiting on the sync budget until ..." while this is happening, and the mailbox checks back less often until then.
+<Callout type="info" title="采用公平使用限制，而非固定硬性上限">
+  系统限制单个邮箱每天可存储的新邮件数量，默认 `2,000` 封，以及整个工作区每天可存储的数量，默认 `25,000` 封；还设有短时突发限制，避免邮件列表突然涌入大量邮件而压垮工作节点。超出额度的邮件不会丢弃：它们留在服务器上，同步游标保持不动，待计量窗口滚动后再导入。对你主动联系邮件的回复有独立额度，不会排在普通来信之后等待。此时详情抽屉会显示“正在等待同步额度恢复，预计时间为……”，在此之前邮箱会降低检查频率。
 </Callout>
 
-Only two patterns deactivate a mailbox's sync, and both mean something is wrong upstream: a flood (thousands of new messages in a single hour, more than any real inbox produces) or exceeding the daily budget on three of the last seven days. The mailbox then shows the reason under **Needs attention**; fix what is delivering that volume into it, or ask your administrator to raise the budget, and reactivate it.
+只有两类情况会停用邮箱同步，而且都表示上游存在问题：邮件洪流，即一小时内涌入数千封新邮件，超过真实收件箱通常会收到的数量；或过去七天中有三天超过每日额度。此时邮箱会在**需要处理**下显示原因；请修复造成大量来信的来源，或请管理员提高额度，然后重新激活邮箱。
 
 </Fold>
 
 <Fold>
 
-## Sending controls
+## 发送控制 [#sending-controls]
 
-Set these on the mailbox's **Settings** tab. They apply to the next scheduled send, not retroactively.
+在邮箱的**设置**选项卡中配置以下设置。它们会应用于下一次计划发送，不会追溯影响已发送邮件。
 
-| Control | Default | Range |
+| 控件 | 默认值 | 范围 |
 |---------|---------|-------|
-| Daily campaign cap | `50`/day | `0` to `5000` |
-| Minimum gap between sends | `600s` (10 minutes) | A hard floor, with jitter added on top |
+| 每日营销活动发送上限 | 每天 `50` 封 | `0` 至 `5000` |
+| 两次发送之间的最小间隔 | `600s`（10 分钟） | 严格的最小间隔，实际间隔会在此基础上增加随机时间 |
 
-The `50` default is a safety ceiling, not a daily target. Newly connected mailboxes use a configurable [variable sending plan](/guides/sending-behavior/) with a target range of `28` to `32` per local working day, about `30`. Existing mailboxes keep their settings. Tune or disable the plan in the **Sending** tab; raise the separate ceiling only with proven reputation and low complaint and bounce rates. A fresh mailbox should start lower and ramp; randomized volume does not replace warmup or guarantee deliverability.
+默认值 `50` 是安全上限，不是每日目标。新连接的邮箱会使用可配置的[可变发送计划](/guides/sending-behavior/)，按当地工作日计算，目标范围为 `28` 至 `32` 封，约 `30` 封。现有邮箱保持原设置。可以在**发送**选项卡中调整或禁用计划；只有在信誉得到验证、投诉率和退信率都较低时，才应提高独立的发送上限。新邮箱应从更低的发送量开始并逐步递增；随机化发送量不能替代预热，也不保证邮件送达。
 
-The range goes up to `5000` so a high-capacity mailbox (a warmed Google Workspace account allows `2000`/day, Microsoft 365 more) is not artificially blocked, and the dashboard shows a warning on anything above `100`. A high cap only raises the ceiling: the campaign's own daily limit, the ramp, sending behaviour, and your workspace's daily send limit all still apply, and the smallest one wins. The minimum gap is a throughput bound of its own: at the default `600s` a mailbox tops out around `144` sends in a `24`-hour window, so a cap above that only takes effect together with a shorter gap.
+范围最高可达 `5000`，以免人为限制高容量邮箱，例如经过预热的 Google Workspace 账户允许每天 `2000` 封，Microsoft 365 更多；控制台会对高于 `100` 的设置显示警告。较高的上限只是提高容量天花板：营销活动自身的每日限制、发送量递增计划、发送行为和工作区每日发送限制仍然适用，以其中最小者为准。最小发送间隔本身也会限制吞吐量：采用默认 `600s` 时，一个邮箱在 `24` 小时窗口内最多约发送 `144` 封，因此高于该数值的上限，只有配合更短间隔才会发挥作用。
 
-<Callout type="warn" title="Do not jump a new mailbox to a high cap">
-  A new mailbox has no reputation. Sudden high volume from a cold inbox is one of the fastest ways to land in spam. Scaling cold outreach means adding mailboxes, not cranking one mailbox's cap.
+<Callout type="warn" title="不要立即为新邮箱设置高发送上限">
+  新邮箱尚未建立信誉。让未经预热的邮箱突然大量发送，是很容易导致邮件进入垃圾邮件夹的做法。扩大冷邮件联系规模应通过增加邮箱来实现，而不是不断提高单个邮箱的上限。
 </Callout>
 
-### Keeping a copy of sent mail
+### 保留已发送邮件副本 [#keeping-a-copy-of-sent-mail]
 
-SMTP mailboxes get a **Keep a copy of sent mail** toggle, on by default. SMTP submission puts nothing in your own account, so without it a message Warmbly sends exists only in the recipient's inbox: it shows up in neither your mail client nor the unibox thread. With it on, Warmbly files each message in the mailbox's Sent folder as it goes out, flagged read and dated when it was sent.
+SMTP 邮箱提供**保留已发送邮件副本**开关，默认开启。SMTP 提交本身不会在你自己的账户中保存邮件，因此关闭此项时，Warmbly 发出的邮件只存在于收件人的收件箱，不会出现在你的邮件客户端或统一收件箱会话中。开启后，Warmbly 会在发送每封邮件时，将其保存到该邮箱的已发送文件夹，标记为已读，并记录实际发送时间。
 
-Turn it off when your provider already saves its own copy of anything submitted over SMTP, which Gmail, Fastmail and Zoho do, or the folder ends up with two of every message. Gmail and Outlook mailboxes connected with OAuth never show the toggle: their APIs file the copy themselves. Warmup mail is never filed, since it would bury your real sent mail.
+如果服务商已经自动保存所有通过 SMTP 提交邮件的副本，例如 Gmail、Fastmail 和 Zoho，请关闭此项，否则已发送文件夹中每封邮件都会出现两份。通过 OAuth 连接的 Gmail 和 Outlook 邮箱不会显示此开关，因为它们的 API 会自行保存副本。预热邮件不会归档到已发送文件夹，以免淹没真实的已发送邮件。
 
-### Filing in the mailbox
+### 在邮箱中归档 [#filing-in-the-mailbox]
 
-**Mirror Archive and Delete** is on by default for every mailbox. With it on, Archive, Delete and Move to inbox in the [unibox](/guides/unibox/#filing-in-the-mailbox-too) move the message in the mailbox too: Gmail gains or loses its Inbox label or goes to Trash, Outlook moves it to Archive, Deleted Items or Inbox, and an IMAP mailbox moves it between its Archive, Trash and INBOX folders. Delete always lands in the mailbox's own trash, never a permanent delete. Turn it off to keep filing inside Warmbly for this mailbox; the conversation still leaves the unibox view you filed it from, and the mailbox keeps it where it was.
+每个邮箱默认开启**同步归档和删除**。开启后，在[统一收件箱](/guides/unibox/#filing-in-the-mailbox-too)中执行归档、删除或移至收件箱，也会移动邮箱中的对应邮件：Gmail 会添加或移除收件箱标签，或移至垃圾箱；Outlook 会移至归档、已删除邮件或收件箱；IMAP 邮箱则会在 Archive、Trash 和 INBOX 文件夹之间移动。删除始终移至邮箱自己的垃圾箱，不会永久删除。关闭后，该邮箱的整理操作只在 Warmbly 内生效；会话仍会离开你执行整理操作时所在的统一收件箱视图，但服务商邮箱中的邮件位置保持不变。
 
-The same tab sets the **display name**, **reply-to** (empty uses the mailbox address, see [a shared reply inbox](#a-shared-reply-inbox)), **signature** in plain text and HTML, and **tags** for grouping. Tags belong to the workspace: one anybody creates is there for every teammate, on every mailbox. A new display name is on the From header of the next message the mailbox sends, campaign, reply or warmup alike; nothing needs to be reconnected. Warmup shows it in other workspaces' inboxes, so it follows the [naming rules](/api/error-codes/#name-refusals): no links, web or email addresses, and no hidden characters. A name connected through a form or an import file that breaks them is replaced with one taken from the address, and warmup mail from a mailbox whose older name breaks them goes out under that address-derived name.
+同一选项卡还可设置**显示名称**、**回复地址**（留空时使用邮箱自身地址，参见[共享回复收件箱](#a-shared-reply-inbox)）、纯文本和 HTML 格式的**签名**，以及用于分组的**标签**。标签属于工作区：任何人创建的标签，所有团队成员都可在任意邮箱上使用。修改显示名称后，该邮箱下一封发出的邮件就会在 From 标头中使用新名称，无论是营销活动邮件、回复还是预热邮件，都无需重新连接。预热邮件会在其他工作区的收件箱中展示该名称，因此名称必须遵循[命名规则](/api/error-codes/#name-refusals)：不能包含链接、网址、邮箱地址或隐藏字符。如果通过表单或导入文件连接时填写的名称不合规则，系统会替换为从邮箱地址生成的名称；如果旧邮箱名称不合规则，其预热邮件也会改用从地址生成的名称发送。
 
-The HTML signature is placed in a block of its own one line below the body, so it arrives without the stack of blank lines above it that Apple Mail and Outlook used to show. Put any extra spacing you want inside the signature itself. On a body laid out in HTML it goes inside the container the email was built in, so it lines up with the copy it signs off rather than sitting under it at the left edge of the window (the same placement as the [opt-out line](/guides/unsubscribe/#where-it-appears)). The plain-text signature follows the body after a single blank line.
+HTML 签名放在正文下方一行的独立区块中，避免出现 Apple Mail 和 Outlook 过去会在签名前显示的多行空白。如需额外间距，请在签名本身内部设置。对于采用 HTML 排版的正文，签名会放入构建该邮件的同一容器内，与正文对齐，而不会落在容器外、贴着窗口左边缘显示；其位置规则与[退订提示行](/guides/unsubscribe/#where-it-appears)相同。纯文本签名则在正文后空一行显示。
 
-The signature editor has four views. **HTML** is the visual surface with bold, italic, underline, links and images. The `</>` button next to it swaps that for the raw markup, which is sent exactly as written, so a table-based signature from another tool can be pasted in whole. **Preview** renders it the way a mail client will, in its own frame. **Plain** holds the plain-text version, generated from the HTML while **Sync** is on.
+签名编辑器有四种视图。**HTML** 是可视化编辑区，支持粗体、斜体、下划线、链接和图片。旁边的 `</>` 按钮可切换到原始标记，邮件会按所写内容原样发送，因此可完整粘贴其他工具生成的表格签名。**预览**在独立框架中模拟邮件客户端的显示效果。**纯文本**保存纯文本版本；开启**同步**时，该版本会从 HTML 自动生成。
 
-A signature carrying a `<style>` block, a whole HTML document, or an event handler is always edited as markup and the visual toggle is greyed out. The visual surface works by putting the markup into the page, and a signature is workspace data your teammates also see, so that markup is never given a live element to run in. Preview is how you look at it. Any `<style>` block in a signature is inlined onto the elements it matches when the email sends, the same as a campaign body.
+如果签名包含 `<style>` 块、完整 HTML 文档或事件处理器，则始终以标记形式编辑，可视化切换按钮会变灰。可视化编辑区需要把标记插入页面，而签名属于团队成员也会看到的工作区数据，因此系统不会为这类标记提供可执行的页面元素。要查看效果，请使用预览。发送邮件时，签名中的任何 `<style>` 块都会像营销活动正文一样，转换为匹配元素上的内联样式。
 
-### A shared reply inbox
+### 共享回复收件箱 [#a-shared-reply-inbox]
 
-**Reply-to** puts a `Reply-To` header on the mailbox's campaign mail, unibox replies, test sends and placement tests, so answers land in another address instead of the one that sent them. Leave it empty, or set it to the mailbox's own address, and no header is added. Warmup mail never carries it: the warmup exchange reads its replies back in the mailbox that sent them.
+**回复地址**会为该邮箱的营销活动邮件、统一收件箱回复、测试发送和投递位置测试添加 `Reply-To` 标头，使回复进入另一个地址，而不是原发件地址。留空或设为邮箱自身地址时，不会添加该标头。预热邮件始终不携带它，因为预热往来需要在发出邮件的邮箱中读取回复。
 
-Point several sending mailboxes at one mailbox you have connected here, one that only receives, and every reply collects in one place while Warmbly keeps track of who sent what:
+将多个发件邮箱的回复地址指向一个已在这里连接、仅用于收件的邮箱，所有回复就会汇集到一处，同时 Warmbly 仍会跟踪每封邮件由谁发送：
 
-- the reply counts for the campaign. It stops the sequence when **Stop on reply** is on, runs the reply branch of the email it answers, and is credited to the mailbox that sent that email, in campaign stats and in the dashboard's recent activity ("Reply from lead@acme.com to alex@yourco.com")
-- a reply from someone copied on the lead's emails counts for the lead, as it would at the sending mailbox
-- in the unibox the message shows which mailbox's email it answers, and **Reply** starts from that mailbox, as does a reply the [inbox agent](/guides/inbox-agent/) drafts, so the contact keeps hearing from the address they wrote to. Your answer carries the same reply-to, so their next reply comes back to the shared inbox too. See [choosing the sending mailbox](/guides/unibox/#choosing-the-sending-mailbox)
-- the `campaign.reply_received` webhook names both: `email_account_id` is the mailbox the reply landed in and `sender_email_account_id` the one that sent the email it answers
+- 回复会计入对应营销活动。开启**收到回复后停止**时，它会停止邮件序列，执行被回复邮件的回复分支，并在营销活动统计和控制台最近活动中归于原发件邮箱，例如“lead@acme.com 回复了 alex@yourco.com”
+- 如果回复来自潜在客户邮件中的抄送对象，也会计入该潜在客户，与直接在发件邮箱收到回复时相同
+- 在统一收件箱中，邮件会显示其回复的是哪个邮箱发出的邮件；点击**回复**会默认使用该邮箱，[收件箱智能体](/guides/inbox-agent/)起草的回复也一样，因此联系人会继续收到自己原先联系的地址发来的邮件。你的回复会携带相同的回复地址，使对方下一次回复仍回到共享收件箱。参见[选择发件邮箱](/guides/unibox/#choosing-the-sending-mailbox)
+- `campaign.reply_received` webhook 会同时标明两者：`email_account_id` 是实际收到回复的邮箱，`sender_email_account_id` 是被回复邮件的原发件邮箱
 
-Replies are only tracked where Warmbly can read them. A reply-to naming an address that is not a mailbox in this workspace still routes replies there, but none of it is counted, and the field says so. The reply inbox has to be in the same workspace as the mailboxes pointing at it.
+Warmbly 只能跟踪它能读取到的回复。如果回复地址并非当前工作区中的邮箱，回复仍会送往该地址，但不会计入任何统计，字段旁也会明确提示。回复收件箱必须与指向它的发件邮箱位于同一工作区。
 
-Keep the reply-to on the sending domain where you can. A `Reply-To` on a different domain from the `From` is a mild spam signal to some filters, and one on the same domain is not.
+尽量让回复地址与发件地址使用同一域名。对于某些过滤器，`Reply-To` 与 `From` 的域名不同会构成轻微的垃圾邮件信号，使用同一域名则不会。
 
-Reply-to only applies to mail sent after it is set: an email sent before carried no header, so an answer to it still arrives at the mailbox that sent it.
+回复地址仅影响设置后发送的邮件：之前发出的邮件没有该标头，因此对这些邮件的回复仍会送到原发件邮箱。
 
-### Sending identity
+### 发件身份 [#sending-identity]
 
-A Gmail mailbox connected with Google sign-in can send as more than one address. Anything you have added under "Send mail as" in Gmail and finished verifying, a role address like hello@ or an address on a second domain you own, is an address Warmbly can put on the From header.
+通过 Google 登录连接的 Gmail 邮箱可以使用多个发件地址。凡是在 Gmail 的“用这个地址发送邮件”中添加并完成验证的地址，例如 hello@ 这样的职能地址，或你拥有的第二个域名下的地址，Warmbly 都可以将其写入 From 标头。
 
-Pick it under **Sending identity** on the mailbox's Settings tab. The list is read from Google, so it holds exactly what Google will accept: an alias still waiting on its verification email is shown but cannot be chosen, because Google would refuse the send. Press **Refresh addresses** after adding one in Gmail. Leaving the selection on the mailbox address, which is where every mailbox starts, changes nothing.
+在邮箱设置选项卡的**发件身份**下选择地址。列表直接从 Google 读取，因此准确反映 Google 会接受哪些地址：仍在等待验证邮件确认的别名会显示，但无法选用，因为 Google 会拒绝以它发送。你在 Gmail 中添加地址后，请点击**刷新地址**。所有邮箱初始都选用自身邮箱地址；保持此选择不会改变现有行为。
 
-The choice applies to campaign mail and to replies you send from the unibox. It never applies to warmup, which always uses the mailbox's own address: warmup pairs mailboxes by that address and verifies its own token against it, so an alias there would break the pairing it exists to prove.
+该选择适用于营销活动邮件以及你从统一收件箱发送的回复，始终不影响预热。预热总是使用邮箱自己的地址，因为它按该地址为邮箱配对，并据此验证自己的令牌；使用别名会破坏预热需要验证的配对关系。
 
-Two things worth knowing before you use one:
+使用别名前，请了解两点：
 
-- the alias is a From header, not a mailbox. Replies come back to the alias, which Google delivers into the same inbox, and Warmbly syncs them as usual
-- authentication follows the alias's domain, not the mailbox's. An alias on a domain with no SPF or DMARC record sends from a domain Warmbly has not checked, so set those up first and watch the mailbox's [domain authentication](/guides/deliverability/#domain-authentication) after the change
+- 别名是 From 标头中的地址，不是另一个邮箱。回复会返回别名，由 Google 投递到同一个收件箱，Warmbly 会照常同步
+- 身份验证取决于别名的域名，而非邮箱自身的域名。如果别名域名没有 SPF 或 DMARC 记录，就相当于从未经 Warmbly 检查的域名发件，因此请先配置这些记录，并在更改后关注邮箱的[域名身份验证](/guides/deliverability/#domain-authentication)状态
 
-**Import signature from Gmail** on the same card replaces the mailbox's signature with the one configured in Gmail, for whichever address the mailbox sends as. It writes straight away rather than waiting for the save bar, and the editor below updates to show what was stored. An empty signature in Gmail changes nothing, and one larger than Warmbly stores is refused rather than cut in half. Editing the signature here afterwards makes it yours again: nothing re-imports on its own, so a signature you have since adjusted is never overwritten behind your back.
+同一卡片中的**从 Gmail 导入签名**会用 Gmail 中为当前发件地址配置的签名替换邮箱签名。操作会立即写入，无需等待保存栏确认，下方编辑器也会更新，显示已存储内容。如果 Gmail 签名为空，则不作更改；如果超过 Warmbly 的存储上限，则会拒绝，不会截断。之后在这里编辑签名，内容就由你自行管理：系统不会自动重新导入，因此你后来调整过的签名不会在不知情时被覆盖。
 
-Outlook and SMTP/IMAP mailboxes have no equivalent list to read, so the card is absent for them. Their signature is written in Warmbly.
+Outlook 和 SMTP/IMAP 邮箱没有可读取的同类地址列表，因此不会显示此卡片。它们的签名需要在 Warmbly 中编写。
 
-### Profile photo
+### 头像 [#profile-photo]
 
-The mailbox's own profile photo shows at the top of its drawer, with its provider's logo in the corner. Warmbly reads it where it can without asking for any extra permission:
+邮箱自己的头像会显示在详情抽屉顶部，角落带有服务商标志。在不额外请求权限的前提下，Warmbly 会在可以读取时获取头像：
 
-- a Microsoft 365 or Outlook.com mailbox, when it connects or reconnects
-- a mailbox connected through a Google Workspace or Microsoft 365 [admin grant](/guides/mailbox-import/), from the organization's directory
-- a mailbox imported from an inbox vendor that publishes one, such as Zapmail
+- Microsoft 365 或 Outlook.com 邮箱连接或重新连接时
+- 通过 Google Workspace 或 Microsoft 365 [管理员授权](/guides/mailbox-import/)连接的邮箱，从组织目录读取
+- 从提供头像的邮箱供应商导入的邮箱，例如 Zapmail
 
-Grant and vendor photos are checked again every week, so a new photo appears on its own and a removed one goes away. A Google mailbox signed in on its own and any SMTP/IMAP mailbox shows its initials instead, because nothing Warmbly is allowed to read carries a photo for it.
+通过授权或供应商获取的头像会每周重新检查，因此新头像会自动显示，已移除的头像也会消失。单独登录的 Google 邮箱和所有 SMTP/IMAP 邮箱会显示姓名首字母，因为 Warmbly 获准读取的数据中没有它们的头像。
 
-### Custom tracking domain
+### 自定义跟踪域名 [#custom-tracking-domain]
 
-Open pixels and click links go out on a shared tracking host by default, which means their reputation is the sum of everyone else using it. Pointing a subdomain of the domain you send from at that host puts them on your own name instead.
+默认情况下，打开跟踪像素和点击跟踪链接都使用共享跟踪主机，其信誉取决于所有使用者的共同表现。将发件域名的一个子域名指向该主机，即可改用你自己的域名。
 
-Type the subdomain into **Custom tracking domain** in the mailbox's Settings tab. Warmbly shows the exact `CNAME` to add, with the value taken from the host this Warmbly install serves tracking on (on a self-hosted install, that is whatever the operator set `TRACKING_DOMAIN` to). Add the record at your DNS provider, then press **Save & verify**.
+在邮箱设置选项卡的**自定义跟踪域名**中输入子域名。Warmbly 会显示需要添加的准确 `CNAME` 记录，其值来自当前 Warmbly 安装用于提供跟踪服务的主机；在自托管安装中，就是运维人员设置的 `TRACKING_DOMAIN`。在 DNS 服务商处添加记录后，点击**保存并验证**。
 
-Verification resolves the record live and reports what it finds:
+验证会实时解析记录，并报告结果：
 
-| What it says | What it means |
+| 显示内容 | 含义 |
 | --- | --- |
-| **Verified** | The subdomain resolves to the tracking host. New sends use it. |
-| No DNS record yet | The name does not exist. The record has not been added, or has not propagated; usually minutes, up to an hour. |
-| Points at something else | The record exists but its value is another host. The message names what it found so you can compare it with what you typed. |
-| Nothing to point at | This install has no tracking host configured. Nothing can verify until an operator sets `TRACKING_DOMAIN`. |
+| **已验证** | 子域名解析到跟踪主机。新发送的邮件会使用它。 |
+| 尚无 DNS 记录 | 该名称不存在。记录尚未添加，或尚未传播完成；通常需要几分钟，最长可达一小时。 |
+| 指向其他主机 | 记录已存在，但其值是其他主机。消息会列出查到的值，供你与输入内容比较。 |
+| 没有可指向的目标 | 当前安装尚未配置跟踪主机。运维人员设置 `TRACKING_DOMAIN` 前，无法完成验证。 |
 
-A provider that flattens `CNAME` records (ALIAS records, apex flattening, proxied records) still verifies: Warmbly compares the addresses when there is no `CNAME` to read.
+如果 DNS 服务商会将 `CNAME` 记录扁平化，例如使用 ALIAS 记录、根域名扁平化或代理记录，仍可验证：没有可读取的 `CNAME` 时，Warmbly 会比较解析出的地址。
 
-A tracking domain belongs to one workspace on an instance. Once a workspace has verified it, on a mailbox or as a campaign's override, no other workspace on the same instance can save or verify it (`409 tracking_domain_taken`). The workspace's own mailboxes and campaigns can all share it.
+在一个实例内，跟踪域名只能属于一个工作区。一旦某个工作区在邮箱上或作为营销活动的覆盖设置验证了该域名，同一实例中的其他工作区就无法保存或验证它，会返回 `409 tracking_domain_taken`。该工作区自己的所有邮箱和营销活动都可以共享它。
 
-Press **Check again** any time to re-resolve without changing the value. Warmbly also re-checks every custom tracking domain on its own, hourly, so a record that finishes propagating after you saved starts being used without you doing anything, and one that later stops pointing at the tracking host stops being used instead of quietly breaking every link.
+随时点击**重新检查**即可重新解析，无需修改值。Warmbly 也会每小时自动检查所有自定义跟踪域名，因此保存后才完成传播的记录会自动开始使用；如果记录后来不再指向跟踪主机，系统也会停止使用，避免所有链接悄然失效。
 
-Until it verifies, tracking falls back to the shared host, so an unverified domain never breaks sending: links keep working, they just are not on your name yet. Links already sent keep working after a change; new sends pick up the new domain.
+验证通过前，跟踪会回退到共享主机，因此未验证域名不会影响发送：链接仍然可用，只是暂时没有使用你的域名。更改后，已发送的链接仍可继续使用；新发送的邮件会采用新域名。
 
-A verified domain also serves the [unsubscribe link](/guides/unsubscribe/#which-address-the-link-points-at) in that mailbox's campaign mail, so the opt-out a recipient reads sits on your name like every other link in the message. An unverified one changes nothing: the opt-out stays on the instance's API address, which always serves it.
+已验证域名还会为该邮箱营销活动邮件中的[退订链接](/guides/unsubscribe/#which-address-the-link-points-at)提供服务，使收件人看到的退订入口与邮件中的其他链接一样，位于你的域名下。未经验证的域名不会改变此行为：退订链接仍使用始终提供该功能的实例 API 地址。
 
-Verification proves DNS, not HTTPS, and the two are separate steps. That matters more now that the opt-out rides the same host: a certificate the recipient's browser rejects costs a spam complaint, not just a click. On Warmbly Cloud the certificate is handled for you. On a self-hosted instance installed with the bundled Caddy it is handled too: Caddy obtains one for your domain the first time a recipient loads a link on it. Behind an operator's own proxy it depends on that proxy, so a domain that verifies here but serves a certificate warning is something to raise with the operator.
+验证只能证明 DNS 正确，不能证明 HTTPS 正常，两者是不同步骤。退订链接也使用同一主机后，这一点更为关键：如果收件人的浏览器拒绝证书，后果可能是一次垃圾邮件投诉，而不仅仅是损失一次点击。在 Warmbly Cloud 上，证书由系统代为处理。使用随附 Caddy 安装的自托管实例也会自动处理：收件人首次加载该域名上的链接时，Caddy 会为域名申请证书。如果使用运维人员自行配置的代理，则取决于该代理；因此域名虽然在这里验证通过，却仍出现证书警告时，应联系运维人员处理。
 
-### Tracking direct mail
+### 跟踪直接发送的邮件 [#tracking-direct-mail]
 
-Campaign mail carries an open pixel and tracked links. Mail you write by hand in the [unified inbox](/guides/unified-inbox/) does not, unless you ask for it.
+营销活动邮件会携带打开跟踪像素和跟踪链接。你在[统一收件箱](/guides/unified-inbox/)中手动编写的邮件默认不携带，除非主动开启。
 
-Turn on **Track opens and clicks on direct mail** in the mailbox's Settings tab to opt that mailbox in. From then on, HTML replies and new messages you send from that mailbox get the same open pixel and tracked links as campaign sends. Plain-text-only messages remain untracked. The results appear under [Direct mail](/guides/analytics/#direct-mail) in Analytics.
+在邮箱设置选项卡中开启**跟踪直接邮件的打开和点击**，即可为该邮箱启用此功能。此后，从该邮箱发送的 HTML 回复和新邮件都会获得与营销活动邮件相同的打开跟踪像素和跟踪链接。只有纯文本的邮件仍不跟踪。结果显示在分析页面的[直接发送的邮件](/guides/analytics/#direct-mail)下。
 
-It is off by default on purpose. A pixel in a one-to-one reply is a different proposition from one in a cold sequence: it costs a little deliverability, and it tracks mail to colleagues and customers who are not campaign contacts. Leave it off for a mailbox you use as a personal inbox.
+默认关闭是有意设计的。在一对一回复中加入跟踪像素，与冷邮件序列中的跟踪不同：它会略微影响送达能力，还会跟踪发送给同事和客户的邮件，而这些人可能并非营销活动联系人。对于用作个人收件箱的邮箱，建议保持关闭。
 
-Two limits worth knowing before you read the numbers:
+查看统计数字前，请了解以下两项限制：
 
-- It applies to mail sent from now on. Messages already delivered carry whatever they carried when they left, so the figures start from the moment you switch it on rather than covering your history.
-- It covers mail sent through Warmbly. A reply you write in Gmail or on your phone still counts towards the sent and reply figures, because those are read from the mailbox itself, but it cannot be opened-tracked.
-- It needs an HTML part. A plain-text-only message has nowhere to place a pixel or wrapped link, so it is sent without tracking.
+- 仅对之后发送的邮件生效。已投递邮件仍保留发送时携带的内容，因此统计从开启时开始，不会覆盖历史邮件。
+- 仅覆盖通过 Warmbly 发送的邮件。你在 Gmail 或手机上编写的回复仍会计入发送和回复统计，因为这些数据直接从邮箱读取，但无法跟踪其打开情况。
+- 邮件必须包含 HTML 部分。纯文本邮件无法放置像素或改写后的跟踪链接，因此会不带跟踪地发送。
 
-Clicks are counted per message, not per link: Direct mail reports how many messages were clicked and when, without the per-link breakdown campaigns get.
+点击按邮件统计，而不是按链接统计：直接邮件报告有多少封邮件被点击及点击时间，不提供营销活动中的逐链接明细。
 
-Tracking uses the same host as everything else, so a [custom tracking domain](#custom-tracking-domain) on this mailbox applies here too. On an install with no tracking host configured, direct mail goes out untracked rather than carrying a pixel that points nowhere.
+跟踪使用与其他跟踪功能相同的主机，因此该邮箱上的[自定义跟踪域名](#custom-tracking-domain)也适用于这里。如果当前安装未配置跟踪主机，直接邮件会不带跟踪地发送，而不会携带指向无效地址的像素。
 
 </Fold>
 
 <Fold>
 
-## Warmup
+## 邮箱预热 [#warmup]
 
-New mailboxes should warm up before carrying campaign volume. Defaults are `10`/day starting volume, `+1`/day ramp, and a `40`/day ceiling.
+新邮箱应先完成预热，再承担营销活动发送量。默认初始量为每天 `10` 封，递增量为每天 `+1` 封，上限为每天 `40` 封。
 
-Start, pause, resume, or stop from the mailbox's **Warmup** tab, or for several mailboxes at once from the Accounts selection bar. Pausing keeps your ramp progress and stops new warmup sending. Stopping also disables warmup receiving and engagement without deleting the mailbox or its history.
+可在邮箱的**邮箱预热**选项卡中开始、暂停、恢复或停止预热，也可通过账户页面的批量选择栏一次操作多个邮箱。暂停会保留发送量递增进度，并停止新的预热发送。停止还会禁用预热接收和互动，但不会删除邮箱或其历史记录。
 
-Stopping retires warmup requests that have not begun sending, including other mailboxes' requests to this recipient. Restarting does not reactivate those old requests. Directional participation switches retire requests only in the disabled direction. A send already underway or accepted by the provider cannot be recalled. Gmail can therefore send delayed-delivery notices for earlier messages after you stop warmup; a notice arriving later is not necessarily a new Warmbly send.
+停止会永久终止尚未开始发送的预热请求，包括其他邮箱发往此收件人的请求。重新开始不会重新激活这些旧请求。按方向控制的参与开关只会终止被禁用方向上的请求。已经开始发送或已被服务商接受的邮件无法撤回。因此，即使停止预热后，Gmail 仍可能针对较早的邮件发出延迟投递通知；之后到达的通知不一定意味着 Warmbly 又发了新邮件。
 
-The same tab decides where warmup mail lands **in your own mail client**: its own folder (`Warmbly` by default), left in the inbox, or archived. It covers both directions, the warmup this mailbox receives and the copy of what it sends, so neither Inbox nor Sent fills with it. See [keeping warmup out of your inbox](/guides/warmup/#keeping-warmup-out-of-your-inbox).
+同一选项卡还决定预热邮件**在你自己的邮件客户端中**的存放位置：独立文件夹，默认为 `Warmbly`；留在收件箱；或归档。该设置覆盖收发两个方向，包括邮箱收到的预热邮件以及发出邮件的副本，因此收件箱和已发送文件夹都不会被预热邮件占满。参见[让预热邮件不占用收件箱](/guides/warmup/#keeping-warmup-out-of-your-inbox)。
 
-Warmbly retries filing until the worker confirms success, including after a worker restart or reassignment. Reconnecting also files recognized warmup mail left behind while access was unavailable, using your current placement setting. Choosing **Inbox** deliberately leaves it in place.
+Warmbly 会持续重试整理操作，直到工作节点确认成功；工作节点重启或邮箱重新分配后也会继续。重新连接时，系统还会按当前投递位置设置，整理在访问不可用期间遗留的、可识别的预热邮件。选择**收件箱**则表示有意将它们保留在原处。
 
-On Outlook, a failed, ambiguous or incomplete lookup of a warmup message's stable identity stops deletion before removing the provider message or its stored body. Unavailable lookup is not proof that the message is missing. Each lookup uses one request. Missing or null message collections, invalid identities and responses containing a continuation return a temporary error without following the continuation. Only an explicit terminal empty collection proves absence. A completed empty lookup and a provider-confirmed missing item retain the existing idempotent cleanup behavior. This safeguard needs no schema change or backfill and does not change the existing command retry limit. If the lookup remains incomplete through that limit, the stored body remains in place rather than being deleted on uncertain evidence.
+在 Outlook 中，如果查询预热邮件的稳定标识时失败、结果不明确或不完整，系统会在删除服务商端邮件或已存储正文前停止删除。查询不可用不能证明邮件不存在。每次查询只发出一个请求。如果响应缺少邮件集合、集合为 null、标识无效，或包含续传信息，就会返回临时错误，不会继续跟随续传。只有明确表示没有后续结果的空集合，才能证明邮件不存在。已完成的空查询和服务商确认项目不存在的情况，仍沿用原有的幂等清理行为。该保护无需更改数据结构或回填数据，也不改变现有命令重试上限。如果达到重试上限时查询仍不完整，已存储的正文会保留，不会依据不确定的信息删除。
 
-If Outlook asks an upgraded worker to wait after a failed warmup filing, the pending filing stays in the retry queue until that provider-specified time, even if the worker restarts or the mailbox moves to another worker. The retry time cannot be shortened by a repeat error or an earlier queue attempt. Other mailboxes continue working; an older worker does not gain this protection until it upgrades.
+如果预热邮件整理失败后，Outlook 要求已升级的工作节点等待，待处理的整理任务会保留在重试队列中，直到服务商指定的时间；即使工作节点重启或邮箱移到另一节点，也会保留。重复错误或更早的队列尝试都不能缩短重试时间。其他邮箱继续正常工作；旧工作节点在升级前不会获得此保护。
 
-Keep warmup running after campaigns begin rather than switching it off once a mailbox looks ready. See [Warmup](/guides/warmup/).
+开始营销活动后，应继续运行预热，而不是认为邮箱已准备好就关闭。参见[邮箱预热](/guides/warmup/)。
 
-A mailbox marked as a [placement seed inbox](/guides/placement-tests/#your-own-seed-inboxes) is the exception: it never warms up (starting warmup on it is refused until it is unmarked) and never sends campaign mail, because a test inbox has to stay a stranger to your senders.
+标记为[投递位置测试种子收件箱](/guides/placement-tests/#your-own-seed-inboxes)的邮箱是例外：它从不进行预热，在取消标记前，启动预热的请求会被拒绝；它也从不发送营销活动邮件，因为测试收件箱必须与发件邮箱保持陌生关系。
 
-<Callout type="info" title="Warmup is a paid feature">
-  The model still supports separate free and premium pools, but access is gated to paid workspaces today.
+<Callout type="info" title="邮箱预热是付费功能">
+  该模型仍支持独立的免费池和高级池，但目前仅向付费工作区开放访问。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Pausing and disconnecting
+## 暂停与断开连接 [#pausing-and-disconnecting]
 
-A mailbox can be switched off when you want it to stop without losing its settings, its history, or its place in the fleet. Use **Switch off** on its row's **More** menu, the **Mailbox on** switch on its **Settings** tab, or the selection bar for several at once. Over the API it is `PATCH /emails/{id}` with `status` set to `inactive`, and `active` turns it back on.
+如果希望邮箱停止运行，同时保留设置、历史及其在节点集群中的分配，可以将其关闭。使用该行 **更多** 菜单中的 **关闭**、**设置** 选项卡上的 **启用邮箱** 开关，或通过选择栏一次处理多个邮箱。通过 API 操作时，调用 `PATCH /emails/{id}` 并将 `status` 设为 `inactive`；设为 `active` 可重新启用。
 
-Off means the whole mailbox: it sends no campaign mail, sends and receives no warmup, and syncs nothing, whatever its warmup setting says. The list shows it as **Off**, and its warmup column reads **Stopped** when warmup is still set to run. To stop cold sending while the mailbox keeps warming, which is what a mailbox recovering from spam placement needs, use [Hold from campaigns](#holding-a-mailbox-yourself) instead.
+关闭作用于整个邮箱：不发送营销活动邮件、不发送或接收预热邮件，也不执行任何同步，无论预热设置如何。列表显示为 **已关闭**；若预热仍设置为运行，预热列显示 **已停止**。若只想停止冷邮件发送并让邮箱继续预热，例如邮箱需要从垃圾邮件投递中恢复，请改用 [暂停营销活动发送](#holding-a-mailbox-yourself)。
 
-A switched-off mailbox is turned back on the same ways: **Switch back on** on the row's **More** menu or its warmup menu, the **Switch back on** button at the top of its Overview tab, the **Mailbox on** switch, or **Switch on** in the selection bar. Warmup that was set to run starts again straight away. To bring a mailbox back for warmup only, turn on **Hold from campaigns** on its Overview tab before switching it on, so campaigns cannot pick it in between. A mailbox whose provider access was revoked shows **Reconnect** rather than **Off**, and is turned back on by reconnecting it.
+已关闭邮箱可通过相同方式重新启用：该行 **更多** 菜单或预热菜单中的 **重新启用**、概览选项卡顶部的 **重新启用** 按钮、**启用邮箱** 开关，或选择栏中的 **启用**。原先设置为运行的预热会立即恢复。若仅为预热而恢复邮箱，请先在概览选项卡开启 **暂停营销活动发送**，再启用邮箱，以防营销活动在两步之间选用它。服务商访问权被撤销的邮箱显示 **重新连接**，而非 **已关闭**，需要重新连接才能启用。
 
-Switching it off takes effect immediately: the machine syncing it is told to drop it, so it stops importing mail and stops being picked for campaign sends and warmup within seconds rather than at that machine's next restart. Warmup pool membership is dropped, and any warmup chain it had winds down on its next step. A campaign email already handed over is answered as a failure and the step is retried later on a mailbox that is still active, so nobody receives it twice and no lead is stranded.
+关闭立即生效：负责同步的机器会收到移除指令，因此几秒内就停止导入邮件，也不再被选用于营销活动发送和预热，无需等到机器下次重启。邮箱会退出预热池，已有预热任务链会在下一步停止。已交出的营销活动邮件会以失败响应，步骤之后由仍活跃的邮箱重试，因此不会重复送达，也不会让潜在客户停滞。
 
-Leads mid-sequence on that mailbox move to another one in their campaign as they reach their next step, rather than going silent waiting for it. Each campaign's activity log records the change. See [senders and rotation](/guides/campaigns/) for how a lead's mailbox is chosen and when it changes.
+该邮箱上正在邮件序列中的潜在客户，到达下一步时会转移到同一营销活动的其他邮箱，而不会一直等待原邮箱、导致沟通中断。每个营销活动的日志都会记录此变更。潜在客户的发件邮箱如何选择、何时更改，参见 [发件邮箱与轮换](/guides/campaigns/)。
 
-It keeps its worker assignment while off, so switching it back on puts it back on the same machine, sending from the same IP, and it resumes syncing from where it stopped instead of re-importing.
+邮箱关闭时保留工作节点分配，因此重新启用后会回到同一机器，从相同 IP 发送，并从停止处继续同步，而不是重新导入。
 
-**Disconnecting** removes the mailbox for good. It is on the mailbox's own **More** menu in the list, as **Disconnect mailbox**, and at the bottom of its **Settings** tab under Danger zone. To remove several at once, tick their rows and use the selection bar. The machine syncing it is told to drop it before the record is removed, because afterwards there is nothing left to tell. If that instruction cannot be delivered, the disconnect fails with a `503` and nothing is removed, so retry it in a moment rather than assuming it worked.
+**断开连接** 会永久移除邮箱。入口位于列表中该邮箱自己的 **更多** 菜单，名称为 **断开邮箱**，也位于 **设置** 选项卡底部的危险区域。若需一次移除多个，勾选对应行并使用选择栏。移除记录之前，系统先通知负责同步的机器移除邮箱，因为记录删除后便无法再通知。如果指令无法送达，断开会以 `503` 失败，且不移除任何内容；请稍后重试，不要假定已经成功。
 
-A mailbox belongs to the workspace, not to the member who connected it. Anyone with the **Manage mailboxes** permission can switch any of the workspace's mailboxes off, change its warmup, or disconnect it, including ones a teammate added and ones whose owner has since left. That is the same permission the list itself is behind, so a mailbox you can see is a mailbox you can act on.
+邮箱属于工作区，而不属于连接它的成员。任何具有 **管理邮箱** 权限的人都可以关闭工作区中的任意邮箱、更改其预热或断开连接，包括团队成员添加的邮箱，以及所有者已经离开的邮箱。查看列表本身也需要相同权限，因此看得到的邮箱就可以操作。
 
-Everything belonging to that mailbox goes with it: its imported mail in the unibox, its warmup history and pool membership, its credentials, its sender links, and any send still scheduled for it. A campaign that was using it keeps running on its remaining senders, and the leads it had been writing to move onto them at their next step. Export the workspace first if you want a copy. Disable the mailbox instead when you only want it to stop.
+属于该邮箱的所有内容都会一并删除：统一收件箱中已导入的邮件、预热历史及预热池成员关系、凭据、发件邮箱关联，以及仍计划由它执行的发送。使用该邮箱的营销活动会继续通过剩余发件邮箱运行，之前由它联系的潜在客户在下一步转移到其他邮箱。若需要保留副本，请先导出工作区。若只是希望暂停运行，应改为禁用邮箱。
 
-For a Cloud-managed mailbox mirrored on a self-hosted instance, this deletes the local mirror and its local data, and stops Cloud warmup sending and receiving. The mailbox, sign-in and history remain in the Cloud workspace. To erase those too, disconnect the mailbox directly on Cloud. A whole-instance Cloud disconnect is different: it preserves independently managed Cloud mailboxes and their warmup settings.
+对于镜像到自托管实例的 Cloud 托管邮箱，此操作删除本地镜像及本地数据，并停止 Cloud 预热发送和接收。邮箱、登录及历史仍保留在 Cloud 工作区。若也要删除这些内容，请直接在 Cloud 上断开邮箱。断开整个实例的 Cloud 连接则不同：它会保留独立管理的 Cloud 邮箱及其预热设置。
 
-Before the worker closes a connected mailbox, it attempts to file up to 200 recent known warmup messages, with a 20-second time limit. Disconnect still completes if provider access has already stopped working. Warmbly retains only hashed recognition identifiers for up to 90 days from the warmup message or token being recorded, scoped to the mailbox address and workspace, so removing and adding the same address again can recover warmup mail during the normal history import. These identifiers contain no message content or credentials and disappear when the workspace is deleted. Mail whose identifiers were already erased before this recovery was introduced cannot always be identified safely; Warmbly does not hide mail just because its sender or subject resembles warmup.
+工作节点关闭已连接邮箱前，会尝试整理最多 200 封近期已识别的预热邮件，时限为 20 秒。即使服务商访问已经失效，断开仍会完成。Warmbly 仅保留识别标识符的哈希，期限为预热邮件或 令牌 记录后最多 90 天，并限定于邮箱地址及工作区，因此移除后重新添加同一地址，可在正常历史导入期间找回预热邮件。这些标识符不含邮件内容或凭据，工作区删除时也会消失。在引入此恢复机制之前，标识符已经清除的邮件不一定能安全识别；Warmbly 不会仅因发件人或主题类似预热邮件就将其隐藏。
 
-### What disconnecting erases
+### 断开连接会删除的内容 [#what-disconnecting-erases]
 
-Disconnecting is a deletion, not a hiding. Two parts of it finish just after the mailbox disappears from your list, because neither can be done in the instant the record goes.
+断开连接意味着删除，而非隐藏。其中两部分会在邮箱从列表消失后才完成，因为无法在删除记录的瞬间同时完成。
 
-**The connection to your provider is handed back.** For a Gmail mailbox, Warmbly calls Google's revocation endpoint with the refresh token it held, which invalidates that token and every access token issued from it, and removes Warmbly from the third-party access list on your Google account. You do not have to go and remove it yourself. Deleting our copy of a token would not have done this; the grant would have stayed on your account.
+**撤销与服务商的连接授权。** 对 Gmail 邮箱，Warmbly 使用所持有的刷新 令牌 调用 Google 撤销端点，使该 令牌 及由其签发的所有访问 令牌 失效，并从你的 Google 账户第三方访问列表移除 Warmbly。无需你手动移除。仅删除我们保存的 令牌 副本做不到这一点，授权仍会留在你的账户中。
 
-Microsoft publishes no equivalent endpoint for a single application, so an Outlook or Microsoft 365 mailbox is different: the stored tokens are destroyed here and stop being usable by Warmbly, but removing the app from your account is done by you, under [Microsoft account privacy settings](https://myaccount.microsoft.com/privacy). The only Microsoft call that ends sessions signs you out of every application you use, which is not something to do because you disconnected one mailbox.
+Microsoft 未提供针对单个应用的对应端点，因此 Outlook 或 Microsoft 365 邮箱有所不同：此处保存的 令牌 会被销毁，Warmbly 无法再使用，但需要你在 [Microsoft 账户隐私设置](https://myaccount.microsoft.com/privacy) 中自行将应用从账户移除。Microsoft 唯一能终止会话的调用会让你退出所有正在使用的应用，不应仅因断开一个邮箱而执行。
 
-**The message bodies are deleted.** Mail Warmbly imported is stored outside the database, and those files are removed too. The rows that index them go with the mailbox immediately; the files follow within about a minute.
+**删除邮件正文。** Warmbly 导入的邮件存储在数据库之外，这些文件也会被移除。索引记录随邮箱立即删除，文件通常在约一分钟内删除。
 
-If either step cannot finish, because a provider is down or storage is briefly unreachable, it is retried until it does rather than being given up on. Nothing else is left: the thread labels and snooze timers on conversations that existed only in that mailbox go as well, and a conversation that also ran through a mailbox you kept keeps its labels.
+若因服务商故障或存储暂时不可达而无法完成任一步骤，系统会持续重试直到完成，不会放弃。其他内容也不会遗留：仅存在于该邮箱中的会话，其会话标签和稍后处理定时器也会删除；同时经过其他保留邮箱的会话则保留标签。
 
-Closing the whole workspace does the same thing for every mailbox in it, for the same reasons.
-
-</Fold>
-
-<Fold>
-
-## Worker assignment
-
-You never pick a worker. Warmbly assigns each mailbox to a sending worker automatically and can move it later.
-
-Workers are the machines that connect to your mailbox provider. They are not the address your recipients see: your provider delivers the mail from its own infrastructure, and it strips the connecting client's address on the way out. What the worker's address does decide is how your provider sees the sign-in, which is why Warmbly optimises for **keeping a mailbox on the same worker** rather than spreading it around. A mailbox whose connecting address keeps changing collects security challenges and authentication throttles for nothing.
-
-Every worker is the same kind of worker. There are no tiers to qualify for and no pools to be sorted into. Placement scores the fleet on live signals and picks the best fit:
-
-- how much capacity a worker has left, so the fleet fills evenly
-- whether the mailbox is already there, which counts for more than anything else
-- whether the worker sits near where your provider expects your sign-ins
-- how much of your workspace is already on that one machine, so a single failure never stops all of your sending
-- how many other mailboxes on the same provider already sign in from that address
-
-Each assigned mailbox counts as one unit against the worker's configurable planning target. Provider sending budgets remain attached to each mailbox and do not reduce the worker target.
-
-**Mailboxes move only when there is a reason.** A worker going offline or running hot (above 85% of its planning target) will move yours. Warmbly also corrects workspace or provider concentration across the live fleet. A settled mailbox has to have been in place for three days before an ordinary rebalance is considered, and the alternative has to be meaningfully better. A mailbox that never needs to move is the ideal, not a stuck one.
-
-Plans that include reserved sending give your workspace a worker no other customer sends from, so your mailboxes always sign in from an address that is yours alone. It is a preference, not a lock: if that machine goes down your mailboxes keep working on the rest of the fleet and return when a replacement is ready.
+关闭整个工作区时，会基于相同原因，对其中每个邮箱执行相同处理。
 
 </Fold>
 
 <Fold>
 
-## Resting a tired mailbox
+## 工作节点分配 [#worker-assignment]
 
-Cold sending used to run at full volume until a mailbox crossed a hard health band, with nothing in between. A mailbox showing early fatigue either kept going or was quarantined.
+你无需选择工作节点。Warmbly 自动将各邮箱分配给发送工作节点，并可在之后迁移。
 
-A mailbox now has a cold-rotation state, separate from its health:
+工作节点是连接邮箱服务商的机器。它们的地址并非收件人看到的地址：服务商通过自己的基础设施投递邮件，并在外发时移除连接客户端的地址。工作节点地址决定的是服务商如何看待此次登录，因此 Warmbly 优先 **让邮箱保持在同一工作节点上**，而不是频繁更换节点。连接地址不断变化的邮箱只会徒增安全验证和身份验证限流。
 
-| State | Meaning |
+所有工作节点都属于同一类型。无需满足等级要求，也没有不同档位的池。分配机制根据实时信号为节点集群评分，选择最合适的节点：
+
+- 工作节点还有多少剩余容量，使节点集群负载均衡
+- 邮箱是否已经位于该节点，这一因素的权重高于其他因素
+- 工作节点的位置是否接近服务商预期的登录地点
+- 工作区已有多少邮箱位于同一机器，避免单点故障使所有发送停止
+- 同一服务商的其他邮箱中，已有多少从该地址登录
+
+每个已分配邮箱在工作节点可配置的规划目标中计为一个单位。服务商发送额度仍绑定各邮箱，不会降低工作节点目标。
+
+**只有必要时才迁移邮箱。** 工作节点离线或负载过高（超过规划目标的 85%）时，你的邮箱会被迁移。Warmbly 也会纠正工作区或服务商在活跃节点集群中过度集中的情况。已稳定分配的邮箱至少在原处保留三天，才会考虑常规再平衡，且替代节点必须明显更合适。邮箱始终无需迁移是理想状态，并不表示分配卡住。
+
+包含专属发送资源的套餐会为工作区提供其他客户不会用来发送的工作节点，因此邮箱始终从专属于你的地址登录。这是一种偏好，而非锁定：如果该机器宕机，邮箱会继续在集群其他节点工作，替代节点就绪后再迁回。
+
+</Fold>
+
+<Fold>
+
+## 让负荷较高的邮箱休整 [#resting-a-tired-mailbox]
+
+过去，冷邮件发送会一直按全量运行，直到邮箱跨过严格的健康阈值，中间没有缓冲。出现早期疲态的邮箱，要么继续发送，要么被隔离。
+
+现在，邮箱具有独立于健康状态的冷邮件轮换状态：
+
+| 状态 | 含义 |
 |-------|---------|
-| `active` | In cold rotation. The default, and where every mailbox starts |
-| `resting` | Out of cold rotation to recover. Warmup keeps running, so its reputation stays alive. Leads mid-sequence on it move to another mailbox at their next step |
-| `reserve` | Held back by you. Never entered or left automatically |
+| `active` | 参与冷邮件轮换。默认状态，每个邮箱最初都处于此状态 |
+| `resting` | 退出冷邮件轮换以恢复。预热继续运行，以维持信誉。正在该邮箱上执行邮件序列的潜在客户，会在下一步转移到另一邮箱 |
+| `reserve` | 由你手动暂停。不会自动进入或退出此状态 |
 
-The row shows **Resting** or **Reserve** even when no campaign is active on that instance, including Cloud accounts used only for warmup. Warmup can continue while cold sending rests. Each instance owns its own cold rotation and manual holds; linking warmup does not copy a manual hold between instances. A connection problem still takes precedence in the row, with the cold-rotation notice available in the drawer.
+即使实例没有活跃营销活动，该行仍显示 **休息中** 或 **保留**，包括仅用于预热的 Cloud 账户。冷邮件发送休息期间，预热可以继续。各实例独立管理自己的冷邮件轮换和手动暂停；关联预热不会在实例之间复制手动暂停。存在连接问题时，行状态仍优先显示连接问题，冷邮件轮换提示可在详情抽屉中查看。
 
-A mailbox rests when it is quarantined or blocked from warmup, and returns on its own three days after that lifts. One good hour does not put it back in rotation. Spam placement never rests a mailbox: a `watch` or `throttled` mailbox stays in rotation with its daily cold volume dampened (to 70% and 50%) until placement recovers.
+邮箱被预热隔离或封禁时会进入休息状态，并在限制解除三天后自行恢复。健康一小时并不足以重新加入轮换。垃圾邮件投递不会使邮箱进入休息：`watch` 或 `throttled` 邮箱仍参与轮换，但每日冷邮件发送量分别降至 70% 和 50%，直到投递位置恢复。
 
-A missing or stale [Warmbly Cloud](/guides/warmbly-cloud/#safety-and-enforcement) status is not a health signal. It never rests a mailbox, and campaign sends from the mailbox wait until a current status arrives. A rest that is already running stays in place, and its three days count only time with a current status, so a hold that ends while the status is missing does not put the mailbox back on the first fresh report.
+[Warmbly Cloud](/guides/warmbly-cloud/#safety-and-enforcement) 状态缺失或过时不属于健康信号。它不会使邮箱休息；该邮箱的营销活动发送会等待最新状态到达。已有休息状态保持不变，三天恢复期仅累计状态有效的时间，因此在状态缺失期间结束的暂停，不会让邮箱在首次收到新报告时立即恢复。
 
-Resting only makes sense while the mailbox is in a warmup pool, because pool health is the signal it recovers on. If a resting mailbox leaves its pool (the workspace loses warmup when a trial ends or a plan changes), there is no health signal to wait for, so the mailbox returns on its own three days after its last rest stamp rather than staying out indefinitely. Pausing warmup on the mailbox does not remove it from the pool, so its health keeps being tracked and the normal three days after it lifts still apply.
+休息只有在邮箱位于预热池中时才有意义，因为恢复依据的是池内健康信号。休息中的邮箱若退出池（工作区因试用结束或套餐变化失去预热），就没有健康信号可等待，因此邮箱会在最后一次休息时间戳三天后自行恢复，而非无限期退出轮换。在邮箱上暂停预热不会使其退出池，因此仍跟踪健康状态，依然适用限制解除后三天的常规规则。
 
-### Putting a resting mailbox back yourself
+### 手动恢复休整中的邮箱 [#putting-a-resting-mailbox-back-yourself]
 
-You do not have to wait. A resting mailbox's notice in the drawer has a **Put back into campaigns** button. It lands in `active` unless it is still quarantined or blocked from warmup, in which case it stays resting and the drawer says so: a mailbox the pool has taken out should not send cold mail, and there is no override for that short of the standing lifting. A Warmbly Cloud mailbox whose status is unavailable lands in `active` too; its campaign sends wait for a fresh status instead of keeping it resting.
+你也可以不等待。在休息邮箱的详情抽屉提示中，有一个 **恢复营销活动发送** 按钮。点击后进入 `active`，除非仍被预热隔离或封禁；这种情况下仍保持休息，抽屉会说明原因：已被池移除的邮箱不应发送冷邮件，只有限制解除后才能恢复，没有强制绕过方式。Warmbly Cloud 状态不可用的邮箱也进入 `active`；其营销活动发送等待新状态，而不是继续保持休息。
 
-API keys get the same exit through `POST /emails/:id/release`, which works on a resting mailbox as well as a held one.
+API 密钥可通过 `POST /emails/:id/release` 执行同样的恢复，既适用于休息邮箱，也适用于手动暂停的邮箱。
 
-It does not rest on the `watch` band. That band is deliberately the one that changes nothing you can feel, and leaving cold rotation is very much something you feel.
+邮箱不会因 `watch` 等级而休息。此等级被有意设计为不会产生可感知变化，而退出冷邮件轮换显然会产生可感知影响。
 
-### Holding a mailbox yourself
+### 手动暂停邮箱发送 [#holding-a-mailbox-yourself]
 
-To keep a mailbox out of campaigns on your own terms (a domain you are moving, an inbox you want to keep for replies only, a sender you are about to retire), open its drawer and turn on **Hold from campaigns** on the Overview tab. The mailbox goes into `reserve`: campaigns stop picking it, warmup carries on as before, and nothing automatic ever releases it. Turn the hold off to put it back; if its warmup health is still poor at that point, it rests until it recovers rather than returning straight to full volume.
+若希望按自己的安排让邮箱退出营销活动（例如正在迁移域名、仅保留收件箱用于回复，或即将停用某个发件邮箱），打开详情抽屉，在概览选项卡启用 **暂停营销活动发送**。邮箱进入 `reserve`：营销活动不再选用它，预热照常继续，任何自动机制都不会解除此状态。关闭暂停即可恢复；若此时预热健康状况仍差，邮箱会休息到恢复后再加入，而不会立即回到全量发送。
 
-The same hold is available to API keys as `POST /emails/:id/hold` and `POST /emails/:id/release`. Releasing a mailbox that is `resting` rather than held works the same way and is the manual exit from a rest.
+API 密钥也可通过 `POST /emails/:id/hold` 和 `POST /emails/:id/release` 使用相同暂停控制。释放处于 `resting` 而非手动暂停状态的邮箱时，行为相同，是手动结束休息的途径。
 
-<Callout type="info" title="Separate from where a mailbox runs">
-This is not the same as the risk band that decides which sending worker and IP host a mailbox. A resting mailbox is usually still on a clean worker; it is simply not being offered campaign sends. The mailbox drawer says which state it is in and why.
+<Callout type="info" title="与邮箱运行位置相互独立">
+这与决定邮箱使用哪个发送工作节点和 IP 的风险等级不同。休息邮箱通常仍位于信誉良好的工作节点上，只是不接收营销活动发送任务。邮箱详情抽屉会说明当前状态及原因。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Health
+## 健康状态 [#health]
 
-The Accounts list groups mailboxes as **Healthy** (sending normally), **Warming** (ramping through warmup), or **Needs attention** (paused, failing, or not sending). Each row shows the mailbox with how it connects and its tags, a **Status** that says what it is doing (**Sending**, **Warming**, **Active** when it does both, **Resting**, or **Idle**, and **Error**, **Off** or **Reconnect** when something stops it), campaign emails sent today against its cap, warmup sent today against the ramp target, the inbox rate, and the health score. Hover a status for the reason, and click any column header to sort. A drop in health between refreshes notifies you rather than waiting to be noticed.
+账户列表将邮箱分为 **健康**（正常发送）、**正在预热**（通过预热逐步增加发送量）或 **需要处理**（已暂停、失败或未发送）。每行显示邮箱、连接方式和标签，以及说明当前行为的 **状态**（**发送中**、**正在预热**、同时进行两者时为 **活跃**、**休息中** 或 **空闲**，受到阻碍时为 **错误**、**已关闭** 或 **重新连接**），还显示今天营销活动已发送量及上限、今天预热已发送量及递增目标、收件箱到达率和健康评分。悬停状态可查看原因，点击任意列标题可排序。两次刷新之间健康下降时会通知你，无需等你自行发现。
 
-Repeated reports of the same error code count once toward the health score, at their highest unresolved severity, rather than making one problem look like several. The drawer groups identical reports while keeping different error details and sending versus sync failures separate. Connection titles name Gmail, Microsoft Outlook or the mail server. **Reported** shows the stored report time: connection and temporary provider-limit observations refresh it, while other error categories may retain their original report time. It is not proof of an ongoing outage.
+同一错误码的重复报告只按尚未解决的最高严重程度计入一次健康评分，不会把一个问题表现成多个。详情抽屉将相同报告分组，同时保留不同错误详情，并区分发送与同步失败。连接标题会指明 Gmail、Microsoft Outlook 或具体邮件服务器。**报告时间** 显示保存的报告时间：连接及临时服务商限制观测会刷新该时间，其他错误类别可能保留原报告时间。它不能证明故障仍在持续。
 
-A later completed sync automatically clears earlier temporary sync errors. A provider-confirmed send clears earlier temporary sending errors, including provider throttling and quota warnings. Recovered reports no longer appear under **Needs attention** or reduce the health score. Older reports that do not identify which operation failed clear once both sending and sync have succeeded after the report; existing reports with that evidence are cleared on upgrade too. A newer failure remains visible, and simply waiting or completing a queued task does not count as recovery. Recoverable connection failures retry automatically while the mailbox is on; a connection warning alone is not a reason to reconnect. Authentication, credential and policy errors retain their own instructions, and a switched-off mailbox must be switched back on before it can retry.
+之后一次完整同步成功会自动清除先前临时同步错误。经服务商确认的发送会清除先前临时发送错误，包括服务商限流和配额警告。已恢复报告不再出现在 **需要处理** 下，也不再降低健康评分。未指明失败操作的旧报告，会在报告之后发送和同步均成功时清除；升级时，已有相应证据的报告也会清除。更新的失败仍会显示，仅等待或完成排队任务不算恢复。邮箱启用期间，可恢复的连接失败会自动重试；仅有连接警告并不意味着需要重新连接。身份验证、凭据和策略错误各自保留对应处理说明，已关闭的邮箱必须先启用才能重试。
 
-A send safety hold is different from a retryable connection failure. If Warmbly cannot confirm whether the provider accepted a message, sending pauses to avoid retrying a message that might already have been sent. The mailbox is shown as needing attention even without a separate connection warning, and its health details explain the hold. A successful inbox sync does not confirm a send. Campaign and other non-warmup sends still require provider-confirmed resolution. See [send safety](/development/send-safety/).
+发送安全暂停不同于可重试的连接失败。如果 Warmbly 无法确认服务商是否已接受邮件，发送会暂停，以免重试可能已经发出的邮件。即使没有独立连接警告，邮箱仍显示为需要处理，健康详情会解释暂停原因。收件箱同步成功不能证明发送成功。营销活动及其他非预热发送仍要求服务商确认的解决结果。参见 [发送安全](/development/send-safety/)。
 
-Warmup scheduling automatically retires abandoned preparation tasks after ten minutes only when they have no generated message ID, verification token, reservation, dispatch or execution evidence. The normal scheduler can then continue with a new task. Tasks that might have sent a message remain protected; they are not retried just because they are old.
+预热调度仅在准备任务没有生成的邮件 ID、验证令牌、预留、分发或执行证据时，才会在十分钟后自动终止被遗弃的准备任务。随后常规调度器可创建新任务继续。可能已发送邮件的任务仍受保护，不会仅因存在时间较长而重试。
 
-For an authorized warmup send whose outcome remains unknown after ten minutes, Warmbly can permanently retire that task and resume with a new, distinct message. The old message is never retried or counted as confirmed success or failure; its original charge and send evidence are kept. This recovery runs automatically, including for existing eligible holds. It does not clear sign-in failures, provider restrictions, conflicting results or another unresolved send, and it never overrides a confirmed receipt or a definitive result waiting to be applied. New sending still follows your schedule, daily limits and cooldowns.
+对于已获授权、十分钟后结果仍未知的预热发送，Warmbly 可永久终止该任务，再用一封不同的新邮件恢复。旧邮件绝不会重试，也不计为已确认成功或失败；原先计入的额度和发送证据仍会保留。此恢复自动运行，也适用于现有符合条件的暂停。它不会清除登录失败、服务商限制、冲突结果或其他未解决发送，也绝不会覆盖已确认回执或等待应用的明确结果。新发送仍遵循你的时间安排、每日限制和冷却期。
 
-The **Inbox** column is the share of the mailbox's warmup mail that reached partners' inboxes at Google, Microsoft and Yahoo over the last seven days (smaller mail hosts run their own filters and are never counted), and the score is capped at it, so a mailbox landing some mail in spam no longer reads `100`. Click it, or open the drawer's **Deliverability** tab, for the day-by-day history and the split per provider. See [seeing where warmup lands](/guides/warmup/#seeing-where-warmup-lands).
+**收件箱** 列表示过去七天该邮箱预热邮件进入 Google、Microsoft 和 Yahoo 合作邮箱收件箱的比例（较小邮件托管方使用自己的过滤规则，从不计入）；健康评分以此比例为上限，因此部分邮件进入垃圾邮件的邮箱不再显示 `100`。点击该列，或打开详情抽屉的 **邮件送达能力** 选项卡，可查看逐日历史及各服务商的分布。参见 [查看预热邮件的投递位置](/guides/warmup/#seeing-where-warmup-lands)。
 
-The detail drawer runs a live `SPF`, `DKIM`, and `DMARC` check on your sending domain. Confirm it is green before sending; major providers require alignment for bulk and cold mail. A domain that stays Failing eventually stops cold sending and warmup from every mailbox on it, so fix the records and press **Check** to clear it straight away; for anyone who can manage mailboxes, the check records its verdict. A lookup DNS did not answer shows the records as Not verified and is never held against the domain. DKIM reads **Not verified** rather than Missing when no key answers, because its selector is not something DNS can be asked for; that never gates sending. See [Deliverability](/guides/deliverability/) for the grace period and exactly what is stopped.
+详情抽屉会实时检查发件域名的 `SPF`、`DKIM` 和 `DMARC`。发送前请确认状态为绿色；主要服务商要求批量和冷邮件满足对齐要求。域名持续处于“失败”时，最终会停止其下所有邮箱的冷邮件发送和预热，因此修复记录后请点击 **检查** 立即解除；任何可管理邮箱的成员执行检查时，系统都会记录结论。DNS 未响应的查询会将记录显示为“未验证”，绝不会因此惩罚域名。DKIM 未查询到密钥时显示 **未验证**，而非“缺失”，因为无法通过 DNS 查询得知其选择器；这不会阻止发送。宽限期及具体停止范围，参见 [邮件送达能力](/guides/deliverability/)。
 
-Underneath, health moves through `healthy`, `watch`, `throttled`, `quarantined`, and `blocked`. These feed warmup pool selection, which only picks healthy mailboxes as partners, so an unhealthy one can be lowered in volume, removed from the pool, or blocked entirely. A blocked mailbox shows the reason and any appeal option on the Warmup tab, and must requalify on a fresh probation sample rather than waiting out the clock.
+底层健康状态依次包括 `healthy`、`watch`、`throttled`、`quarantined` 和 `blocked`。它们用于预热池选择，只选择健康邮箱作为合作对象，因此不健康邮箱可能被降低发送量、移出池或完全封禁。被封禁邮箱在预热选项卡显示原因及可用申诉方式，必须通过新的观察期样本重新取得资格，而非单纯等待时间过去。
 
-Health is judged only on what happened while the mailbox was in the pool: signals recorded before it joined are never counted against it.
+健康判断仅依据邮箱加入池后发生的情况：加入前记录的信号绝不会用于扣减其健康评价。
 
-<Callout type="info" title="Health protects the pool">
-  These controls act earlier than the point where providers start penalizing senders. Low complaint rate and low spam placement matter more than maximum throughput.
+<Callout type="info" title="健康状态机制保护预热池">
+  这些控制会在服务商开始惩罚发件人之前介入。低投诉率和低垃圾邮件投递率，比最大吞吐量更重要。
 </Callout>
 
 </Fold>
 
-## Related guides
+## 相关指南 [#related-guides]
 
 <Cards>
-  <Card title="Import mailboxes" href="/guides/mailbox-import/" />
-  <Card title="Deliverability" href="/guides/deliverability/" />
-  <Card title="Personalization & Expressions" href="/guides/expressions/" />
+  <Card title="导入邮箱" href="/guides/mailbox-import/" />
+  <Card title="邮件送达能力" href="/guides/deliverability/" />
+  <Card title="个性化与表达式" href="/guides/expressions/" />
 </Cards>

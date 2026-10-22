@@ -131,21 +131,21 @@ export function useKeyboardShortcuts({ onOpenShortcuts, onOpenSearch }: UseKeybo
 
 export const shortcutDefinitions = {
   navigation: [
-    { keys: ['g', 'h'], description: 'Go to guides' },
-    { keys: ['g', 'a'], description: 'Go to API reference' },
-    { keys: ['g', 'p'], description: 'Go to permissions' },
-    { keys: ['g', 'e'], description: 'Go to error codes' },
+    { keys: ['g', 'h'], description: '转到操作指南' },
+    { keys: ['g', 'a'], description: '转到 API 参考' },
+    { keys: ['g', 'p'], description: '转到权限说明' },
+    { keys: ['g', 'e'], description: '转到错误码' },
   ],
   scroll: [
-    { keys: ['j'], description: 'Scroll down' },
-    { keys: ['k'], description: 'Scroll up' },
-    { keys: ['g', 'g'], description: 'Go to top' },
-    { keys: ['G'], description: 'Go to bottom' },
+    { keys: ['j'], description: '向下滚动' },
+    { keys: ['k'], description: '向上滚动' },
+    { keys: ['g', 'g'], description: '转到顶部' },
+    { keys: ['G'], description: '转到底部' },
   ],
   actions: [
-    { keys: ['/'], description: 'Focus search' },
-    { keys: ['?'], description: 'Show shortcuts' },
-    { keys: ['Ctrl', 'K'], description: 'Open search' },
-    { keys: ['Escape'], description: 'Close modal / Clear' },
+    { keys: ['/'], description: '聚焦搜索框' },
+    { keys: ['?'], description: '显示快捷键' },
+    { keys: ['Ctrl', 'K'], description: '打开搜索' },
+    { keys: ['Escape'], description: '关闭弹窗 / 清除' },
   ],
 };

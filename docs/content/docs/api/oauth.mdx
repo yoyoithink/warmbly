@@ -1,45 +1,45 @@
 ---
-title: OAuth
-description: Let third-party apps act on behalf of a Warmbly workspace with the authorization-code flow.
+title: "OAuth"
+description: "通过授权码流程，允许第三方应用代表 Warmbly 工作区执行操作。"
 ---
 
-API keys are for your own scripts. When you build an app that other people connect their Warmbly workspace to, use OAuth instead: the user grants your app scoped access on a consent screen, and you receive tokens that act on their behalf. You never see their password or API key.
+API 密钥适用于你自己的脚本。如果你正在构建供其他人连接其 Warmbly 工作区的应用，应使用 OAuth：用户在同意授权页面向应用授予限定范围的访问权限，你将获得代表用户执行操作的令牌。整个过程中，你不会看到用户的密码或 API 密钥。
 
-Warmbly implements the OAuth 2.1 authorization-code flow with PKCE. Confidential apps (registered in the dashboard) hold a client secret; public clients (native, mobile, and CLI apps, including MCP clients that self-register) use PKCE with no secret. The implicit and password grants are not supported.
+Warmbly 实现了带 PKCE 的 OAuth 2.1 授权码流程。机密客户端应用（在控制台注册）持有客户端密钥；公共客户端（原生、移动和 CLI 应用，包括自行注册的 MCP 客户端）使用 PKCE，无需客户端密钥。不支持隐式授权和密码授权。
 
-## Register your app
+## 注册应用 [#register-your-app]
 
-In the dashboard, open **Settings -> OAuth apps** and register an application. You provide:
+在控制台中打开**设置 -> OAuth 应用**，注册一个应用。需要提供：
 
-- a **name**, optional description, logo, and website (shown on the consent screen). The name follows the [naming rules](/api/error-codes/#name-refusals) and cannot include Warmbly, spaced out or spelled with look-alike characters included, because people would take the app for Warmbly's own. An app that already had such a name keeps it until the name is changed,
-- one or more **redirect URIs** (where users are sent back after they approve), matched exactly and required to be HTTPS, except loopback URLs for native apps,
-- the **scopes** your app may request (any permission except `API_KEYS`, which stays with people and API keys),
-- optionally, **allowed webhook domains** (see below).
+- **名称**，以及可选的说明、徽标和网站（将在同意授权页面显示）。名称需遵循[命名规则](/api/error-codes/#name-refusals)，不得包含 Warmbly，包括插入空格或使用外形相似字符的写法，以免用户将应用误认为 Warmbly 官方应用。已经使用这类名称的应用可保留现有名称，直到名称被修改；
+- 一个或多个**重定向 URI**（用户批准后返回的位置），必须精确匹配并使用 HTTPS，原生应用的回环 URL 除外；
+- 应用可请求的**权限范围**（除 `API_KEYS` 外的任意权限；该权限仅供用户和 API 密钥使用）；
+- 可选的**允许的 Webhook 域名**（见下文）。
 
-Managing apps (`/oauth/applications/*` and `/oauth/application-logo`) is for a signed-in member or an API key. An OAuth access token is refused there with `403` `oauth_token_not_allowed`, so an app can never register apps, rotate secrets, or read webhook secrets.
+应用管理接口（`/oauth/applications/*` 和 `/oauth/application-logo`）仅供已登录成员或 API 密钥使用。使用 OAuth 访问令牌会被拒绝，返回 `403` `oauth_token_not_allowed`，因此应用永远不能注册其他应用、轮换密钥或读取 Webhook 密钥。
 
-You receive a **client ID** and a **client secret**, shown only once. Keep the secret server-side and use it to authenticate the token exchange.
+你会获得**客户端 ID**和**客户端密钥**；密钥仅显示一次。请将密钥保存在服务端，用于验证令牌交换请求。
 
-### App logo
+### 应用标志 [#app-logo]
 
-The logo works like the workspace logo: upload it to the app, and Warmbly stores it and sets it.
+应用徽标的工作方式与工作区徽标相同：上传到应用后，由 Warmbly 保存并设置。
 
-- `POST /oauth/applications/{id}/logo` takes a multipart `file`: PNG or JPG, at most 2 MB, between 32 and 1,024 pixels on each side. Warmbly decodes the image and stores a fresh copy of it, so nothing but the pixels is kept (no camera or location metadata, and no extra bytes after the image). The response is the updated app, and the previous logo is deleted.
-- `DELETE /oauth/applications/{id}/logo` removes it.
+- `POST /oauth/applications/{id}/logo` 接收多部分表单中的 `file`：PNG 或 JPG 格式，最大 2 MB，宽高均需介于 32 至 1,024 像素。Warmbly 会解码图片并保存一份重新生成的副本，因此只保留像素，不保留相机、位置元数据或图片末尾的额外字节。响应为更新后的应用，旧徽标会被删除。
+- `DELETE /oauth/applications/{id}/logo` 用于移除徽标。
 
-Both need **Scope** `API_KEYS` and **org permission** `manage_api_keys`, like the rest of the app. A logo is shown to every workspace that sees the consent screen or the directory, so `logo_url` in the create and update bodies only accepts an address this instance issued for your workspace; any other address is refused with `400` `invalid_logo`. An update without `logo_url` keeps the current logo.
+与应用的其他管理操作一样，两者均需 **权限范围** `API_KEYS` 和**组织权限** `manage_api_keys`。徽标会向所有看到同意授权页面或应用目录的工作区展示，因此创建和更新请求体中的 `logo_url` 只接受本实例为你的工作区签发的地址；其他地址会被拒绝，返回 `400` `invalid_logo`。更新时不提供 `logo_url` 会保留当前徽标。
 
-### When an app is suspended or a workspace is blocked
+### 应用被停用或工作区被封禁时 [#when-an-app-is-suspended-or-a-workspace-is-blocked]
 
-The instance's operators can **suspend** an app. A suspended app cannot sign anyone in, its tokens stop working (access and refresh alike), its webhook deliveries stop, and it leaves the [community directory](#publish-to-the-community-directory). The app's `suspended_at` and `suspended_reason` say so, and only an operator can lift it. An app you disable yourself behaves the same way until you enable it again.
+实例运维人员可**暂停**应用。被暂停的应用无法让任何人登录，其访问令牌和刷新令牌均停止工作，Webhook 投递停止，并从[社区目录](#publish-to-the-community-directory)中移除。应用的 `suspended_at` 和 `suspended_reason` 会反映这一状态，且只有运维人员可以解除暂停。自行停用应用时，行为相同，直到你再次启用它。
 
-Operators can also **block** a workspace or a person from registering and publishing apps. `GET /oauth/applications` reports it in `developer_access` (`blocked`, `reason`), and registering or publishing then answers `403` `developer_access_blocked`. Apps the workspace already has keep working unless they were suspended too.
+运维人员还可**禁止**某个工作区或用户注册、发布应用。`GET /oauth/applications` 会在 `developer_access` 中报告该情况（`blocked`、`reason`），后续注册或发布请求将返回 `403` `developer_access_blocked`。工作区已有的应用会继续运行，除非这些应用也被暂停。
 
-## Public clients and dynamic registration
+## 公开客户端与动态注册 [#public-clients-and-dynamic-registration]
 
-Native apps, CLI tools, and MCP clients cannot safely hold a secret. They connect as public clients: no client secret, and PKCE is mandatory rather than optional. There are two ways to get a public `client_id`.
+原生应用、CLI 工具和 MCP 客户端无法安全持有机密值。因此它们以公共客户端身份连接，不使用客户端密钥，且必须使用 PKCE。有两种方式可获取公共客户端的 `client_id`。
 
-Self-register at runtime with Dynamic Client Registration ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)). This is the path MCP clients use, so a user connects with one command:
+在运行时通过动态客户端注册（[RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)）自行注册。MCP 客户端采用此方式，让用户只需一条命令即可连接：
 
 ```bash
 curl -X POST "https://api.warmbly.com/v1/oauth/register" \
@@ -65,29 +65,29 @@ curl -X POST "https://api.warmbly.com/v1/oauth/register" \
 }
 ```
 
-The registration endpoint is open (unauthenticated) and rate-limited per source IP. Registering grants no access on its own: a human still signs in and approves scopes at the consent screen. Redirect URIs may be HTTPS, loopback (`http://127.0.0.1` or `localhost`, any port), or a private-use scheme (`myapp://`), matched exactly at authorize and token time. Self-registered clients can never request `SEND_CAMPAIGNS` or `API_KEYS`.
+注册端点公开开放，无需身份验证，并按来源 IP 限流。注册本身不会授予任何访问权限，仍需用户登录并在同意授权页面批准权限范围。重定向 URI 可使用 HTTPS、回环地址（`http://127.0.0.1` 或 `localhost`，任意端口），或私有协议（`myapp://`）；授权和令牌交换时均进行精确匹配。自行注册的客户端永远不能请求 `SEND_CAMPAIGNS` 或 `API_KEYS`。
 
-Nobody vouches for a self-registered client, so the consent screen shows only what Warmbly can stand behind. `client_uri` and `logo_uri` are ignored, so the screen shows no website or logo for it. Its `client_name` is cleaned rather than refused: a bracketed part that names Warmbly is dropped (`Claude Code (warmbly)` is shown as `Claude Code`), and a name that still names Warmbly, or breaks the naming rules, is shown as `MCP client`.
+自行注册的客户端没有任何身份担保，因此同意授权页面仅显示 Warmbly 能确认的信息。`client_uri` 和 `logo_uri` 会被忽略，页面不会显示其网站或徽标。`client_name` 会经过清理，而非直接拒绝：括号中包含 Warmbly 名称的部分会被删除（`Claude Code (warmbly)` 显示为 `Claude Code`）；若清理后仍包含 Warmbly，或名称违反命名规则，则显示为 `MCP client`。
 
-For a public client the token exchange sends no `client_secret`, only the PKCE `code_verifier`. Everything else in the flow below is identical. If you are connecting an AI assistant, you do not run any of this by hand: see the [MCP server](/api/mcp/) page for the one-command setup.
+公共客户端在令牌交换时不发送 `client_secret`，只发送 PKCE 的 `code_verifier`。下文流程的其余部分完全相同。如果是在连接 AI 助手，无需手动执行这些步骤；单命令配置方式见 [MCP 服务器](/api/mcp/) 页面。
 
-## Scopes
+## 权限范围 [#scopes]
 
-OAuth scopes are the same permissions as API keys, lowercased (for example `read_campaigns`, `write_contacts`). See the [permission reference](/api/permissions/) for the full list. A token carries the intersection of three sets:
+OAuth 权限范围与 API 密钥的权限相同，只是使用小写名称，例如 `read_campaigns`、`write_contacts`。完整列表见[权限参考](/api/permissions/)。令牌携带以下三个集合的交集：
 
-- the scopes the app was registered with,
-- the scopes the authorize request asked for (all of the app's scopes when `scope` is empty),
-- the scopes the approving member's role covers, per the [role mapping](/api/permissions/#what-a-role-can-delegate). `api_keys` is never granted to an app.
+- 应用注册时声明的权限范围；
+- 授权请求所请求的权限范围（`scope` 为空时，表示应用的全部权限范围）；
+- 根据[角色映射](/api/permissions/#what-a-role-can-delegate)，批准授权的成员角色所覆盖的权限范围。`api_keys` 永远不会授予应用。
 
-So an app asking a Viewer for `write_contacts` gets only the read scopes that Viewer holds. The consent screen lists what will be granted and, separately, what was asked for but is outside the member's role. The `scope` in the token response is the granted set, which may be narrower than what you asked for ([RFC 6749 section 3.3](https://www.rfc-editor.org/rfc/rfc6749#section-3.3)). When the member's role covers none of the requested scopes, the consent screen refuses with `access_denied`.
+因此，应用向 Viewer（查看者）请求 `write_contacts` 时，只会获得该查看者持有的读取权限范围。同意授权页面会分别列出将授予的权限，以及已请求但超出成员角色范围的权限。令牌响应中的 `scope` 表示实际授予的集合，可能比请求范围更小（[RFC 6749 第 3.3 节](https://www.rfc-editor.org/rfc/rfc6749#section-3.3)）。如果成员角色不包含任何请求的权限范围，同意授权页面会拒绝操作，返回 `access_denied`。
 
-The cap follows the member, not just the moment of consent. Every request with the token is checked against the member's role as it is now: demote them and the token loses what the new role does not cover; a call that needs a permission they no longer hold answers `403`. A refresh whose member holds none of the granted scopes answers `invalid_grant`.
+权限上限始终随成员角色变化，而不是只在同意授权时检查。每个携带令牌的请求都会根据成员的当前角色进行检查：降低其角色权限后，令牌也会失去新角色未涵盖的权限；调用所需权限已不再持有时，返回 `403`。刷新时，如果成员已不具备任何已授予的权限范围，则返回 `invalid_grant`。
 
-## The flow
+## 授权流程 [#the-flow]
 
-### 1. Send the user to the authorize page
+### 1. 将用户引导至授权页面 [#1-send-the-user-to-the-authorize-page]
 
-Redirect the user's browser to the consent page with the standard parameters. PKCE is optional but recommended: generate a `code_verifier` (a high-entropy random string) and send its S256 challenge.
+使用标准参数将用户浏览器重定向到同意授权页面。PKCE 可选，但推荐使用：生成 `code_verifier`（高熵随机字符串），并发送其 S256 挑战值。
 
 ```
 code_challenge = base64url( sha256( code_verifier ) )
@@ -104,21 +104,21 @@ https://app.warmbly.com/oauth/authorize
   &code_challenge_method=S256
 ```
 
-`state` is yours to verify on return (CSRF protection). The `code_challenge` and `code_challenge_method` are optional; if you include them, `code_challenge_method` must be `S256`.
+返回时应由你验证 `state`，以防范 CSRF。`code_challenge` 和 `code_challenge_method` 为可选项；如果提供，则 `code_challenge_method` 必须为 `S256`。
 
-### 2. The user approves
+### 2. 用户批准授权 [#2-the-user-approves]
 
-Warmbly shows the app, the workspace that will receive access, the scopes it will get, where approving sends access (the redirect URI's host, or an app on this device for a loopback or private-use redirect), and an authorize or deny choice. An app is marked **Unverified app** unless it is a registered (not self-registered) app the instance features in its [community directory](#publish-to-the-community-directory), and an unverified app also carries a **Not affiliated with Warmbly** notice that asks the member to approve only a connection they started themselves. Approving asks the member to confirm it is them when they have not signed in or re-authenticated in the last few minutes, because the approval hands your app a standing credential. On approval the browser is redirected back to your `redirect_uri` with a single-use code:
+Warmbly 会显示应用、将被授予访问权限的工作区、将授予的权限范围、批准后访问权限的接收位置（重定向 URI 的主机；对于回环或私有协议重定向，则为本设备上的应用），以及授权或拒绝选项。除非应用是在控制台注册而非自行注册，且被实例列为[社区目录](#publish-to-the-community-directory)中的精选应用，否则会标记为 **Unverified app（未经验证的应用）**。未经验证的应用还会显示 **Not affiliated with Warmbly（与 Warmbly 无关联）** 提示，要求成员仅批准自己主动发起的连接。由于批准会向应用交付持续有效的凭据，如果成员在最近几分钟内未登录或重新验证，批准时会要求其确认身份。批准后，浏览器会携带一次性代码重定向回 `redirect_uri`：
 
 ```
 https://yourapp.com/oauth/callback?code=wmac_...&state=<your-state>
 ```
 
-If the user denies, the redirect carries `?error=access_denied&state=...` instead.
+如果用户拒绝，重定向会改为携带 `?error=access_denied&state=...`。
 
-### 3. Exchange the code for tokens
+### 3. 用授权码换取令牌 [#3-exchange-the-code-for-tokens]
 
-Verify `state` matches, then `POST` to the token endpoint. The request is `application/x-www-form-urlencoded`; send your `client_secret` (in the body or via HTTP Basic auth), plus the original `code_verifier` if you used PKCE. A public client omits `client_secret` and always sends `code_verifier`.
+验证 `state` 一致后，向令牌端点发起 `POST` 请求。请求类型为 `application/x-www-form-urlencoded`；发送 `client_secret`（放在请求体中，或通过 HTTP Basic 身份验证传入），如果使用 PKCE，还需发送原始的 `code_verifier`。公共客户端省略 `client_secret`，并始终发送 `code_verifier`。
 
 ```bash
 curl -X POST "https://api.warmbly.com/v1/oauth/token" \
@@ -140,18 +140,18 @@ curl -X POST "https://api.warmbly.com/v1/oauth/token" \
 }
 ```
 
-### 4. Call the API
+### 4. 调用 API [#4-call-the-api]
 
-Use the access token exactly like an API key:
+访问令牌的使用方式与 API 密钥完全相同：
 
 ```bash
 curl "https://api.warmbly.com/v1/campaigns" \
   -H "Authorization: Bearer wmat_..."
 ```
 
-### 5. Refresh when it expires
+### 5. 令牌到期后刷新 [#5-refresh-when-it-expires]
 
-Access tokens last one hour. Exchange the refresh token for a new pair before or after expiry. Refresh tokens **rotate**: the old one stops working the moment a new pair is issued, so always store the latest one. Presenting a refresh token that was already exchanged (two workers refreshing in parallel, a retry with the old token, or a replay) **revokes the grant**, so the user has to authorize again ([RFC 9700 section 4.14.2](https://www.rfc-editor.org/rfc/rfc9700#section-4.14.2)). Serialize refreshes per grant.
+访问令牌有效期为一小时。可在过期前后用刷新令牌换取新的一对令牌。刷新令牌会**轮换**：新令牌对一经签发，旧刷新令牌立即失效，因此务必保存最新令牌。提交已交换过的刷新令牌，例如两个工作节点并行刷新、使用旧令牌重试或重放，会**撤销该授权**，用户必须重新授权（[RFC 9700 第 4.14.2 节](https://www.rfc-editor.org/rfc/rfc9700#section-4.14.2)）。同一授权的刷新操作必须串行执行。
 
 ```bash
 curl -X POST "https://api.warmbly.com/v1/oauth/token" \
@@ -161,9 +161,9 @@ curl -X POST "https://api.warmbly.com/v1/oauth/token" \
   -d client_secret=wmcs_...
 ```
 
-### Revoke
+### 撤销 [#revoke]
 
-Revoke an access or refresh token (and the grant behind it) when the user disconnects:
+用户断开连接时，应撤销访问令牌或刷新令牌及其关联授权：
 
 ```bash
 curl -X POST "https://api.warmbly.com/v1/oauth/revoke" \
@@ -172,48 +172,48 @@ curl -X POST "https://api.warmbly.com/v1/oauth/revoke" \
   -d client_secret=wmcs_...
 ```
 
-Users can also revoke your app themselves, and members who manage the workspace's credentials (`manage_api_keys` or `manage_settings`) can revoke any member's authorization under **Settings -> OAuth apps -> Authorized apps**. Either invalidates every token that member's authorization issued. A user who is removed from a workspace loses every authorization they granted in it the same way, so expect `invalid_grant` on the next refresh.
+用户也可以自行撤销应用授权；具有工作区凭据管理权限（`manage_api_keys` 或 `manage_settings`）的成员，可在**设置 -> OAuth 应用 -> 已授权应用**下撤销任何成员的授权。两种操作都会使该成员授权签发的所有令牌失效。用户被移出工作区时，其在该工作区授予的所有授权也会以相同方式失效，因此下一次刷新预计会返回 `invalid_grant`。
 
-#### Workspace authorizations
+#### 工作区授权 [#workspace-authorizations]
 
-Session-only endpoints for the people who manage a workspace's credentials. Both need **org permission** `manage_api_keys` or `manage_settings`.
+这些端点仅接受会话，供管理工作区凭据的人员使用。两者均需要**组织权限** `manage_api_keys` 或 `manage_settings`。
 
-- `GET /oauth/workspace-authorizations` returns `{"authorizations": [...]}`: one row per app and member, with `application_id`, `name`, `logo_url`, `website_url`, `user_id`, `user_email`, `user_name`, `scopes`, `authorized_at` and `last_used_at`. Only live grants are listed (not revoked, refresh token not expired).
-- `DELETE /oauth/workspace-authorizations/{application_id}/members/{user_id}` revokes that member's grants for the app and returns `{"revoked": true}`. It succeeds when there is nothing to revoke, so it is safe to retry.
+- `GET /oauth/workspace-authorizations` 返回 `{"authorizations": [...]}`：每个应用与成员组合对应一行，包含 `application_id`、`name`、`logo_url`、`website_url`、`user_id`、`user_email`、`user_name`、`scopes`、`authorized_at` 和 `last_used_at`。只列出仍有效的授权，即未撤销且刷新令牌未过期的授权。
+- `DELETE /oauth/workspace-authorizations/{application_id}/members/{user_id}` 撤销该成员对该应用的授权，并返回 `{"revoked": true}`。没有可撤销内容时也会成功，因此可以安全重试。
 
-## Token lifetimes
+## 令牌有效期 [#token-lifetimes]
 
-| Token | Lifetime | Notes |
+| 令牌 | 有效期 | 说明 |
 | --- | --- | --- |
-| Authorization code | 10 minutes | Single use, PKCE-bound |
-| Access token | 1 hour | Bearer, carries the granted scopes, capped by the member's current role |
-| Refresh token | 90 days | Rotates on every use; a reused one revokes the grant |
+| 授权码 | 10 分钟 | 一次性使用，绑定 PKCE |
+| 访问令牌 | 1 小时 | Bearer 令牌，携带已授予的权限范围，并受成员当前角色限制 |
+| 刷新令牌 | 90 天 | 每次使用都会轮换；重复使用旧令牌会撤销授权 |
 
-A grant whose refresh token has expired no longer counts as an install: it does not receive app webhooks and is not counted in directory installs or listed among authorized apps.
+刷新令牌已过期的授权不再计为一次安装：不会接收应用 Webhook，不计入目录安装数，也不会出现在已授权应用列表中。
 
-## Discovery
+## 发现机制 [#discovery]
 
-Endpoint URLs and capabilities are published for automatic client configuration.
+端点 URL 和支持的能力会公开发布，供客户端自动配置。
 
-Authorization-server metadata ([RFC 8414](https://www.rfc-editor.org/rfc/rfc8414)):
+授权服务器元数据（[RFC 8414](https://www.rfc-editor.org/rfc/rfc8414)）：
 
 ```
 GET https://api.warmbly.com/.well-known/oauth-authorization-server
 ```
 
-It lists the authorization, token, revocation, and registration endpoints, the supported scopes, `code` as the only response type, `authorization_code` and `refresh_token` grants, `S256` as the only PKCE method, and `none` (public), `client_secret_basic`, and `client_secret_post` as the client authentication methods.
+其中列出授权、令牌、撤销和注册端点、支持的权限范围、唯一的响应类型 `code`、`authorization_code` 和 `refresh_token` 授权类型、唯一的 PKCE 方法 `S256`，以及客户端身份验证方式 `none`（公共客户端）、`client_secret_basic` 和 `client_secret_post`。
 
-Protected-resource metadata for the MCP endpoint ([RFC 9728](https://www.rfc-editor.org/rfc/rfc9728)):
+MCP 端点的受保护资源元数据（[RFC 9728](https://www.rfc-editor.org/rfc/rfc9728)）：
 
 ```
 GET https://api.warmbly.com/.well-known/oauth-protected-resource
 ```
 
-It names the resource and its authorization server, so an MCP client that gets a `401` with a `WWW-Authenticate` challenge from `/v1/mcp` can find where to authenticate. See the [MCP server](/api/mcp/) page.
+其中标明资源及其授权服务器，因此 MCP 客户端从 `/v1/mcp` 收到带 `WWW-Authenticate` 质询的 `401` 响应时，可以发现应在哪里进行身份验证。请参阅 [MCP 服务器](/api/mcp/) 页面。
 
-## Webhook domains for OAuth apps
+## OAuth 应用的 Webhook 域名 [#webhook-domains-for-oauth-apps]
 
-If your app registers webhook endpoints on behalf of its users, you must declare the domains those endpoints may use. Set `allowed_webhook_domains` on the app object (a string array) when creating or updating the app:
+如果应用代表用户注册 Webhook 端点，必须声明这些端点可使用的域名。创建或更新应用时，在应用对象上设置 `allowed_webhook_domains`（字符串数组）：
 
 ```json
 {
@@ -223,29 +223,29 @@ If your app registers webhook endpoints on behalf of its users, you must declare
 }
 ```
 
-Any webhook URL your app registers must have a host within this list. An empty list means the app cannot register webhook endpoints at all.
+应用注册的任何 Webhook URL，其主机都必须位于此列表允许的范围内。空列表表示应用完全不能注册 Webhook 端点。
 
-**Matching rules:**
+**匹配规则：**
 
-- A bare entry (`acme.com`) matches that exact host only.
-- A leading-dot entry (`.acme.com`) matches the apex and any subdomain: `acme.com`, `hooks.acme.com`, `prod.hooks.acme.com`.
+- 不带前导点的条目（`acme.com`）仅匹配完全相同的主机。
+- 带前导点的条目（`.acme.com`）匹配根域名及任意子域名：`acme.com`、`hooks.acme.com`、`prod.hooks.acme.com`。
 
-The list is enforced at endpoint registration time and re-checked at delivery time. See the [webhooks reference](/api/reference/webhooks/) for the full endpoint verification and delivery flow.
+端点注册时会强制检查此列表，投递时也会重新检查。完整的端点验证和投递流程见[Webhook 参考](/api/reference/webhooks/)。
 
-## Receiving events as an app (webhooks)
+## 应用接收事件（Webhook） [#receiving-events-as-an-app-webhooks]
 
-Instead of holding one WebSocket connection per installed workspace, your app can declare a single webhook configuration and let Warmbly deliver events to it automatically for every org that authorizes the app. This is the GitHub/Slack-app model: configure once on the app, receive from all installs.
+应用无需为每个安装它的工作区保持一条 WebSocket 连接，而可以声明一份 Webhook 配置，让 Warmbly 自动将每个授权组织的事件投递到该地址。这采用 GitHub / Slack 应用的模式：在应用上配置一次，即可接收所有安装组织的事件。
 
-### App webhook config
+### 应用 Webhook 配置 [#app-webhook-config]
 
-Set `webhook_url` and `webhook_events` when creating or updating your app via `POST /oauth/applications` or `PATCH /oauth/applications/:id`.
+通过 `POST /oauth/applications` 或 `PATCH /oauth/applications/:id` 创建或更新应用时，设置 `webhook_url` 和 `webhook_events`。
 
-| Field | Type | Description |
+| 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `webhook_url` | string | The HTTPS URL events are delivered to. Its host must be within the app's `allowed_webhook_domains` (a 400 is returned otherwise). Set to empty to opt out of app-level webhook delivery. |
-| `webhook_events` | string[] | The event names the app subscribes to. An empty or omitted array subscribes to all non-firehose events permitted by the org's granted scopes. |
+| `webhook_url` | string | 接收事件投递的 HTTPS URL。其主机必须位于应用的 `allowed_webhook_domains` 允许范围内，否则返回 400。设为空值可停止应用级 Webhook 投递。 |
+| `webhook_events` | string[] | 应用订阅的事件名称。数组为空或省略时，订阅组织所授予权限范围允许的全部非全量流式事件。 |
 
-The signing secret is server-generated and shared across the whole app: one secret, used to sign deliveries from every org install. It is stored encrypted under the instance's credential key, like each endpoint's own copy. Reveal or rotate it using the dedicated endpoints below.
+签名密钥由服务器生成，整个应用共用一个密钥，用于签署来自所有安装组织的投递。与各端点自身的副本一样，它使用实例凭据密钥加密存储。使用下方专用端点查看或轮换密钥。
 
 ```json
 {
@@ -257,13 +257,13 @@ The signing secret is server-generated and shared across the whole app: one secr
 }
 ```
 
-### Automatic, scope-gated delivery
+### 根据权限范围自动投递 [#automatic-scope-gated-delivery]
 
-When an org authorizes your app, Warmbly automatically creates a managed webhook endpoint for that org and starts delivering the subscribed events. When the org revokes the app, that endpoint is removed.
+组织授权应用后，Warmbly 会自动为该组织创建受管理的 Webhook 端点，并开始投递订阅的事件。组织撤销应用授权后，该端点会被移除。
 
-Events are gated by the intersection of what your app declared in `webhook_events` and what the org's granted scopes permit. An event family is only delivered if both the app holds the matching scope and the org granted it. The scope-to-event mapping:
+可投递事件取决于应用在 `webhook_events` 中声明的事件，与组织所授予权限范围允许事件的交集。只有应用持有相应权限范围且组织也已授予该权限时，才会投递该事件类别。权限范围到事件的映射如下：
 
-| Events | Required scope |
+| 事件 | 所需权限范围 |
 | --- | --- |
 | `inbox.*` | `READ_UNIBOX` |
 | `campaign.*`, `deliverability.*`, `meeting.*` | `READ_CAMPAIGNS` |
@@ -274,37 +274,37 @@ Events are gated by the intersection of what your app declared in `webhook_event
 | `team.*`, `role.*`, `settings.*`, `subscription.*` | `READ_AUDIT_LOGS` |
 | `custom.event` | `REALTIME_SUBSCRIBE` |
 
-Every delivery payload carries `organization_id` so you can tell which install the event came from. Delivery is signed, retried with the same backoff schedule as regular webhooks, and verifiable using the same `X-Warmbly-Signature` scheme. See [Webhooks: verifying signatures](/api/reference/webhooks/#verifying-signatures) for the verification algorithm.
+每次投递的载荷都包含 `organization_id`，便于识别事件来自哪个安装组织。投递会签名，并按普通 Webhook 相同的退避计划重试，可使用同样的 `X-Warmbly-Signature` 机制验证。验证算法见[Webhook：验证签名](/api/reference/webhooks/#verifying-signatures)。
 
-### App webhook management endpoints
+### 应用 Webhook 管理端点 [#app-webhook-management-endpoints]
 
-All four endpoints require **Scope** `API_KEYS` and **org permission** `manage_api_keys`.
+四个端点均需 **权限范围** `API_KEYS` 和**组织权限** `manage_api_keys`。
 
-#### Reveal the webhook secret
+#### 查看 Webhook 密钥 [#reveal-the-webhook-secret]
 
 `GET /oauth/applications/{id}/webhook-secret`
 
-Returns the current signing secret. This is the `whsec_`-prefixed value used to verify all deliveries for this app, across every org install.
+返回当前签名密钥。该值带 `whsec_` 前缀，用于验证此应用在所有安装组织中的投递。
 
 ```json
 { "webhook_secret": "whsec_9f8e7d6c5b4a39281706f5e4d3c2b1a09f8e7d6c5b4a39281706f5e4d3c2b1a0" }
 ```
 
-#### Rotate the webhook secret
+#### 轮换 Webhook 密钥 [#rotate-the-webhook-secret]
 
 `POST /oauth/applications/{id}/webhook-secret/rotate`
 
-Issues a new signing secret and returns it once. Update your verification logic before in-flight deliveries settle against the old secret.
+签发新的签名密钥，并仅返回一次。在使用旧密钥签名的在途投递完成前，应更新验证逻辑。
 
 ```json
 { "webhook_secret": "whsec_1a2b3c4d5e6f70819a2b3c4d5e6f70819a2b3c4d5e6f70819a2b3c4d5e6f7081" }
 ```
 
-#### List per-org endpoints
+#### 列出各组织的端点 [#list-per-org-endpoints]
 
 `GET /oauth/applications/{id}/webhook-endpoints`
 
-Returns the managed per-org endpoints that Warmbly materialized for this app, with their current health.
+返回 Warmbly 为此应用实际创建的各组织受管理端点，以及当前健康状态。
 
 ```json
 {
@@ -323,72 +323,72 @@ Returns the managed per-org endpoints that Warmbly materialized for this app, wi
 }
 ```
 
-#### Cross-org delivery log
+#### 跨组织投递日志 [#cross-org-delivery-log]
 
 `GET /oauth/applications/{id}/webhook-deliveries`
 
-Returns the delivery log across all org installs, newest first. Every attempt is included with its response code, error, payload, and retry state.
+返回所有安装组织的投递日志，按最新优先排序。每次尝试均包含响应码、错误、载荷和重试状态。
 
-| Parameter | In | Type | Description |
+| 参数 | 位置 | 类型 | 说明 |
 | --- | --- | --- | --- |
-| `status` | query | string | Filter by status: `pending`, `in_flight`, `delivered`, `failed`, or `abandoned`. |
-| `event_type` | query | string | Filter by event type, for example `campaign.reply_received`. |
-| `limit` | query | integer | Max rows. Between 1 and 200, defaults to 50. Out-of-range values return `400`. |
-| `cursor` | query | string | Opaque pagination cursor from `pagination.next_cursor`. |
+| `status` | query | string | 按状态筛选：`pending`、`in_flight`、`delivered`、`failed` 或 `abandoned`。 |
+| `event_type` | query | string | 按事件类型筛选，例如 `campaign.reply_received`。 |
+| `limit` | query | integer | 最大行数。范围为 1 至 200，默认 50。超出范围会返回 `400`。 |
+| `cursor` | query | string | 来自 `pagination.next_cursor` 的不透明分页游标。 |
 
-Response uses the standard `data` + `pagination` envelope with opaque cursors. Each row includes `organization_id` so you can see which install each delivery belongs to.
+响应采用标准的 `data` + `pagination` 封装和不透明游标。每行都包含 `organization_id`，便于查看各次投递所属的安装组织。
 
-### Webhooks vs the realtime gateway
+### Webhook 与实时网关的区别 [#webhooks-vs-the-realtime-gateway]
 
-The [realtime gateway](/api/realtime/) and app-level webhooks deliver the same event vocabulary. Choose based on your integration's needs:
+[实时网关](/api/realtime/)和应用级 Webhook 使用同一套事件名称。请根据集成需求选择：
 
-| | Realtime gateway | App-level webhooks |
+| | 实时网关 | 应用级 Webhook |
 | --- | --- | --- |
-| Transport | WebSocket (persistent connection) | HTTP POST (stateless delivery) |
-| Best for | Live UI, presence, low-latency dashboards | Durable processing, pipelines, serverless receivers |
-| Connection model | One connection per install | No persistent connection; Warmbly pushes to your URL |
-| Delivery guarantees | Lossy on disconnect (resume/replay available) | Retried with exponential backoff, inspectable log |
-| Scope gating | Per-connection intents | Per-app scope, enforced per org grant |
+| 传输方式 | WebSocket（持久连接） | HTTP POST（无状态投递） |
+| 适用场景 | 实时界面、在线状态、低延迟仪表板 | 持久化处理、数据管道、无服务器接收端 |
+| 连接模式 | 每个安装组织一条连接 | 无需持久连接；Warmbly 向你的 URL 推送 |
+| 投递保证 | 断开连接时可能丢失事件，支持恢复和重放 | 指数退避重试，可查看日志 |
+| 权限范围检查 | 按连接的订阅意图检查 | 按应用权限范围检查，并对每个组织的授权强制执行 |
 
-Both are equally valid depending on what you are building. A dashboard-like integration benefits from the WebSocket's low latency and presence features. A data-pipeline or serverless integration benefits from the webhook's durable, individually-inspectable HTTP deliveries without holding a connection open for every installed org.
+两种方式均可采用，取决于所构建的功能。类似仪表板的集成适合使用 WebSocket 的低延迟和在线状态功能。数据管道或无服务器集成则适合 Webhook 的持久化 HTTP 投递：每次投递都可单独检查，也无需为每个安装组织保持连接。
 
-## Publish to the community directory
+## 发布到社区目录 [#publish-to-the-community-directory]
 
-Once your app works, publish it to the [community directory](/guides/integrations/#community-apps). Use **Publish** on the app under **Settings -> OAuth apps**, or the endpoints below.
+应用正常运行后，可发布到[社区目录](/guides/integrations/#community-apps)。在**设置 -> OAuth 应用**中使用应用的**发布**操作，或调用以下端点。
 
-A published listing has a `status`:
+已发布的目录条目具有 `status`：
 
-- `published`: link only. It opens at `/app/integrations/apps/{slug}` with a note that it is shared by link, and stays out of the directory, search and recommendations until it is installed in 25 workspaces other than the publisher's, each at least two weeks old.
-- `featured`: the instance's team picked it. It is listed with a Featured badge whatever its installs.
-- `hidden`: the team took it down. It is reachable nowhere, and `status_note` says why.
+- `published`：仅通过链接访问。可在 `/app/integrations/apps/{slug}` 打开，并提示该应用通过链接分享；在发布者以外的至少 25 个工作区安装之前，不会出现在目录、搜索或推荐中，且这些工作区各自都必须已创建至少两周。
+- `featured`：由实例团队选为精选。无论安装数多少，都会出现在目录中并带有精选标记。
+- `hidden`：团队已将其下架。任何位置均不可访问，`status_note` 会说明原因。
 
-Any change to the listing, or to the app's name, logo, website or scopes, returns a `featured` listing to `published`. A save that changes nothing keeps its status, and a `hidden` listing stays hidden when edited.
+对目录条目，或应用名称、徽标、网站、权限范围的任何修改，都会使 `featured` 条目恢复为 `published`。没有实际变更的保存会保留状态；`hidden` 条目在编辑后仍保持隐藏。
 
-Install in the directory opens your `install_url`. Start the authorization-code flow from there with your own `state`, so the user lands on Warmbly's consent screen the same way they would from your site.
+目录中的安装操作会打开 `install_url`。从该地址使用你自己的 `state` 启动授权码流程，让用户像从你的网站发起连接一样，进入 Warmbly 同意授权页面。
 
-All three endpoints require **Scope** `API_KEYS` and **org permission** `manage_api_keys`.
+三个端点均需 **权限范围** `API_KEYS` 和**组织权限** `manage_api_keys`。
 
-#### Get the listing
+#### 获取目录条目 [#get-the-listing]
 
 `GET /oauth/applications/{id}/listing`
 
-Returns `{"listing": {...}}`, or `{"listing": null}` when the app is not published.
+返回 `{"listing": {...}}`；应用尚未发布时返回 `{"listing": null}`。
 
-#### Publish or edit the listing
+#### 发布或编辑目录条目 [#publish-or-edit-the-listing]
 
 `PUT /oauth/applications/{id}/listing`
 
-Replaces the whole listing, so repeating the request is safe.
+替换整个目录条目，因此可以安全地重复请求。
 
-| Field | Type | Description |
+| 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `slug` | string | The link. 3 to 48 lowercase letters, numbers or single dashes, starting and ending with a letter or number. Unique on the instance; the built-in integrations' names are reserved. |
-| `tagline` | string | One line, at most 120 characters. |
-| `description` | string | Optional, at most 2,000 characters. Line breaks are kept; markup is shown as text. |
-| `category` | string | One of `crm`, `automation`, `notifications`, `meetings`, `data`, `verification`, `ai`, `other`. |
-| `install_url` | string | Where Install takes people. Must be `https`. |
-| `support_url` | string | Optional `https` link. |
-| `privacy_url` | string | Optional `https` link. |
+| `slug` | string | 链接标识。由 3 至 48 个小写字母、数字或单个连字符组成，首尾必须为字母或数字。在实例内唯一；内置集成的名称为保留名称。 |
+| `tagline` | string | 单行，最多 120 个字符。 |
+| `description` | string | 可选，最多 2,000 个字符。保留换行；标记语法按普通文本显示。 |
+| `category` | string | 取值为 `crm`、`automation`、`notifications`、`meetings`、`data`、`verification`、`ai`、`other` 之一。 |
+| `install_url` | string | 点击安装后前往的地址。必须使用 `https`。 |
+| `support_url` | string | 可选的 `https` 链接。 |
+| `privacy_url` | string | 可选的 `https` 链接。 |
 
 ```json
 {
@@ -410,42 +410,42 @@ Replaces the whole listing, so repeating the request is safe.
 }
 ```
 
-Refusals are `400` `invalid_listing` (the `message` names the field), `400` `app_not_listable` for a disabled or dynamically registered app, and `409` `listing_slug_taken`. See [error codes](/api/error-codes/#community-directory-refusals).
+可能的拒绝响应包括 `400` `invalid_listing`（`message` 指明字段）、应用已停用或动态注册时的 `400` `app_not_listable`，以及 `409` `listing_slug_taken`。请参阅[错误码](/api/error-codes/#community-directory-refusals)。
 
-#### Unpublish
+#### 取消发布 [#unpublish]
 
 `DELETE /oauth/applications/{id}/listing`
 
-Removes the listing and its link. Workspaces that installed the app keep their grants until they revoke them. Succeeds when there is no listing, so it is safe to retry.
+移除目录条目及其链接。已安装应用的工作区保留其授权，直到自行撤销。不存在目录条目时也会成功，因此可以安全重试。
 
-#### Browsing the directory
+#### 浏览目录 [#browsing-the-directory]
 
-`GET /integrations/community` returns the listed apps (featured ones first, then those installed in at least 25 workspaces other than the publisher's, each at least two weeks old, most installed first), as `data` plus `pagination` (`limit` 1 to 200, default 100). `GET /integrations/community/{slug}` returns one published or featured listing, listed or not. Both need **Scope** `INTEGRATIONS`, and each listing reports `installs` (workspaces with an active grant) and `installed` (whether the caller's workspace has one). See [integrations](/api/reference/integrations/#list-community-apps).
+`GET /integrations/community` 返回目录中列出的应用：精选应用优先，其后是已在发布者以外至少 25 个工作区安装、且这些工作区各自已创建至少两周的应用，按安装数从多到少排序。响应使用 `data` 加 `pagination`（`limit` 范围 1 至 200，默认 100）。`GET /integrations/community/{slug}` 返回一个已发布或精选条目，无论它是否出现在目录中。两者均需 **权限范围** `INTEGRATIONS`；每个条目都会报告 `installs`（持有有效授权的工作区数）和 `installed`（调用者工作区是否持有有效授权）。请参阅[集成](/api/reference/integrations/#list-community-apps)。
 
-## Security notes
+## 安全说明 [#security-notes]
 
-- A token never acts beyond the approving member's current role, and never manages API keys or OAuth apps.
-- Redirect URIs are matched exactly, so register every callback you use.
-- Always send and verify `state`.
-- PKCE is required for public clients and recommended for confidential apps; when used, only `S256` is accepted.
-- Keep your client secret server-side. Native, mobile, and CLI apps should register as public clients and use PKCE rather than embedding a secret.
-- Dynamic registration is open and per-IP rate-limited; a self-registered client is public, cannot request `SEND_CAMPAIGNS` or `API_KEYS`, and grants no access until a human approves scopes at consent.
-- Set `allowed_webhook_domains` to the smallest set of domains your app needs. An overly broad list widens the surface for SSRF if a user tricks your app into registering an unexpected URL.
-- The app webhook secret is shared across all org installs. Rotate it if it is compromised, and update your receiver promptly: in-flight deliveries that were already signed continue to verify against the old secret until they settle.
+- 令牌的操作永远不会超出批准授权成员的当前角色权限，且永远不能管理 API 密钥或 OAuth 应用。
+- 重定向 URI 采用精确匹配，因此应注册所有使用的回调地址。
+- 始终发送并验证 `state`。
+- 公共客户端必须使用 PKCE，机密客户端应用也建议使用；启用时，仅接受 `S256`。
+- 将客户端密钥保存在服务端。原生、移动和 CLI 应用应注册为公共客户端，使用 PKCE，不应嵌入密钥。
+- 动态注册公开开放，并按 IP 限流；自行注册的客户端属于公共客户端，不能请求 `SEND_CAMPAIGNS` 或 `API_KEYS`，并且只有用户在同意授权页面批准权限范围后才会获得访问权限。
+- 将 `allowed_webhook_domains` 限制为应用所需的最小域名集合。如果用户诱导应用注册非预期 URL，过宽的列表会扩大 SSRF 风险范围。
+- 应用 Webhook 密钥由所有安装组织共享。如果密钥泄露，应轮换并及时更新接收端：已经签名的在途投递在完成前仍需使用旧密钥验证。
 
-## Related
+## 相关内容 [#related]
 
 <Cards>
-  <Card title="Permissions" href="/api/permissions/">
-    The scopes an OAuth app can request, shared with API keys.
+  <Card title="权限" href="/api/permissions/">
+    OAuth 应用可请求的权限范围，与 API 密钥共用。
   </Card>
-  <Card title="Authentication" href="/api/authentication/">
-    Using bearer tokens (API keys and OAuth) on the API.
+  <Card title="身份验证" href="/api/authentication/">
+    在 API 中使用 Bearer 令牌（API 密钥和 OAuth）。
   </Card>
-  <Card title="Webhooks" href="/api/reference/webhooks/">
-    Delivery mechanics, signature verification, and the full event catalog.
+  <Card title="Webhook" href="/api/reference/webhooks/">
+    投递机制、签名验证和完整事件目录。
   </Card>
-  <Card title="Realtime gateway" href="/api/realtime/">
-    WebSocket alternative for live, low-latency event streaming.
+  <Card title="实时网关" href="/api/realtime/">
+    用于实时、低延迟事件流的 WebSocket 替代方案。
   </Card>
 </Cards>

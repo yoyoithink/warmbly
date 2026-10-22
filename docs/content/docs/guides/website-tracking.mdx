@@ -1,153 +1,153 @@
 ---
-title: "Website tracking"
-description: "Install the tracking snippet, see which pages a contact visits, and control consent and retention."
+title: "网站跟踪"
+description: "安装跟踪代码片段，查看联系人访问的页面，并管理授权同意与数据保留。"
 ---
 
-Website tracking adds visits to your own site to a contact's activity timeline: which pages they saw, where they came from and which campaign brought them. It is off until you turn it on.
+网站跟踪将联系人访问你自己网站的记录加入活动时间线，包括浏览的页面、访问来源，以及带来此次访问的营销活动。默认关闭，需主动启用。
 
-## Turn on website tracking
+## 启用网站跟踪 [#turn-on-website-tracking]
 
 <Steps>
 
 <Step>
 
-Open **Settings > Website tracking** and switch on **Record website visits**.
+打开**设置 > 网站跟踪**，开启**记录网站访问**。
 
 </Step>
 
 <Step>
 
-Add the hosts your site runs on under **Your website hosts**.
+在**你的网站主机名**下添加网站使用的主机名。
 
 </Step>
 
 <Step>
 
-Paste the snippet from the settings page before the closing `</head>` tag on every page.
+将设置页面提供的代码片段粘贴到每个页面的 `</head>` 结束标签之前。
 
 </Step>
 
 <Step>
 
-In the default **Ask first** mode, call `warmbly('consent', 'granted')` from your cookie banner once a visitor accepts.
+在默认的**先征得同意**模式下，访客接受 Cookie 横幅后，由横幅调用 `warmbly('consent', 'granted')`。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- A visit is tied to a contact only after they click a campaign email link that leads to one of your hosts.
-- Visits are kept for 90 days by default, adjustable from 7 to 365.
-- The IP address is never kept, and a browser sending Global Privacy Control or Do Not Track is never recorded.
-- Visits show in a contact's **Activity** tab under the **Website** filter.
+- 只有联系人点击了营销活动邮件中指向你网站主机名的链接，访问记录才会与该联系人关联。
+- 访问记录默认保留 90 天，可调整为 7 至 365 天。
+- 从不保存 IP 地址；发送 Global Privacy Control 或 Do Not Track 信号的浏览器也不会被记录。
+- 访问记录显示在联系人的**活动**标签页中，可用**网站**筛选查看。
 
 <Fold>
 
-## What website tracking records
+## 网站跟踪记录的内容 [#what-website-tracking-records]
 
-Website tracking adds page views on your own site to a contact's activity timeline: which pages they landed on, where they came from, which campaign or UTM brought them, and what device they used. It is off until you turn it on, and the consent mode, location precision and retention window are yours to set.
+网站跟踪将你自己网站的页面浏览加入联系人活动时间线，包括访问了哪些页面、从哪里进入、由哪个营销活动或 UTM 带来，以及使用的设备。默认关闭，需主动开启；授权同意模式、位置精度和保留期限均由你设置。
 
 </Fold>
 
 <Fold>
 
-## Installation
+## 安装 [#installation]
 
-Open **Settings > Website tracking**, switch on **Record website visits**, add the hosts your site runs on, and paste the snippet before the closing `</head>` tag on every page:
+打开**设置 > 网站跟踪**，开启**记录网站访问**，添加网站使用的主机名，并将代码片段粘贴到每个页面的 `</head>` 结束标签之前：
 
 ```html
 <script>window.warmbly=window.warmbly||function(){(window.warmbly.q=window.warmbly.q||[]).push(arguments)};</script>
 <script async src="https://TRACKING_HOST/tracking.js" data-site="SITE_KEY"></script>
 ```
 
-The settings page renders the exact snippet for your workspace, with your tracking host and site key filled in. The first line is a small stub so your page can call `warmbly()` before the script has loaded; the calls are queued and run once it has.
+设置页面会为当前工作区生成完整代码，自动填入跟踪主机名和站点密钥。第一行是一个简短的占位函数，使页面在脚本加载前也能调用 `warmbly()`；调用会先排队，待脚本加载后执行。
 
-The script is around 3 KB, has no dependencies, and reports through a single request per page view. Single-page applications are covered: a navigation that pushes a history entry counts as a page view, and so does the back button.
+脚本约 3 KB，无依赖，每次页面浏览只发送一个请求。也支持单页应用：向浏览历史推入新条目的导航会计为页面浏览，使用后退按钮也会计入。
 
-<Callout type="info" title="The site key is public">
-It only says which workspace a page view belongs to. If a copy of the snippet ends up somewhere it should not be, rotate the key from the settings page; the old key stops working at once and every installed snippet has to be updated.
+<Callout type="info" title="站点密钥是公开的">
+站点密钥仅用于说明页面浏览归属于哪个工作区。如果代码副本出现在不应出现的位置，可从设置页面轮换密钥。旧密钥立即失效，所有已安装的代码片段都需要更新。
 </Callout>
 
-### Hosts
+### 主机名 [#hosts]
 
-The **Your website hosts** list does two things. Page views reported from any other host are ignored, so nobody can point your site key at a site you do not run. And links in your campaign emails only identify a visitor when they lead to one of these hosts, so the identification ticket is never handed to a third-party site. A host covers its subdomains: `example.com` admits `www.example.com` and `app.example.com`.
+**你的网站主机名**列表有两个作用。一是忽略其他主机报告的页面浏览，防止他人将你的站点密钥用于并非由你运营的网站。二是只有营销活动邮件链接指向这些主机名时才识别访客，避免将身份识别票据交给第三方网站。主机名也涵盖其子域名：`example.com` 允许 `www.example.com` 和 `app.example.com`。
 
-Leave the list empty and page views from any host are recorded, but none are ever tied to a contact.
-
-</Fold>
-
-<Fold>
-
-## How a visitor becomes a contact
-
-Every link in a campaign email is already a [tracked ticket](/guides/campaigns/) that resolves server-side to the recipient. When a recipient clicks one and the destination is one of your hosts, the redirect appends that ticket to the landing URL as `wbly_t`. The snippet reads it, removes it from the address bar immediately, and sends it with the page view. The server checks that the ticket belongs to a campaign in the same workspace as the site key and, only then, ties the browser to that contact.
-
-That is the only way a visit reaches a contact. There is no `identify(email)` call, because a public endpoint that accepted an email address would let anyone write page views into anyone's timeline. A ticket is unguessable and only ever in the hands of the person the email went to.
-
-Once a browser is tied to a contact, the page views it reported before identification, back to the start of the retention window, appear on that contact's timeline too. Views after it are attributed as they arrive.
-
-### Two people on one browser
-
-If a second contact's ticket arrives on a browser already tied to someone else, the records are split rather than merged: the earlier contact keeps the history up to that click, the browser gets a fresh visitor id, and everything from then on belongs to the second contact. Neither inherits the other's pages.
-
-On a shared device, call `warmbly('reset')` when it changes hands to drop the visitor and session ids.
+如果列表留空，会记录任意主机名的页面浏览，但不会将任何浏览记录关联到联系人。
 
 </Fold>
 
 <Fold>
 
-## Consent
+## 如何将访客识别为联系人 [#how-a-visitor-becomes-a-contact]
 
-Choose the mode on the settings page:
+营销活动邮件中的每个链接本身已经是[跟踪票据](/guides/campaigns/)，服务器可以据此确定收件人。收件人点击链接且目标属于你的网站主机名时，重定向会将该票据以 `wbly_t` 参数附加到落地页 URL。跟踪脚本读取后立即将其从地址栏移除，并随页面浏览记录发送。服务器确认票据所属营销活动与站点密钥属于同一工作区后，才会将浏览器关联到该联系人。
 
-- **Ask first** (the default): the snippet stores nothing and sends nothing until your page calls `warmbly('consent', 'granted')`, typically from your cookie banner once the visitor accepts. The grant is remembered in the browser, so it is asked once. `warmbly('consent', 'denied')` withdraws it and clears the visitor id.
-- **Record on load**: page views are recorded as soon as the page loads. Choose this only where you have a lawful basis without a prior opt-in.
+这是将访问记录归属于联系人的唯一方式。没有 `identify(email)` 调用，因为允许公开端点接受邮箱地址，会让任何人都能向他人的时间线写入页面浏览记录。票据无法猜测，且只会交给实际收到邮件的人。
 
-The mode is enforced on the server as well as in the snippet, so a stale snippet cannot downgrade a workspace that requires consent. In both modes a browser that sends Global Privacy Control or Do Not Track is never recorded.
+浏览器一旦关联联系人，识别之前、仍处于保留期限内的页面浏览记录也会出现在该联系人的时间线上；之后的浏览则在到达时直接归属。
+
+### 同一浏览器中的两位用户 [#two-people-on-one-browser]
+
+如果已关联某人的浏览器收到另一个联系人的票据，系统会拆分记录，而不是合并：先前联系人保留此次点击之前的历史，浏览器获得新的访客 ID，此后的记录归属于第二个联系人。双方不会继承彼此的页面访问记录。
+
+共享设备交给其他人使用时，应调用 `warmbly('reset')`，清除访客 ID 和会话 ID。
 
 </Fold>
 
 <Fold>
 
-## What is collected
+## 授权同意 [#consent]
 
-| Reported by the browser | Derived on the server | Never kept |
+在设置页面选择模式：
+
+- **先征得同意**（默认）：页面调用 `warmbly('consent', 'granted')` 前，脚本不存储也不发送任何数据。通常在访客接受 Cookie 横幅后调用。授权会保存在浏览器中，因此只需询问一次。调用 `warmbly('consent', 'denied')` 会撤回授权并清除访客 ID。
+- **加载时记录**：页面一加载就记录浏览。仅应在无需事先主动同意、且具有合法依据的情况下选择。
+
+服务器和脚本都会执行此模式，因此过时的脚本无法降低工作区的同意要求。无论哪种模式，发送 Global Privacy Control 或 Do Not Track 信号的浏览器都不会被记录。
+
+</Fold>
+
+<Fold>
+
+## 收集的信息 [#what-is-collected]
+
+| 浏览器报告的信息 | 服务器推导的信息 | 从不保存的信息 |
 |---|---|---|
-| Page URL and title | Device type, operating system, browser and version, device brand (from the request's user agent) | The IP address |
-| Referrer and referring domain | Country, and optionally region and city (from the IP address, at the precision you choose) | Anything typed on the page |
-| UTM source, medium, campaign, term and content | | Email addresses or names |
-| Language, timezone and screen resolution | | |
-| Visitor and session ids | | |
+| 页面 URL 与标题 | 设备类型、操作系统、浏览器及版本、设备品牌，依据请求的 User-Agent 推导 | IP 地址 |
+| 来源页面及来源域名 | 国家，以及可选的地区和城市，按所选精度根据 IP 地址推导 | 在页面上输入的任何内容 |
+| UTM 来源、媒介、活动、词项与内容 | | 邮箱地址或姓名 |
+| 语言、时区与屏幕分辨率 | | |
+| 访客 ID 与会话 ID | | |
 
-Nothing about the device or location is trusted from the page: the snippet does not send them, and a request that claimed them would be ignored. Set **Location from IP address** to **Do not keep** to drop location entirely.
+不会信任页面提供的设备或位置信息：脚本不会发送这些信息，即使请求声称包含它们，也会被忽略。将**根据 IP 地址获取位置**设为**不保存**，即可完全丢弃位置数据。
 
-A session ends after 30 minutes without a page view. The first view of a session is marked as the landing page.
-
-</Fold>
-
-<Fold>
-
-## Retention
-
-**Keep visits for** sets how long page views are kept, from 7 to 365 days (90 by default). A job on the backend prunes each workspace's views past its own window every few hours; the promise on the settings page is what the job keeps. Deleting a contact deletes the browsing history tied to them at the same time.
-
-Page views, and the browser records that carry them, travel in the **Delivery events** group of a [workspace archive](/guides/workspace-export-import/). The tracking settings, including the site key, are part of the workspace itself so installed snippets keep reporting after a move.
+连续 30 分钟没有页面浏览后，会话结束。每个会话的第一次浏览标记为落地页。
 
 </Fold>
 
 <Fold>
 
-## In the timeline
+## 保留期限 [#retention]
 
-Page views show in the **Activity** tab of a contact under the **Website** filter, one line each with the page title or path, the referring domain, the device and any UTM source. Open a row for the full detail: URL, referrer, operating system, browser, resolution, language, timezone, location and every UTM parameter. New views for a contact appear live for everyone with the contact open.
+**访问保留时间**控制页面浏览记录保存多久，范围为 7 至 365 天，默认 90 天。后端任务每隔数小时按各工作区自身的保留窗口清理过期浏览，落实设置页面显示的期限。删除联系人时，与其关联的浏览历史也会同时删除。
+
+页面浏览和承载这些浏览的浏览器记录，会随[工作区归档](/guides/workspace-export-import/)的**投递事件**数据组迁移。包括站点密钥在内的跟踪设置属于工作区本身，因此迁移后已安装的脚本仍可继续报告。
 
 </Fold>
 
 <Fold>
 
-## Abuse controls
+## 时间线中的记录 [#in-the-timeline]
 
-The ingest endpoint on the tracking service is public, so it runs behind the same controls as the open pixel and click redirects: a per-source request budget (with a tighter one for page views on top), prefetch and crawler filtering, an 8 KB body cap with limits on every field, a short window that ignores reloads and double-fires, a per-source budget for unknown site keys, and a circuit breaker toward the backend. A forwarded client address is believed only from proxies the operator lists in `TRACKING_TRUSTED_PROXIES`, and only from the one header named in `TRACKING_CLIENT_IP_HEADER`, so a caller cannot choose its own rate-limit bucket or the location stored with a view. Over budget requests get `429`; everything else that is declined is acknowledged quietly so a probe learns nothing about which keys exist.
+页面浏览显示在联系人的**活动**标签页中，可通过**网站**筛选查看。每条记录占一行，显示页面标题或路径、来源域名、设备和 UTM 来源。打开该行可查看完整详情：URL、来源页面、操作系统、浏览器、分辨率、语言、时区、位置和全部 UTM 参数。新的联系人访问记录会实时显示给所有正在查看该联系人的成员。
+
+</Fold>
+
+<Fold>
+
+## 滥用防护 [#abuse-controls]
+
+跟踪服务的数据接收端点是公开的，因此采用与打开跟踪像素和点击重定向相同的防护：按请求来源限制额度，并为页面浏览再叠加更严格的额度；过滤预取和爬虫；限制请求体为 8 KB 并限制各字段；在短时间窗口内忽略刷新和重复触发；对未知站点密钥设置按来源额度；以及保护后端的熔断机制。只有运营人员列入 `TRACKING_TRUSTED_PROXIES` 的代理才可提供可信的转发客户端地址，而且仅接受 `TRACKING_CLIENT_IP_HEADER` 指定的一个请求头，防止调用方自行选择限流分组或访问记录中的位置。超过额度的请求返回 `429`；其他被拒绝的请求则以不暴露详情的方式响应，使探测者无法判断哪些密钥存在。
 
 </Fold>

@@ -1,167 +1,167 @@
 ---
-title: Admin panel
-description: The operator surface on :5174, page by page, with the platform admin bit each one needs.
+title: "管理面板"
+description: "逐页介绍位于 :5174 的运维管理界面，以及每个页面所需的平台管理员权限位。"
 ---
 
-The admin panel is the operator's view of an instance: every worker, user, organization, mailbox and background loop, across every workspace. It is a separate app from the customer dashboard, it holds nothing a customer needs, and every page in it is gated on a [platform admin bit](/development/accounts-and-access/#platform-admins) rather than a workspace role.
+管理面板是运维人员查看整个实例的入口：可以跨工作区查看所有工作节点、用户、组织、邮箱和后台循环任务。它是独立于客户控制台的应用，不包含客户日常使用所需的功能；每个页面都由 [平台管理员权限位](/development/accounts-and-access/#platform-admins) 控制访问，而非工作区角色。
 
-## Reaching it
+## 访问方式 [#reaching-it]
 
-The panel runs on `:5174` in the default stack (`http://localhost:5174` on a stock install, or the host you proxied to it). Sign in with the same account as the dashboard. The first owner holds every admin bit from the moment they claim the instance, and `warmblyctl user create --admin` creates a further account that already holds them. A page the account has no bit for says which bit it needs instead of rendering.
+默认服务栈中的管理面板运行在 `:5174`，标准安装的地址为 `http://localhost:5174`，也可以使用你通过反向代理指向该服务的主机名。使用与控制台相同的账户登录。首位所有者从认领实例开始就拥有全部管理员权限位；`warmblyctl user create --admin` 可以创建另一个同样具备这些权限的账户。如果账户缺少某页面所需的权限位，页面会显示所需权限，而不展示内容。
 
-A completed admin sign-in discards previously cached operator data and permissions before storing the new session. An unsuccessful sign-in or a pending email-code/second-factor step does not replace the session.
+成功完成管理员登录后，系统先清除此前缓存的运维数据和权限，再存储新会话。登录失败，或仍在等待邮件验证码、第二因素验证时，不会替换当前会话。
 
-<Callout type="warn" title="Two-factor authentication is required">
-Every admin route refuses a session that did not present a second factor. Turn on 2FA or add a passkey under **Settings > Security** in the dashboard, then sign in again; the panel says so rather than failing silently.
+<Callout type="warn" title="必须启用双重身份验证">
+所有管理路由都会拒绝未通过第二因素验证的会话。请先在控制台的 **设置 > 安全** 中启用双重身份验证或添加通行密钥，然后重新登录；管理面板会明确提示这一要求，而不是无提示地失败。
 
-The check is on the session, not on enrolment, so switching 2FA on does not upgrade the session you are already holding. Sign out and back in.
+此项检查针对当前会话，而不是账户是否已启用相关功能。因此，启用双重身份验证不会自动提升现有会话的验证等级，需要退出后重新登录。
 
-This is deliberate and not configurable. An administrative interface reachable from the internet is the one account where a stolen password should not be enough, and it is what the App Defense Alliance CASA assessment requires of any such interface.
+这是有意设置的要求，无法关闭。对于可从互联网访问的管理界面，仅窃取密码不应足以取得访问权限；App Defense Alliance 的 CASA 评估也要求这类界面具备此保护。
 </Callout>
 
-The old paths still redirect, so a bookmark or a link in an older version of these docs lands on the right tab.
+旧路径仍会重定向，因此书签或旧版文档中的链接仍能打开正确的选项卡。
 
-## Command palette
+## 命令面板 [#command-palette]
 
-`Cmd K` (`Ctrl K` on Linux and Windows) opens the command palette from any page. It jumps to any page by name and searches users, organizations, mailboxes and workers, so a support request that names an email address is one keystroke from the record. The search icon at the top of the sidebar opens it too.
+在任意页面按 `Cmd K`，Linux 和 Windows 使用 `Ctrl K`，即可打开命令面板。它可以按名称跳转到任意页面，也能搜索用户、组织、邮箱和工作节点。因此，支持请求中提到某个邮箱地址时，按一次快捷键便可开始查找相关记录。侧边栏顶部的搜索图标也能打开该面板。
 
-## Navigation
+## 导航 [#navigation]
 
-The sidebar lists sections. A section with more than one page shows its pages as tabs in the page header, and every page keeps its own address, so bookmarks and links from these docs still land on the right page. Press `[` (or the panel button at the top of the sidebar) to fold the sidebar down to icons and back.
+侧边栏按栏目组织页面。如果某栏目有多个页面，这些页面会作为选项卡显示在页面顶部；每页仍保留自己的地址，因此书签和本文档中的链接仍会打开正确页面。按 `[`，或点击侧边栏顶部的面板按钮，可以在图标模式与展开模式之间切换。
 
-| Section | Pages |
+| 栏目 | 页面 |
 |---|---|
-| **Fleet** | Workers, Placement (the Fleet page below) |
-| **Mailboxes** | Mailboxes, Sync |
-| **Warmup** | Pool (the Warmup page below), Appeals, Content, Seed panel |
-| **Sending** | Campaigns, Sends |
-| **Organizations** | Organizations, Limit requests |
-| **Growth** | Promo codes, Outreach |
-| **Admins** | Admins, Testers |
-| **Activity** | Audit log, Live events, Jobs |
+| **节点集群** | 工作节点、分配（下文的“节点集群”页面） |
+| **邮箱** | 邮箱、同步 |
+| **邮箱预热** | 预热池（下文的“预热”页面）、申诉、内容、种子邮箱组 |
+| **发送** | 营销活动、发送任务 |
+| **组织** | 组织、额度申请 |
+| **增长** | 优惠码、外联 |
+| **管理员** | 管理员、测试人员 |
+| **活动记录** | 审计日志、实时事件、后台任务 |
 
-Overview, Users, Developer apps, Setup and health, Configuration and Transfers are single pages.
+概览、用户、开发者应用、设置与健康状态、配置和数据迁移均为独立页面。
 
-## Theme
+## 主题 [#theme]
 
-The panel is dark by default. The account menu at the bottom of the sidebar (your name and email) has a **Theme** submenu to switch to light or to follow the system setting. The choice is kept per browser.
+管理面板默认使用深色主题。侧边栏底部的账户菜单显示你的姓名和邮箱，其中的 **主题** 子菜单可以切换为浅色主题或跟随系统设置。选择会分别保存在各个浏览器中。
 
-## Overview
+## 概览 [#overview]
 
-The landing page. Instance-wide counters and their trends, acquisition by channel, and a strip of open instance problems at the top, which is the same list as the Findings tab of [Setup and health](/development/instance-health/).
+这是默认首页，展示整个实例的计数指标及趋势、按渠道划分的获客情况，并在顶部列出尚未解决的实例问题。这份问题列表与 [设置与健康状态](/development/instance-health/) 的“检查结果”选项卡一致。
 
-**Operational monitoring** adds recorded failure evidence, unverified recovery, safety restrictions, missing telemetry and measured backlogs. Positive Kafka lag or JetStream pending/ack-pending/redelivered counts stay visible separately, even when their backend condition is unknown. These are observations, not proof of an outage or provider delivery. Counts are per metric and can overlap; the attention count is a count of signals, not customers or failed messages.
+**运行监控** 还会展示已记录的故障证据、尚未验证的恢复状态、安全限制、缺失的遥测数据和测得的积压量。Kafka 的正值消费延迟，以及 JetStream 的待处理、等待确认和重新投递计数，会单独持续显示，即使其后端状态未知。这些只是观测结果，不能证明服务已经中断或邮件已被服务商投递。计数按指标计算，可能相互重叠；需关注的数量代表信号数量，而非客户数或失败邮件数。
 
-The strip displays coverage gaps, stale sources and unknown/no-recent-evidence sources, rather than hiding a failed request behind an empty panel. **All operational details** opens Setup and health's Operations tab. The snapshot and each investigation link require their own admin permission; hidden sections cannot be recovered by changing tabs. See [monitoring permissions and evidence](/development/instance-health/#operational-monitoring).
+该区域会显示覆盖缺口、过期数据源，以及状态未知或缺少近期证据的数据源，而不会用空白面板掩盖请求失败。点击 **全部运行详情** 可打开“设置与健康状态”的“运行情况”选项卡。快照和各个调查链接分别要求相应的管理员权限；切换选项卡无法访问因权限不足而隐藏的内容。参见 [监控权限与证据](/development/instance-health/#operational-monitoring)。
 
-Relative ages use your browser's current clock when a snapshot arrives, with periodic updates between requests. A genuinely future-dated observation still has unknown age; it is not fresh evidence of sending or recovery.
+收到快照时，观测记录的相对时间根据浏览器当前时钟计算，并在两次请求之间定期更新。如果观测时间确实位于未来，其记录年龄仍视为未知，不能据此认定存在新的发送或恢复证据。
 
-## Operations
+## 运维操作 [#operations]
 
-| Page | What it answers |
+| 页面 | 提供的信息 |
 |---|---|
-| **Workers** | Every worker, its heartbeat, region and the mailboxes placed on it, with a **Has node error** filter for any standing problem a node reports, such as its network blocking outbound port `465`. Detail pages carry stats, the assigned mailbox list, and reassignment |
-| **Fleet** | Capacity per worker with utilization, the control loops' decision log (what the placement and rotation loops did and why), and isolated-egress reservations, with reserve and release |
-| **Mailboxes** | Every connected mailbox across every workspace, with its state and the worker it sits on |
-| **Sync** | The platform copy of each mailbox's backfill progress and fair-use throttle, with clear-throttle and restart-backfill. The budgets it enforces are the four `sync.*` values under [Configuration > Settings](/development/configuration/#settings-stored-in-the-database); the worker-side engine is the sync governor described under [anti-abuse layers](/development/architecture/#anti-abuse-layers) |
-| **Warmup** | The pools, the blocked list, and the block and unblock history |
-| **Warmup appeals** | Appeals from blocked mailboxes, to approve or reject |
-| **Warmup content** | The generated and reviewed [diagnostic conversation bank](/development/warmup-generation/), effective generation controls, library and generation jobs. Changing effective controls requires `manage_settings`; existing library reads still require `view_warmup_pool` |
-| **Seed panel** | The instance's placement seed inboxes by provider, adding and removing them, every workspace's recent [placement tests](/guides/placement-tests/) with their results, and an operator test that counts against no allowance |
-| **Campaigns** | Every campaign on the instance with its state and owner |
-| **Sends** | In-flight reservations no worker has answered, and the reclaimer that resolves them after 30 minutes; dead letters with replay limited to non-sending campaign wakeups; task failures; customer webhook delivery health, with reclaim |
+| **工作节点** | 列出每个工作节点、心跳、区域及分配给它的邮箱。使用 **存在节点错误** 筛选器可查看节点报告的持续问题，例如网络禁止访问出站端口 `465`。详情页提供统计信息、已分配邮箱列表和重新分配操作。 |
+| **节点集群** | 展示每个工作节点的容量与利用率、控制循环的决策日志（分配和轮换循环执行了什么操作，以及原因），以及独立出口的预留记录，并支持预留和释放。 |
+| **邮箱** | 列出所有工作区连接的全部邮箱，包括邮箱状态及所在工作节点。 |
+| **同步** | 展示平台保存的各邮箱历史补录进度和公平使用限流状态，并支持清除限流和重新开始历史补录。执行时使用的配额是 [配置 > 设置](/development/configuration/#settings-stored-in-the-database) 中的四个 `sync.*` 值；工作节点侧的执行机制则是 [反滥用机制](/development/architecture/#anti-abuse-layers) 中介绍的同步治理器。 |
+| **邮箱预热** | 预热池、封禁名单，以及封禁和解封历史。 |
+| **预热申诉** | 查看被封禁邮箱提交的申诉，并批准或拒绝。 |
+| **预热内容** | 查看已生成和审核的 [诊断会话库](/development/warmup-generation/)、实际生效的生成控制、内容库和生成任务。更改生效控制需要 `manage_settings`；读取已有内容库仍需要 `view_warmup_pool`。 |
+| **种子邮箱组** | 按服务商查看实例的投递测试种子邮箱，添加或删除这些邮箱，查看各工作区近期的 [投递位置测试](/guides/placement-tests/) 及结果，并执行不占任何额度的运维人员测试。 |
+| **营销活动** | 查看实例上的每个营销活动及其状态和所有者。 |
+| **发送任务** | 查看尚未收到任何工作节点响应的在途预留，以及在 30 分钟后处理这些预留的回收器；查看死信（仅允许重放不执行发送的营销活动唤醒事件）、任务失败和客户 Webhook 投递健康状态，并执行回收。 |
 
-The Sync page's **Stalled** filter, row indicator and summary count only active mailboxes with a running backfill unchanged for over an hour and no active fair-use hold. Inactive and revoked backfill states remain in the **Backfilling** history count, without a current stalled warning. Reactivating a mailbox does not reset its backfill state.
+同步页面的 **停滞** 筛选器、行内标记和汇总计数，仅包含仍处于活动状态、历史补录正在运行但超过一小时没有变化、且未被公平使用限制暂停的邮箱。停用或撤销授权的历史补录状态仍计入 **历史补录中** 的历史数量，但不会显示当前停滞警告。重新激活邮箱不会重置其历史补录状态。
 
-Mailbox diagnostic participation, sender/recipient flags and shared/rolling limits are organization-scoped mailbox fields, not new admin-panel switches. Use the existing authorized mailbox PATCH; no new UI is implied. An operator-reviewed `send_recovery_resolution` binds the current held task/reason and definite repair/provider evidence, never an unknown send. See [send safety](/development/send-safety/).
+邮箱的诊断参与状态、发件方与收件方标志，以及共享限额和滚动窗口限额，都是组织范围内的邮箱字段，并不是管理面板中的新增开关。请使用现有且已获得授权的邮箱 PATCH 接口；这里并不表示提供了新的界面。经运维人员审核的 `send_recovery_resolution` 必须绑定当前被暂停的任务、暂停原因，以及明确的修复证据或服务商证据，绝不能用于发送结果仍未知的任务。参见 [发送安全](/development/send-safety/)。
 
-## Accounts
+## 账户 [#accounts]
 
-| Page | What it answers |
+| 页面 | 提供的信息 |
 |---|---|
-| **Users** | Every account, with ban and unban, ban history and rate-limit overrides |
-| **Organizations** | Every workspace, with its members, plan, abuse posture, API keys, webhooks and transfer tabs |
-| **Limit requests** | Customer requests for a higher allowance, to approve or decline |
-| **Developer apps** | Every OAuth app on the instance, its community directory listing, and who may build apps. Suspend an app, revoke its tokens, remove its logo, feature or hide a listing, and block a workspace or a person from building apps |
-| **Promo codes** | Every discount code on the instance, who has redeemed each one, and the builder that creates them |
-| **Outreach** | Mail an operator sends from the instance to a user, a workspace or an address, and the delivery state of each message sent so far |
-| **Admins** | Who holds platform admin bits, and grant and revoke by preset or per bit. This replaces the CLI-only path; `warmblyctl user grant-admin` still works |
+| **用户** | 查看每个账户，执行封禁和解封，查看封禁历史，并设置速率限制覆盖值。 |
+| **组织** | 查看每个工作区及其成员、套餐、滥用管控状态、API 密钥、Webhook 和数据迁移选项卡。 |
+| **额度申请** | 查看客户提出的提高额度申请，并批准或拒绝。 |
+| **开发者应用** | 查看实例上的所有 OAuth 应用、它们在社区目录中的条目，以及哪些主体可以创建应用。可以暂停应用、撤销其令牌、移除徽标、将条目设为精选或隐藏，以及禁止某个工作区或个人创建应用。 |
+| **优惠码** | 查看实例上的所有优惠码、每个优惠码的兑换者，并通过创建器生成优惠码。 |
+| **客户开发** | 查看运维人员从实例向用户、工作区或指定地址发送的邮件，以及每封已发送邮件的投递状态。 |
+| **管理员** | 查看持有平台管理员权限位的人员，并按预设或单个权限位授予、撤销权限。这提供了命令行之外的管理入口；`warmblyctl user grant-admin` 仍可使用。 |
 
-### Promo codes
+### 优惠码 [#promo-codes]
 
-A promo code is created here, never in the Stripe dashboard. Warmbly stores the code itself, validates it when a customer types it on the billing page or at checkout, and mints a matching single-use Stripe coupon for that one redemption. A coupon or promotion code created in Stripe directly is not reachable: the checkout session carries the discount Warmbly resolved, so Stripe never shows its own promo field.
+优惠码必须在这里创建，而不是在 Stripe 控制台中创建。Warmbly 存储优惠码本身，在客户于计费页面或结账时输入后进行验证，并为本次兑换生成对应的一次性 Stripe 优惠券。直接在 Stripe 中创建的优惠券或促销码无法使用：结账会话携带的是 Warmbly 已确定的折扣，因此 Stripe 不会显示其自身的优惠码输入框。
 
-The builder asks six things:
+创建器需要填写六项信息：
 
-- **Code**, the literal string a customer types. It is uppercased on save and cannot be changed afterwards, because redemptions point at it.
-- **Discount**, one of a percentage off, a fixed amount in one currency, or extra free trial days. The kind is fixed once the code exists; its value can still change.
-- **How long it lasts**, for the two money kinds: the first invoice only, a number of months, or forever. A months-long discount runs on a clock, not a count of invoices, so a monthly plan gets that many discounted invoices while an annual plan bills once inside the window and has its whole first year discounted. The builder says this back to you as you set it.
-- **Eligible plans**, all of them or a chosen set.
-- **Redemption limits**, which are two separate numbers. The total cap counts across every workspace on the instance and is off by default; the per-workspace limit is how many times one customer may use it and is 1 by default. Setting the total cap to 1 means one customer in total, which is almost never what a launch offer wants.
-- **Schedule**, an optional start and expiry. A start in the future leaves the code scheduled, an expiry is the end of that day in your own timezone, and the Active switch refuses a code at checkout without deleting it.
+- **优惠码**：客户实际输入的字符串。保存时会转换为大写，之后不能修改，因为兑换记录会引用该优惠码。
+- **折扣**：选择百分比折扣、指定币种的固定金额优惠，或额外免费试用天数。优惠码创建后，优惠类型不可改变，但数值仍可调整。
+- **优惠持续时间**：适用于两种金额优惠，可选择仅首张账单、持续若干个月或永久。按月数设置的优惠依据时间计算，而非账单数量。因此，月付套餐可获得对应数量的折扣账单；年付套餐只要在优惠期内出账，其整个首年费用都会享受折扣。设置时，创建器会明确说明这一效果。
+- **适用套餐**：可适用于所有套餐，也可只选择部分套餐。
+- **兑换次数限制**：包含两个独立数值。总次数上限统计实例中所有工作区的兑换次数，默认关闭；每个工作区的次数上限表示单个客户可以使用的次数，默认是 1。将总上限设为 1，意味着总共只允许一个客户使用，通常不符合新品发布优惠的目的。
+- **有效时间**：可选填开始时间和到期时间。未来的开始时间会让优惠码处于待生效状态；到期时间为你所在时区所选日期的当天结束时刻。关闭“启用”开关会让结账时拒绝该优惠码，但不会删除它。
 
-Deleting a code stops new redemptions and removes it from the list. Workspaces that already redeemed it keep their discount, because the Stripe coupon behind each redemption was minted separately. Disable the code instead when you want the history to stay readable under its name.
+删除优惠码会停止新的兑换，并将其从列表中移除。已经兑换的工作区仍保留折扣，因为每次兑换背后的 Stripe 优惠券都是单独生成的。如果希望仍能按优惠码名称查看历史记录，请将其停用，而不是删除。
 
-Reading the list needs `view_organizations`; creating, editing and deleting need `manage_organizations`.
+读取列表需要 `view_organizations`；创建、编辑和删除需要 `manage_organizations`。
 
-### Developer apps
+### 开发者应用 [#developer-apps]
 
-Three tabs.
+包含三个选项卡。
 
-**Apps** lists every OAuth app workspaces have registered, suspended ones first, with its workspace, the person who registered it, its permissions, installs and directory state. The menu on each app:
+**应用** 列出各工作区注册的全部 OAuth 应用，暂停的应用排在前面，并显示所属工作区、注册人、权限、安装情况和目录状态。每个应用的菜单提供以下操作：
 
-- **Suspend** needs a reason the developer sees. A suspended app signs nobody in, its access and refresh tokens stop working, its webhook deliveries stop and it leaves the directory. Its owner cannot lift a suspension; **Unsuspend** does.
-- **Revoke every token** ends every workspace's grant; each has to authorize the app again.
-- **Remove logo** clears a logo that should not be shown, and deletes the image.
-- **Block workspace** and **Block person** stop that workspace, or that person in any workspace, from registering and publishing apps. The block can also suspend the apps they already have.
+- **暂停** 必须填写开发者可见的原因。应用暂停后，无法让任何人登录，其访问令牌和刷新令牌失效，Webhook 停止投递，并退出目录。所有者不能自行解除暂停；需要使用 **解除暂停** 操作。
+- **撤销全部令牌** 会终止每个工作区的授权；各工作区需要重新授权该应用。
+- **移除徽标** 用于清除不应展示的徽标，并删除图片。
+- **封禁工作区** 和 **封禁个人** 会阻止该工作区，或该个人在任意工作区中注册、发布应用。封禁操作还可以同时暂停其现有应用。
 
-**Directory** is the community directory. A workspace that publishes an [OAuth app](/api/oauth/#publish-to-the-community-directory) creates a link-only listing: it opens from its link and stays out of every workspace's directory. It is listed when you **Feature** it, or on its own once it is installed in 25 workspaces other than the publisher's, each at least two weeks old. Before featuring, check that the install URL, website and description belong to the same product, that the permissions fit what it claims to do, and that it does not borrow another product's name or logo. Any later edit to the listing, or to its app's name, logo, website or permissions, removes the feature. **Hide** takes a listing down everywhere, link included, and needs a note the developer sees; **Restore** returns it to link only.
+**目录** 指社区目录。工作区发布一个 [OAuth 应用](/api/oauth/#publish-to-the-community-directory) 后，会创建仅可通过链接访问的条目：链接可以打开，但条目不出现在任何工作区的目录中。当你将其 **设为精选**，或它已安装到发布者之外的 25 个工作区且这些工作区各自已创建至少两周时，条目才会进入目录。设为精选前，应检查安装 URL、网站和描述是否属于同一产品，权限是否符合其宣称的功能，以及是否冒用了其他产品的名称或徽标。此后编辑目录条目，或修改应用名称、徽标、网站或权限，都会取消精选状态。**隐藏** 会在所有入口下架条目，包括通过链接访问，并要求填写开发者可见的说明；**恢复** 则将其恢复为仅可通过链接访问。
 
-**Blocked** lists every block with its reason and who set it. **Unblock** lets them build apps again; apps suspended with the block stay suspended until you unsuspend each one.
+**已封禁** 列出每项封禁、原因和操作者。**解封** 后，相关主体可以重新创建应用；但随封禁一起暂停的应用仍保持暂停，必须逐个解除。
 
-Reading the tabs needs `view_organizations`; every action needs `manage_organizations`.
+读取这些选项卡需要 `view_organizations`；执行任何操作都需要 `manage_organizations`。
 
-## Activity
+## 活动记录 [#activity]
 
-| Page | What it answers |
+| 页面 | 提供的信息 |
 |---|---|
-| **Live events** | The event bus as it happens |
-| **Audit log** | Who did what, from where, across the instance |
-| **Jobs** | Every background loop on the instance with its last run, next run and last error, and a **Run now** that the owning process picks up within about 15 seconds. The backend's and the consumer's loops are in the same list. The next run is stored, so a restart or deploy resumes the schedule instead of starting a fresh interval, a job that came due while the process was down runs shortly after boot, and when several processes host the same job each slot runs once |
+| **实时事件** | 实时查看事件总线上的事件。 |
+| **审计日志** | 查看整个实例中谁在什么位置执行了什么操作。 |
+| **后台任务** | 列出实例上所有后台循环任务的上次运行时间、下次运行时间和最近错误，并提供 **立即运行** 操作，所属进程通常会在约 15 秒内接收请求。后端和消费者进程的循环任务出现在同一列表中。系统会存储下次运行时间，因此重启或部署后会恢复原有调度，而非重新开始计算间隔；进程停机期间到期的任务会在启动后不久执行；多个进程承载同一任务时，每个计划时段只会运行一次。 |
 
-## Instance
+## 实例 [#instance]
 
-| Page | What it answers |
+| 页面 | 提供的信息 |
 |---|---|
-| **Setup and health** | Three tabs. **Findings** is the [instance health](/development/instance-health/) check list, and the sidebar badge counts its errors and warnings, not operational signals. **Services** holds scoped service reachability probes and the platform mail card. **Operations** holds read-only measurements, coverage, affected counts, evidence age, waits and permission-gated investigation links |
-| **Configuration** | Four tabs. **Settings** is the database-backed settings document; **Notifications** is the [operator notification](/development/operator-notifications/) channels; **Environment** is the read-only [configuration reference](/development/configuration/) view of what the backend resolved; **Effective limits** lists the compiled pacing constants |
-| **Transfers** | Workspace export and import for any organization, from the operator side, with the same archives as `warmblyctl org export` and `org import`. A whole-instance backup stays `warmblyctl backup` and `restore` |
+| **设置与健康状态** | 包含三个选项卡。**检查发现的问题** 展示 [实例健康状态](/development/instance-health/) 检查列表；侧边栏徽标统计其中的错误和警告，不统计运行监控信号。**服务** 提供限定范围的服务连通性探测和平台邮件卡片。**运维操作** 展示只读测量值、覆盖情况、受影响数量、证据年龄、等待情况，以及按权限控制的调查链接。 |
+| **配置** | 包含四个选项卡。**设置** 是存储在数据库中的设置文档；**通知** 管理 [运维通知](/development/operator-notifications/) 渠道；**环境** 提供后端已解析配置的只读 [配置参考](/development/configuration/) 视图；**实际生效限额** 列出编译时确定的发送节奏常量。 |
+| **数据迁移** | 运维人员可以为任意组织导出和导入工作区，使用与 `warmblyctl org export`、`org import` 相同的归档格式。整个实例的备份仍使用 `warmblyctl backup` 和 `restore`。 |
 
-## Permission per page
+## 各页面所需权限 [#permission-per-page]
 
-| Page | Bit |
+| 页面 | 权限位 |
 |---|---|
-| Overview, Live events | none beyond signing in as an admin |
-| Workers, Fleet | `view_workers` |
-| Mailboxes, Sync, Users, Testers | `view_users` |
-| Warmup, Warmup content, Seed panel | `view_warmup_pool` (changing seeds or running a test needs `manage_warmup_bans`) |
-| Warmup appeals | `review_appeals` |
-| Campaigns, Sends | `view_campaigns` |
-| Organizations, Limit requests, Developer apps, Promo codes, Outreach, Transfers | `view_organizations` |
-| Admins | `grant_admin_access` |
-| Audit log | `view_audit_logs` |
-| Jobs, Setup and health | `view_analytics` |
-| Configuration | `manage_settings` |
+| 概览、实时事件 | 除以管理员身份登录外，无额外要求 |
+| 工作节点、节点集群 | `view_workers` |
+| 邮箱、同步、用户、测试人员 | `view_users` |
+| 预热、预热内容、种子邮箱组 | `view_warmup_pool`（修改种子邮箱或执行测试需要 `manage_warmup_bans`） |
+| 预热申诉 | `review_appeals` |
+| 营销活动、发送任务 | `view_campaigns` |
+| 组织、额度申请、开发者应用、优惠码、外联、数据迁移 | `view_organizations` |
+| 管理员 | `grant_admin_access` |
+| 审计日志 | `view_audit_logs` |
+| 后台任务、设置与健康状态 | `view_analytics` |
+| 配置 | `manage_settings` |
 
-Detail pages need the same bit as the list they open from. Actions inside a page can need more than the page itself: reading an organization's abuse posture or the Outreach list needs `view_organizations`, while changing a posture or sending outreach needs `manage_organizations`, as [accounts and access](/development/accounts-and-access/#workspace-abuse-posture) lists.
+详情页与进入该页面的列表页要求相同的权限位。页面内的操作可能要求更高权限：读取组织的滥用管控状态或外联列表需要 `view_organizations`，修改管控状态或发送外联邮件则需要 `manage_organizations`，具体见 [账户与访问](/development/accounts-and-access/#workspace-abuse-posture)。
 
-On a user's detail page, `manage_testers` also allows turning **Skip emailed sign-in code** on or off for that account, for an App Store or OAuth reviewer; see [excusing one account](/development/accounts-and-access/#excusing-one-account).
+在用户详情页，`manage_testers` 还允许为 App Store 或 OAuth 审核人员启用或关闭该账户的 **跳过邮件登录验证码**，参见 [为单个账户豁免](/development/accounts-and-access/#excusing-one-account)。
 
-On **Admins > Testers**, `manage_testers` allows creating or revoking reviewer accounts and adding [sample data](/development/accounts-and-access/#adding-sample-data) to active dedicated Test workspaces. The confirmation lists what will be added; a seeded row shows its timestamp. It never creates a mailbox or sends email, and it cannot populate a customer workspace that a tester joined.
+在 **管理员 > 测试人员** 中，拥有 `manage_testers` 权限的人员可以创建或撤销审核人员账户，并向处于活动状态的专用测试工作区添加 [示例数据](/development/accounts-and-access/#adding-sample-data)。确认窗口会列出将添加的内容；已经填充数据的记录会显示时间戳。该操作不会创建邮箱或发送邮件，也不能向测试人员加入的客户工作区填充数据。
 
-## See also
+## 另请参阅 [#see-also]
 
-- [Accounts and access](/development/accounts-and-access/) for the presets and the shell commands
-- [Instance health](/development/instance-health/) for every finding the Setup and health page can show
-- [Configuration reference](/development/configuration/) for what the Environment and Settings tabs hold
-- [warmblyctl](/development/warmblyctl/) for the operator commands the panel mirrors
+- [账户与访问权限](/development/accounts-and-access/)：权限预设和命令行操作。
+- [实例健康状态](/development/instance-health/)：“设置与健康状态”页面可显示的全部检查结果。
+- [配置参考](/development/configuration/)：“环境”和“设置”选项卡中的内容。
+- [warmblyctl](/development/warmblyctl/)：与面板操作对应的运维命令。

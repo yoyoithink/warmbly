@@ -1,97 +1,97 @@
 ---
-title: Email warmup
-description: Why warmup exists, how providers read it, and how to do it without faking signals.
+title: 邮箱预热
+description: 了解为什么需要预热、服务商如何解读预热行为，以及如何在不伪造信号的情况下进行预热。
 ---
 
-Warmup is the practice of sending small, conversational volumes of mail from a new (or recently dormant) mailbox to gradually build a positive reputation with mailbox providers like Google, Microsoft, Yahoo and Apple. The goal isn't a one-off score. It's a track record. Mailbox providers reward consistency.
+邮箱预热是指从新邮箱（或近期闲置的邮箱）发送少量、具有对话性质的邮件，逐步在 Google、Microsoft、Yahoo 和 Apple 等邮箱服务商处建立良好信誉。目标不是获得一次性的分数，而是积累持续的行为记录。邮箱服务商重视稳定一致的表现。
 
 <ShortVersion>
 
-- Warmup sends small, conversational volumes from a new mailbox so providers learn to trust it.
-- Start at `10` a day, add `1` a day, and stop at `40`.
-- Domain warmup commonly takes 3 to 6 weeks.
-- Keep it running after campaigns start: reputation has to be maintained, not earned once.
+- 预热通过新邮箱发送少量对话式邮件，让服务商逐渐信任该邮箱。
+- 从每天 `10` 封开始，每天增加 `1` 封，上限为 `40` 封。
+- 域名预热通常需要 3 到 6 周。
+- 营销活动开始后也应继续运行：信誉需要持续维护，并非建立一次就能永久保有。
 
 </ShortVersion>
 
-## What "warmup" actually means
+## “预热”究竟是什么 [#what-warmup-actually-means]
 
-Modern warmup tools generate this traffic between participating mailboxes: your mailbox sends short, plain-text messages to other warmed mailboxes, those mailboxes open and reply, and the cycle repeats. Done well, the pattern looks like a real human starting to use a new inbox.
+现代预热工具会在参与预热的邮箱之间产生这些邮件往来：你的邮箱向其他已预热邮箱发送简短的纯文本邮件，对方打开并回复，然后不断重复。执行得当时，这种模式看起来像真人开始使用一个新邮箱。
 
 <WarmupExchange />
 
-## Why providers care about it
+## 为什么服务商重视预热 [#why-providers-care-about-it]
 
-Inbox placement is reputation-driven. When a brand-new domain or mailbox starts sending dozens of cold messages to strangers, Gmail and Outlook treat it as suspicious by default. They don't know whether you're a small startup or a spammer, so the safest assumption, for them, is spammer.
+邮件是否进入收件箱取决于信誉。当一个全新域名或邮箱开始向陌生人发送几十封冷邮件时，Gmail 和 Outlook 默认会认为它可疑。服务商不知道你是一家小型初创企业，还是垃圾邮件发送者，因此对它们而言，最稳妥的假设是后者。
 
-Warmup gives them signal. Mailboxes that send small volumes, get opens, get replies, and don't trigger complaints look like real human inboxes. Providers loosen the screws as that pattern persists.
+预热能提供判断信号。发送量较小、有人打开、有人回复、且不引发投诉的邮箱，看起来更像真人邮箱。随着这种模式持续，服务商会逐渐放宽限制。
 
-## What good warmup looks like
+## 良好的预热是什么样 [#what-good-warmup-looks-like]
 
-### Gradual volume growth
+### 逐步增加发送量 [#gradual-volume-growth]
 
-Start low and ramp slowly. Warmbly's defaults are 10 emails per day to start, +1 per day, with a ceiling of 40 per day. That ceiling exists on purpose: warmup that climbs to 100/day looks unnatural and starts to look like a bot.
+从低发送量开始，缓慢递增。Warmbly 默认从每天 10 封开始，每天增加 1 封，上限为每天 40 封。设置这个上限是有意为之：预热量如果增长到每天 100 封，会显得不自然，开始像机器人的行为。
 
 <WarmupRamp />
 
-### Realistic spacing
+### 合理安排间隔 [#realistic-spacing]
 
-Warmup mail should be spread across the working day, with sensible gaps. Sending all 40 messages in a single minute is the loudest possible spam signal.
+预热邮件应分散在工作时段内发送，并保持合理间隔。一分钟内发完全部 40 封，是极为明显的垃圾邮件信号。
 
-### Conversational behaviour
+### 保持对话式行为 [#conversational-behaviour]
 
-A real mailbox doesn't only send. It replies. Warmup pools should generate a mix of new sends and replies to existing threads. Warmbly defaults to a 30% reply rate within the pool, tunable per mailbox.
+真实邮箱不只发送邮件，也会回复。预热池应同时包含新邮件发送和对已有会话的回复。Warmbly 默认的池内回复率为 30%，可针对每个邮箱调整。
 
-### Quality recipients
+### 使用优质收件邮箱 [#quality-recipients]
 
-Warmup recipients should be other warmed, healthy mailboxes: not free trial mailboxes, not throwaways, not lookalikes of catch-all domains. Pool quality matters more than pool size.
+预热收件人应是其他已预热且健康的邮箱，而不是免费试用邮箱、一次性邮箱，或类似全收域名的可疑邮箱。预热池的质量比规模更重要。
 
-### Token verification
+### 验证令牌 [#token-verification]
 
-Every warmup message Warmbly sends carries a verification token that is single-use and bound to its recipient, so warmup mail cannot be replayed or redirected. Nothing is held against a mailbox for the tokens that arrive in its inbox, which anyone can send it. What is held against it is what it does to warmup mail it verifiably received: deleting it, or flagging it as spam. Enough of that, or a poor enough spam-placement or complaint rate, and the mailbox leaves the pool until it requalifies.
+Warmbly 发送的每封预热邮件都携带一个与收件人绑定、只能使用一次的验证令牌，因此预热邮件不能被重放或重定向。仅仅收到某个令牌不会对邮箱产生负面影响，因为任何人都可能向它发送令牌。会被计入不良行为的是：邮箱对已确认收到的预热邮件进行了什么操作，例如删除邮件，或将其标记为垃圾邮件。如果这类行为过多，或者垃圾邮件占比、投诉率过差，邮箱就会退出预热池，直到重新符合资格。
 
-A token carried in a header only works if the header survives delivery, and not every provider passes custom headers through. Warmbly records the subject and the provider-assigned message identifier for each send as well, so a warmup email whose header was stripped in transit is still recognized at the recipient rather than being treated as ordinary mail.
+邮件头中的令牌只有在投递后该邮件头仍被保留时才能发挥作用，而并非所有服务商都会保留自定义邮件头。因此，Warmbly 还会记录每次发送的主题和服务商分配的邮件标识符。这样，即使预热邮件的邮件头在传输中被移除，收件端仍能识别它，不会将其当成普通邮件。
 
-## What bad warmup looks like
+## 不良的预热是什么样 [#what-bad-warmup-looks-like]
 
-- **Synthetic blasting**: sending 200 identical messages a day to the same handful of recipients. Looks great on a vendor dashboard. Looks awful to Gmail.
-- **Throwaway pools**: generating recipient mailboxes from free providers on the fly. Providers know what disposable inboxes look like and weight signals from them at zero, or worse.
-- **Open/click theatre**: simulating opens and clicks at unrealistic rates. Apple Mail Privacy already pollutes open rates; pumping the number from a bot makes the entire signal worthless.
-- **Stopping at "ready"**: many tools stop warmup the moment campaigns begin. Reputation has to be maintained, not earned once and forgotten.
+- **机械式集中发送**：每天向固定的少数收件人发送 200 封一模一样的邮件。在服务商的仪表盘上看似漂亮，在 Gmail 看来却很糟糕。
+- **一次性邮箱池**：临时通过免费邮箱服务创建收件邮箱。服务商知道一次性邮箱的特征，会将这些邮箱产生的信号权重降为零，甚至视为负向信号。
+- **伪造打开与点击**：以不现实的比例模拟打开和点击。Apple 邮件隐私保护已经污染了打开率，再用机器人抬高数字，会让整个信号失去价值。
+- **一到“就绪”就停止**：许多工具在营销活动开始时立即停止预热。信誉需要维护，不能建立一次后就置之不理。
 
-## How long does it take?
+## 需要多长时间？ [#how-long-does-it-take]
 
-Domain warmup commonly takes 3–6 weeks to reach a stable state. New domains take longer than re-warming an existing one. New mailboxes on warmed domains often stabilise within a week or two if the domain reputation is already healthy.
+域名预热通常需要 3–6 周才能达到稳定状态。新域名比已有域名的重新预热需要更长时间。如果域名信誉已经良好，挂在已预热域名下的新邮箱通常能在一两周内稳定下来。
 
-What matters is not _finishing_ warmup: it's running it indefinitely at a low volume in parallel with your cold sending, so any reputation dip is caught and offset before campaigns hit it.
+关键不在于*完成*预热，而在于与冷邮件发送并行，长期维持低量预热，使任何信誉下滑都能在影响营销活动前被发现并抵消。
 
-## Free pools vs paid pools
+## 免费预热池与付费预热池 [#free-pools-vs-paid-pools]
 
-Free warmup pools are useful for testing but mix higher-risk participants. Paid pools should be stricter: only vetted, monitored mailboxes participate, and misbehaving senders are quarantined fast.
+免费预热池适合测试，但其中混有风险较高的参与者。付费预热池应更严格：只有经过审核和持续监测的邮箱才能参与，不当行为的发件人应迅速被隔离。
 
-In Warmbly, free-tier mailboxes never silently appear in the premium pool. Even dedicated-worker customers participate in the premium pool by default. Dedicated infrastructure isn't a reputation shortcut, it's an isolation tool.
+在 Warmbly 中，免费层级的邮箱不会悄悄混入高级预热池。即使使用独享工作节点，客户也默认参与高级预热池。独享基础设施是隔离工具，并不是提升信誉的捷径。
 
-## When to quarantine a mailbox
+## 什么时候应隔离邮箱 [#when-to-quarantine-a-mailbox]
 
-Complaints, bounces and tampering are things a mailbox does to other people, so they act early. Spam placement is different: it is a reading of reputation, and warming is how reputation recovers, so pulling a struggling mailbox out of warmup takes away the one thing that would fix it. Placement only ever slows a mailbox down. Our policy:
+投诉、退信以及对预热邮件的不当处理，会影响他人，因此会较早触发限制。垃圾邮件占比则不同：它反映的是信誉状态，而预热本身正是信誉恢复的手段。将信誉欠佳的邮箱移出预热，等于移除了本来能帮助它恢复的措施。因此，投递位置指标只会让邮箱降低发送速度。我们的政策如下：
 
 <HealthBands />
 
-- **Watch**: spam placement ≥ 10% over a 20-delivery sample, or complaint rate ≥ 0.03%. Lower volume, increase spacing.
-- **Throttled**: spam placement ≥ 20%. Warmup keeps running at half volume; cold volume is halved too. Lifts by itself once placement recovers.
-- **Quarantine**: complaint rate ≥ 0.10%, or bounce rate ≥ 5%, or repeated tampering with received warmup mail. 7-day removal from the paid pool.
-- **Block**: complaint rate ≥ 0.30%, or bounce rate ≥ 10%. 30-day block.
+- **观察**：在 20 次投递样本中，垃圾邮件占比 ≥ 10%，或投诉率 ≥ 0.03%。降低发送量，增大发送间隔。
+- **限流**：垃圾邮件占比 ≥ 20%。预热继续运行，但发送量减半；冷邮件发送量也减半。投递位置恢复后，限制会自行解除。
+- **隔离**：投诉率 ≥ 0.10%，或退信率 ≥ 5%，或反复不当处理收到的预热邮件。从付费预热池移除 7 天。
+- **封禁**：投诉率 ≥ 0.30%，或退信率 ≥ 10%。封禁 30 天。
 
-Which mailbox provider filed a message matters too. Google, Microsoft and Yahoo filter on sender reputation, the same reputation your cold email is judged on, so only their verdicts count. A small mail host runs its own filter with its own rules, so a message in its spam folder is not evidence that the mail is spam, and it is never held against the sender.
+由哪家邮箱服务商判定邮件位置也很重要。Google、Microsoft 和 Yahoo 会依据发件信誉进行过滤，而冷邮件也基于同样的信誉接受评估，因此只有这些服务商的判定会被计入。小型邮件服务商使用自己的过滤器和规则，邮件进入其垃圾邮件文件夹并不足以证明该邮件是垃圾邮件，也不会因此对发件人作负面处理。
 
-## Practical checklist
+## 实用清单 [#practical-checklist]
 
-1. Set up SPF, DKIM and DMARC before you start warming.
-2. Choose plain text. Save HTML for transactional mail.
-3. Use a sub-domain for cold sending (e.g. `outreach.acme.com`) so any reputation dip is isolated from your transactional domain.
-4. Start at 10/day, ramp +1/day, ceiling 40/day.
-5. Reply rate inside the pool around 30%.
-6. Don't stop warmup when you start campaigns.
-7. Watch placement weekly, not opens daily.
+1. 开始预热前先配置 SPF、DKIM 和 DMARC。
+2. 使用纯文本，把 HTML 留给事务性邮件。
+3. 使用子域名发送冷邮件（例如 `outreach.acme.com`），将可能发生的信誉下滑与事务性邮件域名隔离。
+4. 从每天 10 封开始，每天增加 1 封，上限为每天 40 封。
+5. 池内回复率保持在约 30%。
+6. 开始营销活动后不要停止预热。
+7. 每周关注投递位置，而不是每天关注打开率。
 
-> Warmup is reputation insurance, not a magic switch. Treat it like a habit your mailbox maintains, not a project you finish.
+> 预热是信誉保障，不是神奇开关。把它视为邮箱需要持续保持的习惯，而不是一个做完即可结束的项目。

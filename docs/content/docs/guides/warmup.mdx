@@ -1,416 +1,416 @@
 ---
-title: Warmup
-description: "Disclosed diagnostics, placement evidence, participation and conservative pacing."
+title: 邮箱预热
+description: 了解已向用户说明的诊断行为、投递位置证据、参与设置与保守的发送节奏。
 ---
 
-Warmup sends short, disclosed test messages between participating mailboxes and records where they land. It reveals configuration and delivery problems, but it does not guarantee inbox placement.
+预热会在参与的邮箱之间发送明确标注用途的简短测试邮件，并记录邮件最终进入的位置。它能发现配置和投递问题，但不能保证邮件进入收件箱。
 
-![A mailbox's Warmup tab: participation, today's sends against the ramp target, pool standing and the ramp settings](/guides/mailbox-warmup.webp)
+![邮箱的预热选项卡：参与状态、今日发送量与递增目标、预热池状态及递增设置](/guides/mailbox-warmup.webp)
 
-## Start warmup on a mailbox
+## 为邮箱开启预热 [#start-warmup-on-a-mailbox]
 
 <Steps>
 
 <Step>
 
-Open a mailbox from the Accounts list and go to the **Warmup** tab of its drawer.
+从“账户”列表打开邮箱，然后进入侧边面板的**预热**选项卡。
 
 </Step>
 
 <Step>
 
-Start warmup to turn on diagnostic sending.
+启动预热，启用诊断邮件发送。
 
 </Step>
 
 <Step>
 
-Choose where warmup mail is filed: **Its own folder** (the default), **Leave it in the inbox**, or **Archive it**.
+选择预热邮件的存放位置：**独立文件夹**（默认）、**保留在收件箱**或**归档**。
 
 </Step>
 
 <Step>
 
-Pause to stop sending but keep receiving, or Stop to turn off both while keeping the ramp history.
+“暂停”会停止发送但继续接收；“停止”会同时关闭收发，并保留发送量递增历史。
 
 </Step>
 
 </Steps>
 
-## Good to know
+## 使用须知 [#good-to-know]
 
-- Warmup is a paid feature: free organizations can connect mailboxes, but no warmup traffic is scheduled for them.
-- New mailboxes start with warmup off. Once on, it starts at `10` emails a day by default and climbs by `+1` a day to a ceiling of `40`.
-- Keep warmup on after campaigns start. A mailbox backing a live campaign drops to at most five warmup messages a day.
-- Warmup mail never appears in the unibox, and it is removed from the mailbox after 30 days by default.
-- Spam placement is judged at Google, Microsoft and Yahoo only. It slows a mailbox down but does not, on its own, quarantine or block it.
+- 预热是付费功能：免费组织可以连接邮箱，但系统不会为其安排预热流量。
+- 新邮箱默认关闭预热。启用后，默认从每天 `10` 封开始，每天增加 `+1` 封，最高达到 `40` 封。
+- 开始营销活动后也应保持预热。用于正在运行的营销活动的邮箱，每天最多发送五封预热邮件。
+- 预热邮件不会出现在统一收件箱中，默认在 30 天后从邮箱删除。
+- 仅根据 Google、Microsoft 和 Yahoo 上的垃圾邮件投递情况进行判断。这类情况会让邮箱减慢发送，但本身不会导致隔离或封禁。
 
 <Fold>
 
-## What warmup is and who gets it
+## 预热的作用与可用范围 [#what-warmup-is-and-who-gets-it]
 
-Warmup sends disclosed automated diagnostics between participating mailboxes. It measures observed placement and bounded actual-message DKIM evidence. It does not establish organic engagement or guarantee reputation improvement or inbox placement.
+预热会在参与的邮箱之间发送明确标注用途的自动化诊断邮件。它测量实际观察到的邮件位置，并收集有明确适用范围的真实邮件 DKIM 证据。它不能证明存在自然互动，也不保证提升信誉或改善收件箱到达情况。
 
-<Callout type="info" title="Warmup is a paid feature">
-  Free organizations can connect mailboxes, but no warmup traffic is scheduled for them; pending warmup activity is skipped rather than sent.
+<Callout type="info" title="预热是付费功能">
+  免费组织可以连接邮箱，但系统不会为其安排预热流量；尚未执行的预热活动会被跳过，不会发送。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Why it works
+## 预热为何有效 [#why-it-works]
 
-Diagnostics reveal configuration and delivery problems, not whether real recipients welcome outreach. Provider acceptance is not inbox placement; synthetic replies are not human feedback. Missing observations remain unknown.
-
-</Fold>
-
-<Fold>
-
-## How it works
-
-With warmup enabled, Warmbly repeatedly picks a partner mailbox (avoiding recent ones), decides whether to start a thread or reply to one, sends a short plaintext message through that mailbox's worker, then records stats and schedules the next send.
-
-Diagnostics carry task/sender/recipient-bound application tokens and disclose automation and hypothetical scenarios. They use configured mailbox identities and no open/click pixels.
-
-Providers may strip headers or replace identifiers. Exact authorized lineage and send-result identifiers correlate diagnostics; missing or ambiguous lineage stays closed. Tokens identify application-owned traffic, not cryptographic authentication.
-
-When an SMTP relay rewrites a Message-ID, a valid recipient-bound verification token, the expected sender address and a confirmed send can authorize one received copy. Replies and message-specific DKIM verification use that copy's received identifier. Headerless arrivals still require an exact confirmed identifier for new diagnostic lineage; a matching subject or mailbox pair alone does not authorize a reply. Arrivals held before send confirmation or during a verification outage are retained and retried automatically while their token remains valid.
-
-New mailboxes default off. Independent send/receive controls and shared daily/rolling limits are on the Warmup tab. Start/resume enables disclosed automated sending and, when starting from Off or legacy, receiving with provider-supported spam rescue, reads, importance and stars or flags. Pause preserves separately authorized receiving, and Stop disables both while retaining ramp history and holds. Recipient-only cannot reply. Sender-only does not authorize recipient engagement. Existing receive-enabled diagnostic mailboxes also use these actions after the consumer, backend and workers are upgraded; no new setting or data migration is needed. Existing NULL stays legacy until explicit action; unrelated edits do not relabel it. Cloud controls require updated Cloud replicas. See [send safety](/development/send-safety/).
-
-### When a send fails
-
-The Warmup tab shows provider failures from the last 24 hours with their reported time when no later warmup send has been confirmed. The message expires even on an already-open page without another send. A lack of confirmed delivery is not proof that the mailbox is still failing. Provider and sign-in errors appear immediately; worker-loading hiccups do not.
-
-A worker-loading warning appears only for an active, sending-enabled mailbox after repeated loading failures span at least an hour and the latest failure is less than an hour old. It expires when that evidence becomes stale, including on an already-open page, and is hidden when participation is paused or stopped. One historical failed attempt is never displayed indefinitely as an active loading problem. A later provider-confirmed warmup send clears it; synchronization or a dispatched task alone does not prove delivery.
-
-"The sending worker has not loaded this mailbox yet" means that attempt did not send. It is not proof of a deliverability hold, a refused sign-in or an IP allowlist problem. Active mailboxes are reloaded automatically; after a worker restarts, it keeps reporting its restart until the backend acknowledges the request to reload its mailboxes.
-
-Persistent loading failures and pending warmup tasks at least an hour past their intended schedule are checked every five minutes and reported to configured operator channels and error tracking. The latter is a dispatch problem, not evidence of rejected credentials. The local dispatcher persists a five-minute retry delay after internal failures so an old failing batch cannot indefinitely block newer tasks. Backoff does not alter the intended send time, clear a safety hold, or bypass provider limits. A send whose preparation was interrupted before it was handed to a worker (for example by a restart) is retired after ten minutes, so it never holds up the mailbox's next warmup email.
-
-A missing mailbox also requests another reload through the worker heartbeat. Existing warmup sends stuck before execution recover automatically: after ten minutes, the scheduler retires a nonce-protected command only when neither worker execution nor a delivery receipt exists, refunds its reserved count, and resumes the mailbox's normal schedule. Delayed copies of the retired command cannot send. Customers do not need to disconnect or re-add their mailboxes. Actually started sends with missing outcomes, conflicting outcomes, provider cooldowns, authentication failures and other safety holds are not cleared by this repair.
-
-Recovery runs at backend startup and every minute in bounded batches. The ten-minute cutoff is unchanged: it protects recent authorizations, not a waiting period added after each release. Existing older commands can be retired on the first pass; large fleets can need subsequent passes to reseed every schedule. Sending hours, quotas and actual provider failures still apply.
-
-Kafka workers process independent mailbox lanes concurrently instead of making the whole worker wait for one command. Older queued commands are grouped by their mailbox payload too. The broker checkpoint never passes unfinished or failed work, and failed subscriptions reopen for replay. The default is eight lanes; see [worker configuration](/development/configuration/#workers).
-
-Unacknowledged warmup filing actions remain durable. They retry every five minutes initially, then every fifteen minutes after twenty minutes of pending time, capped at every thirty minutes after an hour. Repeated arrivals do not reset that age. This reduces repeat commands during a worker backlog without discarding pending filing or counting it as a failed send.
-
-If outbound admission refuses a warmup command before publication, a successful deferral returns it to the schedule without recording a failed send. A deferral whose database outcome is uncertain is not treated as proof of failure. Existing records affected by an older preparation-result race also recover automatically, but only when the recorded internal preparation failure predates the new authorization and there is no execution, outbound reservation, provider-confirmed send or receipt. Only that provably unstarted command's false conflict is released; genuine conflicting outcomes remain held.
-
-Follow a provider-specific error when one is shown. Google and Microsoft sign-ins use their native APIs, not SMTP settings. Reconnect those mailboxes only for a reported sign-in or permission error. SMTP host, port, password and IP allowlist checks apply to SMTP mailboxes when the error reports a mail-server connection problem. Warmbly Cloud makes those connections from its own network, not your self-hosted instance's address.
-
-Recovery does not bypass paused participation, provider limits or deliverability holds. If the warning persists, give support the mailbox address and the failure time so it can be matched to the worker's loading and sending records.
-
-### Where the content comes from
-
-Message generation stays off the live sending path. When an AI provider is configured, a background batch builds complete conversation plans (a subject, an opening, and five alternating reply turns), each validated against a strict schema, checked for robotic language, and passed through a safety lint before entering the active bank. When the operator has also configured TypeSafe (`TYPESAFE_API_KEY`), each thread is judged for pitches and generated-sounding filler before entering the bank, and the thread text is sent to TypeSafe for that.
-
-Canonical turns use actual alternating configured identities and pinned subject/source/version. Exact-parent continuation preserves facts and closes exhausted, retired or missing threads. A varied vetted bank of disclosed hypothetical exercises supplies fallback. Generated prose never claims a provider check passed.
-
-The controller runs every six hours against the last seven days of demand: at least 200 active threads, up to 5,000, refreshing the most-used content, at most 250 threads per batch and 1,000 per day. Threads are retired automatically when at least 3 of 20 or more sampled deliveries land in spam and the rate is `15%` or higher. Admins monitor it but never refill it by hand.
+诊断能发现配置和投递问题，不能说明真实收件人是否欢迎你的邮件。服务商接受邮件不等于邮件进入收件箱，模拟回复也不等于真人反馈。未观察到的情况仍然属于未知。
 
 </Fold>
 
 <Fold>
 
-## Pools
+## 工作原理 [#how-it-works]
 
-A pool is the set of mailboxes that warm each other. Your mailbox exchanges warmup mail within its own pool, with the mirrored crossings documented below. Every instance has both pools from install, so a self-hosted instance warms within its own pools from the first mailbox; [Warmbly Cloud](/guides/warmbly-cloud/) is how it joins the hosted one instead.
+启用预热后，Warmbly 会反复选择一个伙伴邮箱（避开近期使用过的伙伴），决定新建会话还是回复现有会话，通过该邮箱的工作节点发送简短的纯文本邮件，然后记录统计信息并安排下一次发送。
 
-| Pool | Who is in it |
+诊断邮件带有与任务、发件人和收件人绑定的应用令牌，并明确说明这是自动化邮件、使用的是假设场景。邮件使用已配置的邮箱身份，不包含打开或点击跟踪像素。
+
+服务商可能移除邮件头或替换标识符。系统通过精确且已获授权的来源链和发送结果标识符关联诊断邮件；来源缺失或不明确时，不会开放相关操作。令牌用于识别应用自身的流量，并不等同于加密身份验证。
+
+SMTP 中继改写 Message-ID 时，有效的收件人绑定验证令牌、预期发件地址和已确认的发送记录，可以授权接收一份邮件副本。回复和针对该邮件的 DKIM 验证使用这份副本接收时的标识符。对于没有相关邮件头的来信，建立新的诊断来源链仍然需要精确匹配已确认的标识符；仅凭主题或邮箱配对相同，不能授权回复。在发送确认之前或验证服务中断期间暂存的来信会被保留，并在令牌仍有效时自动重试。
+
+新邮箱默认关闭预热。“预热”选项卡提供相互独立的发送和接收控制，以及共享的每日和滚动限额。启动或恢复会启用明确标注用途的自动化发送；从关闭状态或旧版状态启动时，也会启用接收，以及服务商支持的垃圾邮件移出、已读、重要标记、星标或旗标操作。暂停会保留单独授权的接收，停止则会关闭两个方向，同时保留递增历史和暂停发送限制。仅接收的邮箱不能回复，仅发送的邮箱也未授权接收端互动。消费者、后端和工作节点升级后，现有已启用接收的诊断邮箱也会使用这些操作，无需新增设置或迁移数据。现有 NULL 状态在明确操作前仍按旧版处理，无关编辑不会改变其分类。Cloud 控制需要更新后的 Cloud 副本。参见[发送安全](/development/send-safety/)。
+
+### 发送失败时 [#when-a-send-fails]
+
+当最近 24 小时内出现服务商失败，且之后没有已确认的预热发送时，“预热”选项卡会显示该失败及其报告时间。即使页面一直打开、没有新的发送，这条信息也会到期消失。没有已确认的投递，并不能证明邮箱仍在失败。服务商错误和登录错误会立即显示，工作节点加载过程中的短暂问题则不会。
+
+只有邮箱处于活跃状态、已启用发送，且反复加载失败持续至少一小时、最近一次失败发生在一小时内时，才会显示工作节点加载警告。证据过期后，警告会消失，已经打开的页面也是如此；暂停或停止参与时，警告也会隐藏。单次历史失败不会一直显示为当前的加载问题。之后经服务商确认的预热发送会清除警告；仅完成同步或派发任务不能证明邮件已投递。
+
+“发送工作节点尚未加载此邮箱”表示这次尝试没有发送邮件，不能据此认定存在邮件送达限制、登录被拒或 IP 白名单问题。活跃邮箱会自动重新加载；工作节点重启后，会持续报告重启状态，直到后端确认收到重新加载其邮箱的请求。
+
+系统每五分钟检查一次持续加载失败，以及比预定时间晚至少一小时仍未执行的预热任务，并将其报告到已配置的运维通知渠道和错误跟踪系统。后一种情况属于派发问题，不能证明凭据遭到拒绝。本地派发器在内部失败后会持久化五分钟的重试延迟，避免旧的失败批次无限阻塞新任务。退避不会改变原定发送时间、清除安全暂停限制或绕过服务商限额。若发送准备在交给工作节点之前中断，例如发生重启，该发送会在十分钟后退出，从而不再阻碍邮箱的下一封预热邮件。
+
+邮箱缺失时，也会通过工作节点心跳再次请求加载。现有在执行前卡住的预热发送会自动恢复：十分钟后，只有确认既没有工作节点执行记录，也没有投递回执时，调度器才会使受随机令牌保护的命令失效，退还其预留计数，并恢复邮箱的正常计划。已经失效的命令即使延迟到达，也无法发送。客户无需断开或重新添加邮箱。对于已实际开始但结果缺失的发送、互相冲突的结果、服务商冷却期、身份验证失败及其他安全暂停限制，这项修复不会清除它们。
+
+恢复会在后端启动时执行，此后每分钟按有界批次运行。十分钟的截止条件保持不变：它用于保护近期授权，并不是每次发布后额外增加的等待期。已超过时限的现有命令可在第一轮退出；大型节点集群可能需要后续轮次才能重新建立所有计划。发送时段、配额和实际服务商失败仍然有效。
+
+Kafka 工作节点会并行处理各自独立的邮箱通道，避免一条命令阻塞整个工作节点。旧的排队命令也会按其邮箱载荷分组。消息代理的检查点不会越过未完成或失败的任务，失败的订阅会重新打开以重放消息。默认使用八条通道；参见[工作节点配置](/development/configuration/#workers)。
+
+尚未确认的预热邮件归档操作会持久保存。最初每五分钟重试一次，等待满二十分钟后改为每十五分钟一次，满一小时后最多每三十分钟一次。重复来信不会重置等待时长。这样可以在工作节点积压时减少重复命令，同时不丢弃待处理归档，也不把它记作发送失败。
+
+如果出站准入在发布前拒绝了预热命令，成功延期后会将其放回计划，而不记录发送失败。如果延期的数据库结果不确定，也不会把它视为失败证据。受旧版准备结果竞态影响的现有记录也会自动恢复，但前提是记录的内部准备失败早于新的授权，且不存在执行记录、出站预留、服务商确认的发送或回执。只有这种能够证明确实尚未开始的命令，其误报冲突才会解除；真实的结果冲突仍保持暂停。
+
+出现服务商专属错误时，应按该错误处理。Google 和 Microsoft 登录使用各自的原生 API，不使用 SMTP 设置。只有报告登录或权限错误时，才需要重新连接这些邮箱。SMTP 主机、端口、密码和 IP 白名单检查适用于报告邮件服务器连接问题的 SMTP 邮箱。Warmbly Cloud 从自己的网络建立这些连接，不使用你的自托管实例地址。
+
+恢复不会绕过暂停的参与状态、服务商限额或邮件送达限制。如果警告持续存在，请向支持人员提供邮箱地址和失败时间，以便与工作节点的加载及发送记录对应。
+
+### 预热内容的来源 [#where-the-content-comes-from]
+
+邮件内容生成不在实时发送路径上进行。配置 AI 服务商后，后台批处理会创建完整的会话方案，包括主题、首封邮件和五轮交替回复。每份方案都要通过严格的结构校验、机械化语言检查和安全检查，才能进入活跃内容库。如果运维人员还配置了 TypeSafe（`TYPESAFE_API_KEY`），每个会话在入库前还会检查推销内容和明显像生成文本的冗余话术；为此，会话文本会发送给 TypeSafe。
+
+标准会话轮次使用实际配置的交替身份，并固定主题、来源和版本。延续时精确关联父邮件，以保持事实一致；已耗尽、已退役或缺失的会话会结束。系统还备有经过审核、形式多样且明确标注为假设练习的内容库作为回退。生成的文字绝不会宣称已通过服务商检查。
+
+控制器每六小时根据过去七天的需求运行一次：维持至少 200 个、最多 5,000 个活跃会话，更新使用最频繁的内容，每批最多 250 个会话、每天最多 1,000 个。当至少 20 次投递样本中有至少 3 次进入垃圾邮件，且比例达到或超过 `15%` 时，会话会自动退役。管理员负责监控，无需手动补充内容。
+
+</Fold>
+
+<Fold>
+
+## 预热池 [#pools]
+
+预热池是一组相互预热的邮箱。邮箱在所属池内交换预热邮件，也可以进行下文说明的双向跨池交换。每个实例安装后都包含两个池，因此自托管实例从第一个邮箱开始，就在自己的池内预热；连接 [Warmbly Cloud](/guides/warmbly-cloud/) 后，才能改为加入托管预热池。
+
+| 预热池 | 成员 |
 |------|--------------|
-| `premium` | Paid organizations' mailboxes. The default for paid accounts, isolated from lower-trust traffic. |
-| `free` | Lower-trust or trial mailboxes, kept separate so free traffic does not mix into premium reputation. |
+| `premium` | 付费组织的邮箱。付费账户默认使用此池，与可信度较低的流量隔离。 |
+| `free` | 可信度较低或试用中的邮箱，单独存放，以免免费流量混入付费池的信誉范围。 |
 
-A mailbox belongs to exactly one pool at a time. When its plan changes the mailbox moves between pools rather than joining a second one, and it takes its warmup standing with it, so a quarantine or block is not cleared by changing tier.
+一个邮箱同时只能属于一个池。套餐变更时，邮箱会在池之间迁移，而不会同时加入第二个池；原有预热状态会随之保留，因此改变套餐等级不能清除隔离或封禁。
 
-Premium access is to the safe partner set, not just to receivers with paid subscriptions. Its eligible recipients include free-tier mailboxes that have been pool members for at least three days, are healthy now, and belong to another workspace in good standing. These partners are available even when the premium tier is large. Both tiers are weighted by coverage, observed placement and exchange balance, without a paid-receiver-first preference. Every borrowed mailbox is checked against its own pool's standing before use. Mailboxes remain members of their original pool; this is a permitted exchange, not a pool merge.
+付费池提供的是一组安全的伙伴，而不仅限于拥有付费订阅的收件人。符合条件的收件人也包括入池至少三天、目前健康、属于另一个状态良好工作区的免费邮箱。即使付费池已经很大，这些伙伴仍可使用。两个等级都会根据覆盖范围、观察到的邮件位置和交换平衡分配权重，不优先选择付费收件人。每次借用邮箱前，都会检查它在所属池中的状态。邮箱仍属于原池；这是允许的交换，不是合并预热池。
 
-The borrow is returned: a free-tier mailbox that meets the same bar (healthy now, a member for at least three days, in a workspace in good standing) may write to a paying mailbox that wrote to it in the last 14 days, and to no other paying mailbox. A visit is returned alongside the mailbox's own tier rather than after it, so a paying inbox is written back to even when the free tier is large. Nothing unsolicited from the free tier reaches a paying inbox: the paying side always opens the exchange, and a free mailbox on watch keeps warming in its own tier but stops calling on paying ones.
+跨池交换也允许回访：满足相同标准的免费邮箱，即当前健康、入池至少三天且工作区状态良好，可以写信给过去 14 天内曾给它发送邮件的付费邮箱，但不能写给其他付费邮箱。回访与本等级伙伴一起参与选择，不排在其后，因此即使免费池很大，付费收件箱仍有机会收到回复。免费池不会未经邀请向付费邮箱发信：交换始终由付费一方发起；处于观察状态的免费邮箱仍在自己的等级中预热，但会停止向付费邮箱发信。
 
-Every draw also favours the inbox that is owed the most. A mailbox that has sent to many partners and heard back from few is drawn up to four times as often as one in balance, and the preference fades as the pool pays it back, so traffic settles near parity instead of overshooting. The other way is bounded too: an inbox receives at most about twice what it sends in a day (never fewer than 10, never more than 60), and once it reaches that it is left out of every draw for the rest of the day. Free-tier senders stop at three quarters of that, so the rest of every inbox's day is kept for premium mailboxes. A mailbox with nobody left to write to sends nothing and tries again later rather than mailing the same partner twice.
+每次选择还会偏向尚未得到足够回信的收件箱。向许多伙伴发过信、却收到较少回信的邮箱，被选中的频率最高可达到收发平衡邮箱的四倍；随着池内回信补足，这种偏好会减弱，使流量接近平衡而不过度补偿。另一方向也有限制：一个收件箱每天最多接收约为自身发送量两倍的邮件，下限为 10 封、上限为 60 封；达到上限后，当天剩余时间不会再被选中。免费发件人达到这一额度的四分之三后就会停止，给每个收件箱余下的当天容量留给付费邮箱。如果已没有可发信的伙伴，邮箱会暂不发送，稍后再试，而不会重复向同一个伙伴发信。
 
-Partner/domain diversity broadens diagnostic coverage. It is not identity rotation to evade quotas or evidence of reputation efficacy.
+伙伴和域名多样性可以扩大诊断覆盖范围。它不是为规避配额而轮换身份，也不能证明对信誉有效。
 
-A [placement seed inbox](/guides/placement-tests/#your-own-seed-inboxes) never joins a pool: marking a mailbox as a seed turns its warmup off, and starting warmup on a seed is refused, because a seed that exchanged mail with the pool would stop being a stranger to every sender in it. It never sends campaign mail either.
+[投递位置测试种子邮箱](/guides/placement-tests/#your-own-seed-inboxes)不会加入预热池：将邮箱设为种子邮箱会关闭其预热，之后也不能启动预热。因为种子邮箱一旦与池内邮箱交换邮件，就不再是池内发件人的陌生收件人。种子邮箱也不会发送营销活动邮件。
 
-Self-hosted instances warm only among their own mailboxes unless they are linked to Warmbly Cloud, which puts their enrolled mailboxes into these same pools. See [Warmbly Cloud for self-hosted instances](/guides/warmbly-cloud/).
+自托管实例只会在自己的邮箱之间预热，除非连接 Warmbly Cloud，将已登记的邮箱加入这些相同的池。参见[自托管实例使用 Warmbly Cloud](/guides/warmbly-cloud/)。
 
-### Choosing partners
+### 选择伙伴邮箱 [#choosing-partners]
 
-Outside-workspace partners broaden observations; unlinked self-hosted instances may have only their own mailboxes. Diversity does not turn automated traffic into organic engagement.
+工作区外的伙伴能扩大观察范围；未连接 Cloud 的自托管实例可能只有自己的邮箱。多样性不会把自动化流量变成自然互动。
 
-Within that order, partners are picked by weight rather than at random. Three things move the weight:
+在上述选择顺序内，伙伴按权重选择，而不是完全随机。以下三项会影响权重：
 
-- **Host and domain coverage.** Eligible mail hosts start with balanced total weight, so a host with many custom domains does not crowd out a consumer host sharing one domain, such as Gmail. Recently used domains are downweighted within each host; partner no-repeat rules and daily receiving caps still apply. Gmail and Google Workspace are distinct hosts, as are Outlook.com and Microsoft 365.
-- **Where you are landing.** Warmbly tracks your spam-placement rate separately for each recipient mail host over the last seven days: who actually runs that recipient's mail (Google Workspace, Microsoft 365, Zoho Mail, Hostinger and so on), read from the partner's mail servers rather than its address, so two custom domains on different hosts are judged apart. A mailbox landing in spam at one host but not the others is sent fewer partners on that host until the rate falls, without waiting for an overall health band to trip.
-- **Your routing rules**, when you have configured any. A rule's weight multiplies a partner's chance; a weight of `0` is not a weight but an exclusion, so that pairing never happens.
+- **邮件主机和域名覆盖。** 符合条件的邮件主机初始总权重均衡，因此拥有许多自定义域名的主机不会挤占 Gmail 这类共用一个域名的个人邮箱主机。每个主机内近期使用过的域名会降低权重；伙伴不重复规则和每日接收上限仍然有效。Gmail 与 Google Workspace 视为不同主机，Outlook.com 与 Microsoft 365 也是如此。
+- **你的邮件进入的位置。** Warmbly 会按收件人实际使用的邮件主机，分别跟踪过去七天的垃圾邮件投递率：通过伙伴的邮件服务器，而不是邮箱地址，识别实际运营其邮件的服务，例如 Google Workspace、Microsoft 365、Zoho Mail 或 Hostinger。因此，位于不同主机上的两个自定义域名会分开判断。如果某个邮箱只在一个主机上进入垃圾邮件，在其他主机上没有，系统就会减少为它选择该主机上的伙伴，直到比例下降，无需等到整体健康等级触发。
+- **已配置的路由规则。** 规则的权重会乘到伙伴被选中的概率上；权重为 `0` 表示排除，而不是普通权重，因此该配对绝不会发生。
 
-Balanced starting weights are not a fixed sending ratio. Available recipients, health, daily caps, recent pairings, placement feedback and routing rules still determine the actual split. More traffic to a host does not establish improved inbox placement.
+均衡的初始权重不等于固定的发送比例。可用收件人、健康状态、每日上限、近期配对、投递位置反馈和路由规则仍会决定实际分布。向某个主机发送更多邮件，不能证明收件箱到达情况有所改善。
 
-An exclusion is honoured even when it leaves nothing: if every available partner is excluded by your rules, the mailbox sends no warmup mail that tick and tries again later, rather than mailing someone you ruled out because the pool had nobody else. The same holds when a partner writes first: your mailbox does not reply to an address your rules exclude. Rules apply to paid-tier mailboxes.
+即使排除规则导致没有任何可用伙伴，系统也会遵守规则：如果所有伙伴都被排除，该邮箱在本轮不发送预热邮件，稍后再试，不会因为池内没有其他人就向被排除的地址发送。伙伴先发来邮件时同样如此：邮箱不会回复规则排除的地址。路由规则适用于付费等级邮箱。
 
-A struggling host is downweighted, never excluded: a sender that stops mailing a host entirely can never discover that it recovered there. A host is only judged once at least five of your warmup emails have verifiably arrived there in the window, so one bad delivery out of two is treated as noise rather than a pattern. You can see the numbers this reads under **Deliverability > Warmup inbox placement**, by expanding a provider to its hosts.
+表现不佳的主机只会降低权重，不会被排除；如果完全停止向某个主机发送，发件人就无法知道自己在该主机上是否恢复。只有在统计窗口内，至少五封预热邮件已被验证到达该主机，才会对其作出判断，因此两封中有一封表现不好会被视为噪声，而不是稳定模式。你可以在**邮件送达能力 > 预热收件箱到达情况**中展开服务商，查看其下各主机的相关数据。
 
-### Mailboxes the pool cannot reach
+### 预热池无法连接的邮箱 [#mailboxes-the-pool-cannot-reach]
 
-A warmup email only counts once the recipient's own sync finds it. Every partner is also weighted by how much of the pool's warmup mail to it arrived over the last seven days, so a partner whose mail half arrives is drawn about half as often.
+只有收件人自身的同步发现邮件后，这封预热邮件才计入已到达。伙伴权重也会参考过去七天池内发给它的预热邮件中实际到达的比例，因此只有一半邮件能到达的伙伴，被选中的频率也大约减半。
 
-A partner that received at least `5` warmup emails from at least `2` different workspaces in that week, and verifiably received none of them, is not offered to anyone. That is a mailbox whose domain has no working mail server, an address that no longer exists, or a server that refuses the mail, and every send to it would only come back to you as a bounce. Emails sent in the last 6 hours are not counted yet, so a slow sync is never mistaken for a dead inbox, and losses from a single workspace never take a partner out, so one sender's problem is not blamed on the recipient.
+如果一个伙伴在该周有至少 `5` 封预热邮件从至少 `2` 个不同工作区发给它，却没有任何一封经验证到达，它就不会再作为伙伴提供给任何邮箱。这可能是域名没有可用邮件服务器、地址已不存在，或服务器拒绝收信的邮箱，继续发送只会给你带来退信。最近 6 小时发送的邮件暂不计入，避免把同步缓慢误判为失效收件箱；仅一个工作区的邮件丢失也不会移除伙伴，避免把单个发件人的问题归咎于收件人。
 
-Nothing is permanent about it. One warmup email that arrives brings the mailbox straight back, and as the week's evidence ages out it is offered again on its own. If it is your mailbox, the [Advisor](/guides/advisor/) says so and what to check, starting with the domain's MX records.
+这种排除并非永久。只要有一封预热邮件到达，邮箱就会立即恢复；随着一周内的证据逐渐过期，它也会自动重新进入候选。如果这是你的邮箱，[顾问](/guides/advisor/)会说明情况及检查项，首先是域名的 MX 记录。
 
-### Seeing the diversity you are getting
+### 查看伙伴邮箱的多样性 [#seeing-the-diversity-you-are-getting]
 
-The drawer shows confirmed partners/domains/workspaces and verified arrivals over seven days, locally or through Cloud. Pending and failed attempts do not count as confirmed sending. Narrow coverage is a diagnostic limitation, not a reputation verdict.
+侧边面板会显示本地或 Cloud 中过去七天已确认的伙伴、域名、工作区和经验证的到达量。待处理及失败尝试不计入已确认发送。覆盖面较窄意味着诊断存在局限，不能据此判定信誉。
 
-The **Analytics** tab of the same drawer charts the exchange over time: sent, received and replies per day, with the total received against the total sent for the range. The same numbers are in the [warmup analytics](/api/reference/analytics/#get-warmup-analytics) endpoint.
+同一侧边面板的**分析**选项卡会展示交换情况随时间的变化：每日发送、接收和回复量，以及所选时间范围内接收总量与发送总量的对比。[预热分析](/api/reference/analytics/#get-warmup-analytics)接口也提供相同数据。
 
-Pause preserves separate receiving permission; Stop disables both directions. Lost authority, disconnection, quarantine or block also restrict participation. Health alone is not consent.
+暂停会保留单独的接收权限，停止则会关闭两个方向。授权失效、断开连接、隔离或封禁也会限制参与。健康状态本身不等于同意参与。
 
 </Fold>
 
 <Fold>
 
-## Seeing where warmup lands
+## 查看预热邮件的投递位置 [#seeing-where-warmup-lands]
 
-Every warmup email a mailbox sends is looked for in the partner's mailbox, and when it arrives Warmbly records where: the primary inbox, a Gmail category tab (Promotions, Updates, Social or Forums), or spam. Nothing is estimated or sampled, and the history is kept for the life of the mailbox rather than only the latest day.
+邮箱每发出一封预热邮件，系统都会在伙伴邮箱中查找；邮件到达后，Warmbly 会记录其位置：主收件箱、Gmail 分类标签页（推广、动态、社交或论坛），或垃圾邮件。这里不做估算或抽样，历史会在邮箱存续期间保留，而不只保留最新一天。
 
-| Where | What it shows |
+| 位置 | 显示内容 |
 |-------|---------------|
-| **Inbox** column in the Accounts list | The mailbox's inbox rate over the last seven days, coloured by band. Click it to open the breakdown |
-| **Deliverability** tab in the mailbox drawer | The same rate with its counts, then day-by-day inbox, tabs and spam, the rate over time, and the split per recipient provider, for `7d` to `90d` |
-| **Deliverability > Warmup inbox placement** | The workspace total over time and per provider, and every mailbox ranked worst first |
+| “账户”列表的**收件箱**列 | 邮箱过去七天的收件箱到达率，按等级着色。点击可打开明细 |
+| 邮箱侧边面板的**邮件送达能力**选项卡 | 相同的到达率及计数，以及每日收件箱、分类标签页和垃圾邮件情况、到达率趋势和按收件服务商的分布，可查看 `7d` 至 `90d` |
+| **邮件送达能力 > 预热收件箱到达情况** | 工作区总量随时间及服务商的分布，并将各邮箱按表现从差到好排列 |
 
-The **inbox rate** is inbox plus category tabs over everything delivered in the last seven days: mail in Promotions was delivered and not filtered, which is what the number is asked to say. The tabs are still counted separately so you can see them.
+**收件箱到达率**等于过去七天进入收件箱和分类标签页的邮件数，占全部已到达邮件的比例：进入“推广”的邮件已投递且未被过滤为垃圾邮件，这正是该数字要表达的含义。分类标签页仍会单独统计，便于查看。
 
-| Inbox rate | Band |
+| 收件箱到达率 | 等级 |
 |------------|------|
-| `90%` or more | Healthy |
-| `80%` to `90%` | Watch |
-| Below `80%` | Landing in spam |
+| `90%` 或以上 | 健康 |
+| `80%` 至 `90%` | 观察 |
+| 低于 `80%` | 进入垃圾邮件 |
 
-The rate is taken at Google, Microsoft and Yahoo only, the providers that judge a mailbox. Smaller mail hosts run their own filters, so their spam folders never count toward it: a mailbox whose warmup mail only reached small hosts shows no rate rather than one built from them. Other mail hosts are still shown: their inbox rate sits right under the headline in the drawer and on **Deliverability**, and they appear in the daily charts, the counts and the per-provider breakdown. It only appears once `20` deliveries at those three are in the window, the same sample the pool needs before it acts on spam placement. Until then the mailbox shows how far along it is (`8/20`) rather than a percentage that would swing on every delivery. The mailbox's health score is capped at its inbox rate, so a mailbox with some mail in spam reads `97`, not a flat `100`.
+该比例仅取 Google、Microsoft 和 Yahoo 的数据，这三家服务商用于评估邮箱。较小的邮件主机运行自己的过滤器，因此它们的垃圾邮件文件夹不计入该比例：如果邮箱的预热邮件只到达了小型主机，界面不会显示由这些主机构成的到达率。其他邮件主机的数据仍会展示：侧边面板和**邮件送达能力**页面在主要指标下方显示它们的收件箱到达率，并在每日图表、计数和按服务商的明细中呈现。只有统计窗口内这三家服务商的到达量达到 `20` 封，才会显示主要比例，这与预热池根据垃圾邮件投递情况采取措施所需的样本一致。达到之前，邮箱显示进度，例如 `8/20`，而不是每次投递都会大幅波动的百分比。邮箱健康分数以收件箱到达率为上限，因此有部分邮件进入垃圾邮件的邮箱可能显示 `97`，而不是统一显示 `100`。
 
-Filter by provider to distinguish observations from gaps. Historical rescued counts are requests, not confirmed moves or benefits. Receiving-authorized warmup can request spam rescue, but placement remains the originally observed folder, not a rewritten success after a move. Unconfirmed means not observed after timeout, not verified failure. First-folder evidence is separate from housekeeping; absent historical folders stay unknown. Days are UTC. See [warmup placement](/api/reference/analytics/#get-warmup-placement).
+按服务商筛选，可以区分已有观察与数据空白。历史垃圾邮件移出计数表示请求次数，不代表已确认移动或已产生收益。已获接收授权的预热可以请求移出垃圾邮件，但投递位置仍保留最初观察到的文件夹，不会在移动后改写为成功。“未确认”表示超时后仍未观察到，不等于已验证失败。首次所在文件夹的证据与日常整理操作分开保存；缺失的历史文件夹信息仍为未知。日期以 UTC 为准。参见[预热投递位置](/api/reference/analytics/#get-warmup-placement)。
 
 </Fold>
 
 <Fold>
 
-## The ramp
+## 发送量递增计划 [#the-ramp]
 
-| Setting | Default | Meaning |
+| 设置 | 默认值 | 含义 |
 |---------|---------|---------|
-| Start volume | `10`/day | Warmup emails on day one |
-| Daily increase | `+1`/day | How much the target grows daily |
-| Ceiling | `40`/day | Where the ramp stops climbing |
+| 起始发送量 | `10`/天 | 第一天的预热邮件数 |
+| 每日增量 | `+1`/天 | 目标每天增加的数量 |
+| 上限 | `40`/天 | 递增停止时的最高目标 |
 
-Configured diagnostic targets start at 10/day and rise by one toward 40/day before other constraints. These are product pacing defaults, not universal safe volumes or readiness evidence.
+在其他限制生效之前，配置的诊断目标从每天 10 封开始，每天增加一封，最高每天 40 封。这些只是产品的默认发送节奏，不是普遍适用的安全发送量，也不是已做好发送准备的证据。
 
-On a self-hosted instance, a mailbox warmed by Warmbly Cloud runs the ramp, hours and days Warmbly Cloud holds for it. The Warmup tab edits those through the cloud, and hides the content segment, placement, folder and retention, which only apply to warmup sent from your instance. See [warmup settings](/guides/warmbly-cloud/#warmup-settings).
+在自托管实例上，由 Warmbly Cloud 预热的邮箱使用 Cloud 保存的递增计划、时段和日期。“预热”选项卡通过 Cloud 修改这些设置，并隐藏内容分组、投递位置、文件夹和保留期限，这些选项仅适用于从你的实例发送的预热邮件。参见[预热设置](/guides/warmbly-cloud/#warmup-settings)。
 
-Four things shape the real daily number: sends are spread across your warmup hours with jitter, the target is capped by how many eligible partners exist, a mailbox whose health drops gets reduced volume and wider spacing until it recovers, and a recent spam placement holds the ramp where it is.
+四项因素共同决定实际每日数量：发送会带随机抖动地分散在预热时段内；目标受符合条件的伙伴数量限制；健康状态下降的邮箱会减少数量、扩大间隔，直到恢复；近期进入垃圾邮件会暂停目标递增。
 
-The partner cap exists because a mailbox never writes to the same partner twice in a day. When it applies, the **Warmup** tab of the mailbox drawer says so: it shows the ramp's number next to how many partners are available to the mailbox today, and the target it reports is the lower of the two. The count can fall during the day as partners reach their daily limit, and it recovers the next day. The same tab names the pool the mailbox warms in.
+伙伴数量上限的原因是，同一个邮箱每天不会向同一伙伴发送两次。上限生效时，邮箱侧边面板的**预热**选项卡会说明：同时显示递增计划数量和今天可用的伙伴数量，并取两者中的较小值作为目标。伙伴达到每日限额后，可用数量可能在当天下降，次日恢复。该选项卡也会显示邮箱所属的预热池。
 
-Warmup hours are read in the mailbox's timezone: its own when one is set on the **Settings** tab of its drawer, otherwise the workspace timezone under **Settings > Profile > Timezones**, and UTC when neither is set. Set the workspace timezone once and every mailbox that follows it reads its warmup hours in the team's day. A mailbox with its own timezone keeps it, and changing the workspace timezone does not change any mailbox's hours.
+预热时段按邮箱时区解释：若在侧边面板的**设置**选项卡中设了独立时区，就使用该时区；否则使用**设置 > 个人资料 > 时区**中的工作区时区；两者都未设置时使用 UTC。只需设置一次工作区时区，所有跟随工作区的邮箱都会按团队所在地的一天理解预热时段。有独立时区的邮箱会继续使用自己的设置，修改工作区时区不会改动任何邮箱配置的时段。
 
-While [Sending behavior](/guides/sending-behavior/) is on, which it is for a newly connected mailbox, warmup only sends when both the warmup hours and that workday allow it, and the Warmup tab says so above the hours. A mailbox connected after its workday ends therefore sends its first warmup email the next working morning. Switch the mailbox to **Fixed schedule** on its **Sending** tab to use the warmup hours alone. Changing the warmup hours, days or timezone (the mailbox's own, or the workspace's for a mailbox that follows it), or switching sending behavior on or off, moves the queued warmup send at once. The mailbox list shows when the next warmup send is queued under the day's count.
+启用[发送行为](/guides/sending-behavior/)时，新连接的邮箱默认如此，只有预热时段和对应工作日都允许发送，预热才会发送；“预热”选项卡会在时段上方说明。因此，如果连接邮箱时当天工作日已结束，第一封预热邮件会在下一个工作日早晨发送。在邮箱的**发送**选项卡中切换为**固定计划**后，就只按预热时段发送。修改预热时段、日期、时区（邮箱独立时区，或跟随的工作区时区），或开关发送行为，都会立即重新安排排队中的预热发送。邮箱列表会在当日计数下方显示下一次预热发送的排队时间。
 
-Warmup hours must end later than they start on the same day. Equal or reversed hours are rejected, including a change to only one endpoint that would invalidate the stored window. Existing invalid windows are not widened or corrected automatically: pending sends stay unstarted and recheck after five minutes, while admin monitoring shows **Invalid warmup sending hours** until the configured window is corrected. Other send protections still apply after correction; this does not replay uncertain sends or confirm mailbox recovery.
+预热结束时间必须晚于同一天的开始时间。开始和结束相同或颠倒都会被拒绝，包括仅修改一端、却导致已存储时段无效的情况。现有无效时段不会被自动扩大或修正：待处理发送保持未开始，每五分钟重新检查一次，管理员监控会一直显示**预热发送时段无效**，直到配置被修正。修正后，其他发送保护仍然生效；修正不会重放结果不确定的发送，也不代表已确认邮箱恢复。
 
-### Holding the ramp on an early signal
+### 根据早期信号暂停发送量递增 [#holding-the-ramp-on-an-early-signal]
 
-If any warmup email lands in the spam folder of a Google, Microsoft or Yahoo recipient, that mailbox stops climbing immediately:
+只要有一封预热邮件进入 Google、Microsoft 或 Yahoo 收件人的垃圾邮件文件夹，该邮箱就会立即停止递增：
 
-- today's target is cut by about a quarter, for 48 hours
-- the daily increase pauses for three days
-- the paused days are subtracted rather than made up, so the ramp does not jump three steps in one morning when it resumes
+- 当天目标减少约四分之一，持续 48 小时。
+- 每日增量暂停三天。
+- 暂停的天数会被扣除，不会补回，因此恢复时不会在一个早晨突然跳升三个台阶。
 
-Another placement during a pause extends it and does not lift the ramp: repeated spam placement can only ever slow a mailbox down.
+暂停期间再次出现垃圾邮件投递，会延长暂停，不会抬高递增目标：反复进入垃圾邮件只会进一步减慢邮箱发送。
 
-A landing at any other mail host never holds the ramp. Those hosts each run their own filter, so their spam folder says more about the server than about your mailbox; see [how spam placement is judged](#how-spam-placement-is-judged).
+在其他邮件主机上进入垃圾邮件不会暂停递增。这些主机各自运行自己的过滤器，因此它们的垃圾邮件文件夹更能反映服务器自身的判断，而不是你的邮箱状况；参见[如何判断垃圾邮件投递](#how-spam-placement-is-judged)。
 
-Nothing needs to be switched on and no health band has to trip first. That matters because the bands need a sample before they can judge a mailbox at all (twenty verified warmup deliveries in seven days, a hundred delivered in thirty), which a mailbox in its first fortnight has not reached. Without this, the mailbox landing in spam on day three would keep adding an email a day until it had sent enough to be judged.
+这项机制无需额外开启，也不必先触发健康等级。原因是，健康等级必须有足够样本才能判断邮箱，例如七天内二十封经验证到达的预热邮件、三十天内一百封已到达邮件，而刚开始两周的邮箱通常还达不到。如果没有这项机制，一个第三天就进入垃圾邮件的邮箱，仍会每天多发一封，直到积累到足够样本才受到评估。
 
-Placement slowdown and ramp pause have different windows. The drawer shows observed targets/holds. Lifecycle actions retain ramp history and restrictive holds rather than erasing negative evidence.
+投递导致的减速和递增暂停使用不同的时间窗口。侧边面板显示观察到的目标和暂停限制。生命周期操作会保留递增历史和限制性暂停，而不会抹去负面证据。
 
-<Callout type="info" title="Warmup and campaigns coexist">
-  Keep warmup on after campaigns start. A mailbox backing a live campaign drops to at most five warmup messages per day, leaving the campaign as primary traffic. Warmup does not make repetitive or unwanted copy safe: you still need real targeting, personalization, suppression, and unsubscribe support.
+<Callout type="info" title="预热与营销活动可以同时进行">
+  开始营销活动后也应保持预热。支持正在运行的营销活动的邮箱，每天最多发送五封预热邮件，让营销活动成为主要流量。预热不能让重复或不受欢迎的内容变得安全：你仍然需要真实的目标受众筛选、个性化、禁止发送名单和退订支持。
 </Callout>
 
 </Fold>
 
 <Fold>
 
-## Replies
+## 回复 [#replies]
 
-Configured diagnostic turns continue disclosed scenarios, not organic relationships. Exact pinned plans and subjects are reloaded, each parent is answered once, and exhausted, retired or missing threads close.
+配置的诊断轮次是在延续明确说明的假设场景，不是在建立自然关系。系统会重新加载精确固定的方案和主题，每封父邮件只回复一次；会话已耗尽、退役或缺失时便结束。
 
-Replies thread properly with a real `Re:` subject and `In-Reply-To` header, and candidates must be between 45 minutes and seven days old, so nothing is answered instantly or revived indefinitely.
+回复使用真正的 `Re:` 主题和 `In-Reply-To` 邮件头，以正确归入会话；候选邮件必须发送于 45 分钟至七天之前，避免立即回复或无限期重启旧会话。
 
-Receiving warmup mail can also prompt an answer directly. When a verified warmup email arrives, the recipient sometimes points its next scheduled send back at whoever wrote, 45 minutes to 5 hours later and inside its own warmup hours. That is a re-pointing, not extra work: each mailbox has one warmup send queued at a time, so a reply-back moves that send earlier and aims it, and can never push a send the mailbox had already planned sooner. When that send is already answering someone, the new email is not answered, so replies never crowd out new threads. The chance is the recipient's own reply rate (raised for a sender in [recovery](#recovery-engagement)), drawn once when the reply is scheduled rather than again when it sends, and it stops before a thread reaches its message cap so replies cannot answer replies indefinitely. A reply crosses the free and paid tiers like the mail it answers: a paid mailbox answers a free partner that wrote to it, and a free mailbox answers a paid one while it is healthy and its workspace is in good standing.
+接收预热邮件也可能直接触发回复安排。经验证的预热邮件到达后，收件人有时会将下一次计划发送改为回复发件人，安排在 45 分钟至 5 小时后，且位于自己的预热时段内。这是调整原计划的对象，不是新增工作：每个邮箱同一时间只排队一次预热发送，因此回信会提前并重新定向该次发送，绝不会把本来安排得更早的发送推迟。如果那次发送已经用于回复其他人，新来信就不会得到回复，避免回复挤占新会话。回复概率使用收件人自己的回复率（对处于[恢复状态](#recovery-engagement)的发件人会提高），在安排回复时抽取一次，实际发送时不再重新抽取；在线程达到邮件数量上限之前就停止，防止无限互相回复。回复可以像原邮件一样跨越免费和付费等级：付费邮箱会回复来信的免费伙伴；免费邮箱在自身健康且工作区状态良好时，也会回复付费伙伴。
 
-Scheduling respects windows, provider feedback, shared limits and spacing. Jitter distributes load, not human identities. Receiving participation allows probabilistic spam rescue, reads, importance and stars or flags on verified warmup messages. Filing and selected spam rescues are requested immediately; reads, importance and stars are durably scheduled after a randomized dwell. Current receiving permission and worker assignment are checked again at execution time. These actions are automation, not human feedback or a guaranteed reputation improvement.
+计划安排会遵守发送窗口、服务商反馈、共享限额和发送间隔。随机抖动用于分散负载，不是在模拟真人身份。参与接收允许对经验证的预热邮件按概率执行移出垃圾邮件、设为已读、标为重要以及添加星标或旗标。归档和选中的垃圾邮件移出操作会立即请求；已读、重要标记和星标会在随机停留时间后通过持久化计划执行。执行时会再次检查当前接收权限及工作节点分配。这些操作属于自动化，不是真人反馈，也不保证提升信誉。
 
 </Fold>
 
 <Fold>
 
-## Keeping warmup out of your inbox
+## 避免预热邮件干扰收件箱 [#keeping-warmup-out-of-your-inbox]
 
-Warmup is real mail in a real mailbox, so there are two separate places it could show up: the Warmbly [unibox](/guides/unibox/), and your own mail client. Both are handled, and they are handled differently.
+预热邮件是真实邮箱里的真实邮件，因此可能出现在两个不同位置：Warmbly [统一收件箱](/guides/unibox/)和你自己的邮件客户端。系统会分别处理这两个位置，处理方式也不同。
 
-### In your mail client
+### 在邮件客户端中 [#in-your-mail-client]
 
-Warmup mail is filed out of the way in the mailbox itself, in **both directions**: the messages this mailbox received, and the copy of every warmup message it sent. That second half matters more than it sounds, because a mailbox warming at forty a day would otherwise bury a week of real sent mail under machine traffic.
+预热邮件会在邮箱内被整理到不妨碍日常使用的位置，**收发两个方向都包括在内**：该邮箱收到的预热邮件，以及它发出的每封预热邮件副本。后者尤其重要，因为每天预热四十封的邮箱，否则很快就会让一周的真实已发送邮件淹没在机器流量中。
 
-The filing is per mailbox, on the **Warmup** tab of its drawer:
+每个邮箱的归档方式在侧边面板的**预热**选项卡中设置：
 
-| Setting | What your mail client shows |
+| 设置 | 邮件客户端中的表现 |
 |---------|------------------------------|
-| **Its own folder** (default) | One folder, `Warmbly` unless you rename it, holding every warmup message in and out. Nothing warmup-related in Inbox or Sent. |
-| **Leave it in the inbox** | Warmup stays where the provider placed it unless selected for spam rescue into Inbox. |
-| **Archive it** | Out of the inbox with no folder of its own: findable by search, listed in All Mail on Gmail. |
+| **独立文件夹**（默认） | 所有收发预热邮件集中到一个文件夹，未重命名时名为 `Warmbly`。收件箱和已发送中不保留预热内容。 |
+| **保留在收件箱** | 预热邮件保留在服务商投递的位置，除非被选中从垃圾邮件移回收件箱。 |
+| **归档** | 移出收件箱，不设专属文件夹；可通过搜索找到，在 Gmail 中列于“所有邮件”。 |
 
-The folder is created the first time it is needed, and it is also the answer to "what is this message?": nothing but warmup is filed there, so the folder itself is what identifies warmup traffic in a mail client. If another tool already made a folder you use for this, name that one instead and warmup joins it rather than adding a second.
+文件夹会在第一次需要时创建，它本身也回答了“这是什么邮件”：只有预热邮件会被归入其中，因此在邮件客户端中可以通过文件夹识别预热流量。如果其他工具已经创建了你希望用于此目的的文件夹，填写该名称即可，预热会沿用它，不会再建第二个。
 
-Spam rescue is provider-specific: Gmail removes Spam and supports Important and Starred labels; Microsoft moves verified Junk messages to Inbox and supports high importance and a follow-up flag; IMAP moves messages out of recognized Spam/Junk folders and uses flags plus best-effort not-junk keywords. IMAP does not have a universal Gmail-style Important label, and SMTP-only mailboxes cannot perform recipient-side actions without mailbox access. A move is not proof that a provider learned a positive reputation signal. Filing remains housekeeping, not engagement evidence. Historical NULL/legacy retains existing behavior until explicit action. Upgrade the consumer, backend and workers together; previously skipped engagement is not replayed onto old mail.
+垃圾邮件移出操作因服务商而异：Gmail 会移除垃圾邮件标签，并支持重要和星标标签；Microsoft 会将经验证的垃圾邮件移入收件箱，并支持高重要性和跟进旗标；IMAP 会将邮件移出识别到的 Spam/Junk 文件夹，并使用旗标及尽力支持的非垃圾邮件关键字。IMAP 没有通用的 Gmail 式重要标签；仅支持 SMTP 的邮箱如果没有邮箱访问能力，也无法执行接收端操作。移动邮件不能证明服务商学到了正面信誉信号。归档仍属于日常整理，不是互动证据。历史 NULL 或旧版状态在明确操作之前保留原有行为。请一同升级消费者、后端和工作节点；此前跳过的互动不会补放到旧邮件上。
 
-Mail that arrives somewhere unexpected is still handled. A server-side rule, or another warmup tool's filter, can put warmup mail in a folder of its own choosing before Warmbly sees it; the message is found there and filed from there, and one already sitting in the destination is left alone rather than moved onto itself.
+邮件进入意外文件夹时，也仍会被处理。服务器端规则或其他预热工具的过滤器，可能在 Warmbly 看到邮件之前将它放进自己的文件夹；系统会在那里找到并整理邮件。如果邮件已经位于目标文件夹，就会保持原状，不会把它再移向自己。
 
-Filing happens as each message arrives, so changing the setting applies to warmup from that point on.
+归档会随每封邮件到达而执行，因此更改设置只影响此后到达的预热邮件。
 
-If filing fails, it is not reported as completed. An updated worker can release that filing command for later retry only after the backend confirms that the exact filing is still in its durable recovery queue. Recovery retries use the current worker assignment and folder setting, spaced by 5, 15 or 30 minutes as the queued filing ages. Unknown recovery authority keeps the existing command retry behavior. This does not resend mail, clear uncertain-send protection, acknowledge mailbox arrivals, or discard retention deletes and removal checks.
+归档失败时，不会被报告为完成。只有后端确认该具体归档操作仍在持久恢复队列中，更新后的工作节点才能释放该命令，留待稍后重试。恢复重试会使用当前的工作节点分配和文件夹设置，并随着排队时间增长，按 5、15 或 30 分钟间隔执行。恢复授权不明确时，保留原有命令重试行为。这不会重新发信、清除结果不确定发送的保护、确认邮箱来信，或丢弃保留期限删除和移除检查。
 
-A sweep identifies missed application-owned diagnostics and applies authorized housekeeping. It does not establish retroactive authentication or engagement. Leaving mail in the inbox remains an owner choice.
+扫描会识别遗漏的应用自身诊断邮件，并执行已授权的整理。它不能追溯建立身份验证或互动。是否将邮件留在收件箱，仍由所有者选择。
 
-The sweep repairs what it can still see, so it does not clear a backlog that built up before the setting existed. To do that on Gmail, search `label:Warmbly` and archive the results: warmup mail has always carried the label, so that selects exactly it. On Outlook and IMAP the received mail is already in the folder, and only the Sent copies from before this change stay in Sent.
+扫描只能修复仍然可见的内容，因此不会清空该设置存在之前累积的历史邮件。如果需要在 Gmail 中处理这类积压，请搜索 `label:Warmbly` 并归档结果：预热邮件一直带有该标签，因此搜索只会选中它们。在 Outlook 和 IMAP 中，收到的邮件已经在文件夹里，只有该变更之前的已发送副本仍留在“已发送”。
 
-### Retention
+### 保留期限 [#retention]
 
-Authorized retention deletes old diagnostic mail after its window, 30 days by default. Gmail moves it to Trash; Outlook, Microsoft 365 and IMAP delete it. Stored copies follow retention policy. Recipient deletion is not tampering or proof of failure.
+经授权的保留期限处理会在窗口到期后删除旧诊断邮件，默认 30 天。Gmail 将其移入垃圾箱；Outlook、Microsoft 365 和 IMAP 将其删除。存储副本遵守保留策略。收件人删除邮件不属于篡改，也不能证明投递失败。
 
-Set warmup_retention_days on the Warmup tab or API. Empty follows the instance default; the minimum is three days. Self-host operators configure Instance > Configuration > Data retention. See [data control](/development/data-control/#warmup-mail-in-mailboxes).
+在“预热”选项卡或 API 中设置 warmup_retention_days。留空时沿用实例默认值，最短为三天。自托管运维人员可在“实例 > 配置 > 数据保留”中设置。参见[数据控制](/development/data-control/#warmup-mail-in-mailboxes)。
 
-At the volumes warmup runs, a few plaintext messages of a couple of kilobytes each, a mailbox in balance takes years to fill even on a small hosting quota, so the retention is there so that you never have to think about it rather than because the folder is about to overflow. You do not need to clear the folder by hand, and if you do, see [pool safety](#pool-safety) for what counts.
+以预热的发送量来看，每封纯文本邮件只有几 KB，收发平衡的邮箱即使容量很小，也需要多年才会装满。因此保留策略主要是让你无需操心，而不是因为文件夹马上就会溢出。你不需要手动清空文件夹；如果确实手动清理，请参见[预热池安全](#pool-safety)，了解如何判断相关操作。
 
-<Callout type="info" title="Gmail and the Sent copy">
-  Gmail exposes folders as labels and does not document whether `SENT` may be removed. Warmbly asks once per mailbox: where Gmail allows it, the sent copy leaves Sent entirely; where it refuses, the copy keeps its place in Sent and carries the warmup label, and nothing asks again. Outlook, Microsoft 365 and IMAP mailboxes move the copy out of Sent normally. SMTP mailboxes never get one in the first place, because Warmbly does not file a Sent copy for warmup.
+<Callout type="info" title="Gmail 与已发送副本">
+  Gmail 通过标签表示文件夹，但没有在文档中说明能否移除 `SENT`。Warmbly 对每个邮箱只尝试一次：允许移除时，副本会完全离开“已发送”；拒绝时，副本仍留在“已发送”并带有预热标签，此后不再重复请求。Outlook、Microsoft 365 和 IMAP 邮箱会正常把副本移出“已发送”。SMTP 邮箱原本就不会产生这份副本，因为 Warmbly 不会为预热保存已发送副本。
 </Callout>
 
-### In the unibox
+### 在统一收件箱中 [#in-the-unibox]
 
-Mailbox-sync recovery replays stored arrivals, not sends. Recognized warmup remains hidden, and replay does not create another warmup send or count sync progress as proof that a provider sent mail. Receipt verification and duplicate-send protections remain separate from the mailbox's live-sync status. See [mailbox sync recovery and its limits](/guides/mailboxes/#what-gets-synced).
+邮箱同步恢复重放的是已存储的来信，不是发送。识别出的预热邮件仍会隐藏，重放不会再创建一次预热发送，也不会把同步进度当成服务商已发送邮件的证据。回执验证和重复发送保护，与邮箱的实时同步状态各自独立。参见[邮箱同步恢复及其限制](/guides/mailboxes/#what-gets-synced)。
 
-Warmup never appears in the unified inbox, in either direction. Warmbly recognizes it by its token, including for recipient-only mailboxes. A consumed or expired token still identifies warmup for filtering, but cannot trigger engagement again. When the header is missing, a recorded message identifier can identify older warmup during history sync; the sender-and-subject fallback stays limited to recent inbound sends so an ordinary conversation is not hidden just because it shares a subject. Existing verified warmup entries are removed from the unibox automatically in background batches, without deleting mail at the provider or changing warmup standing.
+预热邮件在收发两个方向都不会出现在统一收件箱。Warmbly 通过令牌识别预热，包括仅接收的邮箱。已消耗或过期的令牌仍可用于识别并过滤预热邮件，但不能再次触发互动。缺少邮件头时，已记录的邮件标识符可在历史同步中识别旧预热；按发件人和主题回退匹配则仅限近期入站发送，避免普通会话仅因主题相同而被隐藏。现有已验证的预热条目会在后台分批从统一收件箱移除，不会删除服务商处的邮件，也不会改变预热状态。
 
-Manual replies to verified diagnostic parents can stay hidden from the unibox and follow housekeeping. They do not authorize another automated turn or count as real campaign replies.
+对已验证诊断父邮件的人工回复，可以继续从统一收件箱隐藏并进行整理。但它们不会授权新一轮自动回复，也不计作真实营销活动回复。
 
-If a provider syncs a headerless Sent copy before reporting its final message identifier, Warmbly holds a possible match for verification. The send confirmation then identifies which message was warmup, and ordinary mail sharing its subject can enter the unibox. A matching subject alone never permanently hides a sent message.
+如果服务商在报告最终邮件标识符之前，先同步了没有相关邮件头的已发送副本，Warmbly 会暂存可能的匹配以待验证。随后发送确认会识别哪封属于预热，与其主题相同的普通邮件则可以进入统一收件箱。仅主题相同绝不会永久隐藏已发送邮件。
 
-Bounce notices and spam reports about warmup are held back too. A warmup send that hard-bounces produces an ordinary "Undelivered Mail Returned to Sender" from the receiving server, which carries no warmup token of its own; it names a pool partner nobody chose to write to, so it is recognized by the send it is about and kept out of the unibox. The same reasoning keeps it out of your deliverability record: a warmup bounce never suppresses an address in your suppression list and never counts toward the bounce rate your campaigns are judged on. Warmup bounce rate is a band in [pool safety](#pool-safety) instead. A bounce or complaint about a **campaign** send is unaffected and still appears, because that is real outreach reaching a real recipient.
+有关预热的退信通知和垃圾邮件报告也会被拦下。预热发送发生硬退信时，接收服务器会生成普通的“邮件无法投递，退回发件人”通知，它本身不带预热令牌；通知涉及的是用户并未主动选择联系的预热池伙伴，因此系统会根据它所对应的发送识别并将其排除在统一收件箱之外。同理，它也不会进入你的邮件送达记录：预热退信不会把地址加入禁止发送名单，也不会计入评估营销活动的退信率。预热退信率会改为用于[预热池安全](#pool-safety)中的等级判断。**营销活动**发送产生的退信或投诉不受影响，仍会显示，因为那是真实外联发给真实收件人的邮件。
 
-### Nowhere else either
+### 其他位置也不会显示 [#nowhere-else-either]
 
-Warmup writes to none of the tables the customer-facing views read, so nothing needs to filter it out after the fact:
+预热不会写入面向客户的视图所读取的任何表，因此无需在事后额外过滤：
 
-- a contact's **Activity** timeline is built from campaign progress, opens, clicks, replies, notes, meetings and page hits, and warmup creates no contact and no campaign progress
-- a contact's sent-mail list is keyed on campaign tasks, which a warmup send never has
-- direct-mail analytics counts a mailbox's own sent and received mail and excludes every task-backed message, campaign and warmup alike
-- notifications are raised for domain authentication, worker downtime and campaign guardrails, never per message
+- 联系人的**活动**时间线由营销活动进度、打开、点击、回复、备注、会议和页面访问构成，预热不会创建联系人或营销活动进度。
+- 联系人的已发送邮件列表以营销活动任务为索引，预热发送没有此类任务。
+- 直接邮件分析统计邮箱自己的收发邮件，并排除所有由任务产生的邮件，包括营销活动和预热。
+- 通知针对域名身份验证、工作节点停机和营销活动保护规则生成，不会逐封邮件触发。
 
 </Fold>
 
 <Fold>
 
-## Pool safety
+## 预热池安全 [#pool-safety]
 
-Pools enforce permission and restrictive complaint/bounce/authentication evidence, current authority and durable holds. Deleting diagnostics or choosing spam is recipient withdrawal, not automatic tampering misconduct.
+预热池会执行权限规则，并根据投诉、退信和身份验证等限制性证据、当前授权及持久化暂停限制采取措施。删除诊断邮件或选择标为垃圾邮件，属于收件人撤回参与，不会自动认定为恶意篡改。
 
-| State | Meaning | Effect |
+| 状态 | 含义 | 影响 |
 |-------|---------|--------|
-| `healthy` | Normal | Full volume |
-| `watch` | Mild concern | Warmup at full volume with recovery engagement; cold volume eased |
-| `throttled` | Probation | Volume cut, spacing widened, recovery engagement until recovery |
-| `quarantined` | Clear problem | Out of the shared pool for a cooldown |
-| `blocked` | Serious or repeated abuse | Out for longer, review required |
+| `healthy` | 正常 | 完整发送量 |
+| `watch` | 轻度关注 | 预热保持完整发送量并加强恢复互动；降低冷邮件发送量 |
+| `throttled` | 限制观察期 | 减少发送量、扩大间隔，并进行恢复互动，直到恢复 |
+| `quarantined` | 明确存在问题 | 暂时退出共享池，进入冷却期 |
+| `blocked` | 严重或反复滥用 | 更长时间退出，需经审核 |
 
-The thresholds for each signal are in the [health bands](/guides/deliverability/#health-bands) table.
+各项信号的阈值见[健康等级](/guides/deliverability/#health-bands)表。
 
-Watch and throttled standing are warnings, not connection failures. They do not subtract a fixed number of points from mailbox health: the score is still capped by the measured inbox rate, and separate account errors can lower it further. The score is overall health out of 100, not another inbox percentage.
+观察和限流状态是警告，不是连接失败。它们不会从邮箱健康分数中固定扣除一定分值：分数仍以测得的收件箱到达率为上限，独立的账户错误还可能进一步降低分数。这是满分 100 的整体健康分，不是另一个收件箱到达百分比。
 
-### How spam placement is judged
+### 垃圾邮件投递位置的判定方式 [#how-spam-placement-is-judged]
 
-Spam placement is a folder outcome, not misconduct or evidence of diagnostic reputation benefit. It slows sending but does not alone quarantine or block a recipient:
+进入垃圾邮件只是文件夹结果，不属于违规，也不能证明诊断带来了信誉收益。它会减慢发送，但本身不会导致收件人隔离或封禁：
 
-- `10%` puts the mailbox on watch: warmup keeps its volume and pace (its ramp holds while spam landings are recent), the pool engages harder with its mail (see [recovery engagement](#recovery-engagement)), and cold volume is eased to `70%`.
-- `20%` throttles it: warmup keeps running at half volume with double spacing, and cold volume is halved.
-- A throttle steps down to watch below `15%`, then returns to healthy below `7.5%`, on its own. They lift below the line that set them rather than at it, so a mailbox sitting near a line is not flipped in and out of a band (and announced to your integrations) with every delivery. The separate [early-signal ramp pause](#holding-the-ramp-on-an-early-signal) still applies to fresh spam landings.
+- 达到 `10%` 时，邮箱进入观察状态：预热保持发送量和节奏（近期仍有垃圾邮件投递时，递增会暂停），预热池会加强对其邮件的互动（见[恢复互动](#recovery-engagement)），冷邮件发送量降低至 `70%`。
+- 达到 `20%` 时进入限流：预热继续运行，但数量减半、间隔加倍，冷邮件数量也减半。
+- 比例降至 `15%` 以下时，限流会自动降为观察；降至 `7.5%` 以下时，再恢复健康。解除阈值低于触发阈值，因此在临界值附近的邮箱不会每收到一次投递结果就反复切换等级，并向集成发送通知。对于新出现的垃圾邮件投递，独立的[早期信号递增暂停](#holding-the-ramp-on-an-early-signal)仍然有效。
 
-### Recovery engagement
+### 恢复阶段的互动 [#recovery-engagement]
 
-While a mailbox is on watch or throttled, the pool works harder for it instead of only slowing it down. Recipients that take part in engagement move nearly every copy of its warmup mail that lands in spam back out of spam (each mailbox at its own rate, so none does it every time) and mark more of it important, and each email has at least a `60%` chance of a reply when the recipient's next warmup send is free to answer it (unless the recipient's owner turned warmup replies off). Replies take the place of the recipient's next scheduled warmup send, so the extra engagement adds no volume. It stops on its own when the band lifts.
+邮箱处于观察或限流状态时，预热池不仅减慢它的发送，也会加强恢复支持。参与互动的收件人会将其大多数进入垃圾邮件的预热邮件移出垃圾邮件（各邮箱按自己的概率执行，没有哪个邮箱每次都这样做），并更频繁地标为重要；如果收件人的下一次预热发送可用于回复，每封邮件至少有 `60%` 的回复概率，除非收件人所有者关闭了预热回复。回复会替代收件人的下一次计划发送，因此额外互动不会增加发送量。等级解除后，这些加强措施自动停止。
 
-Placement uses today and the preceding six UTC dates, matching the seven-day inbox rate on Deliverability and Emails. Older placement results stop affecting volume at the same boundary as the displayed rate. Complaints and mailbox tampering keep their separate rolling windows.
+投递位置统计使用今天及之前六个 UTC 日期，与“邮件送达能力”和“邮箱”中的七天收件箱到达率一致。更早的投递结果会与界面指标在同一边界停止影响发送量。投诉和邮箱篡改仍使用各自独立的滚动窗口。
 
-Only Google, Microsoft and Yahoo recipients judge a mailbox. They filter on sender reputation, which is what your cold email is judged on at those same providers. Every other mail host runs its own filter, often a stock rule set tuned for that one server, so a message landing in its spam folder is not evidence that the mail is spam. Those landings are shown in the placement view and never held against the mailbox, in the bands, the ramp or the [Advisor](/guides/advisor/). The rate is taken over verified deliveries at the three providers in the last seven days, and needs `20` of them before it acts.
+只有 Google、Microsoft 和 Yahoo 的收件人用于评估邮箱。这些服务商按发件人信誉过滤，而你的冷邮件在它们那里也受到相同类型的评估。其他邮件主机使用自己的过滤器，通常是针对单台服务器调整的通用规则，因此邮件进入它们的垃圾邮件文件夹，并不能证明邮件本身是垃圾邮件。这些位置仍会显示在投递视图中，但不会在等级、递增或[顾问](/guides/advisor/)中对邮箱作负面判定。比例取这三家服务商过去七天经验证到达的邮件，并且至少需要 `20` 封才会据此采取措施。
 
-So a mailbox that inboxes everything at Google and Microsoft stays healthy however many small hosts junk its mail. The reason in the mailbox drawer says what was judged: for example `25% of warmup mail delivered at Google, Microsoft and Yahoo landed in spam over 7 days (40 delivered). Other mail hosts (50% of 20) run their own filters and are not counted.`
+因此，只要邮箱在 Google 和 Microsoft 的邮件全部进入收件箱，不论有多少小型主机把它的邮件归入垃圾邮件，它仍会保持健康。邮箱侧边面板中的原因会说明评估依据，例如：`25% of warmup mail delivered at Google, Microsoft and Yahoo landed in spam over 7 days (40 delivered). Other mail hosts (50% of 20) run their own filters and are not counted.`
 
-Selection uses observed coverage to reduce uninformative pairings. Measurement allocation does not prove traffic to a host builds reputation.
+伙伴选择会根据观察到的覆盖范围减少信息价值较低的配对。分配测量流量，不能证明向某个主机发信会建立信誉。
 
-Quarantined and blocked mailboxes are selected as neither sender nor recipient. Mail arriving in a mailbox is never held against it: every warmup message carries a single-use token bound to its recipient, so a token cannot be replayed or redirected, and one that lands where it does not belong is simply filed as ordinary mail.
+隔离和封禁的邮箱既不会被选为发件人，也不会被选为收件人。收到邮件不会被用来对接收邮箱作负面判定：每封预热邮件都带有与收件人绑定的一次性令牌，无法重放或转向其他地址；邮件如果进入不属于它的邮箱，只会按普通邮件整理。
 
-Withdrawal creates no unconditional deletion/spam tampering strike. Owner-attributed spam can still create sender complaint evidence and suppression; provider-attributed moves remain placement evidence. Ambiguity charges nobody. Historical evidence is rechecked without resetting unrelated restrictive holds; failed searches stay unknown.
+撤回参与不会无条件产生删除或标为垃圾邮件的篡改处罚。可归因于所有者的垃圾邮件操作，仍可能产生针对发件人的投诉证据和禁止发送记录；可归因于服务商的移动则仍属于投递位置证据。存在歧义时不处罚任何一方。历史证据会被重新检查，但不会重置无关的限制性暂停；搜索失败仍视为未知。
 
-<Callout type="warn" title="Acting early protects everyone">
-  Complaint, bounce and authentication evidence may hold sending. Placement slows pacing. Diagnostic age and automated engagement do not establish recovery.
+<Callout type="warn" title="尽早处理能保护所有参与者">
+  投诉、退信和身份验证证据可能暂停发送。投递位置会减慢发送节奏。诊断运行时长和自动化互动不能证明已恢复。
 </Callout>
 
-Getting back in requires requalifying, not just waiting: healthy authentication, no recent complaints or hard-bounce spikes, and spam placement back to a low level. Return is gradual, not a jump back to the old ceiling.
+重新加入需要再次符合条件，而不只是等待：身份验证健康、近期没有投诉或硬退信激增，且垃圾邮件投递率已回到较低水平。恢复会逐步进行，不会直接跳回旧上限。
 
-A quarantine or a block also holds for its full term. The signals behind it age out of their windows long before it ends, and that does not release it early; a more serious finding can still replace it. A throttle is different and lifts as soon as the mailbox recovers, as the table says. When support lifts a pause or block, or approves an appeal against one, the strikes behind it are cleared with it, so the next evaluation does not reimpose it.
+隔离和封禁也会完整持续到期限结束。导致它们的信号可能早在限制结束前就已超出统计窗口，但这不会提前解除限制；更严重的新发现仍可替换现有限制。限流则不同，邮箱恢复后会按表中规则解除。当支持人员解除暂停或封禁，或批准相关申诉时，背后的违规记录也会一并清除，避免下一次评估再次施加同一限制。
 
-On a self-hosted instance linked to [Warmbly Cloud](/guides/warmbly-cloud/#safety-and-enforcement), a mailbox the cloud warms is judged there, and the instance applies the cloud's standing to its own campaigns with the same effects as this table.
+对于已连接 [Warmbly Cloud](/guides/warmbly-cloud/#safety-and-enforcement) 的自托管实例，由 Cloud 预热的邮箱会在 Cloud 侧评估，实例会将 Cloud 状态应用于自己的营销活动，效果与此表一致。
 
-The standing follows the address, not the connection. Removing a mailbox from the workspace and adding it back, or dropping out of the pool and rejoining, does not clear its score or its block: the same address in the same workspace rejoins with the standing it left with. That standing is kept for 90 days after the block ends or after the mailbox was removed, whichever is later; a block that requires review never lapses. A mailbox in good standing leaves nothing behind.
-
-</Fold>
-
-<Fold>
-
-## Graduating to cold sending
-
-Diagnostic-history mailboxes start cold sending at a conservative ceiling of five/day. Synthetic age never increases it. Recent confirmed human replies to actual campaign recipients permit bounded increases, subject to calendar days and negative feedback. Missing evidence leaves readiness/full-cap dates unknown. This product policy is not a provider-approved safe volume. See [campaign pacing](/guides/campaigns/).
+状态跟随邮箱地址，而不是连接记录。从工作区移除邮箱再重新添加，或退出预热池后重新加入，都不会清除分数或封禁：同一工作区中的同一地址，会以离开时的状态重新加入。该状态会保留到封禁结束或邮箱移除之后的 90 天，以较晚者为准；需要审核的封禁不会自行到期。状态良好的邮箱离开时不会留下此类记录。
 
 </Fold>
 
 <Fold>
 
-## Recommended posture
+## 逐步过渡到冷邮件发送 [#graduating-to-cold-sending]
 
-- Start new mailboxes around `10`/day and let the ramp climb slowly.
-- Do not raise the ceiling above `40` casually.
-- Keep warmup running alongside campaigns, not only before them.
-- Prefer more healthy mailboxes over pushing a few too hard.
-- Watch complaints and spam placement, not open-rate vanity metrics.
+有诊断历史的邮箱开始发送冷邮件时，采用每天五封的保守上限。模拟流量的运行时长不会提高这个上限。近期来自真实营销活动收件人、经确认的真人回复，才允许在日历天数和负面反馈约束下有限增加。缺乏证据时，准备就绪日期和达到完整上限的日期仍为未知。这是产品策略，不是服务商认可的安全发送量。参见[营销活动发送节奏](/guides/campaigns/)。
 
 </Fold>
 
-## Related guides
+<Fold>
+
+## 建议的发送策略 [#recommended-posture]
+
+- 新邮箱从每天约 `10` 封开始，让发送量缓慢递增。
+- 不要轻易将上限提高到 `40` 以上。
+- 让预热与营销活动同时运行，不要只在营销活动开始前预热。
+- 与其让少量邮箱承担过高发送量，不如使用更多健康邮箱。
+- 关注投诉和垃圾邮件投递情况，而不是只看好看的打开率。
+
+</Fold>
+
+## 相关指南 [#related-guides]
 
 <Cards>
-  <Card title="Deliverability" href="/guides/deliverability/">
-    Authentication, suppression, and inbox-placement signals that warmup supports.
+  <Card title="邮件送达能力" href="/guides/deliverability/">
+    预热所支持的身份验证、禁止发送和收件箱投递信号。
   </Card>
-  <Card title="Personalization" href="/guides/expressions/">
-    Expressions for personalizing your campaign sends.
+  <Card title="个性化" href="/guides/expressions/">
+    用于个性化营销活动邮件的表达式。
   </Card>
-  <Card title="Mailboxes" href="/guides/mailboxes/">
-    Sending limits and provider setup for the mailboxes you warm.
+  <Card title="邮箱" href="/guides/mailboxes/">
+    参与预热的邮箱所需的发送限制和服务商设置。
   </Card>
 </Cards>
